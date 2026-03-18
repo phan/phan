@@ -722,7 +722,7 @@ class Phan implements IgnoredFilesFilterInterface
 
                     // Run worklist-based convergence passes after pass 2
                     if ($analyze_until_convergence) {
-                        $extra_passes = $convergence_worklist->run($analysis_worker, self::getIssueCollector());
+                        $extra_passes = $convergence_worklist->run($analysis_worker);
                         if ($extra_passes > 0) {
                             CLI::printToStderr("Convergence reached after $extra_passes additional targeted pass(es)\n");
                         }

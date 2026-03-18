@@ -8,7 +8,6 @@ use Closure;
 use Phan\CLI;
 use Phan\CodeBase;
 use Phan\Language\Element\FunctionInterface;
-use Phan\Output\IssueCollectorInterface;
 
 /**
  * Worklist-based incremental re-analysis for type convergence.
@@ -180,7 +179,7 @@ class ConvergenceWorklist
      * @param Closure(int, string, int): void $analysis_worker
      * @return int number of extra passes performed
      */
-    public function run(Closure $analysis_worker, IssueCollectorInterface $collector): int
+    public function run(Closure $analysis_worker): int
     {
         // Detect what changed between pass 1 and pass 2
         $changed_files = $this->getChangedElementFiles();
@@ -190,9 +189,6 @@ class ConvergenceWorklist
             $iteration++;
             $file_count = count($changed_files);
             CLI::printToStderr("Convergence pass $iteration: re-analyzing $file_count file(s)\n");
-
-            // Clear stale issues for files we're about to re-analyze
-            $collector->removeIssuesForFiles($changed_files);
 
             // Snapshot before re-analysis
             $this->snapshotTypes();

@@ -16,7 +16,7 @@ echo "Running phan in '$PWD' ..."
 rm -f $ACTUAL_PATH || exit 1
 
 # We use the polyfill parser because it behaves consistently in all php versions.
-../../phan --force-polyfill-parser --memory-limit 1G --analyze-until-convergence 2>/dev/null | tee $ACTUAL_PATH
+../../phan --force-polyfill-parser --memory-limit 1G --analyze-until-convergence | tee $ACTUAL_PATH
 
 # diff returns a non-zero exit code if files differ or are missing
 # This outputs the difference between actual and expected output.
