@@ -1,4 +1,4 @@
-%s:10 PhanPropertyHookWithDefaultValue Property \PropertyHookErrors->withDefault has both hooks and a default value - hooks with default values are not allowed
+%s:10 PhanPropertyHookWithDefaultValue Virtual property \PropertyHookErrors->withDefault cannot have a default value - only properties with a set hook or backing storage can have defaults
 %s:10 PhanReadOnlyPublicProperty Possibly zero write references to public property \PropertyHookErrors->withDefault
 %s:16 PhanReadonlyPropertyHasSetHook Readonly property \PropertyHookErrors->readonlyWithSet cannot have a set hook
 %s:27 PhanWriteOnlyPublicProperty Possibly zero read references to public property \PropertyHookErrors->paramMismatch

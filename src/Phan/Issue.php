@@ -1056,7 +1056,7 @@ class Issue
                 self::PropertyHookWithDefaultValue,
                 self::CATEGORY_SYNTAX,
                 self::SEVERITY_NORMAL,
-                'Property {PROPERTY} has both hooks and a default value - hooks with default values are not allowed',
+                'Virtual property {PROPERTY} cannot have a default value - only properties with a set hook or backing storage can have defaults',
                 self::REMEDIATION_A,
                 17022
             ),

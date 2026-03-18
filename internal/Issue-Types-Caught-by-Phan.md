@@ -5272,7 +5272,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0951
 ## PhanPropertyHookWithDefaultValue
 
 ```
-Property {PROPERTY} has both hooks and a default value - hooks with default values are not allowed
+Virtual property {PROPERTY} cannot have a default value - only properties with a set hook or backing storage can have defaults
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php84_files/expected/property_hooks_errors.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php84_files/src/property_hooks_errors.php#L10).
