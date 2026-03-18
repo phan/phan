@@ -168,6 +168,7 @@ class CLI
         'language-server-verbose',
         'load-baseline:',
         'analyze-twice',
+        'analyze-until-convergence',
         'always-exit-successfully-after-analysis',
         'long-progress-bar',
         'markdown-issue-messages',
@@ -1005,6 +1006,12 @@ class CLI
                     break;
                 case 'analyze-twice':
                     Config::setValue('__analyze_twice', true);
+                    Config::setValue('force_tracking_references', true);
+                    break;
+                case 'analyze-until-convergence':
+                    Config::setValue('__analyze_until_convergence', true);
+                    Config::setValue('__analyze_twice', true);
+                    Config::setValue('force_tracking_references', true);
                     break;
                 case 'always-exit-successfully-after-analysis':
                     Config::setValue('__always_exit_successfully_after_analysis', true);
@@ -1430,6 +1437,10 @@ class CLI
         if (Config::getValue('__analyze_twice')) {
             \fwrite(STDERR, "Notice: Running analysis phase once instead of --analyze-twice - the daemon/language server assumes it will run as a single process" . PHP_EOL);
             Config::setValue('__analyze_twice', false);
+        }
+        if (Config::getValue('__analyze_until_convergence')) {
+            \fwrite(STDERR, "Notice: Disabling --analyze-until-convergence - the daemon/language server assumes it will run as a single process" . PHP_EOL);
+            Config::setValue('__analyze_until_convergence', false);
         }
     }
 
@@ -1883,6 +1894,16 @@ $init_help
  --analyze-twice
   Runs the analyze phase twice. Because Phan gathers additional type information for properties, return types, etc. during analysis,
   this may emit a more complete list of issues.
+
+  This cannot be used with --processes <int>.
+
+ --analyze-until-convergence
+  Implies --analyze-twice. After the two full analysis passes, runs additional targeted passes using a worklist algorithm,
+  only re-analyzing files downstream of methods/functions whose inferred return types changed. Continues until no more
+  type changes occur or a maximum iteration count is reached (default: 10).
+
+  This is useful when type information flows through chains of method calls with undeclared return types, where each
+  hop requires an additional analysis pass to converge.
 
   This cannot be used with --processes <int>.
 

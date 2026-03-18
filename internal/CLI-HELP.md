@@ -272,6 +272,16 @@ Usage: ./phan [options] [files...]
 
   This cannot be used with --processes <int>.
 
+ --analyze-until-convergence
+  Implies --analyze-twice. After the two full analysis passes, runs additional targeted passes using a worklist algorithm,
+  only re-analyzing files downstream of methods/functions whose inferred return types changed. Continues until no more
+  type changes occur or a maximum iteration count is reached (default: 10).
+
+  This is useful when type information flows through chains of method calls with undeclared return types, where each
+  hop requires an additional analysis pass to converge.
+
+  This cannot be used with --processes <int>.
+
  -v, --version
   Print Phan's version number
 
