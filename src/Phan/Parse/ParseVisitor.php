@@ -760,13 +760,26 @@ class ParseVisitor extends ScopeVisitor
             return;
         }
 
-        // Check for hooks with default value - not allowed in PHP
+        // A default value is only disallowed for virtual properties (get-only, without $field
+        // reference). Any property with a set hook has backing storage and can have a default.
         if ($default_node !== null) {
-            $this->emitIssue(
-                Issue::PropertyHookWithDefaultValue,
-                $property->getContext()->getLineNumberStart(),
-                $property->asPropertyFQSENString()
-            );
+            $has_set_hook = false;
+            foreach ($hooks_node->children as $hook_node) {
+                if ($hook_node instanceof Node
+                    && $hook_node->kind === \ast\AST_PROPERTY_HOOK
+                    && $hook_node->children['name'] === 'set'
+                ) {
+                    $has_set_hook = true;
+                    break;
+                }
+            }
+            if (!$has_set_hook) {
+                $this->emitIssue(
+                    Issue::PropertyHookWithDefaultValue,
+                    $property->getContext()->getLineNumberStart(),
+                    $property->asPropertyFQSENString()
+                );
+            }
         }
 
         // Check for readonly property with set hook

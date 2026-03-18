@@ -1,0 +1,5 @@
+%s:10 PhanReadOnlyPublicProperty Possibly zero write references to public property \PropertyHookBasic->upperName
+%s:36 PhanReadOnlyPrivateProperty Possibly zero write references to private property \PropertyHookBasic->firstName
+%s:37 PhanReadOnlyPrivateProperty Possibly zero write references to private property \PropertyHookBasic->lastName
+%s:40 PhanReadOnlyPublicProperty Possibly zero write references to public property \PropertyHookBasic->formatted
+%s:48 PhanReadOnlyPublicProperty Possibly zero write references to public property \PropertyHookBasic->finalProp

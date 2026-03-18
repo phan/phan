@@ -1294,6 +1294,33 @@ class AssignmentVisitor extends AnalysisVisitor
             $property_union_type = $property->getPHPDocUnionType()->withStaticResolvedInContext($property->getContext());
         }
 
+        // If the property has a set hook with an explicit parameter type, external
+        // assignments are intercepted by the hook, so check against the hook's
+        // parameter type instead of the property's declared storage type.
+        // Skip this when we're inside the property's own hook body — those
+        // assignments write directly to backing storage, bypassing the hook.
+        $set_hook = $property->getSetHook();
+        if ($set_hook !== null) {
+            $is_inside_own_hook = false;
+            // Walk the scope chain to find a PropertyScope for this property.
+            // The hook body has a BranchScope whose parent is the PropertyScope.
+            for ($scope = $this->context->getScope(); !($scope instanceof \Phan\Language\Scope\GlobalScope); $scope = $scope->getParentScope()) {
+                if ($scope->isInPropertyScope()) {
+                    $is_inside_own_hook = $scope->getPropertyFQSEN() === $property->getFQSEN();
+                    break;
+                }
+            }
+            if (!$is_inside_own_hook) {
+                $params = $set_hook->getParameterList();
+                if (!empty($params)) {
+                    $hook_param_type = $params[0]->getNonVariadicUnionType();
+                    if (!$hook_param_type->isEmpty()) {
+                        $property_union_type = $hook_param_type;
+                    }
+                }
+            }
+        }
+
         $resolved_right_type = $this->right_type->withStaticResolvedInContext($this->context);
         if ($this->dim_depth > 0) {
             // Check compatibility without expanding property type to include parent classes.

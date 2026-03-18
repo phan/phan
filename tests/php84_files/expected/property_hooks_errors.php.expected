@@ -1,3 +1,7 @@
-%s:%d PhanPropertyHookWithDefaultValue Property \PropertyHookErrors->withDefault has both hooks and a default value - hooks with default values are not allowed
-%s:%d PhanReadonlyPropertyHasSetHook Readonly property \PropertyHookErrors->readonlyWithSet cannot have a set hook
-%s:%d PhanPropertyHookIncompatibleParamType Property hook \PropertyHookErrors::set parameter $value has type int which is incompatible with property type string
+%s:10 PhanPropertyHookWithDefaultValue Property \PropertyHookErrors->withDefault has both hooks and a default value - hooks with default values are not allowed
+%s:10 PhanReadOnlyPublicProperty Possibly zero write references to public property \PropertyHookErrors->withDefault
+%s:16 PhanReadonlyPropertyHasSetHook Readonly property \PropertyHookErrors->readonlyWithSet cannot have a set hook
+%s:27 PhanWriteOnlyPublicProperty Possibly zero read references to public property \PropertyHookErrors->paramMismatch
+%s:28 PhanPropertyHookIncompatibleParamType Property hook \PropertyHookErrors::set parameter $value has type int which is incompatible with property type string
+%s:36 PhanReadOnlyPublicProperty Possibly zero write references to public property \ParentWithFinalHook->name
+%s:50 PhanReadOnlyPublicProperty Possibly zero write references to public property \TypeCompatibility->flexible
