@@ -62,7 +62,7 @@ class WithNarrowingSetHook {
             // Assigning a string literal is incompatible with the property type.
             // Without the edge case fix, this would incorrectly check against the
             // hook param type (int|string) and not warn.
-            $this->strict = 'not an int';  // Should warn PhanTypeMismatchProperty
+            $this->strict = 'not an int';  // Should warn PhanTypeMismatchPropertyReal
         }
     }
 }
