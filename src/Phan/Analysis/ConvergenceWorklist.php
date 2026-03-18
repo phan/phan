@@ -197,10 +197,9 @@ class ConvergenceWorklist
             // Snapshot before re-analysis
             $this->snapshotTypes();
 
-            // Re-analyze each file
+            // Re-analyze each file (progress is reported by $analysis_worker)
             CLI::resetLongProgressState();
             foreach ($changed_files as $i => $file_path) {
-                CLI::progress('analyze', ($i + 1) / $file_count, $file_path, $i + 1, $file_count);
                 $analysis_worker($i, $file_path, $file_count);
             }
 

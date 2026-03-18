@@ -693,12 +693,14 @@ class Phan implements IgnoredFilesFilterInterface
                     $convergence_worklist->buildIndex();
 
                     // Pass 1: type gathering
-                    foreach ($analyze_file_path_list as $i => $file_path) {
-                        $analysis_worker($i, $file_path, $file_count);
+                    try {
+                        foreach ($analyze_file_path_list as $i => $file_path) {
+                            $analysis_worker($i, $file_path, $file_count);
+                        }
+                    } finally {
+                        // Restore the real issue collector for pass 2
+                        self::setIssueCollector($real_collector);
                     }
-
-                    // Restore the real issue collector for pass 2
-                    self::setIssueCollector($real_collector);
 
                     // Reorder files for pass 2: producers before consumers
                     $pass2_file_list = $convergence_worklist->reorderForPass2($analyze_file_path_list);
