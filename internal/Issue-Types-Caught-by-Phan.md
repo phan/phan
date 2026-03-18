@@ -2884,6 +2884,8 @@ Cannot override final property hook {PROPERTY}::{METHOD} defined at {FILE}:{LINE
 Property hook {PROPERTY}::{METHOD} parameter {PARAMETER} has type {TYPE} which is incompatible with property type {TYPE}
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php84_files/expected/property_hooks_errors.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php84_files/src/property_hooks_errors.php#L28).
+
 ## PhanPropertyHookIncompatibleReturnType
 
 ```
@@ -5270,14 +5272,18 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0951
 ## PhanPropertyHookWithDefaultValue
 
 ```
-Property {PROPERTY} has both hooks and a default value - hooks with default values are not allowed
+Virtual property {PROPERTY} cannot have a default value - only properties with a set hook or backing storage can have defaults
 ```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php84_files/expected/property_hooks_errors.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php84_files/src/property_hooks_errors.php#L10).
 
 ## PhanReadonlyPropertyHasSetHook
 
 ```
 Readonly property {PROPERTY} cannot have a set hook
 ```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php84_files/expected/property_hooks_errors.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php84_files/src/property_hooks_errors.php#L16).
 
 ## PhanReadonlyPropertyMissingType
 

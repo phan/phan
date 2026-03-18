@@ -30,6 +30,7 @@ use Phan\Exception\RecursionDepthException;
 use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Comment\Builder;
+use Phan\Language\Element\Parameter;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -94,6 +95,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         \ast\AST_FUNC_DECL => true,
         \ast\AST_METHOD => true,
         \ast\AST_CLASS => true,
+        \ast\AST_PROPERTY_HOOK => true,
     ];
 
     /**
@@ -3677,7 +3679,74 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $context = $this->analyzeAndGetUpdatedContext($context, $node, $default);
         }
 
+        // Recurse into property hook bodies so that function/class references
+        // inside hooks are tracked (prevents false PhanUnreferencedUseFunction, etc.)
+        $hooks = $node->children['hooks'] ?? null;
+        if ($hooks instanceof Node) {
+            $this->analyzeAndGetUpdatedContext($context, $node, $hooks);
+        }
+
         return $this->postOrderAnalyze($context, $node);
+    }
+
+    /**
+     * Visit a property hook (AST_PROPERTY_HOOK) to set up a function-like scope
+     * so that hook bodies are properly analyzed with $this and parameters available.
+     *
+     * Without this, function/class references inside hook bodies would not be
+     * tracked, causing false PhanUnreferencedUseFunction warnings.
+     *
+     * @param Node $node
+     * A node of kind AST_PROPERTY_HOOK
+     *
+     * @return Context
+     * The updated context after visiting the node
+     */
+    public function visitPropertyHook(Node $node): Context
+    {
+        $context = $this->context;
+        $context->setLineNumberStart($node->lineno);
+
+        // Create a branch scope for the hook body. We use BranchScope rather than
+        // FunctionLikeScope because hooks don't have their own method FQSEN in the
+        // codebase, and using a synthetic one causes PostOrderAnalysisVisitor to fail.
+        $hook_context = $context->withScope(
+            new BranchScope($context->getScope())
+        );
+
+        // Add $this — hooks are always non-static, but the parent PropertyScope
+        // is a ClosedScope that doesn't inherit $this from the class scope.
+        if ($context->isInClassScope()) {
+            $clazz = $context->getClassInScope($this->code_base);
+            if ($clazz->getInternalScope()->hasVariableWithName('this')) {
+                $hook_context->addScopeVariable(
+                    $clazz->getInternalScope()->getVariableByName('this')
+                );
+            }
+        }
+
+        // Add hook parameters to scope (set hooks have a parameter)
+        $params_node = $node->children['params'] ?? null;
+        if ($params_node instanceof Node) {
+            foreach (Parameter::listFromNode($hook_context, $this->code_base, $params_node) as $parameter) {
+                $hook_context->addScopeVariable(
+                    $parameter->cloneAsNonVariadic()
+                );
+            }
+        }
+
+        // Recurse into children (params, stmts, etc.)
+        foreach ($node->children as $child_node) {
+            if (!($child_node instanceof Node)) {
+                continue;
+            }
+            $this->analyzeAndGetUpdatedContext($hook_context, $node, $child_node);
+        }
+
+        $this->postOrderAnalyze($hook_context, $node);
+
+        // Return the outer context — hook is a closed scope
+        return $this->context;
     }
 
     /**
