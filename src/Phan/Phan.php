@@ -679,6 +679,10 @@ class Phan implements IgnoredFilesFilterInterface
                 $analyze_until_convergence = Config::getValue('__analyze_until_convergence');
 
                 if ($analyze_twice) {
+                    // Enable reference tracking for dependency graph reordering.
+                    // Done here (not in CLI) so it's only active in single-process mode.
+                    Config::setValue('force_tracking_references', true);
+
                     // Pass 1 is a type-gathering pass: suppress issue collection.
                     $real_collector = self::getIssueCollector();
                     self::setIssueCollector(new NullCollector());

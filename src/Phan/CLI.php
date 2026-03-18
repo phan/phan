@@ -1006,12 +1006,10 @@ class CLI
                     break;
                 case 'analyze-twice':
                     Config::setValue('__analyze_twice', true);
-                    Config::setValue('force_tracking_references', true);
                     break;
                 case 'analyze-until-convergence':
                     Config::setValue('__analyze_until_convergence', true);
                     Config::setValue('__analyze_twice', true);
-                    Config::setValue('force_tracking_references', true);
                     break;
                 case 'always-exit-successfully-after-analysis':
                     Config::setValue('__always_exit_successfully_after_analysis', true);
