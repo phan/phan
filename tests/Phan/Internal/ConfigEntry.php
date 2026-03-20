@@ -171,6 +171,7 @@ class ConfigEntry
         'max_verbose_snippet_length' => self::CATEGORY_OUTPUT,
         'plugins' => self::CATEGORY_ANALYSIS,
         'plugin_config' => self::CATEGORY_ANALYSIS,
+        'convergence_max_iterations' => self::CATEGORY_ANALYSIS,
         'maximum_recursion_depth' => self::CATEGORY_ANALYSIS,
         'record_variable_context_and_scope' => self::CATEGORY_HIDDEN_CLI_ONLY,
     ];

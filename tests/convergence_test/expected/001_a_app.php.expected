@@ -1,0 +1,1 @@
+src/001_a_app.php:11 PhanTypeMismatchArgument Argument 1 ($v) is $obj of type \ConvergenceService but \ConvergenceApp::expectInt() takes int defined at src/001_a_app.php:14

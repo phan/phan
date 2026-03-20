@@ -105,6 +105,11 @@ case "$TEST_SUITE" in
 		./test.sh
 		exit $?
 		;;
+	__FakeConvergenceTest)
+		cd tests/convergence_test
+		./test.sh
+		exit $?
+		;;
 	__FakeTrackAllInferredTypesTest)
 		cd tests/track_all_inferred_types_test
 		./test.sh

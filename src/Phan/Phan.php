@@ -8,6 +8,7 @@ use AssertionError;
 use Closure;
 use Exception;
 use InvalidArgumentException;
+use Phan\Analysis\ConvergenceWorklist;
 use Phan\AST\TolerantASTConverter\Shim;
 use Phan\Daemon\Request;
 use Phan\Language\Element\FunctionInterface;
@@ -17,6 +18,7 @@ use Phan\LanguageServer\Logger as LanguageServerLogger;
 use Phan\Library\FileCache;
 use Phan\Library\StringUtil;
 use Phan\Output\BufferedPrinterInterface;
+use Phan\Output\Collector\NullCollector;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Output\IgnoredFilesFilterInterface;
 use Phan\Output\IssueCollectorInterface;
@@ -100,6 +102,75 @@ class Phan implements IgnoredFilesFilterInterface
         $collector = self::getIssueCollector();
         foreach ($issues as $issue) {
             $collector->collectIssue($issue);
+        }
+    }
+
+    /**
+     * Run analyze-twice with dependency-ordered pass 2 and optional convergence loop.
+     *
+     * @param list<string> $file_list
+     * @param Closure(int, string, int): void $analysis_worker
+     */
+    private static function analyzeMultiplePasses(
+        CodeBase $code_base,
+        array $file_list,
+        int $file_count,
+        Closure $analysis_worker
+    ): void {
+        $analyze_until_convergence = Config::getValue('__analyze_until_convergence');
+
+        // Enable reference tracking for dependency graph reordering.
+        // Done here (not in CLI) so it's only active in single-process mode.
+        Config::setValue('force_tracking_references', true);
+
+        // Pass 1 is a type-gathering pass: suppress issue collection.
+        $real_collector = self::getIssueCollector();
+        self::setIssueCollector(new NullCollector());
+
+        // Build the element index before pass 1.
+        // Reference lists are populated during analysis and used
+        // by reorderForPass2() to build the dependency graph.
+        $convergence_worklist = new ConvergenceWorklist(
+            $code_base,
+            $analyze_until_convergence ? Config::getValue('convergence_max_iterations') : 0
+        );
+        $convergence_worklist->buildIndex();
+
+        // Pass 1: type gathering
+        try {
+            foreach ($file_list as $i => $file_path) {
+                $analysis_worker($i, $file_path, $file_count);
+            }
+        } finally {
+            // Restore the real issue collector for pass 2
+            self::setIssueCollector($real_collector);
+        }
+
+        // Reorder files for pass 2: producers before consumers
+        $pass2_file_list = $convergence_worklist->reorderForPass2($file_list);
+        $pass2_file_count = count($pass2_file_list);
+
+        // Snapshot types after pass 1 for convergence detection (only needed for convergence loop)
+        if ($analyze_until_convergence) {
+            $convergence_worklist->snapshotTypes();
+        }
+
+        // Pass 2: full analysis with reordered files
+        CLI::resetLongProgressState();
+        CLI::progress('analyze', 0.0, null, 0, $pass2_file_count);
+        foreach ($pass2_file_list as $i => $file_path) {
+            $analysis_worker($i, $file_path, $pass2_file_count);
+        }
+
+        // Run worklist-based convergence passes after pass 2
+        if ($analyze_until_convergence) {
+            [$extra_passes, $converged] = $convergence_worklist->run($analysis_worker);
+            if ($extra_passes > 0) {
+                CLI::printToStderr($converged
+                    ? "Convergence reached after $extra_passes additional targeted pass(es)\n"
+                    : "Gave up after $extra_passes targeted pass(es) without reaching convergence\n"
+                );
+            }
         }
     }
 
@@ -641,6 +712,9 @@ class Phan implements IgnoredFilesFilterInterface
                 if ($analyze_twice) {
                     CLI::printWarningToStderr("cannot run analysis phase twice when using --processes N\n");
                 }
+                if (Config::getValue('__analyze_until_convergence')) {
+                    CLI::printWarningToStderr("cannot use --analyze-until-convergence when using --processes N\n");
+                }
                 // Run analysis one file at a time, splitting the set of
                 // files up among a given number of child processes.
                 $pool = new ForkPool(
@@ -671,15 +745,10 @@ class Phan implements IgnoredFilesFilterInterface
                 // Get the task data from the 0th processor
                 $analyze_file_path_list = array_values($process_file_list_map)[0];
 
-                // If we're not running as multiple processes, just iterate
-                // over the file list and analyze them
-                foreach ($analyze_file_path_list as $i => $file_path) {
-                    $analysis_worker($i, $file_path, $file_count);
-                }
-
                 if ($analyze_twice) {
-                    CLI::resetLongProgressState();
-                    CLI::progress('analyze', 0.0, null, 0, $file_count);
+                    self::analyzeMultiplePasses($code_base, $analyze_file_path_list, $file_count, $analysis_worker);
+                } else {
+                    // Single pass: analyze all files normally
                     foreach ($analyze_file_path_list as $i => $file_path) {
                         $analysis_worker($i, $file_path, $file_count);
                     }
