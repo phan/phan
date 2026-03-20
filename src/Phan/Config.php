@@ -1057,7 +1057,7 @@ class Config
         '__analyze_until_convergence' => false,
 
         // Maximum number of worklist iterations for --analyze-until-convergence.
-        '__convergence_max_iterations' => 10,
+        'convergence_max_iterations' => 10,
 
         // This should only be set with `--always-exit-successfully-after-analysis`
         '__always_exit_successfully_after_analysis' => false,

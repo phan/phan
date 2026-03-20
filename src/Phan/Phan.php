@@ -106,6 +106,75 @@ class Phan implements IgnoredFilesFilterInterface
     }
 
     /**
+     * Run analyze-twice with dependency-ordered pass 2 and optional convergence loop.
+     *
+     * @param list<string> $file_list
+     * @param Closure(int, string, int): void $analysis_worker
+     */
+    private static function analyzeMultiplePasses(
+        CodeBase $code_base,
+        array $file_list,
+        int $file_count,
+        Closure $analysis_worker
+    ): void {
+        $analyze_until_convergence = Config::getValue('__analyze_until_convergence');
+
+        // Enable reference tracking for dependency graph reordering.
+        // Done here (not in CLI) so it's only active in single-process mode.
+        Config::setValue('force_tracking_references', true);
+
+        // Pass 1 is a type-gathering pass: suppress issue collection.
+        $real_collector = self::getIssueCollector();
+        self::setIssueCollector(new NullCollector());
+
+        // Build the element index before pass 1.
+        // Reference lists are populated during analysis and used
+        // by reorderForPass2() to build the dependency graph.
+        $convergence_worklist = new ConvergenceWorklist(
+            $code_base,
+            $analyze_until_convergence ? Config::getValue('convergence_max_iterations') : 0
+        );
+        $convergence_worklist->buildIndex();
+
+        // Pass 1: type gathering
+        try {
+            foreach ($file_list as $i => $file_path) {
+                $analysis_worker($i, $file_path, $file_count);
+            }
+        } finally {
+            // Restore the real issue collector for pass 2
+            self::setIssueCollector($real_collector);
+        }
+
+        // Reorder files for pass 2: producers before consumers
+        $pass2_file_list = $convergence_worklist->reorderForPass2($file_list);
+        $pass2_file_count = count($pass2_file_list);
+
+        // Snapshot types after pass 1 for convergence detection (only needed for convergence loop)
+        if ($analyze_until_convergence) {
+            $convergence_worklist->snapshotTypes();
+        }
+
+        // Pass 2: full analysis with reordered files
+        CLI::resetLongProgressState();
+        CLI::progress('analyze', 0.0, null, 0, $pass2_file_count);
+        foreach ($pass2_file_list as $i => $file_path) {
+            $analysis_worker($i, $file_path, $pass2_file_count);
+        }
+
+        // Run worklist-based convergence passes after pass 2
+        if ($analyze_until_convergence) {
+            [$extra_passes, $converged] = $convergence_worklist->run($analysis_worker);
+            if ($extra_passes > 0) {
+                CLI::printToStderr($converged
+                    ? "Convergence reached after $extra_passes additional targeted pass(es)\n"
+                    : "Gave up after $extra_passes targeted pass(es) without reaching convergence\n"
+                );
+            }
+        }
+    }
+
+    /**
      * A list of classes to preload, before forking analysis workers with pcntl.
      * This was based on Phan's self-analysis with Phan's own settings.
      * Other projects may have a few more classes to preload.
@@ -676,62 +745,8 @@ class Phan implements IgnoredFilesFilterInterface
                 // Get the task data from the 0th processor
                 $analyze_file_path_list = array_values($process_file_list_map)[0];
 
-                $analyze_until_convergence = Config::getValue('__analyze_until_convergence');
-
                 if ($analyze_twice) {
-                    // Enable reference tracking for dependency graph reordering.
-                    // Done here (not in CLI) so it's only active in single-process mode.
-                    Config::setValue('force_tracking_references', true);
-
-                    // Pass 1 is a type-gathering pass: suppress issue collection.
-                    $real_collector = self::getIssueCollector();
-                    self::setIssueCollector(new NullCollector());
-
-                    // Build the element index before pass 1.
-                    // Reference lists are populated during analysis and used
-                    // by reorderForPass2() to build the dependency graph.
-                    $convergence_worklist = new ConvergenceWorklist(
-                        $code_base,
-                        $analyze_until_convergence ? Config::getValue('__convergence_max_iterations') : 0
-                    );
-                    $convergence_worklist->buildIndex();
-
-                    // Pass 1: type gathering
-                    try {
-                        foreach ($analyze_file_path_list as $i => $file_path) {
-                            $analysis_worker($i, $file_path, $file_count);
-                        }
-                    } finally {
-                        // Restore the real issue collector for pass 2
-                        self::setIssueCollector($real_collector);
-                    }
-
-                    // Reorder files for pass 2: producers before consumers
-                    $pass2_file_list = $convergence_worklist->reorderForPass2($analyze_file_path_list);
-                    $pass2_file_count = count($pass2_file_list);
-
-                    // Snapshot types after pass 1 for convergence detection (only needed for convergence loop)
-                    if ($analyze_until_convergence) {
-                        $convergence_worklist->snapshotTypes();
-                    }
-
-                    // Pass 2: full analysis with reordered files
-                    CLI::resetLongProgressState();
-                    CLI::progress('analyze', 0.0, null, 0, $pass2_file_count);
-                    foreach ($pass2_file_list as $i => $file_path) {
-                        $analysis_worker($i, $file_path, $pass2_file_count);
-                    }
-
-                    // Run worklist-based convergence passes after pass 2
-                    if ($analyze_until_convergence) {
-                        [$extra_passes, $converged] = $convergence_worklist->run($analysis_worker);
-                        if ($extra_passes > 0) {
-                            CLI::printToStderr($converged
-                                ? "Convergence reached after $extra_passes additional targeted pass(es)\n"
-                                : "Gave up after $extra_passes targeted pass(es) without reaching convergence\n"
-                            );
-                        }
-                    }
+                    self::analyzeMultiplePasses($code_base, $analyze_file_path_list, $file_count, $analysis_worker);
                 } else {
                     // Single pass: analyze all files normally
                     foreach ($analyze_file_path_list as $i => $file_path) {

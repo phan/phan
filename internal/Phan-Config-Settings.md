@@ -288,6 +288,12 @@ declared in the method signature.
 
 (Default: `true`)
 
+## convergence_max_iterations
+
+Maximum number of worklist iterations for --analyze-until-convergence.
+
+(Default: `10`)
+
 ## convert_possibly_undefined_offset_to_nullable
 
 If true, Phan will convert the type of a possibly undefined array offset to the nullable, defined equivalent.

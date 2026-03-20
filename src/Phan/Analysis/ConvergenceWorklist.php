@@ -74,7 +74,7 @@ class ConvergenceWorklist
      *
      * @return list<string> deduplicated file paths to re-analyze
      */
-    public function getChangedElementFiles(): array
+    private function getChangedElementFiles(): array
     {
         $files = [];
         foreach ($this->tracked_elements as $element) {
@@ -160,13 +160,22 @@ class ConvergenceWorklist
             }
         }
 
-        // If there are cycles, append remaining files in original order
+        // If there are cycles, append remaining files sorted by ascending
+        // in-degree (fewest unsatisfied dependencies first) so that files
+        // whose signatures are least likely to change are analyzed first.
         if (count($sorted) < count($file_list)) {
             $sorted_set = array_flip($sorted);
+            $remaining = [];
             foreach ($file_list as $file) {
                 if (!isset($sorted_set[$file])) {
-                    $sorted[] = $file;
+                    $remaining[] = $file;
                 }
+            }
+            usort($remaining, static function (string $a, string $b) use ($in_degree): int {
+                return $in_degree[$a] <=> $in_degree[$b];
+            });
+            foreach ($remaining as $file) {
+                $sorted[] = $file;
             }
         }
 
@@ -193,6 +202,9 @@ class ConvergenceWorklist
             // Snapshot before re-analysis
             $this->snapshotTypes();
 
+            // Reorder so producers are analyzed before consumers
+            $changed_files = $this->reorderForPass2($changed_files);
+
             // Re-analyze each file (progress is reported by $analysis_worker)
             CLI::resetLongProgressState();
             foreach ($changed_files as $i => $file_path) {
@@ -205,7 +217,7 @@ class ConvergenceWorklist
 
         $converged = count($changed_files) === 0;
         if (!$converged) {
-            CLI::printToStderr("Warning: --analyze-until-convergence hit the maximum of $this->max_iterations iterations without reaching a fixpoint\n");
+            CLI::printToStderr("Warning: --analyze-until-convergence hit the maximum of $this->max_iterations iterations without converging\n");
         }
 
         return [$iteration, $converged];
