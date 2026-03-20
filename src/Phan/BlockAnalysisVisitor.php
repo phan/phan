@@ -2888,6 +2888,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $catch_context_list = [$try_context];
 
         $catch_nodes = $node->children['catches']->children ?? [];
+        $all_catches_skip_remaining = (bool)$catch_nodes;
 
         foreach ($catch_nodes as $catch_node) {
             // Note: ContextMergeVisitor expects to get each individual catch
@@ -2914,6 +2915,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($catch_stmts_node, $this->code_base, $catch_context)) {
                     $this->recordLoopContextForBreakOrContinue($catch_context);
                 }
+            } else {
+                $all_catches_skip_remaining = false;
             }
             // NOTE: We let ContextMergeVisitor->mergeCatchContext decide if the block exit status is valid.
             $catch_context_list[] = $catch_context;
@@ -2955,12 +2958,53 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // Don't bother checking if finally unconditionally returns here
             // If it does, dead code detection would also warn.
             $context = $this->analyzeAndGetUpdatedContext($context, $node, $finally_node);
+
+            // If all catch blocks unconditionally skip remaining statements
+            // (return/throw/break/continue), then code after the try-catch-finally
+            // can only be reached if the try block succeeded. In that case,
+            // variables definitely assigned in try are definitely defined here
+            // too — clear any possibly-undefined flags that were conservatively
+            // added by mergeTryContext for the finally analysis path.
+            if ($all_catches_skip_remaining) {
+                self::clearPossiblyUndefinedFromTryContext($context, $try_context);
+            }
         }
 
         // When coming out of a scoped element, we pop the
         // context to be the incoming context. Otherwise,
         // we pass our new context up to our parent
         return $this->postOrderAnalyze($context, $node);
+    }
+
+    /**
+     * After analyzing a finally block when all catches exit, clear possibly-undefined flags
+     * for variables that were definitely defined in the try block.
+     * Code after the try-catch-finally can only be reached via the try-succeeded path,
+     * so variables definitely assigned in try are definitely defined at that point.
+     */
+    private static function clearPossiblyUndefinedFromTryContext(Context $context, Context $try_context): void
+    {
+        $post_finally_scope = $context->getScope();
+        $try_scope = $try_context->getScope();
+        // Iterate only over variables defined in the try branch itself,
+        // excluding inherited parent-scope variables. This avoids the
+        // full BranchScope::getVariableMap() merge on large scopes.
+        foreach ($try_scope->getVariableMapExcludingScope($try_scope->getParentScope()) as $variable_name => $try_variable) {
+            $variable_name = (string)$variable_name;
+            $try_type = $try_variable->getUnionType();
+            if ($try_type->isPossiblyUndefined() || $try_type->isDefinitelyUndefined()) {
+                continue;
+            }
+            $variable = $post_finally_scope->getVariableByNameOrNull($variable_name);
+            if ($variable === null) {
+                continue;
+            }
+            $union_type = $variable->getUnionType();
+            if ($union_type->isPossiblyUndefined()) {
+                // Definitely defined in try: clear the possibly-undefined flag
+                $variable->setUnionType($union_type->withIsPossiblyUndefined(false));
+            }
+        }
     }
 
     /**
