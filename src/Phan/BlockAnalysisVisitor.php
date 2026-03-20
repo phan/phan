@@ -2986,18 +2986,21 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     {
         $post_finally_scope = $context->getScope();
         $try_scope = $try_context->getScope();
-        foreach ($post_finally_scope->getVariableMap() as $variable_name => $variable) {
+        // Iterate over the try scope (typically small) rather than the
+        // post-finally scope (which may include many inherited variables
+        // from parent scopes via BranchScope::getVariableMap()).
+        foreach ($try_scope->getVariableMap() as $variable_name => $try_variable) {
             $variable_name = (string)$variable_name;
-            $union_type = $variable->getUnionType();
-            if (!$union_type->isPossiblyUndefined()) {
-                continue;
-            }
-            $try_variable = $try_scope->getVariableByNameOrNull($variable_name);
-            if ($try_variable === null) {
-                continue;
-            }
             $try_type = $try_variable->getUnionType();
-            if (!$try_type->isPossiblyUndefined() && !$try_type->isDefinitelyUndefined()) {
+            if ($try_type->isPossiblyUndefined() || $try_type->isDefinitelyUndefined()) {
+                continue;
+            }
+            $variable = $post_finally_scope->getVariableByNameOrNull($variable_name);
+            if ($variable === null) {
+                continue;
+            }
+            $union_type = $variable->getUnionType();
+            if ($union_type->isPossiblyUndefined()) {
                 // Definitely defined in try: clear the possibly-undefined flag
                 $variable->setUnionType($union_type->withIsPossiblyUndefined(false));
             }
