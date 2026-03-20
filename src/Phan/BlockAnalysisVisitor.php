@@ -2959,12 +2959,12 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // If it does, dead code detection would also warn.
             $context = $this->analyzeAndGetUpdatedContext($context, $node, $finally_node);
 
-            // If all catch blocks unconditionally exit (return/throw), then code
-            // after the try-catch-finally can only be reached if the try block
-            // succeeded. In that case, variables definitely assigned in try are
-            // definitely defined here too — clear any possibly-undefined flags
-            // that were conservatively added by mergeTryContext for the finally
-            // analysis path.
+            // If all catch blocks unconditionally skip remaining statements
+            // (return/throw/break/continue), then code after the try-catch-finally
+            // can only be reached if the try block succeeded. In that case,
+            // variables definitely assigned in try are definitely defined here
+            // too — clear any possibly-undefined flags that were conservatively
+            // added by mergeTryContext for the finally analysis path.
             if ($all_catches_skip_remaining) {
                 self::clearPossiblyUndefinedFromTryContext($context, $try_context);
             }
