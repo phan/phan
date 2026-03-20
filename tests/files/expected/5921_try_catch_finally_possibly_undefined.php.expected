@@ -1,0 +1,2 @@
+%s:53 PhanPossiblyUndeclaredVariable Variable $variable is possibly undeclared
+%s:62 PhanPossiblyUndeclaredVariable Variable $variable is possibly undeclared
