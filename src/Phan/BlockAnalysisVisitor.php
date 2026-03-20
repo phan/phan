@@ -2888,6 +2888,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $catch_context_list = [$try_context];
 
         $catch_nodes = $node->children['catches']->children ?? [];
+        $all_catches_exit = (bool)$catch_nodes;
 
         foreach ($catch_nodes as $catch_node) {
             // Note: ContextMergeVisitor expects to get each individual catch
@@ -2914,6 +2915,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($catch_stmts_node, $this->code_base, $catch_context)) {
                     $this->recordLoopContextForBreakOrContinue($catch_context);
                 }
+            } else {
+                $all_catches_exit = false;
             }
             // NOTE: We let ContextMergeVisitor->mergeCatchContext decide if the block exit status is valid.
             $catch_context_list[] = $catch_context;
@@ -2962,8 +2965,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // definitely defined here too — clear any possibly-undefined flags
             // that were conservatively added by mergeTryContext for the finally
             // analysis path.
-            if ($catch_nodes && $this->allCatchesUnconditionallyExit($catch_nodes, $context)) {
-                $this->clearPossiblyUndefinedFromTryContext($context, $try_context);
+            if ($all_catches_exit) {
+                self::clearPossiblyUndefinedFromTryContext($context, $try_context);
             }
         }
 
@@ -2971,26 +2974,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // context to be the incoming context. Otherwise,
         // we pass our new context up to our parent
         return $this->postOrderAnalyze($context, $node);
-    }
-
-    /**
-     * Returns true if all catch nodes unconditionally exit (return, throw, etc.).
-     *
-     * @param list<Node> $catch_nodes
-     */
-    private function allCatchesUnconditionallyExit(array $catch_nodes, Context $context): bool
-    {
-        foreach ($catch_nodes as $catch_node) {
-            if (!($catch_node instanceof Node)) {
-                continue;
-            }
-            $catch_stmts = $catch_node->children['stmts'];
-            if (!($catch_stmts instanceof Node) ||
-                !BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($catch_stmts, $this->code_base, $context)) {
-                return false;
-            }
-        }
-        return true;
     }
 
     /**
