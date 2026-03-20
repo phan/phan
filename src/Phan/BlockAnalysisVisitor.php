@@ -2888,7 +2888,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $catch_context_list = [$try_context];
 
         $catch_nodes = $node->children['catches']->children ?? [];
-        $all_catches_exit = (bool)$catch_nodes;
+        $all_catches_skip_remaining = (bool)$catch_nodes;
 
         foreach ($catch_nodes as $catch_node) {
             // Note: ContextMergeVisitor expects to get each individual catch
@@ -2916,7 +2916,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     $this->recordLoopContextForBreakOrContinue($catch_context);
                 }
             } else {
-                $all_catches_exit = false;
+                $all_catches_skip_remaining = false;
             }
             // NOTE: We let ContextMergeVisitor->mergeCatchContext decide if the block exit status is valid.
             $catch_context_list[] = $catch_context;
@@ -2965,7 +2965,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // definitely defined here too — clear any possibly-undefined flags
             // that were conservatively added by mergeTryContext for the finally
             // analysis path.
-            if ($all_catches_exit) {
+            if ($all_catches_skip_remaining) {
                 self::clearPossiblyUndefinedFromTryContext($context, $try_context);
             }
         }
@@ -2986,10 +2986,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     {
         $post_finally_scope = $context->getScope();
         $try_scope = $try_context->getScope();
-        // Iterate over the try scope (typically small) rather than the
-        // post-finally scope (which may include many inherited variables
-        // from parent scopes via BranchScope::getVariableMap()).
-        foreach ($try_scope->getVariableMap() as $variable_name => $try_variable) {
+        // Iterate only over variables defined in the try branch itself,
+        // excluding inherited parent-scope variables. This avoids the
+        // full BranchScope::getVariableMap() merge on large scopes.
+        foreach ($try_scope->getVariableMapExcludingScope($try_scope->getParentScope()) as $variable_name => $try_variable) {
             $variable_name = (string)$variable_name;
             $try_type = $try_variable->getUnionType();
             if ($try_type->isPossiblyUndefined() || $try_type->isDefinitelyUndefined()) {
