@@ -185,13 +185,9 @@ class ContextMergeVisitor extends KindVisitorImplementation
 
         if (!$catch_scope_list) {
             // All of the catch statements will unconditionally rethrow or return.
-            // The code after the try-catch block can only be reached if the try block succeeded.
-            // Return the raw try context (first child), not the merged try context from mergeTryContext.
-            // When a finally block is present, mergeTryContext conservatively combines the original scope
-            // with the try scope (marking variables as possibly undefined), but that merged scope is only
-            // needed for analyzing the finally block itself. Here, since all catches exit, the context
-            // for code that follows must reflect that try succeeded (variables are definitely defined).
-            return \reset($this->child_context_list);
+            // So, after the try and catch blocks (finally is analyzed separately),
+            // the context is the same as the merged try context (which may have possibly undefined variables).
+            return $this->context;
         }
 
         if (\count($catch_scope_list) > 1) {

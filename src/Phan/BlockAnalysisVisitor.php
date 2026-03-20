@@ -2955,12 +2955,70 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // Don't bother checking if finally unconditionally returns here
             // If it does, dead code detection would also warn.
             $context = $this->analyzeAndGetUpdatedContext($context, $node, $finally_node);
+
+            // If all catch blocks unconditionally exit (return/throw), then code
+            // after the try-catch-finally can only be reached if the try block
+            // succeeded. In that case, variables definitely assigned in try are
+            // definitely defined here too — clear any possibly-undefined flags
+            // that were conservatively added by mergeTryContext for the finally
+            // analysis path.
+            if ($catch_nodes && $this->allCatchesUnconditionallyExit($catch_nodes, $context)) {
+                $this->clearPossiblyUndefinedFromTryContext($context, $try_context);
+            }
         }
 
         // When coming out of a scoped element, we pop the
         // context to be the incoming context. Otherwise,
         // we pass our new context up to our parent
         return $this->postOrderAnalyze($context, $node);
+    }
+
+    /**
+     * Returns true if all catch nodes unconditionally exit (return, throw, etc.).
+     *
+     * @param list<Node> $catch_nodes
+     */
+    private function allCatchesUnconditionallyExit(array $catch_nodes, Context $context): bool
+    {
+        foreach ($catch_nodes as $catch_node) {
+            if (!($catch_node instanceof Node)) {
+                continue;
+            }
+            $catch_stmts = $catch_node->children['stmts'];
+            if (!($catch_stmts instanceof Node) ||
+                !BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($catch_stmts, $this->code_base, $context)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * After analyzing a finally block when all catches exit, clear possibly-undefined flags
+     * for variables that were definitely defined in the try block.
+     * Code after the try-catch-finally can only be reached via the try-succeeded path,
+     * so variables definitely assigned in try are definitely defined at that point.
+     */
+    private static function clearPossiblyUndefinedFromTryContext(Context $context, Context $try_context): void
+    {
+        $post_finally_scope = $context->getScope();
+        $try_scope = $try_context->getScope();
+        foreach ($post_finally_scope->getVariableMap() as $variable_name => $variable) {
+            $variable_name = (string)$variable_name;
+            $union_type = $variable->getUnionType();
+            if (!$union_type->isPossiblyUndefined()) {
+                continue;
+            }
+            $try_variable = $try_scope->getVariableByNameOrNull($variable_name);
+            if ($try_variable === null) {
+                continue;
+            }
+            $try_type = $try_variable->getUnionType();
+            if (!$try_type->isPossiblyUndefined() && !$try_type->isDefinitelyUndefined()) {
+                // Definitely defined in try: clear the possibly-undefined flag
+                $variable->setUnionType($union_type->withIsPossiblyUndefined(false));
+            }
+        }
     }
 
     /**
