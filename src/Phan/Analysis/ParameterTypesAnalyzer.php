@@ -300,10 +300,7 @@ class ParameterTypesAnalyzer
         }
 
         if (!$is_actually_override) {
-            self::analyzeInheritDocComment($code_base, $method);
-        }
-
-        if (!$is_actually_override) {
+            self::analyzeInheritDocComment($code_base, $method, $class);
             // For internal methods, check if they implement interface methods that are marked as pure
             // This is a heuristic for dead-code detection: if an interface method is pure,
             // the internal implementation is likely pure as well (issue #3864)
@@ -406,7 +403,7 @@ class ParameterTypesAnalyzer
         );
     }
 
-    private static function analyzeInheritDocComment(CodeBase $code_base, Method $method): void
+    private static function analyzeInheritDocComment(CodeBase $code_base, Method $method, Clazz $class): void
     {
         if ($method->isMagic()) {
             return;
@@ -418,6 +415,22 @@ class ParameterTypesAnalyzer
         $doc_comment = $method->getDocComment();
         if (!\is_string($doc_comment) || !\preg_match('/@inheritdoc\b/i', $doc_comment)) {
             return;
+        }
+        // Skip the check if the class has any unresolved ancestors (parent/interface/trait not in the
+        // CodeBase). In that case, Phan cannot confirm there is nothing to inherit from, so we avoid
+        // a false positive (e.g. when vendor code is excluded from analysis).
+        if ($class->hasParentType() && !$code_base->hasClassWithFQSEN($class->getParentClassFQSEN())) {
+            return;
+        }
+        foreach ($class->getInterfaceFQSENList() as $interface_fqsen) {
+            if (!$code_base->hasClassWithFQSEN($interface_fqsen)) {
+                return;
+            }
+        }
+        foreach ($class->getTraitFQSENList() as $trait_fqsen) {
+            if (!$code_base->hasClassWithFQSEN($trait_fqsen)) {
+                return;
+            }
         }
         Issue::maybeEmit(
             $code_base,
