@@ -649,6 +649,7 @@ class Issue
     public const CommentParamAssertionWithoutRealParam = 'PhanCommentParamAssertionWithoutRealParam';
     public const CommentParamOnEmptyParamList     = 'PhanCommentParamOnEmptyParamList';
     public const CommentOverrideOnNonOverrideMethod = 'PhanCommentOverrideOnNonOverrideMethod';
+    public const CommentInheritDocOnNonOverrideMethod = 'PhanCommentInheritDocOnNonOverrideMethod';
     public const CommentOverrideOnNonOverrideConstant = 'PhanCommentOverrideOnNonOverrideConstant';
     public const CommentOverrideOnNonOverrideProperty = 'PhanCommentOverrideOnNonOverrideProperty';
     public const CommentAbstractOnInheritedConstant = 'PhanCommentAbstractOnInheritedConstant';
@@ -5573,6 +5574,14 @@ class Issue
                 "Saw an @override annotation for method {METHOD}, but could not find an overridden method and it is not a magic method",
                 self::REMEDIATION_B,
                 16006
+            ),
+            new Issue(
+                self::CommentInheritDocOnNonOverrideMethod,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Saw an @inheritDoc annotation for method {METHOD}, but could not find an overridden method and it is not a magic method",
+                self::REMEDIATION_B,
+                16031
             ),
             new Issue(
                 self::CommentOverrideOnNonOverrideConstant,

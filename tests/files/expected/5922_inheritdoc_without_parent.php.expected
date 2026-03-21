@@ -1,0 +1,3 @@
+%s:23 PhanCommentInheritDocOnNonOverrideMethod Saw an @inheritDoc annotation for method \ChildClass::thisOneShouldWarn, but could not find an overridden method and it is not a magic method
+%s:38 PhanCommentInheritDocOnNonOverrideMethod Saw an @inheritDoc annotation for method \ChildClass::alsoValidInheritDocSyntax, but could not find an overridden method and it is not a magic method
+%s:41 PhanCommentInheritDocOnNonOverrideMethod Saw an @inheritDoc annotation for method \ChildClass::caseInsensitiveShouldWarn, but could not find an overridden method and it is not a magic method

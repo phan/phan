@@ -4978,6 +4978,14 @@ Comment declares @param ${PARAMETER} multiple times
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0611_comment_duplicated_param.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0611_comment_duplicated_param.php#L7).
 
+## PhanCommentInheritDocOnNonOverrideMethod
+
+```
+Saw an @inheritDoc annotation for method {METHOD}, but could not find an overridden method and it is not a magic method
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/5922_inheritdoc_without_parent.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/5922_inheritdoc_without_parent.php#L23).
+
 ## PhanCommentObjectInClassConstantType
 
 ```

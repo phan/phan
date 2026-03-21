@@ -300,6 +300,10 @@ class ParameterTypesAnalyzer
         }
 
         if (!$is_actually_override) {
+            self::analyzeInheritDocComment($code_base, $method);
+        }
+
+        if (!$is_actually_override) {
             // For internal methods, check if they implement interface methods that are marked as pure
             // This is a heuristic for dead-code detection: if an interface method is pure,
             // the internal implementation is likely pure as well (issue #3864)
@@ -397,6 +401,28 @@ class ParameterTypesAnalyzer
             $code_base,
             $method->getContext(),
             Issue::CommentOverrideOnNonOverrideMethod,
+            $method->getFileRef()->getLineNumberStart(),
+            $method->getFQSEN()
+        );
+    }
+
+    private static function analyzeInheritDocComment(CodeBase $code_base, Method $method): void
+    {
+        if ($method->isMagic()) {
+            return;
+        }
+        // Only emit this issue on the base class, not for the subclass which inherited it
+        if ($method->getDefiningFQSEN() !== $method->getFQSEN()) {
+            return;
+        }
+        $doc_comment = $method->getDocComment();
+        if (!\is_string($doc_comment) || \stripos($doc_comment, '@inheritDoc') === false) {
+            return;
+        }
+        Issue::maybeEmit(
+            $code_base,
+            $method->getContext(),
+            Issue::CommentInheritDocOnNonOverrideMethod,
             $method->getFileRef()->getLineNumberStart(),
             $method->getFQSEN()
         );
