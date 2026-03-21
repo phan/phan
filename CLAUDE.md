@@ -6,6 +6,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Phan is a static analyzer for PHP that prefers to minimize false-positives. It attempts to prove incorrectness rather than correctness and has a comprehensive understanding of PHP's type system, including union types, generics, and array shapes.
 
+## Wiki
+
+The Phan wiki lives at `~/phan.wiki` (a separate git repo). Keep it up to date when making changes to Phan:
+
+- **New config options** → add to `Phan-Config-Settings.md`
+- **New CLI flags** → add to `Using-Phan-From-Command-Line.md`
+- **New built-in plugins** → add to `Built-in-Plugins.md`
+- **New plugin capabilities** → add to `Writing-Plugins-for-Phan.md`
+- **New issue types or analysis features** → update `Issue-Types-Reference.md` or the relevant annotation/type system page
+- **New PHP version support** → update `PHP-8.4-8.5-Support.md` (or create a new page)
+
+Push wiki changes directly to the `master` branch of the wiki repo:
+```bash
+cd ~/phan.wiki
+git add -A && git commit -m "Update docs for ..."
+git push origin master
+```
+
 ## Branch Strategy
 
 **IMPORTANT**: All new pull requests should target the **`v6`** branch, not `v5`.
