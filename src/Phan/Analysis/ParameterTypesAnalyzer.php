@@ -416,21 +416,11 @@ class ParameterTypesAnalyzer
         if (!\is_string($doc_comment) || !\preg_match('/@inheritdoc\b/i', $doc_comment)) {
             return;
         }
-        // Skip the check if the class has any unresolved ancestors (parent/interface/trait not in the
-        // CodeBase). In that case, Phan cannot confirm there is nothing to inherit from, so we avoid
-        // a false positive (e.g. when vendor code is excluded from analysis).
-        if ($class->hasParentType() && !$code_base->hasClassWithFQSEN($class->getParentClassFQSEN())) {
+        // Skip the check if any ancestor (transitively) is not present in the CodeBase. In that
+        // case, Phan cannot confirm there is nothing to inherit from, so we avoid a false positive
+        // (e.g. when vendor code is excluded from analysis, or stubs are incomplete).
+        if (self::classHasUnresolvedAncestorTransitive($code_base, $class)) {
             return;
-        }
-        foreach ($class->getInterfaceFQSENList() as $interface_fqsen) {
-            if (!$code_base->hasClassWithFQSEN($interface_fqsen)) {
-                return;
-            }
-        }
-        foreach ($class->getTraitFQSENList() as $trait_fqsen) {
-            if (!$code_base->hasClassWithFQSEN($trait_fqsen)) {
-                return;
-            }
         }
         Issue::maybeEmit(
             $code_base,
@@ -439,6 +429,35 @@ class ParameterTypesAnalyzer
             $method->getFileRef()->getLineNumberStart(),
             $method->getFQSEN()
         );
+    }
+
+    /**
+     * Returns true if $class or any of its transitive ancestors has a parent/interface/trait
+     * that is not present in the CodeBase. This is used to avoid false positives when vendor
+     * code is excluded from analysis.
+     */
+    private static function classHasUnresolvedAncestorTransitive(CodeBase $code_base, Clazz $class): bool
+    {
+        $visited = [];
+        $queue = [$class];
+        while ($queue) {
+            $current = \array_pop($queue);
+            $key = $current->getFQSEN()->__toString();
+            if (isset($visited[$key])) {
+                continue;
+            }
+            $visited[$key] = true;
+            foreach ($current->getAncestorFQSENList() as $ancestor_fqsen) {
+                if (!$code_base->hasClassWithFQSEN($ancestor_fqsen)) {
+                    return true;
+                }
+                $ancestor_key = $ancestor_fqsen->__toString();
+                if (!isset($visited[$ancestor_key])) {
+                    $queue[] = $code_base->getClassByFQSEN($ancestor_fqsen);
+                }
+            }
+        }
+        return false;
     }
 
     /**
