@@ -39,4 +39,10 @@ class ChildClass extends ParentClass {
 
     /** @inheritdoc */
     function caseInsensitiveShouldWarn() {}
+
+    /**
+     * This method mentions @inheritDocumentation in prose.
+     * The word boundary should prevent matching that.
+     */
+    function noWarnOnProse() {}
 }

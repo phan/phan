@@ -416,7 +416,7 @@ class ParameterTypesAnalyzer
             return;
         }
         $doc_comment = $method->getDocComment();
-        if (!\is_string($doc_comment) || \stripos($doc_comment, '@inheritDoc') === false) {
+        if (!\is_string($doc_comment) || !\preg_match('/@inheritdoc\b/i', $doc_comment)) {
             return;
         }
         Issue::maybeEmit(
