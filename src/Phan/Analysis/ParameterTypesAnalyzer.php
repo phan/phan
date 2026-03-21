@@ -300,6 +300,7 @@ class ParameterTypesAnalyzer
         }
 
         if (!$is_actually_override) {
+            self::analyzeInheritDocComment($code_base, $method, $class);
             // For internal methods, check if they implement interface methods that are marked as pure
             // This is a heuristic for dead-code detection: if an interface method is pure,
             // the internal implementation is likely pure as well (issue #3864)
@@ -400,6 +401,63 @@ class ParameterTypesAnalyzer
             $method->getFileRef()->getLineNumberStart(),
             $method->getFQSEN()
         );
+    }
+
+    private static function analyzeInheritDocComment(CodeBase $code_base, Method $method, Clazz $class): void
+    {
+        if ($method->isMagic()) {
+            return;
+        }
+        // Only emit this issue on the base class, not for the subclass which inherited it
+        if ($method->getDefiningFQSEN() !== $method->getFQSEN()) {
+            return;
+        }
+        $doc_comment = $method->getDocComment();
+        if (!\is_string($doc_comment) || !\preg_match('/@inheritdoc\b/i', $doc_comment)) {
+            return;
+        }
+        // Skip the check if any ancestor (transitively) is not present in the CodeBase. In that
+        // case, Phan cannot confirm there is nothing to inherit from, so we avoid a false positive
+        // (e.g. when vendor code is excluded from analysis, or stubs are incomplete).
+        if (self::classHasUnresolvedAncestorTransitive($code_base, $class)) {
+            return;
+        }
+        Issue::maybeEmit(
+            $code_base,
+            $method->getContext(),
+            Issue::CommentInheritDocOnNonOverrideMethod,
+            $method->getFileRef()->getLineNumberStart(),
+            $method->getFQSEN()
+        );
+    }
+
+    /**
+     * Returns true if $class or any of its transitive ancestors has a parent/interface/trait
+     * that is not present in the CodeBase. This is used to avoid false positives when vendor
+     * code is excluded from analysis.
+     */
+    private static function classHasUnresolvedAncestorTransitive(CodeBase $code_base, Clazz $class): bool
+    {
+        $visited = [];
+        $queue = [$class];
+        while ($queue) {
+            $current = \array_pop($queue);
+            $key = $current->getFQSEN()->__toString();
+            if (isset($visited[$key])) {
+                continue;
+            }
+            $visited[$key] = true;
+            foreach ($current->getAncestorFQSENList() as $ancestor_fqsen) {
+                if (!$code_base->hasClassWithFQSEN($ancestor_fqsen)) {
+                    return true;
+                }
+                $ancestor_key = $ancestor_fqsen->__toString();
+                if (!isset($visited[$ancestor_key])) {
+                    $queue[] = $code_base->getClassByFQSEN($ancestor_fqsen);
+                }
+            }
+        }
+        return false;
     }
 
     /**
