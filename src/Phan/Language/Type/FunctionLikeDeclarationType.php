@@ -403,7 +403,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     /**
      * @override
      * @return never
-     * @param list<Node|int|string|float> $args
+     * @param array<int, Node|int|string|float> $args
      */
     public function analyzeFunctionCall(CodeBase $code_base, Context $context, array $args, ?Node $node = null): void
     {
@@ -478,7 +478,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
 
     /**
      * @override
-     * @param list<Node|int|string|float> $args
+     * @param array<int, Node|int|string|float> $args
      * @return never
      */
     public function getDependentReturnType(CodeBase $code_base, Context $context, array $args): UnionType

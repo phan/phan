@@ -13,17 +13,13 @@ use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
-use Phan\Language\Type\CallableInterface;
-use Phan\Language\Type\ClosureType;
 use Phan\CodeBase;
 use Phan\IssueInstance;
 use Phan\Library\FileCacheEntry;
 use Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet;
 use Phan\PluginV3;
-use Phan\Language\Element\Func;
-use Phan\PluginV3\AnalyzeFunctionCallCapability;
+use Phan\PluginV3\AnalyzeCallableArgumentCapability;
 use Phan\PluginV3\AutomaticFixCapability;
-use Phan\PluginV3\HandleLazyLoadInternalFunctionCapability;
 use Phan\PluginV3\IssueEmitter;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV3\PostAnalyzeNodeCapability;
@@ -33,7 +29,7 @@ use Phan\PluginV3\PostAnalyzeNodeCapability;
  * than the original declaration. While PHP treats these as case-insensitive,
  * inconsistent casing makes grepping harder and can break IDE tooling.
  */
-class CaseMismatchPlugin extends PluginV3 implements PostAnalyzeNodeCapability, AutomaticFixCapability, AnalyzeFunctionCallCapability, HandleLazyLoadInternalFunctionCapability
+class CaseMismatchPlugin extends PluginV3 implements PostAnalyzeNodeCapability, AutomaticFixCapability, AnalyzeCallableArgumentCapability
 {
     public static function getPostAnalyzeNodeVisitorClassName(): string
     {
@@ -55,100 +51,25 @@ class CaseMismatchPlugin extends PluginV3 implements PostAnalyzeNodeCapability, 
     }
 
     /**
-     * @return array<string,\Closure(CodeBase,Context,FunctionInterface,list<mixed>,?Node):void>
-     */
-    public function getAnalyzeFunctionCallClosures(CodeBase $code_base): array
-    {
-        $result = [];
-        $closure_cache = [];
-
-        foreach ($code_base->getFunctionMap() as $function) {
-            $closure = self::generateClosureForFunctionInterface($function, $closure_cache);
-            if ($closure) {
-                $result[$function->getFQSEN()->__toString()] = $closure;
-            }
-        }
-        foreach ($code_base->getMethodSet() as $method) {
-            $closure = self::generateClosureForFunctionInterface($method, $closure_cache);
-            if ($closure) {
-                $result[$method->getFQSEN()->__toString()] = $closure;
-            }
-        }
-
-        // Explicitly register for call_user_func family (CallableParamPlugin removes these)
-        $callable_at_0 = self::makeCallableParamClosure([0 => true]);
-        foreach ([
-            '\\call_user_func',
-            '\\call_user_func_array',
-            '\\forward_static_call',
-            '\\forward_static_call_array',
-        ] as $fqsen) {
-            $result[$fqsen] = $callable_at_0;
-        }
-
-        return $result;
-    }
-
-    /**
      * @param CodeBase $code_base @unused-param
      */
-    public function handleLazyLoadInternalFunction(CodeBase $code_base, Func $function): void
-    {
-        $closure = self::generateClosureForFunctionInterface($function);
-        if ($closure) {
-            $function->addFunctionCallAnalyzer($closure, $this);
-        }
-    }
-
-    /**
-     * @param array<int,true> $callable_params
-     * @return Closure(CodeBase,Context,FunctionInterface,list<mixed>,?Node):void
-     */
-    private static function makeCallableParamClosure(array $callable_params): Closure
+    public function getAnalyzeCallableArgumentClosure(CodeBase $code_base): \Closure
     {
         /**
-         * @param list<Node|int|float|string> $args
+         * @param Node|int|string|float $arg_node
+         * @param list<FunctionInterface> $unused_resolved
          */
-        return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args, ?Node $_) use ($callable_params): void {
-            foreach ($callable_params as $i => $_) {
-                $arg = $args[$i] ?? null;
-                if ($arg === null) {
-                    continue;
-                }
-                CaseMismatchCallableChecker::checkCallableArg($code_base, $context, $arg);
-            }
+        return static function (
+            CodeBase $code_base,
+            Context $context,
+            FunctionInterface $unused_callee,
+            int $unused_param_index,
+            Node|int|string|float $arg_node,
+            array $unused_resolved
+        ): void {
+            CaseMismatchCallableChecker::checkCallableArg($code_base, $context, $arg_node);
         };
     }
-
-    /**
-     * @param array<string,Closure> &$closure_cache
-     * @return ?Closure(CodeBase,Context,FunctionInterface,list<mixed>,?Node):void
-     */
-    private static function generateClosureForFunctionInterface(FunctionInterface $function, array &$closure_cache = []): ?Closure
-    {
-        $parameter_list = $function->getParameterList();
-        if (!$parameter_list) {
-            return null;
-        }
-        $callable_params = [];
-        foreach ($parameter_list as $i => $param) {
-            $union_type = $param->getUnionType();
-            if ($union_type->isEmpty()) {
-                continue;
-            }
-            if ($union_type->hasTypeMatchingCallback(static function (\Phan\Language\Type $type): bool {
-                return $type instanceof CallableInterface || $type instanceof ClosureType;
-            })) {
-                $callable_params[$i] = true;
-            }
-        }
-        if (!$callable_params) {
-            return null;
-        }
-        $key = \json_encode($callable_params);
-        return $closure_cache[$key] ?? ($closure_cache[$key] = self::makeCallableParamClosure($callable_params));
-    }
-
 }
 
 /**

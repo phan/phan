@@ -131,6 +131,11 @@ use Phan\PluginV3\IssueEmitter;
  * 20. public function getMergeVariableInfoClosure(): Closure
  *     Returns a closure used in ContextMergeVisitor to merge data about a variable from different branches.
  *     (implement \Phan\PluginV3\MergeVariableInfoCapability)
+ * 21. public function getAnalyzeCallableArgumentClosure(CodeBase $code_base): Closure
+ *     Returns a closure called for each callable-typed argument at every call site.
+ *     Unlike AnalyzeFunctionCallCapability, the framework automatically discovers all functions
+ *     with callable parameters, handles lazy loading, and resolves callables.
+ *     (implement \Phan\PluginV3\AnalyzeCallableArgumentCapability)
  */
 abstract class PluginV3
 {

@@ -333,7 +333,7 @@ interface FunctionInterface extends AddressableElementInterface
      * Returns a union type based on $args_node and $context
      * @param CodeBase $code_base
      * @param Context $context
-     * @param list<Node|int|string|float> $args
+     * @param array<int, Node|int|string|float> $args
      */
     public function getDependentReturnType(CodeBase $code_base, Context $context, array $args): UnionType;
 
@@ -353,7 +353,7 @@ interface FunctionInterface extends AddressableElementInterface
      *
      * @param CodeBase $code_base
      * @param Context $context
-     * @param list<Node|int|string|float> $args
+     * @param array<int, Node|int|string|float> $args
      * @param ?Node $node - the node causing the call. This may be dynamic, e.g. call_user_func_array. This will be required in Phan 3.
      */
     public function analyzeFunctionCall(CodeBase $code_base, Context $context, array $args, ?Node $node = null): void;

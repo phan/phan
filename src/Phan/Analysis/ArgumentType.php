@@ -82,7 +82,7 @@ final class ArgumentType
         self::checkIsDeprecatedOrInternal($code_base, $context, $method);
         if ($method->hasFunctionCallAnalyzer()) {
             try {
-                $method->analyzeFunctionCall($code_base, $context->withLineNumberStart($node->lineno), $node->children['args']->children ?? [], $node);
+                $method->analyzeFunctionCall($code_base, $context->withLineNumberStart($node->lineno), self::normalizeNamedArgs($node->children['args']->children ?? [], $method), $node);
             } catch (StopParamAnalysisException) {
                 return;
             }
@@ -1983,5 +1983,57 @@ final class ArgumentType
         }
 
         return false;
+    }
+
+    /**
+     * Normalize a raw argument list so that named arguments are placed at their
+     * declaration-order positions and unwrapped from AST_NAMED_ARG nodes.
+     *
+     * For purely positional calls this returns the input unchanged (fast path).
+     * Gaps for unspecified optional parameters are left absent — callers
+     * should continue using `$args[$i] ?? null`.
+     *
+     * @param list<Node|int|string|float> $args Raw argument nodes from $node->children['args']->children
+     * @param FunctionInterface $method The function/method being called
+     * @return array<int, Node|int|string|float> Arguments reordered to declaration order
+     */
+    public static function normalizeNamedArgs(array $args, FunctionInterface $method): array
+    {
+        // Fast path: if no named arguments, return as-is
+        $has_named = false;
+        foreach ($args as $arg) {
+            if ($arg instanceof Node && $arg->kind === ast\AST_NAMED_ARG) {
+                $has_named = true;
+                break;
+            }
+        }
+        if (!$has_named) {
+            return $args;
+        }
+
+        // Build a name-to-position map from the parameter list
+        $name_to_position = [];
+        foreach ($method->getRealParameterList() as $i => $parameter) {
+            $name_to_position[$parameter->getName()] = $i;
+        }
+
+        $result = [];
+        foreach ($args as $i => $arg) {
+            if ($arg instanceof Node && $arg->kind === ast\AST_NAMED_ARG) {
+                $name = $arg->children['name'];
+                if (isset($name_to_position[$name])) {
+                    // Unwrap and place at declaration-order position
+                    $result[$name_to_position[$name]] = $arg->children['expr'];
+                } else {
+                    // Keep unmatched named args (e.g. forwarded via variadic) at original position
+                    $result[$i] = $arg;
+                }
+            } else {
+                $result[$i] = $arg;
+            }
+        }
+
+        ksort($result);
+        return $result;
     }
 }

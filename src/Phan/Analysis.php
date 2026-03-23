@@ -673,6 +673,37 @@ class Analysis
                 }
             }
         }
+
+        // Register AnalyzeCallableArgumentCapability plugins on all functions/methods with callable params.
+        // Unlike AnalyzeFunctionCallCapability, these plugins don't need to enumerate targets — the framework
+        // scans all functions/methods for callable-typed parameters automatically.
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        $callable_arg_plugins = $plugin_set->getAnalyzeCallableArgumentPluginSet();
+        if ($callable_arg_plugins) {
+            $plugin_closures = [];
+            foreach ($callable_arg_plugins as $plugin) {
+                $plugin_closures[] = $plugin->getAnalyzeCallableArgumentClosure($code_base);
+            }
+            foreach ($code_base->getFunctionMap() as $function) {
+                $closure = ConfigPluginSet::buildCallableArgumentAnalyzer($function, $plugin_closures);
+                if ($closure) {
+                    $function->addFunctionCallAnalyzer($closure, $plugin_set);
+                }
+            }
+            foreach ($code_base->getMethodSet() as $method) {
+                $closure = ConfigPluginSet::buildCallableArgumentAnalyzer($method, $plugin_closures);
+                if ($closure) {
+                    $method->addFunctionCallAnalyzer($closure, $plugin_set);
+                    $methods_by_defining_fqsen ??= $code_base->getMethodsMapGroupedByDefiningFQSEN();
+                    $fqsen = $method->getFQSEN();
+                    if ($methods_by_defining_fqsen->offsetExists($fqsen)) {
+                        foreach ($methods_by_defining_fqsen->offsetGet($fqsen) as $child_method) {
+                            $child_method->addFunctionCallAnalyzer($closure, $plugin_set);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**

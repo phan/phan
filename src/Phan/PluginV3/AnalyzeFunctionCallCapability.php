@@ -27,6 +27,25 @@ interface AnalyzeFunctionCallCapability
      * If compatibility with older Phan versions is needed, make the param for $node optional.
      *
      * Note that $function->getMostRecentParentNodeListForCall() can be used to get the parent node list of the current call (will be the empty array if fetching it failed).
+     *
+     * **Named arguments**: The `$args` array passed to closures is normalized to declaration
+     * order — named arguments are unwrapped from AST_NAMED_ARG nodes and placed at their
+     * parameter positions. Plugins can safely use `$args[$i]` to access the argument for
+     * parameter `$i` regardless of whether positional or named arguments were used.
+     *
+     * **Lazy loading**: Internal PHP functions are lazy-loaded — their Func objects are only
+     * created when first referenced during analysis. If this method dynamically discovers
+     * functions (e.g. by iterating `$code_base->getFunctionMap()`), some internal functions
+     * may not yet be loaded. Phan will automatically re-check this method's return value
+     * when internal functions are lazy-loaded, but for more efficient handling, also implement
+     * {@see HandleLazyLoadInternalFunctionCapability} to register closures for individual
+     * functions as they are loaded.
+     *
+     * **`call_user_func` / `call_user_func_array`**: Phan's built-in CallableParamPlugin
+     * removes its closures for these two functions because ClosureReturnTypeOverridePlugin
+     * handles them instead. If your plugin needs to analyze callable arguments passed to
+     * `call_user_func` or `call_user_func_array`, you must register closures for them
+     * explicitly in the map returned by this method.
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base): array;
 }

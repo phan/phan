@@ -1,0 +1,3 @@
+%s:12 PhanImpossibleTypeComparison Impossible attempt to check if 'x' of type 'x' is identical to elements of [1,2,3] of type 1|2|3
+%s:15 PhanImpossibleTypeComparison Impossible attempt to check if 'x' of type 'x' is identical to elements of [1,2,3] of type 1|2|3
+%s:18 PhanImpossibleTypeComparison Impossible attempt to check if 'x' of type 'x' is identical to elements of [1,2,3] of type 1|2|3

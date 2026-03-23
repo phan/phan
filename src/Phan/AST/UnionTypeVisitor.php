@@ -8,6 +8,7 @@ use AssertionError;
 use ast;
 use ast\Node;
 use Closure;
+use Phan\Analysis\ArgumentType;
 use Phan\Analysis\AssignOperatorFlagVisitor;
 use Phan\Analysis\BinaryOperatorFlagVisitor;
 use Phan\Analysis\BlockExitStatusChecker;
@@ -3475,7 +3476,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return ClosureType::instanceWithClosureFQSEN($function->getFQSEN(), $function)->asRealUnionType();
             }
         } elseif ($function->hasDependentReturnType()) {
-            return $function->getDependentReturnType($this->code_base, $this->context, $node->children['args']->children);
+            return $function->getDependentReturnType($this->code_base, $this->context, ArgumentType::normalizeNamedArgs($node->children['args']->children, $function));
         }
         return $function->getUnionType();
     }
