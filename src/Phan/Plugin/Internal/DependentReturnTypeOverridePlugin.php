@@ -83,7 +83,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
                 $type_if_false,
                 $expected_bool_pos
             ): UnionType {
-                if (count($args) <= $expected_bool_pos) {
+                if (!array_key_exists($expected_bool_pos, $args)) {
                     return $type_if_false;
                 }
                 $result = (new ContextNode($code_base, $context, $args[$expected_bool_pos]))->getEquivalentPHPScalarValue();
@@ -163,10 +163,12 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             //  mixed json_decode ( string $json [, ?bool $associative = null [, int $depth = 512 [, int $options = 0 ]]] )
             //  $options can include JSON_OBJECT_AS_ARRAY in a bitmask
             // TODO: reject `...` operator? (Low priority)
-            if (count($args) < 2) {
-                return $json_decode_object_types;
+            if (!array_key_exists(1, $args)) {
+                // $associative not passed (possibly using named args for later params), treat as null
+                $result = null;
+            } else {
+                $result = (new ContextNode($code_base, $context, $args[1]))->getEquivalentPHPScalarValue();
             }
-            $result = (new ContextNode($code_base, $context, $args[1]))->getEquivalentPHPScalarValue();
             if (is_int($result)) {
                 // We are already warning about the param type. E.g. var_export($arg, 1) returns a string
                 $result = (bool)$result;
@@ -182,7 +184,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
                 // Unexpected value.
                 return $json_decode_array_or_object_types;
             }
-            if (count($args) < 4) {
+            if (!array_key_exists(3, $args)) {
                 return $json_decode_object_types;
             }
             $options_result = (new ContextNode($code_base, $context, $args[3]))->getEquivalentPHPScalarValue();
@@ -208,7 +210,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
         ): UnionType {
             // string|false json_encode ( mixed $value [, int $flags = 0 [, int $depth = 512 ]] )
             // TODO: reject `...` operator? (Low priority)
-            if (count($args) < 2) {
+            if (!array_key_exists(1, $args)) {
                 return $string_or_false_real_type;
             }
             $resolved_flags = (new ContextNode($code_base, $context, $args[1]))->getEquivalentPHPScalarValue();
@@ -239,7 +241,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             //  mixed json_decode ( string $json [, bool $assoc = FALSE [, int $depth = 512 [, int $options = 0 ]]] )
             //  $options can include JSON_OBJECT_AS_ARRAY in a bitmask
             // TODO: reject `...` operator? (Low priority)
-            if (count($args) < 3) {
+            if (!array_key_exists(2, $args)) {
                 return $str_replace_types;
             }
             $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[2]);
