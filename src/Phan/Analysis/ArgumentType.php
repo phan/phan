@@ -2013,7 +2013,7 @@ final class ArgumentType
 
         // Build a name-to-position map from the parameter list
         $name_to_position = [];
-        foreach ($method->getRealParameterList() as $i => $parameter) {
+        foreach ($method->getParameterList() as $i => $parameter) {
             $name_to_position[$parameter->getName()] = $i;
         }
 

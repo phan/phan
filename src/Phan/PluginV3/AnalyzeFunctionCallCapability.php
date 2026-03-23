@@ -36,10 +36,8 @@ interface AnalyzeFunctionCallCapability
      * **Lazy loading**: Internal PHP functions are lazy-loaded — their Func objects are only
      * created when first referenced during analysis. If this method dynamically discovers
      * functions (e.g. by iterating `$code_base->getFunctionMap()`), some internal functions
-     * may not yet be loaded. Phan will automatically re-check this method's return value
-     * when internal functions are lazy-loaded, but for more efficient handling, also implement
-     * {@see HandleLazyLoadInternalFunctionCapability} to register closures for individual
-     * functions as they are loaded.
+     * may not yet be loaded. Implement {@see HandleLazyLoadInternalFunctionCapability} to
+     * register closures for individual functions as they are loaded.
      *
      * **`call_user_func` / `call_user_func_array`**: Phan's built-in CallableParamPlugin
      * removes its closures for these two functions because ClosureReturnTypeOverridePlugin

@@ -134,7 +134,8 @@ use Phan\PluginV3\IssueEmitter;
  * 21. public function getAnalyzeCallableArgumentClosure(CodeBase $code_base): Closure
  *     Returns a closure called for each callable-typed argument at every call site.
  *     Unlike AnalyzeFunctionCallCapability, the framework automatically discovers all functions
- *     with callable parameters, handles lazy loading, and resolves callables.
+ *     with callable parameters and handles lazy loading. Plugins may resolve callables themselves
+ *     via UnionTypeVisitor::functionLikeListFromNodeAndContext().
  *     (implement \Phan\PluginV3\AnalyzeCallableArgumentCapability)
  */
 abstract class PluginV3

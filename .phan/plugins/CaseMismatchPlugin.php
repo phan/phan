@@ -52,6 +52,7 @@ class CaseMismatchPlugin extends PluginV3 implements PostAnalyzeNodeCapability, 
 
     /**
      * @param CodeBase $code_base @unused-param
+     * @suppress PhanPluginPreferNamespaceUseReturnType
      */
     public function getAnalyzeCallableArgumentClosure(CodeBase $code_base): \Closure
     {
