@@ -675,7 +675,6 @@ class Analysis
         }
 
         // Register AnalyzeCallableArgumentCapability plugins on all functions/methods with callable params.
-        // Register AnalyzeCallableArgumentCapability plugins on all functions/methods with callable params.
         // Unlike AnalyzeFunctionCallCapability, these plugins don't need to enumerate targets — the framework
         // scans all functions/methods for callable-typed parameters automatically.
         $plugin_closures = $plugin_set->getOrCreateCallableArgumentClosures($code_base);
