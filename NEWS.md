@@ -1,8 +1,8 @@
 ## Phan NEWS
 
-6.0.4-dev
+Mar 23 2026, Phan 6.0.4
 --------------
-Bug fixes:
+Bug fix:
 - Fix crash in DependentReturnTypeOverridePlugin when functions are called with named arguments that skip positional parameters (e.g. `json_decode($data, flags: JSON_OBJECT_AS_ARRAY)`) ([#5502](https://github.com/phan/phan/pull/5502))
 
 Mar 23 2026, Phan 6.0.3
