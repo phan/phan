@@ -29,6 +29,7 @@ use Phan\PluginV3\ReturnTypeOverrideCapability;
 
 use Phan\Exception\FQSENException;
 use InvalidArgumentException;
+use function array_key_exists;
 use function count;
 use function is_int;
 use function is_string;
@@ -70,7 +71,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
         $make_dependent_type_method = static function (int $expected_bool_pos, UnionType $type_if_true, UnionType $type_if_false, UnionType $type_if_unknown): Closure {
             /**
              * @param Func $function @phan-unused-param
-             * @param list<Node|int|float|string> $args
+             * @param array<int,Node|int|float|string> $args
              */
             return static function (
                 CodeBase $code_base,
@@ -83,7 +84,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
                 $type_if_false,
                 $expected_bool_pos
             ): UnionType {
-                if (count($args) <= $expected_bool_pos) {
+                if (!array_key_exists($expected_bool_pos, $args)) {
                     return $type_if_false;
                 }
                 $result = (new ContextNode($code_base, $context, $args[$expected_bool_pos]))->getEquivalentPHPScalarValue();
@@ -105,7 +106,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
          * @param CodeBase $code_base @phan-unused-param
          * @param Context $context @phan-unused-param
          * @param Func $function @phan-unused-param
-         * @param list<Node|int|float|string> $args @phan-unused-param
+         * @param array<int,Node|int|float|string> $args @phan-unused-param
          */
         $bcdiv_callback = static function (
             CodeBase $code_base,
@@ -123,7 +124,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             $type_if_exists = UnionType::fromFullyQualifiedPHPDocString($type_if_exists_string);
             $type_if_missing = UnionType::fromFullyQualifiedPHPDocString($type_if_missing_string);
             /**
-             * @param list<Node|int|float|string> $args
+             * @param array<int,Node|int|float|string> $args
              */
             return static function (
                 CodeBase $unused_code_base,
@@ -148,7 +149,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
 
         /**
          * @param Func $function @phan-unused-param
-         * @param list<Node|int|float|string> $args
+         * @param array<int,Node|int|float|string> $args
          */
         $json_decode_return_type_handler = static function (
             CodeBase $code_base,
@@ -163,10 +164,12 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             //  mixed json_decode ( string $json [, ?bool $associative = null [, int $depth = 512 [, int $options = 0 ]]] )
             //  $options can include JSON_OBJECT_AS_ARRAY in a bitmask
             // TODO: reject `...` operator? (Low priority)
-            if (count($args) < 2) {
-                return $json_decode_object_types;
+            if (!array_key_exists(1, $args)) {
+                // $associative not passed (possibly using named args for later params), treat as null
+                $result = null;
+            } else {
+                $result = (new ContextNode($code_base, $context, $args[1]))->getEquivalentPHPScalarValue();
             }
-            $result = (new ContextNode($code_base, $context, $args[1]))->getEquivalentPHPScalarValue();
             if (is_int($result)) {
                 // We are already warning about the param type. E.g. var_export($arg, 1) returns a string
                 $result = (bool)$result;
@@ -182,7 +185,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
                 // Unexpected value.
                 return $json_decode_array_or_object_types;
             }
-            if (count($args) < 4) {
+            if (!array_key_exists(3, $args)) {
                 return $json_decode_object_types;
             }
             $options_result = (new ContextNode($code_base, $context, $args[3]))->getEquivalentPHPScalarValue();
@@ -195,7 +198,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
 
         /**
          * @param Func $function @phan-unused-param
-         * @param list<Node|int|float|string> $args
+         * @param array<int,Node|int|float|string> $args
          */
         $json_encode_return_type_handler = static function (
             CodeBase $code_base,
@@ -208,7 +211,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
         ): UnionType {
             // string|false json_encode ( mixed $value [, int $flags = 0 [, int $depth = 512 ]] )
             // TODO: reject `...` operator? (Low priority)
-            if (count($args) < 2) {
+            if (!array_key_exists(1, $args)) {
                 return $string_or_false_real_type;
             }
             $resolved_flags = (new ContextNode($code_base, $context, $args[1]))->getEquivalentPHPScalarValue();
@@ -224,7 +227,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
         $str_array_type = UnionType::fromFullyQualifiedPHPDocString('string[]');
 
         /**
-         * @param list<Node|int|float|string> $args
+         * @param array<int,Node|int|float|string> $args
          */
         $third_argument_string_or_array_handler = static function (
             CodeBase $code_base,
@@ -236,10 +239,9 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             $str_replace_types,
             $str_array_type
         ): UnionType {
-            //  mixed json_decode ( string $json [, bool $assoc = FALSE [, int $depth = 512 [, int $options = 0 ]]] )
-            //  $options can include JSON_OBJECT_AS_ARRAY in a bitmask
-            // TODO: reject `...` operator? (Low priority)
-            if (count($args) < 3) {
+            // Handler for functions such as str_replace()/preg_replace*() where the 3rd argument ($subject)
+            // determines whether the return type is string, string[], or string|string[].
+            if (!array_key_exists(2, $args)) {
                 return $str_replace_types;
             }
             $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[2]);
@@ -250,7 +252,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             return $has_array ? $str_array_type : $str_replace_types;
         };
         /**
-         * @param list<Node|int|float|string> $args
+         * @param array<int,Node|int|float|string> $args
          */
         $getenv_handler = static function (
             CodeBase $unused_code_base,
@@ -265,7 +267,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
         };
 
         /**
-         * @param list<Node|int|float|string> $args
+         * @param array<int,Node|int|float|string> $args
          */
         $constant_handler = static function (
             CodeBase $code_base,
@@ -298,7 +300,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
         };
         $real_int_type = IntType::instance(false)->asRealUnionType();
         /**
-         * @param list<Node|int|float|string> $args
+         * @param array<int,Node|int|float|string> $args
          */
         $count_handler = static function (
             CodeBase $code_base,
@@ -339,7 +341,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
         );
 
         /**
-         * @param list<Node|int|float|string> $args
+         * @param array<int,Node|int|float|string> $args
          */
         $dirname_handler = static function (
             CodeBase $code_base,
@@ -374,7 +376,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             return Type::fromObject($result)->asPHPDocUnionType();
         };
         /**
-         * @param list<Node|int|float|string> $args
+         * @param array<int,Node|int|float|string> $args
          */
         $explode_handler = static function (
             CodeBase $code_base,
@@ -430,7 +432,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
          * get_class() return type handler - infers class-string<T> based on argument type
          * Issue #5275 - Improve type inference for get_class
          *
-         * @param list<Node|int|float|string> $args
+         * @param array<int,Node|int|float|string> $args
          */
         $get_class_handler = static function (
             CodeBase $code_base,
@@ -501,7 +503,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
     {
         $string_union_type = StringType::instance(false)->asPHPDocUnionType();
         /**
-         * @param list<Node|int|float|string> $args
+         * @param array<int,Node|int|float|string> $args
          */
         return static function (
             CodeBase $code_base,
