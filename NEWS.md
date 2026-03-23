@@ -1,5 +1,8 @@
 ## Phan NEWS
 
+Phan 6.0.5-dev
+--------------
+
 Mar 23 2026, Phan 6.0.4
 --------------
 Bug fix:
