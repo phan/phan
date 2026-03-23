@@ -30,7 +30,8 @@ interface AnalyzeFunctionCallCapability
      *
      * **Named arguments**: The `$args` array passed to closures is normalized to declaration
      * order — named arguments are unwrapped from AST_NAMED_ARG nodes and placed at their
-     * parameter positions. Plugins can safely use `$args[$i]` to access the argument for
+     * parameter positions. However, `$args` may still be sparse (e.g. for omitted optional
+     * parameters), so plugins should use `$args[$i] ?? null` to access the argument for
      * parameter `$i` regardless of whether positional or named arguments were used.
      *
      * **Lazy loading**: Internal PHP functions are lazy-loaded — their Func objects are only

@@ -746,6 +746,25 @@ final class ConfigPluginSet extends PluginV3 implements
     }
 
     /**
+     * Returns cached closures from AnalyzeCallableArgumentCapability plugins,
+     * creating them on first call. Both loadMethodPlugins() and
+     * handleLazyLoadInternalFunction() use this to share the same closure instances.
+     *
+     * @return list<\Closure>
+     * @internal
+     */
+    public function getOrCreateCallableArgumentClosures(CodeBase $code_base): array
+    {
+        if ($this->callable_argument_plugin_closures === null) {
+            $this->callable_argument_plugin_closures = [];
+            foreach ($this->analyze_callable_argument_plugin_set as $plugin) {
+                $this->callable_argument_plugin_closures[] = $plugin->getAnalyzeCallableArgumentClosure($code_base);
+            }
+        }
+        return $this->callable_argument_plugin_closures;
+    }
+
+    /**
      * Returns indices of parameters whose types include callable/Closure.
      * @return array<int, true> maps param index => true for callable params
      */
@@ -1552,13 +1571,8 @@ final class ConfigPluginSet extends PluginV3 implements
         // For AnalyzeCallableArgumentCapability plugins, automatically register on
         // newly loaded functions that have callable parameters.
         if ($this->analyze_callable_argument_plugin_set) {
-            if ($this->callable_argument_plugin_closures === null) {
-                $this->callable_argument_plugin_closures = [];
-                foreach ($this->analyze_callable_argument_plugin_set as $plugin) {
-                    $this->callable_argument_plugin_closures[] = $plugin->getAnalyzeCallableArgumentClosure($code_base);
-                }
-            }
-            $closure = self::buildCallableArgumentAnalyzer($function, $this->callable_argument_plugin_closures);
+            $plugin_closures = $this->getOrCreateCallableArgumentClosures($code_base);
+            $closure = self::buildCallableArgumentAnalyzer($function, $plugin_closures);
             if ($closure) {
                 $function->addFunctionCallAnalyzer($closure, $this);
             }

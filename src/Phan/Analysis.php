@@ -675,15 +675,11 @@ class Analysis
         }
 
         // Register AnalyzeCallableArgumentCapability plugins on all functions/methods with callable params.
+        // Register AnalyzeCallableArgumentCapability plugins on all functions/methods with callable params.
         // Unlike AnalyzeFunctionCallCapability, these plugins don't need to enumerate targets — the framework
         // scans all functions/methods for callable-typed parameters automatically.
-        // @phan-suppress-next-line PhanAccessMethodInternal
-        $callable_arg_plugins = $plugin_set->getAnalyzeCallableArgumentPluginSet();
-        if ($callable_arg_plugins) {
-            $plugin_closures = [];
-            foreach ($callable_arg_plugins as $plugin) {
-                $plugin_closures[] = $plugin->getAnalyzeCallableArgumentClosure($code_base);
-            }
+        $plugin_closures = $plugin_set->getOrCreateCallableArgumentClosures($code_base);
+        if ($plugin_closures) {
             foreach ($code_base->getFunctionMap() as $function) {
                 $closure = ConfigPluginSet::buildCallableArgumentAnalyzer($function, $plugin_closures);
                 if ($closure) {
