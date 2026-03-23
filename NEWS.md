@@ -1,9 +1,34 @@
 ## Phan NEWS
 
-Phan 6.0.3-dev
+Mar 23 2026, Phan 6.0.3
 --------------
+New features:
+- Add `AnalyzeCallableArgumentCapability` plugin interface that automatically fires for every callable-typed argument across the codebase, eliminating boilerplate for callable analysis plugins ([#5483](https://github.com/phan/phan/issues/5483), [#5499](https://github.com/phan/phan/pull/5499))
+- Add `CaseMismatchPlugin` for detecting casing inconsistencies in class, function, method, and namespace references ([#5480](https://github.com/phan/phan/pull/5480))
+- Add `--analyze-until-convergence` flag and improve `--analyze-twice` to only re-analyze files whose inferred types changed ([#5488](https://github.com/phan/phan/issues/5488), [#5495](https://github.com/phan/phan/pull/5495))
+- Add `track_all_inferred_types` config flag to accumulate concrete types on interface-typed properties across assignments ([#5476](https://github.com/phan/phan/pull/5476))
+- Add `--from-checkstyle` option to `tool/add_suppressions.php` to accept Phan checkstyle XML output ([#5482](https://github.com/phan/phan/pull/5482))
+- Warn when `@inheritDoc` is used with nothing to inherit ([#5404](https://github.com/phan/phan/issues/5404), [#5498](https://github.com/phan/phan/pull/5498))
+- Propagate PhoundPlugin callsites up the inheritance hierarchy ([#5484](https://github.com/phan/phan/pull/5484))
+- Track callables passed to higher-order array functions in PhoundPlugin ([#5475](https://github.com/phan/phan/pull/5475))
+
 Bug fixes:
 - Fix false positive `PhanTypeMismatchArgument` when passing `positive-int` or `negative-int` to a `float` parameter ([#5467](https://github.com/phan/phan/issues/5467))
+- Fix named arguments breaking `AnalyzeFunctionCallCapability` and `ReturnTypeOverrideCapability` plugin closures — args are now normalized to declaration order ([#5483](https://github.com/phan/phan/issues/5483), [#5499](https://github.com/phan/phan/pull/5499))
+- Fix `isset()`/`empty()` type narrowing for static properties (`self::$prop`) ([#5471](https://github.com/phan/phan/pull/5471), [#5472](https://github.com/phan/phan/pull/5472))
+- Fix false positive `PhanCoalescingNeverUndefined` for static properties ([#5473](https://github.com/phan/phan/pull/5473))
+- Fix `class-string<T>` template resolution dropping literal string types ([#5474](https://github.com/phan/phan/pull/5474))
+- Fix false positive `PhanTypeExpectedObjectPropAccess` for template types ([#5479](https://github.com/phan/phan/issues/5479), [#5485](https://github.com/phan/phan/pull/5485))
+- Preserve typed generic array element types alongside `mixed` in dim access ([#5478](https://github.com/phan/phan/pull/5478))
+- Fix `expressionHasClassReference` to recurse into nested arrays during large-array trimming ([#5470](https://github.com/phan/phan/pull/5470))
+- Fix `stdClass` shape type narrowing losing dynamic property types in branches ([#5486](https://github.com/phan/phan/pull/5486))
+- Fix stub loading to respect `target_php_version` instead of `PHP_VERSION_ID` for template stub selection ([#5489](https://github.com/phan/phan/issues/5489), [#5492](https://github.com/phan/phan/pull/5492))
+- Fix `PhanInfiniteRecursion` false positive when throwing expressions in non-call contexts ([#5490](https://github.com/phan/phan/issues/5490), [#5493](https://github.com/phan/phan/pull/5493))
+- Fix three false positives related to PHP 8.4 property hooks: `PhanUnreferencedUseFunction` for functions used in hook bodies, `PhanReadOnlyPHPDocProperty` for backed properties with hooks, and `PhanTypeInvalidPropertyDefaultReal` for virtual properties ([#5491](https://github.com/phan/phan/issues/5491), [#5494](https://github.com/phan/phan/pull/5494))
+- Fix variable scope handling in `try`/`catch`/`finally` blocks when finally is present ([#5496](https://github.com/phan/phan/issues/5496), [#5497](https://github.com/phan/phan/pull/5497))
+
+Miscellaneous:
+- Improve `RedisArray` stub definitions ([#5481](https://github.com/phan/phan/pull/5481))
 
 Mar 5 2026, Phan 6.0.2
 --------------
