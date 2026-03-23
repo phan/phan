@@ -1,0 +1,6 @@
+%s:6 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression $value1 with type array|null
+%s:10 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression $value2 with type array|null
+%s:15 PhanTypeInvalidDimOffset Invalid offset "key" of $value3 of array type list<mixed>
+%s:21 PhanTypeInvalidDimOffset Invalid offset "key" of $value4 of array type list<mixed>
+%s:27 PhanTypeInvalidDimOffset Invalid offset "key" of $value5 of array type list<mixed>
+%s:34 PhanImpossibleTypeComparison Impossible attempt to check if $result of type string is identical to false of type false
