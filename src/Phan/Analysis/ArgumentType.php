@@ -2018,18 +2018,26 @@ final class ArgumentType
         }
 
         $result = [];
+        $unmatched = [];
         foreach ($args as $i => $arg) {
             if ($arg instanceof Node && $arg->kind === ast\AST_NAMED_ARG) {
                 $name = $arg->children['name'];
                 if (isset($name_to_position[$name])) {
-                    // Unwrap and place at declaration-order position
                     $result[$name_to_position[$name]] = $arg->children['expr'];
                 } else {
-                    // Keep unmatched named args (e.g. forwarded via variadic) at original position
-                    $result[$i] = $arg;
+                    // Keep unmatched named args (e.g. forwarded via variadic) as-is
+                    $unmatched[] = $arg;
                 }
             } else {
                 $result[$i] = $arg;
+            }
+        }
+
+        // Append unmatched named args after all matched positions to avoid collisions
+        if ($unmatched) {
+            $next = $result ? max(array_keys($result)) + 1 : 0;
+            foreach ($unmatched as $arg) {
+                $result[$next++] = $arg;
             }
         }
 

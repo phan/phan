@@ -9,17 +9,16 @@ use Phan\CodeBase;
 
 /**
  * AnalyzeCallableArgumentCapability is used when you want to analyze callable/Closure
- * arguments passed to ANY function or method, without needing to enumerate targets
- * or handle lazy loading.
+ * arguments passed to functions or methods, without needing to enumerate targets
+ * or manually handle most lazy loading.
  *
  * Unlike AnalyzeFunctionCallCapability where the plugin must discover which functions
  * have callable parameters and return a map keyed by FQSEN, this capability automatically
  * fires for every callable-typed argument across the entire codebase.
  *
  * The framework handles:
- * - Scanning all functions/methods for callable/Closure parameters
- * - Lazy-load handling for internal functions
- * - call_user_func / call_user_func_array / forward_static_call family
+ * - Scanning known functions/methods for callable/Closure parameters
+ * - Lazy-load handling for internal functions (not internal methods)
  * - Named argument normalization
  *
  * @see AnalyzeFunctionCallCapability for lower-level per-function analysis

@@ -166,6 +166,9 @@ final class ConfigPluginSet extends PluginV3 implements
     /** @var list<PluginV3&AnalyzeCallableArgumentCapability> - plugins to analyze callable arguments automatically. */
     private $analyze_callable_argument_plugin_set = [];
 
+    /** @var ?list<\Closure> - cached closures from AnalyzeCallableArgumentCapability plugins */
+    private $callable_argument_plugin_closures = null;
+
     /** @var list<PluginV3&AnalyzeFunctionCallCapability>|null - plugins to analyze invocations of subsets of functions and methods. */
     private $analyze_function_call_plugin_set;
 
@@ -1535,8 +1538,8 @@ final class ConfigPluginSet extends PluginV3 implements
      * If an internal function is loaded after the start of the analysis phase,
      * notify plugins in case they need to make modifications to the Func information or the way that Func is handled.
      *
-     * Also automatically registers function call analyzers from AnalyzeFunctionCallCapability plugins
-     * that don't implement HandleLazyLoadInternalFunctionCapability themselves.
+     * Also automatically registers function call analyzers for newly loaded internal functions
+     * with callable parameters, based on AnalyzeCallableArgumentCapability plugins.
      */
     public function handleLazyLoadInternalFunction(CodeBase $code_base, Func $function): void
     {
@@ -1549,15 +1552,13 @@ final class ConfigPluginSet extends PluginV3 implements
         // For AnalyzeCallableArgumentCapability plugins, automatically register on
         // newly loaded functions that have callable parameters.
         if ($this->analyze_callable_argument_plugin_set) {
-            /** @var ?list<\Closure> $cached_plugin_closures */
-            static $cached_plugin_closures = null;
-            if ($cached_plugin_closures === null) {
-                $cached_plugin_closures = [];
+            if ($this->callable_argument_plugin_closures === null) {
+                $this->callable_argument_plugin_closures = [];
                 foreach ($this->analyze_callable_argument_plugin_set as $plugin) {
-                    $cached_plugin_closures[] = $plugin->getAnalyzeCallableArgumentClosure($code_base);
+                    $this->callable_argument_plugin_closures[] = $plugin->getAnalyzeCallableArgumentClosure($code_base);
                 }
             }
-            $closure = self::buildCallableArgumentAnalyzer($function, $cached_plugin_closures);
+            $closure = self::buildCallableArgumentAnalyzer($function, $this->callable_argument_plugin_closures);
             if ($closure) {
                 $function->addFunctionCallAnalyzer($closure, $this);
             }
