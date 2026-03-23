@@ -14,7 +14,6 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\IssueException;
 use Phan\Issue;
-use Phan\AST\UnionTypeVisitor;
 use Phan\IssueInstance;
 use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
@@ -102,9 +101,6 @@ use const STDERR;
  * Speed is preferred over using Phan\Memoize.)
  *
  * @phan-file-suppress PhanPluginDescriptionlessCommentOnPublicMethod TODO: Document
- * @phan-file-suppress PhanUndeclaredMethod filterByClass loses intersection type info
- * @phan-file-suppress PhanPossiblyUndeclaredMethod filterByClass loses intersection type info
- * @phan-file-suppress PhanTemplateTypeNotDeclaredInFunctionParams
  */
 final class ConfigPluginSet extends PluginV3 implements
     AfterAnalyzeFileCapability,
@@ -804,11 +800,8 @@ final class ConfigPluginSet extends PluginV3 implements
                 if ($arg === null) {
                     continue;
                 }
-                $resolved = UnionTypeVisitor::functionLikeListFromNodeAndContext(
-                    $code_base, $context, $arg, false
-                );
                 foreach ($plugin_closures as $closure) {
-                    $closure($code_base, $context, $callee, $i, $arg, $resolved);
+                    $closure($code_base, $context, $callee, $i, $arg);
                 }
             }
         };
@@ -1162,6 +1155,7 @@ final class ConfigPluginSet extends PluginV3 implements
         // NOTE: Currently limited to exactly one closure per issue type
         // (the last plugin ends up taking precedence)
         foreach (self::filterByClass($plugin_set, AutomaticFixCapability::class) as $fixer) {
+            // @phan-suppress-next-line PhanUndeclaredMethod filterByClass loses intersection type info
             foreach ($fixer->getAutomaticFixers() as $issue_type => $closure) {
                 IssueFixer::registerFixerClosure($issue_type, $closure);
             }
@@ -1175,6 +1169,7 @@ final class ConfigPluginSet extends PluginV3 implements
     {
         $closures = [];
         foreach (self::filterByClass($plugin_set, MergeVariableInfoCapability::class) as $plugin) {
+            // @phan-suppress-next-line PhanUndeclaredMethod filterByClass loses intersection type info
             $closures[] = $plugin->getMergeVariableInfoClosure();
         }
 
@@ -1523,6 +1518,7 @@ final class ConfigPluginSet extends PluginV3 implements
      * @param class-string<T> $interface_name
      * @return list<PluginV3&T>
      * @suppress PhanPartialTypeMismatchReturn unable to infer this
+     * @suppress PhanTemplateTypeNotDeclaredInFunctionParams
      */
     private static function filterByClass(array $plugin_set, string $interface_name): array
     {
@@ -1563,6 +1559,7 @@ final class ConfigPluginSet extends PluginV3 implements
             return;
         }
         foreach ($this->handle_lazy_load_internal_function_plugin_set as $plugin) {
+            // @phan-suppress-next-line PhanPossiblyUndeclaredMethod filterByClass loses intersection type info
             $plugin->handleLazyLoadInternalFunction($code_base, $function);
         }
         // For AnalyzeFunctionCallCapability plugins that don't handle lazy loading themselves,
@@ -1570,6 +1567,7 @@ final class ConfigPluginSet extends PluginV3 implements
         if ($this->auto_lazy_load_function_call_plugin_set) {
             $fqsen_string = $function->getFQSEN()->__toString();
             foreach ($this->auto_lazy_load_function_call_plugin_set as $plugin) {
+                // @phan-suppress-next-line PhanPossiblyUndeclaredMethod filterByClass loses intersection type info
                 $closures = $plugin->getAnalyzeFunctionCallClosures($code_base);
                 if (isset($closures[$fqsen_string])) {
                     $function->addFunctionCallAnalyzer($closures[$fqsen_string], $plugin);
@@ -1579,11 +1577,16 @@ final class ConfigPluginSet extends PluginV3 implements
         // For AnalyzeCallableArgumentCapability plugins, automatically register on
         // newly loaded functions that have callable parameters.
         if ($this->analyze_callable_argument_plugin_set) {
-            $plugin_closures = [];
-            foreach ($this->analyze_callable_argument_plugin_set as $plugin) {
-                $plugin_closures[] = $plugin->getAnalyzeCallableArgumentClosure($code_base);
+            /** @var ?list<\Closure> $cached_plugin_closures */
+            static $cached_plugin_closures = null;
+            if ($cached_plugin_closures === null) {
+                $cached_plugin_closures = [];
+                foreach ($this->analyze_callable_argument_plugin_set as $plugin) {
+                    // @phan-suppress-next-line PhanPossiblyUndeclaredMethod filterByClass loses intersection type info
+                    $cached_plugin_closures[] = $plugin->getAnalyzeCallableArgumentClosure($code_base);
+                }
             }
-            $closure = self::buildCallableArgumentAnalyzer($function, $plugin_closures);
+            $closure = self::buildCallableArgumentAnalyzer($function, $cached_plugin_closures);
             if ($closure) {
                 $function->addFunctionCallAnalyzer($closure, $this);
             }

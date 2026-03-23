@@ -20,7 +20,6 @@ use Phan\CodeBase;
  * - Scanning all functions/methods for callable/Closure parameters
  * - Lazy-load handling for internal functions
  * - call_user_func / call_user_func_array / forward_static_call family
- * - Resolving callable arguments to FunctionInterface objects
  * - Named argument normalization
  *
  * @see AnalyzeFunctionCallCapability for lower-level per-function analysis
@@ -34,7 +33,10 @@ interface AnalyzeCallableArgumentCapability
      * For example, if `array_filter($arr, $callback)` is called, the closure fires once
      * for the $callback argument (param_index=1).
      *
-     * @return Closure(\Phan\CodeBase,\Phan\Language\Context,\Phan\Language\Element\FunctionInterface,int,\ast\Node|int|string|float,list<\Phan\Language\Element\FunctionInterface>):void
+     * To resolve the callable argument to actual function/method objects, use:
+     *   UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $arg_node, false)
+     *
+     * @return Closure(\Phan\CodeBase,\Phan\Language\Context,\Phan\Language\Element\FunctionInterface,int,\ast\Node|int|string|float):void
      *
      * Parameters of the returned closure:
      * - CodeBase $code_base: The code base
@@ -42,7 +44,6 @@ interface AnalyzeCallableArgumentCapability
      * - FunctionInterface $callee: The function/method being called (e.g. array_filter)
      * - int $param_index: The parameter index (0-based) of the callable parameter
      * - Node|int|string|float $arg_node: The raw argument AST node or literal value
-     * - list<FunctionInterface> $resolved_callables: Pre-resolved callable targets (may be empty)
      */
     public function getAnalyzeCallableArgumentClosure(CodeBase $code_base): Closure;
 }

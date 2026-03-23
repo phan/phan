@@ -694,13 +694,6 @@ class Analysis
                 $closure = ConfigPluginSet::buildCallableArgumentAnalyzer($method, $plugin_closures);
                 if ($closure) {
                     $method->addFunctionCallAnalyzer($closure, $plugin_set);
-                    $methods_by_defining_fqsen ??= $code_base->getMethodsMapGroupedByDefiningFQSEN();
-                    $fqsen = $method->getFQSEN();
-                    if ($methods_by_defining_fqsen->offsetExists($fqsen)) {
-                        foreach ($methods_by_defining_fqsen->offsetGet($fqsen) as $child_method) {
-                            $child_method->addFunctionCallAnalyzer($closure, $plugin_set);
-                        }
-                    }
                 }
             }
         }

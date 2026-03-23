@@ -57,15 +57,13 @@ class CaseMismatchPlugin extends PluginV3 implements PostAnalyzeNodeCapability, 
     {
         /**
          * @param Node|int|string|float $arg_node
-         * @param list<FunctionInterface> $unused_resolved
          */
         return static function (
             CodeBase $code_base,
             Context $context,
             FunctionInterface $unused_callee,
             int $unused_param_index,
-            Node|int|string|float $arg_node,
-            array $unused_resolved
+            Node|int|string|float $arg_node
         ): void {
             CaseMismatchCallableChecker::checkCallableArg($code_base, $context, $arg_node);
         };

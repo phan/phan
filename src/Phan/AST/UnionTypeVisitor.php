@@ -3476,7 +3476,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return ClosureType::instanceWithClosureFQSEN($function->getFQSEN(), $function)->asRealUnionType();
             }
         } elseif ($function->hasDependentReturnType()) {
-            return $function->getDependentReturnType($this->code_base, $this->context, ArgumentType::normalizeNamedArgs($node->children['args']->children, $function));
+            return $function->getDependentReturnType($this->code_base, $this->context, ArgumentType::normalizeNamedArgs($node->children['args']->children ?? [], $function));
         }
         return $function->getUnionType();
     }
