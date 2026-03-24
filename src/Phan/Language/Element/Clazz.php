@@ -4972,7 +4972,7 @@ class Clazz extends AddressableElement
                 'value',
                 $value_type,
                 ast\flags\MODIFIER_PUBLIC,
-                FullyQualifiedPropertyName::make($this->fqsen, 'name'),
+                FullyQualifiedPropertyName::make($this->fqsen, 'value'),
                 $value_type
             );
             $value_property->setPhanFlags(Flags::IS_READ_ONLY | Flags::IS_ENUM_PROPERTY);
