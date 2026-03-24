@@ -593,17 +593,32 @@ class ContextNode
                 return $type->isObject() || ($type instanceof MixedType) || ($type instanceof TemplateType) || ($expected_type_categories !== self::CLASS_LIST_ACCEPT_OBJECT && $type instanceof StringType);
             })) {
                 if ($warn_if_wrong_type) {
-                    if ($custom_issue_type === Issue::TypeExpectedObjectPropAccess) {
-                        if ($union_type->isType(NullType::instance(false))) {
-                            $custom_issue_type = Issue::TypeExpectedObjectPropAccessButGotNull;
+                    // Suppress PhanTypeExpectedObjectPropAccess when the expression is
+                    // a property access on a plain stdClass. Dynamic properties on
+                    // stdClass are globally shared in the CodeBase, so their accumulated
+                    // type is contaminated by unrelated usages across the codebase.
+                    // This prevents false positives on chained access like
+                    // json_decode($x)->data->field, where ->data's globally accumulated
+                    // type might be 'string' from other files.
+                    if ($custom_issue_type === Issue::TypeExpectedObjectPropAccess
+                        && $this->node instanceof Node
+                        && ($this->node->kind === ast\AST_PROP || $this->node->kind === ast\AST_NULLSAFE_PROP)
+                        && $this->isExpressionPropertyAccessOnStdClass($this->node)
+                    ) {
+                        // Don't warn — the type from stdClass dynamic property is unreliable
+                    } else {
+                        if ($custom_issue_type === Issue::TypeExpectedObjectPropAccess) {
+                            if ($union_type->isType(NullType::instance(false))) {
+                                $custom_issue_type = Issue::TypeExpectedObjectPropAccessButGotNull;
+                            }
                         }
+                        $this->emitIssue(
+                            $custom_issue_type ?? ($expected_type_categories !== self::CLASS_LIST_ACCEPT_OBJECT ? Issue::TypeExpectedObjectOrClassName : Issue::TypeExpectedObject),
+                            $this->node->lineno ?? $this->context->getLineNumberStart(),
+                            ASTReverter::toShortString($this->node),
+                            (string)$union_type->asNonLiteralType()
+                        );
                     }
-                    $this->emitIssue(
-                        $custom_issue_type ?? ($expected_type_categories !== self::CLASS_LIST_ACCEPT_OBJECT ? Issue::TypeExpectedObjectOrClassName : Issue::TypeExpectedObject),
-                        $this->node->lineno ?? $this->context->getLineNumberStart(),
-                        ASTReverter::toShortString($this->node),
-                        (string)$union_type->asNonLiteralType()
-                    );
                 }
             } elseif ($expected_type_categories !== self::CLASS_LIST_ACCEPT_OBJECT) {
                 foreach ($union_type->getTypeSet() as $type) {
@@ -635,6 +650,46 @@ class ContextNode
         }
 
         return $class_list;
+    }
+
+    /**
+     * Check if the given AST_PROP/AST_NULLSAFE_PROP node accesses a dynamic
+     * property on a class with dynamic properties (e.g. stdClass).
+     * Dynamic property types on such classes are globally accumulated in the
+     * CodeBase and unreliable for type checking.
+     */
+    private function isExpressionPropertyAccessOnStdClass(Node $prop_node): bool
+    {
+        $expr_node = $prop_node->children['expr'] ?? null;
+        if (!$expr_node instanceof Node) {
+            return false;
+        }
+        try {
+            $expr_type = UnionTypeVisitor::unionTypeFromNode(
+                $this->code_base,
+                $this->context,
+                $expr_node
+            );
+        } catch (\Exception) {
+            return false;
+        }
+        foreach ($expr_type->getTypeSet() as $type) {
+            if ($type->isObjectWithKnownFQSEN()) {
+                try {
+                    $fqsen = FullyQualifiedClassName::fromType($type);
+                } catch (\Exception) {
+                    continue;
+                }
+                if (!$this->code_base->hasClassWithFQSEN($fqsen)) {
+                    continue;
+                }
+                $clazz = $this->code_base->getClassByFQSEN($fqsen);
+                if ($clazz->hasDynamicProperties($this->code_base)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
