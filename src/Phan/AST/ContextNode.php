@@ -683,16 +683,23 @@ class ContextNode
                 // Shaped stdClass has locally reliable property types
                 return false;
             }
-            if ($type->isObjectWithKnownFQSEN()) {
-                $found_object_type = true;
-                try {
-                    $fqsen = FullyQualifiedClassName::fromType($type);
-                } catch (\Exception) {
-                    return false;
-                }
-                if ($fqsen !== $stdclass_fqsen) {
-                    return false;
-                }
+            if (!$type->isObject()) {
+                // Skip non-object types in the union (e.g. int, string)
+                continue;
+            }
+            if (!$type->isObjectWithKnownFQSEN()) {
+                // Generic object type without a known FQSEN is not
+                // guaranteed to be plain stdClass
+                return false;
+            }
+            $found_object_type = true;
+            try {
+                $fqsen = FullyQualifiedClassName::fromType($type);
+            } catch (\Exception) {
+                return false;
+            }
+            if ($fqsen !== $stdclass_fqsen) {
+                return false;
             }
         }
         return $found_object_type;
