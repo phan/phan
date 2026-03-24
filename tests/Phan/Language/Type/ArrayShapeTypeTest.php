@@ -86,7 +86,18 @@ final class ArrayShapeTypeTest extends TestBase
         $this->assertInstanceOf(ArrayShapeType::class, $resolved);
 
         // The outer levels (depth < 10) should have `static` resolved to `\TestClass`,
-        // but the innermost levels (depth >= 10) should retain `static`
+        // but the innermost levels (depth >= 10) should retain `static`.
+        //
+        // Raw: array{nested:array{nested:array{nested:array{nested:array{nested:array{nested:array{nested:array{nested:array{nested:array{nested:array{nested:array{nested:array{nested:array{nested:array{nested:array{nested:array{nested:array{nested:array{nested:array{s:static},s:static},s:static},s:static},s:static},s:static},s:static},s:static},s:static},s:static},s:\TestClass},s:\TestClass},s:\TestClass},s:\TestClass},s:\TestClass},s:\TestClass},s:\TestClass},s:\TestClass},s:\TestClass},s:\TestClass}
+        //
+        // Formatted for readability:
+        //   depth  1: array{nested: ..., s: \TestClass}   <-- resolved
+        //   depth  2: array{nested: ..., s: \TestClass}
+        //   ...
+        //   depth 10: array{nested: ..., s: \TestClass}
+        //   depth 11: array{nested: ..., s: static}       <-- retained (beyond limit)
+        //   ...
+        //   depth 20: array{s: static}
         $resolved_str = $resolved->__toString();
         $this->assertStringContainsString('TestClass', $resolved_str);
         $this->assertStringContainsString('static', $resolved_str);
