@@ -1,0 +1,3 @@
+%s:20 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression $obj->data with type string
+%s:31 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression $f->value with type int
+%s:39 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression $obj->value with type int
