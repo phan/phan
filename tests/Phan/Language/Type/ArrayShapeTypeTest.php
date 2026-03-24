@@ -57,6 +57,7 @@ final class ArrayShapeTypeTest extends TestBase
      * This reproduces a real-world issue where mutually recursive methods
      * returning array shapes caused type lengths to grow to 950K+ characters
      * and withStaticResolvedInContext took 130+ seconds per call.
+     * @throws \Phan\Exception\FQSENException
      */
     public function testWithStaticResolvedInContextDepthGuard(): void
     {
