@@ -603,7 +603,7 @@ class ContextNode
                     if ($custom_issue_type === Issue::TypeExpectedObjectPropAccess
                         && $this->node instanceof Node
                         && ($this->node->kind === ast\AST_PROP || $this->node->kind === ast\AST_NULLSAFE_PROP)
-                        && $this->isExpressionPropertyAccessOnStdClass($this->node)
+                        && $this->isExpressionDynamicPropAccessOnPlainStdClass($this->node)
                     ) {
                         // Don't warn — the type from stdClass dynamic property is unreliable
                     } else {
@@ -654,11 +654,14 @@ class ContextNode
 
     /**
      * Check if the given AST_PROP/AST_NULLSAFE_PROP node accesses a dynamic
-     * property on a class with dynamic properties (e.g. stdClass).
-     * Dynamic property types on such classes are globally accumulated in the
-     * CodeBase and unreliable for type checking.
+     * property on a plain (unshaped) stdClass receiver.
+     *
+     * Dynamic property types on plain stdClass are globally accumulated in the
+     * CodeBase and unreliable for type checking. This returns true only when
+     * every object type in the receiver union is plain stdClass, so that unions
+     * like `C|stdClass` or shaped stdClass types still get proper warnings.
      */
-    private function isExpressionPropertyAccessOnStdClass(Node $prop_node): bool
+    private function isExpressionDynamicPropAccessOnPlainStdClass(Node $prop_node): bool
     {
         $expr_node = $prop_node->children['expr'] ?? null;
         if (!$expr_node instanceof Node) {
@@ -673,8 +676,13 @@ class ContextNode
         } catch (\Exception) {
             return false;
         }
+        $stdclass_fqsen = FullyQualifiedClassName::getStdClassFQSEN();
         $found_object_type = false;
         foreach ($expr_type->getTypeSet() as $type) {
+            if ($type instanceof \Phan\Language\Type\StdClassShapeType) {
+                // Shaped stdClass has locally reliable property types
+                return false;
+            }
             if ($type->isObjectWithKnownFQSEN()) {
                 $found_object_type = true;
                 try {
@@ -682,11 +690,7 @@ class ContextNode
                 } catch (\Exception) {
                     return false;
                 }
-                if (!$this->code_base->hasClassWithFQSEN($fqsen)) {
-                    return false;
-                }
-                $clazz = $this->code_base->getClassByFQSEN($fqsen);
-                if (!$clazz->hasDynamicProperties($this->code_base)) {
+                if ($fqsen !== $stdclass_fqsen) {
                     return false;
                 }
             }
