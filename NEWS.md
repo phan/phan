@@ -2,6 +2,8 @@
 
 Phan 6.0.5-dev
 --------------
+Deprecations:
+- Deprecate `override_return_types` config flag in favor of `track_all_inferred_types`, which subsumes its behavior and also accumulates concrete types on interface-typed properties ([#5476](https://github.com/phan/phan/pull/5476))
 
 Mar 23 2026, Phan 6.0.4
 --------------
