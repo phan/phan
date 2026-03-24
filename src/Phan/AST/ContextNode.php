@@ -673,23 +673,25 @@ class ContextNode
         } catch (\Exception) {
             return false;
         }
+        $found_object_type = false;
         foreach ($expr_type->getTypeSet() as $type) {
             if ($type->isObjectWithKnownFQSEN()) {
+                $found_object_type = true;
                 try {
                     $fqsen = FullyQualifiedClassName::fromType($type);
                 } catch (\Exception) {
-                    continue;
+                    return false;
                 }
                 if (!$this->code_base->hasClassWithFQSEN($fqsen)) {
-                    continue;
+                    return false;
                 }
                 $clazz = $this->code_base->getClassByFQSEN($fqsen);
-                if ($clazz->hasDynamicProperties($this->code_base)) {
-                    return true;
+                if (!$clazz->hasDynamicProperties($this->code_base)) {
+                    return false;
                 }
             }
         }
-        return false;
+        return $found_object_type;
     }
 
     /**
