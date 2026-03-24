@@ -408,6 +408,11 @@ class ParameterTypesAnalyzer
         if ($method->isMagic()) {
             return;
         }
+        // Traits are designed to be composed into classes that may implement
+        // interfaces declaring these methods, so @inheritDoc is reasonable.
+        if ($class->isTrait()) {
+            return;
+        }
         // Only emit this issue on the base class, not for the subclass which inherited it
         if ($method->getDefiningFQSEN() !== $method->getFQSEN()) {
             return;

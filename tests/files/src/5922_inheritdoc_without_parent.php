@@ -46,3 +46,23 @@ class ChildClass extends ParentClass {
      */
     function noWarnOnProse() {}
 }
+
+// Trait methods with @inheritDoc should not warn, even if the trait
+// itself doesn't extend or implement anything. Traits are composed
+// into classes that may implement interfaces declaring these methods.
+interface TraitTargetInterface {
+    /** Interface method doc. */
+    function interfaceMethod(): void;
+}
+
+trait TraitWithInheritDoc {
+    /** @inheritDoc */
+    function interfaceMethod(): void {}  // should NOT warn
+
+    /** @inheritDoc */
+    function traitOnlyMethod(): void {}  // should NOT warn
+}
+
+class UsesTraitAndInterface implements TraitTargetInterface {
+    use TraitWithInheritDoc;
+}
