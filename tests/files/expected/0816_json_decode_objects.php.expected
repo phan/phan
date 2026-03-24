@@ -1,1 +1,0 @@
-%s:3 PhanTypeArraySuspiciousNullable Suspicious array access to $content of nullable type ?list<mixed>
