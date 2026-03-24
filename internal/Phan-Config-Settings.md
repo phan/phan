@@ -235,6 +235,19 @@ Currently, this just affects inferring that methods without return statements ha
 
 (Default: `false`)
 
+## ast_trim_max_elements_per_level
+
+Maximum number of literal array elements that ASTSimplifier keeps from a single array level
+before trimming large arrays down to a representative subset.
+
+(Default: `256`)
+
+## ast_trim_max_total_elements
+
+Maximum total number of literal array entries that ASTSimplifier keeps while summarizing nested arrays.
+
+(Default: `512`)
+
 ## autoload_internal_extension_signatures
 
 You can put paths to stubs of internal extensions in this config option.
@@ -254,6 +267,36 @@ Example: ['spl' => '.phan/stubs/custom_spl.phan_php'] replaces bundled SPL stub.
 
 NOTE: Bundled stubs are computed at runtime to support phar/global installs.
 See Config::getDefaultInternalStubConfiguration() for bundled stub list.
+
+(Default: `null`)
+
+## autoload_internal_extension_signatures_template_classes
+
+A list of extension names that have template annotations in their stub files for CLASSES.
+For these extensions, the stub classes will completely replace reflection-based classes.
+
+Bundled defaults include 'spl' for SplObjectStorage<TKey,TValue>, WeakMap<TKey,TValue>, etc.
+User-provided values are MERGED with bundled defaults (duplicates removed).
+
+Example: ['myext'] adds your extension alongside bundled template extensions.
+
+NOTE: Bundled defaults are computed at runtime to support phar/global installs.
+See Config::getDefaultInternalStubConfiguration() for bundled template list.
+
+(Default: `null`)
+
+## autoload_internal_extension_signatures_template_functions
+
+A list of extension names that have template annotations in their stub files for FUNCTIONS.
+For these extensions, stub functions will be used alongside reflection data.
+
+Bundled defaults include 'standard' for array_filter<T>, array_map<T>, etc.
+User-provided values are MERGED with bundled defaults (duplicates removed).
+
+Example: ['myext'] adds your extension alongside bundled template extensions.
+
+NOTE: Bundled defaults are computed at runtime to support phar/global installs.
+See Config::getDefaultInternalStubConfiguration() for bundled template list.
 
 (Default: `null`)
 
@@ -479,6 +522,13 @@ This setting cannot be less than 50.
 This setting can be overridden if users wish to store strings that are even longer than 50 bytes.
 
 (Default: `200`)
+
+## max_union_type_set_size
+
+Maximum number of distinct types that may be tracked in a union before Phan summarizes it to generic
+array/mixed types to conserve memory.
+
+(Default: `1024`)
 
 ## maximum_recursion_depth
 
@@ -721,6 +771,14 @@ This is ignored if [`enable_include_path_checks`](#enable_include_path_checks) i
 
 (Default: `false`)
 
+## warn_about_undocumented_exceptions_thrown_by_invoked_functions
+
+If enabled (and [`warn_about_undocumented_throw_statements`](#warn_about_undocumented_throw_statements) is enabled),
+Phan will warn about function/closure/method invocations that have `@throws`
+that aren't caught or documented in the invoking method.
+
+(Default: `false`)
+
 ## warn_about_undocumented_throw_statements
 
 If enabled, warn about throw statement where the exception types
@@ -832,6 +890,16 @@ allows casting null to a string, but not vice versa.
 (subset of [`scalar_implicit_cast`](#scalar_implicit_cast))
 
 (Default: `[]`)
+
+## strict_array_checking
+
+If enabled, Phan will warn about possibly invalid array offsets in unions containing
+both array shape types and generic mixed array types.
+When disabled (default), Phan is more lenient and only warns if the offset is invalid
+across all union members. This avoids false positives when an array can be a generic
+mixed array (which accepts any key) or a shape with specific keys.
+
+(Default: `false`)
 
 ## strict_method_checking
 
@@ -1050,67 +1118,3 @@ A lower value such as 50 works for suggesting misspelled classes/constants in na
 but won't give you suggestions for globally namespaced functions.
 
 (Default: `1000`)
-
-# misc
-
-TODO: Document config category misc (see tests/Phan/Internal/WikiConfigTest.php and tests/Phan/Internal/ConfigEntry.php)
-
-## ast_trim_max_elements_per_level
-
-Maximum number of literal array elements that ASTSimplifier keeps from a single array level
-before trimming large arrays down to a representative subset.
-
-(Default: `256`)
-
-## ast_trim_max_total_elements
-
-Maximum total number of literal array entries that ASTSimplifier keeps while summarizing nested arrays.
-
-(Default: `512`)
-
-## autoload_internal_extension_signatures_template_classes
-
-A list of extension names that have template annotations in their stub files for CLASSES.
-For these extensions, the stub classes will completely replace reflection-based classes.
-
-Bundled defaults include 'spl' for SplObjectStorage<TKey,TValue>, WeakMap<TKey,TValue>, etc.
-User-provided values are MERGED with bundled defaults (duplicates removed).
-
-Example: ['myext'] adds your extension alongside bundled template extensions.
-
-NOTE: Bundled defaults are computed at runtime to support phar/global installs.
-See Config::getDefaultInternalStubConfiguration() for bundled template list.
-
-(Default: `null`)
-
-## autoload_internal_extension_signatures_template_functions
-
-A list of extension names that have template annotations in their stub files for FUNCTIONS.
-For these extensions, stub functions will be used alongside reflection data.
-
-Bundled defaults include 'standard' for array_filter<T>, array_map<T>, etc.
-User-provided values are MERGED with bundled defaults (duplicates removed).
-
-Example: ['myext'] adds your extension alongside bundled template extensions.
-
-NOTE: Bundled defaults are computed at runtime to support phar/global installs.
-See Config::getDefaultInternalStubConfiguration() for bundled template list.
-
-(Default: `null`)
-
-## max_union_type_set_size
-
-Maximum number of distinct types that may be tracked in a union before Phan summarizes it to generic
-array/mixed types to conserve memory.
-
-(Default: `1024`)
-
-## strict_array_checking
-
-If enabled, Phan will warn about possibly invalid array offsets in unions containing
-both array shape types and generic mixed array types.
-When disabled (default), Phan is more lenient and only warns if the offset is invalid
-across all union members. This avoids false positives when an array can be a generic
-mixed array (which accepts any key) or a shape with specific keys.
-
-(Default: `false`)

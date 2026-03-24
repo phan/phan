@@ -662,7 +662,6 @@ class Config
         // If enabled (and `warn_about_undocumented_throw_statements` is enabled),
         // Phan will warn about function/closure/method invocations that have `@throws`
         // that aren't caught or documented in the invoking method.
-
         'warn_about_undocumented_exceptions_thrown_by_invoked_functions' => false,
 
         // Phan will not warn about lack of documentation of `@throws` for any of the configured classes or their subclasses.
