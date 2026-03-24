@@ -8,7 +8,7 @@ Phan is a static analyzer for PHP that prefers to minimize false-positives. It a
 
 ## Wiki
 
-The Phan wiki lives at `~/phan.wiki` (a separate git repo). Keep it up to date when making changes to Phan:
+The Phan wiki lives at `~/phan.wiki` (a clone of `https://github.com/phan/phan.wiki.git`). The `origin` remote is configured to push to both `phan/phan.wiki` and the `phan/wiki` mirror simultaneously. Keep it up to date when making changes to Phan:
 
 - **New config options** → add to `Phan-Config-Settings.md`
 - **New CLI flags** → add to `Using-Phan-From-Command-Line.md`
