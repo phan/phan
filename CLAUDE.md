@@ -8,7 +8,7 @@ Phan is a static analyzer for PHP that prefers to minimize false-positives. It a
 
 ## Wiki
 
-The Phan wiki lives at `~/phan.wiki` (a clone of `https://github.com/phan/phan.wiki.git`). The `origin` remote is configured to push to both `phan/phan.wiki` and the `phan/wiki` mirror simultaneously. Keep it up to date when making changes to Phan:
+The Phan wiki lives at `~/phan.wiki` (a clone of `https://github.com/phan/phan.wiki.git`). There is also a mirror at `https://github.com/phan/wiki.git` that should be kept in sync. Keep the wiki up to date when making changes to Phan:
 
 - **New config options** → add to `Phan-Config-Settings.md`
 - **New CLI flags** → add to `Using-Phan-From-Command-Line.md`
@@ -22,6 +22,12 @@ Push wiki changes directly to the `master` branch of the wiki repo:
 cd ~/phan.wiki
 git add -A && git commit -m "Update docs for ..."
 git push origin master
+```
+
+To push to the mirror automatically, add it as a second push URL on origin:
+```bash
+git remote set-url --add --push origin https://github.com/phan/phan.wiki.git
+git remote set-url --add --push origin https://github.com/phan/wiki.git
 ```
 
 ## Branch Strategy
