@@ -1116,17 +1116,15 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         return ArrayType::instance($this->is_nullable);
     }
 
-    /** @var int tracks recursion depth for withStaticResolvedInContext */
-    private static int $resolve_depth = 0;
-
     private const MAX_RESOLVE_DEPTH = 10;
 
     public function withStaticResolvedInContext(Context $context): Type
     {
-        if (self::$resolve_depth >= self::MAX_RESOLVE_DEPTH) {
+        static $resolve_depth = 0;
+        if ($resolve_depth >= self::MAX_RESOLVE_DEPTH) {
             return $this;
         }
-        self::$resolve_depth++;
+        $resolve_depth++;
         try {
             $did_change = false;
             $new_field_types = $this->field_types;
@@ -1143,7 +1141,7 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             }
             return self::fromFieldTypes($new_field_types, $this->is_nullable);
         } finally {
-            self::$resolve_depth--;
+            $resolve_depth--;
         }
     }
 
