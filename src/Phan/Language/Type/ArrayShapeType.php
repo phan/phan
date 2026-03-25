@@ -1116,21 +1116,33 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         return ArrayType::instance($this->is_nullable);
     }
 
+    private const MAX_RESOLVE_DEPTH = 10;
+
     public function withStaticResolvedInContext(Context $context): Type
     {
-        $did_change = false;
-        $new_field_types = $this->field_types;
-        foreach ($new_field_types as $i => $field_type) {
-            $new_field_type = $field_type->withStaticResolvedInContext($context);
-            if ($new_field_type !== $field_type) {
-                $did_change = true;
-                $new_field_types[$i] = $new_field_type;
-            }
-        }
-        if (!$did_change) {
+        static $resolve_depth = 0;
+        if ($resolve_depth >= self::MAX_RESOLVE_DEPTH) {
             return $this;
         }
-        return self::fromFieldTypes($new_field_types, $this->is_nullable);
+        $resolve_depth++;
+        try {
+            $did_change = false;
+            $new_field_types = $this->field_types;
+            foreach ($new_field_types as $i => $field_type) {
+                $new_field_type = $field_type->withStaticResolvedInContext($context);
+                if ($new_field_type !== $field_type) {
+                    $did_change = true;
+                    $new_field_types[$i] = $new_field_type;
+                }
+            }
+
+            if (!$did_change) {
+                return $this;
+            }
+            return self::fromFieldTypes($new_field_types, $this->is_nullable);
+        } finally {
+            $resolve_depth--;
+        }
     }
 
     public function withStaticResolvedTo(Type $static_type): Type
