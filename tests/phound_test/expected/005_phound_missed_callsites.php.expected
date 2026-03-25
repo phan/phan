@@ -28,6 +28,9 @@
 \PhoundMissedCallsites\Target005::method|method|src/005_phound_missed_callsites.php:112
 \PhoundMissedCallsites\Target005::filter|method|src/005_phound_missed_callsites.php:115
 \PhoundMissedCallsites\Target005::replace|method|src/005_phound_missed_callsites.php:118
+\PhoundMissedCallsites\Target005::method|method|src/005_phound_missed_callsites.php:127
+\Closure::fromCallable|method|src/005_phound_missed_callsites.php:134
+\PhoundMissedCallsites\Target005::filter|method|src/005_phound_missed_callsites.php:134
 <-----------> Classes <----------->
 \PhoundMissedCallsites\Chain005|src/005_phound_missed_callsites.php
 \PhoundMissedCallsites\Child005|src/005_phound_missed_callsites.php
@@ -70,7 +73,9 @@
 \PhoundMissedCallsites\TargetImpl005::method	method	\PhoundMissedCallsites\TargetImpl005	method	void	0	public	src/005_phound_missed_callsites.php	19
 \PhoundMissedCallsites\TargetInterface005::class	const	\PhoundMissedCallsites\TargetInterface005	class	'PhoundMissedCallsites\\TargetInterface005'	0	public	src/005_phound_missed_callsites.php	14
 \PhoundMissedCallsites\TargetInterface005::method	method	\PhoundMissedCallsites\TargetInterface005	method	void	0	public	src/005_phound_missed_callsites.php	15
+\PhoundMissedCallsites\apply_callback	function		apply_callback	void	0		src/005_phound_missed_callsites.php	123
 \PhoundMissedCallsites\myGen005	function		myGen005	\Generator	0		src/005_phound_missed_callsites.php	53
+\PhoundMissedCallsites\run_closure	function		run_closure	void	0		src/005_phound_missed_callsites.php	130
 \PhoundMissedCallsites\testInterface005	function		testInterface005	void	0		src/005_phound_missed_callsites.php	82
 \closure_43bf1d7948bb	function		{closure}	void	0		src/005_phound_missed_callsites.php	47
 \closure_c22c3d4d21bf	function		{closure}	int	0		src/005_phound_missed_callsites.php	100
@@ -78,7 +83,10 @@
 \closure_ee1bd3b008c0	function		{closure}	void	0		src/005_phound_missed_callsites.php	50
 <-----------> Parameters <----------->
 \PhoundMissedCallsites\Target005::replace	0	matches	array	0	0	0	
+\PhoundMissedCallsites\apply_callback	0	callback	callable	0	0	0	
+\PhoundMissedCallsites\apply_callback	1	target	\PhoundMissedCallsites\Target005	0	0	0	
 \PhoundMissedCallsites\myGen005	0	t	\PhoundMissedCallsites\Target005	0	0	0	
+\PhoundMissedCallsites\run_closure	0	fn	\Closure	0	0	0	
 \PhoundMissedCallsites\testInterface005	0	i	\PhoundMissedCallsites\TargetInterface005	0	0	0	
 \closure_c22c3d4d21bf	0	a	\PhoundMissedCallsites\Target005	0	0	0	
 \closure_c22c3d4d21bf	1	b	\PhoundMissedCallsites\Target005	0	0	0	

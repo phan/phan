@@ -117,6 +117,22 @@ array_filter([$t2], [$t2, 'filter']);  // captured: \Target005::filter
 // B5: preg_replace_callback with array callable at arg 1 — captured by HOF handler
 preg_replace_callback('/x/', [$t2, 'replace'], 'test');  // captured: \Target005::replace
 
+// GROUP D: User-defined functions with callable params (newly covered by AnalyzeCallableArgumentCapability)
+
+/** User-defined higher-order function that accepts a callable */
+function apply_callback(callable $callback, Target005 $target): void {
+    $callback($target);
+}
+
+apply_callback([$t2, 'method'], $t2);  // D1: callable tracked via user-defined function
+
+/** User-defined function with Closure type hint */
+function run_closure(\Closure $fn): void {
+    $fn();
+}
+
+run_closure(\Closure::fromCallable([$t2, 'filter']));  // D2: Closure param tracked
+
 // GROUP C: Patterns EXPECTED to be missed (design limitations)
 
 // C1: Variable callable invocation — stored in variable as array callable

@@ -1197,14 +1197,14 @@ final class PhoundVisitor extends PluginAwarePostAnalysisVisitor
 use Phan\PluginV3;
 use Phan\PluginV3\PostAnalyzeNodeCapability;
 use Phan\PluginV3\FinalizeProcessCapability;
-use Phan\PluginV3\AnalyzeFunctionCallCapability;
+use Phan\PluginV3\AnalyzeCallableArgumentCapability;
 use Phan\AST\UnionTypeVisitor;
 use Phan\Language\Element\FunctionInterface;
 
 /**
  * Plugin to go with PhoundVisitor.
  */
-final class PhoundPlugin extends PluginV3 implements PostAnalyzeNodeCapability, AnalyzeFunctionCallCapability, FinalizeProcessCapability
+final class PhoundPlugin extends PluginV3 implements PostAnalyzeNodeCapability, AnalyzeCallableArgumentCapability, FinalizeProcessCapability
 {
 
     /**
@@ -1224,47 +1224,23 @@ final class PhoundPlugin extends PluginV3 implements PostAnalyzeNodeCapability, 
     }
 
     /**
-     * @param CodeBase $code_base @phan-unused-param
-     * @return array<string,Closure(CodeBase,Context,FunctionInterface,list<mixed>,?Node)>
-     * maps FQSEN of function or method to a closure used to analyze the function in question.
-     * '\A::foo' or 'A::foo' as a key will override a method, and '\foo' or 'foo' as a key will override a function.
-     * Closure Type: function(CodeBase $code_base, Context $context, Func|Method $function, array $args, ?Node $node) : void {...}
-     *
-     * If compatibility with older Phan versions is needed, make the param for $node optional.
-     *
-     * Note that $function->getMostRecentParentNodeListForCall() can be used to get the parent node list of the current call (will be the empty array if fetching it failed).
+     * @return Closure(CodeBase,Context,FunctionInterface,int,Node|int|string|float):void
+     * @unused-param $code_base
      */
-    public function getAnalyzeFunctionCallClosures(CodeBase $code_base): array
-    {
-        // Unit tests invoke this repeatedly. Cache it.
-        static $analyzers = null;
-        if ($analyzers === null) {
-            $analyzers = self::getAnalyzeFunctionCallClosuresStatic();
-        }
-        return $analyzers;
-    }
-
-    /**
-     * Ensure that we track callsites in callables passed to call_user_func,
-     * forward_static_call, call_user_func_array, forward_static_call_array,
-     * Closure::fromCallable, etc.
-     *
-     * Much of the logic in here was cribbed from https://github.com/phan/phan/blob/0fd8121798fa1c77d7f7608cf36d71f0b8325880/src/Phan/Plugin/Internal/ClosureReturnTypeOverridePlugin.php#L199
-     *
-     * @return array<string,\Closure>
-     */
-    private static function getAnalyzeFunctionCallClosuresStatic(): array
+    public function getAnalyzeCallableArgumentClosure(CodeBase $code_base): Closure
     {
         /**
-         * @param list<Node|int|string|float> $args
-         * @throws Exception
+         * @param Node|int|string|float $arg_node
+         * @throws \Exception
          */
-        $generic_callback = static function(
+        return static function (
             CodeBase $code_base,
             Context $context,
-            array $args
+            FunctionInterface $unused_callee,
+            int $unused_param_index,
+            Node|int|string|float $arg_node
         ): void {
-            $function_like_list = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $args[0], true);
+            $function_like_list = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $arg_node, true);
             if (\count($function_like_list) === 0) {
                 return;
             }
@@ -1281,50 +1257,6 @@ final class PhoundPlugin extends PluginV3 implements PostAnalyzeNodeCapability, 
                 $phound_visitor->genericVisitClassElements($elements, 'method');
             }
         };
-
-        /**
-         * Factory for higher-order function handlers where the callable is at a specific arg index.
-         */
-        $make_hof_callback = static function (int $callable_arg_idx, int $min_args) use ($generic_callback): Closure {
-            /**
-             * @param list<Node|int|string|float> $args
-             * @throws Exception
-             */
-            return static function (
-                CodeBase $code_base,
-                Context $context,
-                FunctionInterface $unused_function,
-                array $args,
-                ?Node $_
-            ) use ($generic_callback, $callable_arg_idx, $min_args): void {
-                if (\count($args) < $min_args || !\array_key_exists($callable_arg_idx, $args)) {
-                    return;
-                }
-                $generic_callback($code_base, $context, [$args[$callable_arg_idx]]);
-            };
-        };
-
-        return [
-            // call_user_func family: callable at arg 0
-            'call_user_func'            => $make_hof_callback(0, 1),
-            'forward_static_call'       => $make_hof_callback(0, 1),
-            'call_user_func_array'      => $make_hof_callback(0, 2),
-            'forward_static_call_array' => $make_hof_callback(0, 2),
-            'Closure::fromCallable'     => $make_hof_callback(0, 1),
-
-            // Higher-order functions: callable at arg 0
-            'array_map'               => $make_hof_callback(0, 2),
-
-            // Higher-order functions: callable at arg 1
-            'array_filter'            => $make_hof_callback(1, 2),
-            'array_reduce'            => $make_hof_callback(1, 2),
-            'array_walk'              => $make_hof_callback(1, 2),
-            'array_walk_recursive'    => $make_hof_callback(1, 2),
-            'usort'                   => $make_hof_callback(1, 2),
-            'uasort'                  => $make_hof_callback(1, 2),
-            'uksort'                  => $make_hof_callback(1, 2),
-            'preg_replace_callback'   => $make_hof_callback(1, 3),
-        ];
     }
 
     /**
