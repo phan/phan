@@ -593,17 +593,32 @@ class ContextNode
                 return $type->isObject() || ($type instanceof MixedType) || ($type instanceof TemplateType) || ($expected_type_categories !== self::CLASS_LIST_ACCEPT_OBJECT && $type instanceof StringType);
             })) {
                 if ($warn_if_wrong_type) {
-                    if ($custom_issue_type === Issue::TypeExpectedObjectPropAccess) {
-                        if ($union_type->isType(NullType::instance(false))) {
-                            $custom_issue_type = Issue::TypeExpectedObjectPropAccessButGotNull;
+                    // Suppress PhanTypeExpectedObjectPropAccess when the expression is
+                    // a property access on a plain stdClass. Dynamic properties on
+                    // stdClass are globally shared in the CodeBase, so their accumulated
+                    // type is contaminated by unrelated usages across the codebase.
+                    // This prevents false positives on chained access like
+                    // json_decode($x)->data->field, where ->data's globally accumulated
+                    // type might be 'string' from other files.
+                    if ($custom_issue_type === Issue::TypeExpectedObjectPropAccess
+                        && $this->node instanceof Node
+                        && ($this->node->kind === ast\AST_PROP || $this->node->kind === ast\AST_NULLSAFE_PROP)
+                        && $this->isExpressionDynamicPropAccessOnPlainStdClass($this->node)
+                    ) {
+                        // Don't warn — the type from stdClass dynamic property is unreliable
+                    } else {
+                        if ($custom_issue_type === Issue::TypeExpectedObjectPropAccess) {
+                            if ($union_type->isType(NullType::instance(false))) {
+                                $custom_issue_type = Issue::TypeExpectedObjectPropAccessButGotNull;
+                            }
                         }
+                        $this->emitIssue(
+                            $custom_issue_type ?? ($expected_type_categories !== self::CLASS_LIST_ACCEPT_OBJECT ? Issue::TypeExpectedObjectOrClassName : Issue::TypeExpectedObject),
+                            $this->node->lineno ?? $this->context->getLineNumberStart(),
+                            ASTReverter::toShortString($this->node),
+                            (string)$union_type->asNonLiteralType()
+                        );
                     }
-                    $this->emitIssue(
-                        $custom_issue_type ?? ($expected_type_categories !== self::CLASS_LIST_ACCEPT_OBJECT ? Issue::TypeExpectedObjectOrClassName : Issue::TypeExpectedObject),
-                        $this->node->lineno ?? $this->context->getLineNumberStart(),
-                        ASTReverter::toShortString($this->node),
-                        (string)$union_type->asNonLiteralType()
-                    );
                 }
             } elseif ($expected_type_categories !== self::CLASS_LIST_ACCEPT_OBJECT) {
                 foreach ($union_type->getTypeSet() as $type) {
@@ -635,6 +650,59 @@ class ContextNode
         }
 
         return $class_list;
+    }
+
+    /**
+     * Check if the given AST_PROP/AST_NULLSAFE_PROP node accesses a dynamic
+     * property on a plain (unshaped) stdClass receiver.
+     *
+     * Dynamic property types on plain stdClass are globally accumulated in the
+     * CodeBase and unreliable for type checking. This returns true only when
+     * every object type in the receiver union is plain stdClass, so that unions
+     * like `C|stdClass` or shaped stdClass types still get proper warnings.
+     */
+    private function isExpressionDynamicPropAccessOnPlainStdClass(Node $prop_node): bool
+    {
+        $expr_node = $prop_node->children['expr'] ?? null;
+        if (!$expr_node instanceof Node) {
+            return false;
+        }
+        try {
+            $expr_type = UnionTypeVisitor::unionTypeFromNode(
+                $this->code_base,
+                $this->context,
+                $expr_node
+            );
+        } catch (\Exception) {
+            return false;
+        }
+        $stdclass_fqsen = FullyQualifiedClassName::getStdClassFQSEN();
+        $found_object_type = false;
+        foreach ($expr_type->getTypeSet() as $type) {
+            if ($type instanceof \Phan\Language\Type\StdClassShapeType) {
+                // Shaped stdClass has locally reliable property types
+                return false;
+            }
+            if (!$type->isObject()) {
+                // Skip non-object types in the union (e.g. int, string)
+                continue;
+            }
+            if (!$type->isObjectWithKnownFQSEN()) {
+                // Generic object type without a known FQSEN is not
+                // guaranteed to be plain stdClass
+                return false;
+            }
+            $found_object_type = true;
+            try {
+                $fqsen = FullyQualifiedClassName::fromType($type);
+            } catch (\Exception) {
+                return false;
+            }
+            if ($fqsen !== $stdclass_fqsen) {
+                return false;
+            }
+        }
+        return $found_object_type;
     }
 
     /**
