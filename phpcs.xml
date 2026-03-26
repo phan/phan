@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!-- This is a ruleset for https://github.com/squizlabs/PHP_CodeSniffer -->
+<!-- This is a ruleset for https://github.com/PHPCSStandards/PHP_CodeSniffer -->
 <!-- Usage:  phpcs.phar \-\-standard=path/toruleset.xml path/to/file_or_folder.php (Can't have double hyphen in xml comment) -->
 <!-- phpcbf.phar can be used to automatically fix many issues -->
 <!-- Use this with PHP_CodeSniffer 3.3.0 or newer -->
