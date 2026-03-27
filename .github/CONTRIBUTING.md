@@ -8,7 +8,7 @@ Phan attempts to adhere to the [PSR-2](http://www.php-fig.org/psr/psr-2/) and [P
 declare(strict_types=1);
 ```
 
-- [Phan's ruleset.xml](https://github.com/phan/phan/blob/master/ruleset.xml) can be used with [`phpcs` and `phpcbf`](https://github.com/squizlabs/PHP_CodeSniffer) to adhere to the style guide.
+- [Phan's ruleset.xml](https://github.com/phan/phan/blob/master/ruleset.xml) can be used with [`phpcs` and `phpcbf`](https://github.com/PHPCSStandards/PHP_CodeSniffer) to adhere to the style guide.
 - `internal/phpcbf` will automatically fix any style issues in your changes.
   Alternately, `phpcbf.phar --standard=ruleset.xml ...paths` can be used
 
