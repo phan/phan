@@ -1,9 +1,14 @@
 ## Phan NEWS
 
-Phan 6.0.5-dev
+Mar 27 2026, Phan 6.0.5
 --------------
 Deprecations:
 - Deprecate `override_return_types` config flag in favor of `track_all_inferred_types`, which subsumes its behavior and also accumulates concrete types on interface-typed properties ([#5476](https://github.com/phan/phan/pull/5476))
+
+Bug fixes:
+- Fix `json_decode()` false positives by improving return type inference for various flag combinations ([#5503](https://github.com/phan/phan/pull/5503))
+- Fix `@inheritDoc` false positives ([#5504](https://github.com/phan/phan/pull/5504))
+- Add depth guard to `ArrayShapeType::withStaticResolvedInContext` to prevent infinite recursion on self-referential array shapes ([#5508](https://github.com/phan/phan/pull/5508))
 
 Mar 23 2026, Phan 6.0.4
 --------------
