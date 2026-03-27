@@ -1,5 +1,8 @@
 ## Phan NEWS
 
+Phan 6.0.6-dev
+--------------
+
 Mar 27 2026, Phan 6.0.5
 --------------
 Deprecations:
