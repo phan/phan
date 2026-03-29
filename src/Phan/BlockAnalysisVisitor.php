@@ -3777,6 +3777,19 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     $parameter->cloneAsNonVariadic()
                 );
             }
+        } elseif ($node->children['name'] === 'set') {
+            // Set hooks without explicit params have an implicit $value variable
+            // with the property's declared type (PHP 8.4 semantics)
+            $scope = $context->getScope();
+            if ($scope->isInPropertyScope()) {
+                $property_fqsen = $scope->getPropertyFQSEN();
+                if ($this->code_base->hasPropertyWithFQSEN($property_fqsen)) {
+                    $property = $this->code_base->getPropertyByFQSEN($property_fqsen);
+                    $hook_context->addScopeVariable(
+                        new Variable($hook_context, 'value', $property->getUnionType(), 0)
+                    );
+                }
+            }
         }
 
         // Recurse into children (params, stmts, etc.)
