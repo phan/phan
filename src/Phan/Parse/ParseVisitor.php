@@ -2252,7 +2252,10 @@ class ParseVisitor extends ScopeVisitor
             }
         }
 
-        // Recursively check child nodes (but not into closures - they have their own scope)
+        // Recursively check child nodes, but not into closures - they have their own scope
+        if ($node->kind === ast\AST_CLOSURE || $node->kind === ast\AST_ARROW_FUNC) {
+            return;
+        }
         foreach ($node->children as $child_node) {
             $this->checkEnumPropertyAccessInConstExpr($child_node);
         }
@@ -2270,7 +2273,10 @@ class ParseVisitor extends ScopeVisitor
             return;
         }
 
-        if ($node->kind === ast\AST_CLOSURE || $node->kind === ast\AST_ARROW_FUNC) {
+        if ($node->kind === ast\AST_CLOSURE &&
+            ($node->flags & ast\flags\MODIFIER_STATIC) &&
+            !($node->children['uses'] ?? null)
+        ) {
             if (Config::get_closest_target_php_version_id() < 80500) {
                 $this->emitIssue(
                     Issue::CompatibleClosureInConstExpression,
@@ -2304,12 +2310,18 @@ class ParseVisitor extends ScopeVisitor
         if (!($n instanceof Node)) {
             return;
         }
-        // PHP 8.5+ allows static closures and arrow functions in constant expressions.
-        // Don't recurse into the closure body - it can contain arbitrary expressions.
-        if ($n->kind === ast\AST_CLOSURE || $n->kind === ast\AST_ARROW_FUNC) {
-            if (Config::get_closest_target_php_version_id() >= 80500) {
+        // PHP 8.5+ allows static closures (without use()) in constant expressions.
+        // Arrow functions are not allowed. Don't recurse into the closure body.
+        if ($n->kind === ast\AST_CLOSURE) {
+            if (Config::get_closest_target_php_version_id() >= 80500 &&
+                ($n->flags & ast\flags\MODIFIER_STATIC) &&
+                !($n->children['uses'] ?? null)
+            ) {
                 return;
             }
+            throw new InvalidArgumentException(ASTReverter::toShortString($n));
+        }
+        if ($n->kind === ast\AST_ARROW_FUNC) {
             throw new InvalidArgumentException(ASTReverter::toShortString($n));
         }
         if (

@@ -1,15 +1,16 @@
 %s:5 PhanUnreferencedClass Possibly zero references to class \NS007\Foo
 %s:6 PhanUnreferencedClosure Possibly zero references to Closure()
 %s:6 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \NS007\Foo::BAR
-%s:10 PhanPluginUnknownClosureReturnType Closure Closure() has no declared or inferred return type (Types inferred after analysis: string)
-%s:10 PhanUnreferencedClosure Possibly zero references to Closure()
+%s:10 PhanUnreferencedClosure Possibly zero references to Closure() : string
 %s:10 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \NS007\Foo::BAZ
-%s:13 PhanPluginUnknownClosureReturnType Closure Closure() has no declared or inferred return type (Types inferred after analysis: int)
-%s:13 PhanUnreferencedClosure Possibly zero references to Closure()
-%s:13 PhanUnreferencedConstant Possibly zero references to global constant \NS007\MY_CLOSURE
-%s:17 PhanEmptyFunction Empty function \NS007\test()
-%s:17 PhanPluginUnknownClosureReturnType Closure Closure() has no declared or inferred return type (Types inferred after analysis: null)
-%s:17 PhanPluginUseReturnValueNoopVoid The function/method \NS007\test() is declared to return void and it has no side effects
-%s:17 PhanUnreferencedClosure Possibly zero references to Closure()
-%s:17 PhanUnreferencedFunction Possibly zero references to function \NS007\test()
-%s:17 PhanUnusedGlobalFunctionParameter Parameter $fn is never used
+%s:15 PhanUnreferencedClosure Possibly zero references to Closure() : int
+%s:15 PhanUnreferencedConstant Possibly zero references to global constant \NS007\MY_CLOSURE
+%s:19 PhanEmptyClosure Empty closure Closure()
+%s:19 PhanUnreferencedFunction Possibly zero references to function \NS007\test()
+%s:24 PhanUnreferencedClass Possibly zero references to class \NS007\Invalid
+%s:26 PhanEmptyClosure Empty closure Closure()
+%s:26 PhanUnreferencedClosure Possibly zero references to Closure()
+%s:26 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \NS007\Invalid::A
+%s:29 PhanPluginUnknownClosureReturnType Closure Closure() has no declared or inferred return type (Types inferred after analysis: int)
+%s:29 PhanUnreferencedClosure Possibly zero references to Closure()
+%s:29 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \NS007\Invalid::B
