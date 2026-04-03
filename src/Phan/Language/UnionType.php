@@ -3727,6 +3727,10 @@ class UnionType implements Serializable, Stringable
         $result = [];
         $is_possibly_string = false;
         foreach ($type_set as $type) {
+            if ($type instanceof ClassStringType) {
+                $result[] = $type->withIsNullable(false);
+                continue;
+            }
             if ($type instanceof LiteralStringType) {
                 if (!\preg_match(FullyQualifiedClassName::VALID_CLASS_REGEX, $type->getValue()) && !\preg_match('/^\\\\?oci-(lob|collection)$/iD', $type->getValue())) {
                     continue;
