@@ -127,7 +127,7 @@ class NonFalsyStringType extends NonEmptyStringType
             return false;
         }
 
-        return parent::canCastToNonNullableType($type, $code_base);
+        return parent::isSubtypeOfNonNullableType($type, $code_base);
     }
 
     public function asSignatureType(): Type

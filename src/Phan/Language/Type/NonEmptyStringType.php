@@ -143,7 +143,13 @@ class NonEmptyStringType extends StringType
         // TODO: Could be stricter
         if ($other instanceof ScalarType) {
             if ($other instanceof LiteralTypeInterface) {
-                return $other->getValue() !== '' ? true : $this->is_nullable;
+                $val = $other->getValue();
+                // '0' is a valid non-empty-string, allow overlap
+                if (\is_string($val) && $val !== '') {
+                    return true;
+                }
+                // null, false, 0, 0.0, '' don't weakly overlap with non-empty-string
+                return $val ? true : $this->is_nullable;
             }
             return true;
         }
