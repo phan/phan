@@ -5237,7 +5237,7 @@ class Issue
                 self::CompatibleClosureInConstExpression,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_NORMAL,
-                'Using closures in constant expressions (e.g. {CODE}) is only supported in PHP 8.5+.',
+                'Using static closures without use() in constant expressions (e.g. {CODE}) is only supported in PHP 8.5+.',
                 self::REMEDIATION_B,
                 3058
             ),

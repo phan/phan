@@ -478,7 +478,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/plugin_test/expecte
 ## PhanCompatibleClosureInConstExpression
 
 ```
-Using closures in constant expressions (e.g. {CODE}) is only supported in PHP 8.5+.
+Using static closures without use() in constant expressions (e.g. {CODE}) is only supported in PHP 8.5+.
 ```
 
 ## PhanCompatibleDefaultEqualsNull

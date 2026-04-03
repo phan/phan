@@ -2312,11 +2312,10 @@ class ParseVisitor extends ScopeVisitor
         }
         // PHP 8.5+ allows static closures (without use()) in constant expressions.
         // Arrow functions are not allowed. Don't recurse into the closure body.
+        // Allow the valid shape regardless of target so checkClosureInConstExpr()
+        // can emit the compatibility warning for < 8.5.
         if ($n->kind === ast\AST_CLOSURE) {
-            if (Config::get_closest_target_php_version_id() >= 80500 &&
-                ($n->flags & ast\flags\MODIFIER_STATIC) &&
-                !($n->children['uses'] ?? null)
-            ) {
+            if (($n->flags & ast\flags\MODIFIER_STATIC) && !($n->children['uses'] ?? null)) {
                 return;
             }
             throw new InvalidArgumentException(ASTReverter::toShortString($n));
