@@ -120,9 +120,10 @@ class StringType extends ScalarType
 
     public function asNonFalseyType(): Type
     {
-        return NonEmptyStringType::instance(false);
+        return NonFalsyStringType::instance(false);
     }
 }
 \class_exists(ClassStringType::class);
 \class_exists(NonEmptyStringType::class);
+\class_exists(NonFalsyStringType::class);
 \class_exists(CallableStringType::class);

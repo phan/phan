@@ -9,34 +9,34 @@ use Phan\Language\Context;
 use Phan\Language\Type;
 
 /**
- * Phan's representation of the type for `non-empty-string`.
- * Excludes '' only. For truthy strings (excludes '' and '0'), see NonFalsyStringType.
+ * Phan's representation of the type for `non-falsy-string` (a truthy string).
+ * Excludes '' and '0'.
  * @phan-pure
  */
-class NonEmptyStringType extends StringType
+class NonFalsyStringType extends NonEmptyStringType
 {
     use NativeTypeTrait;
 
     /** @phan-override */
-    public const NAME = 'non-empty-string';
+    public const NAME = 'non-falsy-string';
 
     public function __construct(bool $is_nullable)
     {
-        parent::__construct('\\', self::NAME, [], $is_nullable);
+        // Cannot call parent::__construct because it uses self::NAME
+        // which would resolve to 'non-empty-string'
+        Type::__construct('\\', self::NAME, [], $is_nullable);
     }
 
     /** @override */
     public function isPossiblyFalsey(): bool
     {
-        // non-empty-string includes '0' which is falsey
-        return true;
+        return $this->is_nullable;
     }
 
     /** @override */
     public function isAlwaysTruthy(): bool
     {
-        // non-empty-string includes '0' which is falsey
-        return false;
+        return !$this->is_nullable;
     }
 
     /**
@@ -50,11 +50,11 @@ class NonEmptyStringType extends StringType
             switch ($type::NAME) {
                 case 'string':
                     if ($type instanceof LiteralStringType) {
-                        return $type->getValue() !== '';
+                        return (bool)$type->getValue();
                     }
                     return true;
-                case 'non-empty-string':
                 case 'non-falsy-string':
+                case 'non-empty-string':
                     return true;
                 case 'false':
                 case 'null':
@@ -74,11 +74,11 @@ class NonEmptyStringType extends StringType
             switch ($type::NAME) {
                 case 'string':
                     if ($type instanceof LiteralStringType) {
-                        return $type->getValue() !== '';
+                        return (bool)$type->getValue();
                     }
                     return true;
-                case 'non-empty-string':
                 case 'non-falsy-string':
+                case 'non-empty-string':
                     return true;
             }
             return !$context->isStrictTypes();
@@ -96,18 +96,18 @@ class NonEmptyStringType extends StringType
     {
         if ($type instanceof ScalarType) {
             switch ($type::NAME) {
-                case 'non-empty-string':
                 case 'non-falsy-string':
+                case 'non-empty-string':
                     return true;
                 case 'string':
                     if ($type instanceof LiteralStringType) {
-                        return $type->getValue() !== '';
+                        return (bool)$type->getValue();
                     }
                     return true;
             }
         }
 
-        return parent::canCastToNonNullableType($type, $code_base);
+        return parent::canCastToNonNullableTypeWithoutConfig($type, $code_base);
     }
 
     /**
@@ -121,16 +121,13 @@ class NonEmptyStringType extends StringType
                 if ($type instanceof LiteralStringType || $type instanceof CallableStringType) {
                     return false;
                 }
-                if ($type instanceof NonFalsyStringType) {
-                    // non-empty-string is NOT a subtype of non-falsy-string (includes '0')
-                    return false;
-                }
+                // non-falsy-string is a subtype of non-empty-string and string
                 return true;
             }
             return false;
         }
 
-        return parent::canCastToNonNullableType($type, $code_base);
+        return parent::isSubtypeOfNonNullableType($type, $code_base);
     }
 
     public function asSignatureType(): Type
@@ -140,35 +137,31 @@ class NonEmptyStringType extends StringType
 
     public function weaklyOverlaps(Type $other, CodeBase $code_base): bool
     {
-        // TODO: Could be stricter
         if ($other instanceof ScalarType) {
             if ($other instanceof LiteralTypeInterface) {
-                $val = $other->getValue();
-                if (\is_string($val)) {
-                    return $val !== '';
-                }
-                if ($val === null) {
-                    return $this->is_nullable;
-                }
-                // '0' weakly equals false, 0, and 0.0 in PHP
-                if ($val === false || $val === 0 || $val === 0.0) {
+                $value = $other->getValue();
+                // non-falsy-string includes truthy strings like '00', '0.0', '0e0'
+                // which are loosely equal to int/float 0, so these overlap
+                if (\is_int($value) || \is_float($value)) {
                     return true;
                 }
-                return (bool)$val;
+                // @phan-suppress-next-line PhanSuspiciousTruthyString this is intentional for literal type overlap checking
+                return $value ? true : $this->is_nullable;
             }
             return true;
         }
         return parent::weaklyOverlaps($other, $code_base);
     }
 
-    public function asNonFalseyType(): Type
-    {
-        return NonFalsyStringType::instance(false);
-    }
-
     public function asNonTruthyType(): Type
     {
-        // The only falsey value in non-empty-string is '0' (and null if nullable)
-        return LiteralStringType::instanceForValue('0', $this->is_nullable);
+        // non-falsy-string is always truthy when not nullable;
+        // the only falsey possibility is null (when nullable)
+        return NullType::instance(false);
+    }
+
+    public function asNonFalseyType(): Type
+    {
+        return $this->withIsNullable(false);
     }
 }

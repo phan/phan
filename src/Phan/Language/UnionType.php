@@ -45,7 +45,7 @@ use Phan\Language\Type\NonEmptyArrayInterface;
 use Phan\Language\Type\NonEmptyAssociativeArrayType;
 use Phan\Language\Type\NonEmptyListType;
 use Phan\Language\Type\NonEmptyMixedType;
-use Phan\Language\Type\NonEmptyStringType;
+use Phan\Language\Type\NonFalsyStringType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ScalarRawType;
@@ -3695,7 +3695,7 @@ class UnionType implements Serializable, Stringable
             } elseif ($type instanceof CallableType) {
                 $result[] = CallableStringType::instance(false);
             } elseif ($type instanceof MixedType) {
-                $result[] = $type instanceof NonEmptyMixedType ? NonEmptyStringType::instance(false) : StringType::instance(false);
+                $result[] = $type instanceof NonEmptyMixedType ? NonFalsyStringType::instance(false) : StringType::instance(false);
             }
         }
         return $result;

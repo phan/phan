@@ -1,3 +1,3 @@
-%s:10 PhanDebugAnnotation @phan-debug-var requested for variable $n - it has union type non-empty-string(real=non-empty-mixed)
+%s:10 PhanDebugAnnotation @phan-debug-var requested for variable $n - it has union type non-falsy-string(real=non-empty-mixed)
 %s:25 PhanDebugAnnotation @phan-debug-var requested for variable $i - it has union type array{}|null(real=?''|?'0'|?0|?0.0|?array{}|?false)
 %s:25 PhanUnusedVariable Unused definition of variable $i

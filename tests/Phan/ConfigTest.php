@@ -62,8 +62,8 @@ final class ConfigTest extends TestBase
         Config::setValue('scalar_implicit_partial', ['null' => ['int', 'string', 'false'], 'int' => ['string', 'null']]);
         $this->assertSame([
             'null' => ['int', 'string', 'false'],
-            'int' => ['string', 'null', 'non-empty-string'],
-            'non-zero-int' => ['string', 'non-empty-string'],
+            'int' => ['string', 'null', 'non-falsy-string'],
+            'non-zero-int' => ['string', 'non-falsy-string'],
         ], Config::getValue('scalar_implicit_partial'), 'should add implied allowed casts');
         Config::setValue('scalar_implicit_partial', []);
         $this->assertSame([], Config::getValue('scalar_implicit_partial'));

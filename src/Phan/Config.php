@@ -1467,7 +1467,7 @@ class Config
 
     private const TRUTHY_SCALAR_EQUIVALENTS = [
         'int' => 'non-zero-int',
-        'string' => 'non-empty-string',
+        'string' => 'non-falsy-string',
     ];
 
     private static function updateClosestTargetPHPVersion(): void
