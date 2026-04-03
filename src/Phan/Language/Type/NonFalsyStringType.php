@@ -139,7 +139,14 @@ class NonFalsyStringType extends NonEmptyStringType
     {
         if ($other instanceof ScalarType) {
             if ($other instanceof LiteralTypeInterface) {
-                return $other->getValue() ? true : $this->is_nullable;
+                $value = $other->getValue();
+                // non-falsy-string includes truthy strings like '00', '0.0', '0e0'
+                // which are loosely equal to int/float 0, so these overlap
+                if (\is_int($value) || \is_float($value)) {
+                    return true;
+                }
+                // @phan-suppress-next-line PhanSuspiciousTruthyString this is intentional for literal type overlap checking
+                return $value ? true : $this->is_nullable;
             }
             return true;
         }
