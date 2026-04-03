@@ -475,6 +475,12 @@ Declaring an autoloader with function __autoload() is a fatal error. Use spl_aut
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/plugin_test/expected/000_plugins.php.expected#L21) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/plugin_test/src/000_plugins.php#L64).
 
+## PhanCompatibleClosureInConstExpression
+
+```
+Using closures in constant expressions (e.g. {CODE}) is only supported in PHP 8.5+.
+```
+
 ## PhanCompatibleDefaultEqualsNull
 
 ```

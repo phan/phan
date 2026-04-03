@@ -2157,6 +2157,8 @@ class ParseVisitor extends ScopeVisitor
             self::checkIsAllowedInConstExpr($node, $const_expr_context);
             // After validating the basic structure, check for enum property access (PHP 8.2+)
             $this->checkEnumPropertyAccessInConstExpr($node);
+            // Check for closures in constant expressions (PHP 8.5+)
+            $this->checkClosureInConstExpr($node);
             return true;
         } catch (InvalidArgumentException $e) {
             $this->emitIssue(
@@ -2250,9 +2252,38 @@ class ParseVisitor extends ScopeVisitor
             }
         }
 
-        // Recursively check child nodes
+        // Recursively check child nodes (but not into closures - they have their own scope)
         foreach ($node->children as $child_node) {
             $this->checkEnumPropertyAccessInConstExpr($child_node);
+        }
+    }
+
+    /**
+     * Check for closures in constant expressions (PHP 8.5+ feature).
+     * Emits compatibility warning if targeting PHP < 8.5.
+     *
+     * @param Node|string|float|int|bool|null $node
+     */
+    private function checkClosureInConstExpr(Node|bool|float|int|null|string $node): void
+    {
+        if (!($node instanceof Node)) {
+            return;
+        }
+
+        if ($node->kind === ast\AST_CLOSURE || $node->kind === ast\AST_ARROW_FUNC) {
+            if (Config::get_closest_target_php_version_id() < 80500) {
+                $this->emitIssue(
+                    Issue::CompatibleClosureInConstExpression,
+                    $node->lineno,
+                    ASTReverter::toShortString($node)
+                );
+            }
+            // Don't recurse into closures - they have their own scope
+            return;
+        }
+
+        foreach ($node->children as $child_node) {
+            $this->checkClosureInConstExpr($child_node);
         }
     }
 
@@ -2272,6 +2303,14 @@ class ParseVisitor extends ScopeVisitor
     {
         if (!($n instanceof Node)) {
             return;
+        }
+        // PHP 8.5+ allows static closures and arrow functions in constant expressions.
+        // Don't recurse into the closure body - it can contain arbitrary expressions.
+        if ($n->kind === ast\AST_CLOSURE || $n->kind === ast\AST_ARROW_FUNC) {
+            if (Config::get_closest_target_php_version_id() >= 80500) {
+                return;
+            }
+            throw new InvalidArgumentException(ASTReverter::toShortString($n));
         }
         if (
             !\array_key_exists($n->kind, self::ALLOWED_CONST_EXPRESSION_KINDS) &&
