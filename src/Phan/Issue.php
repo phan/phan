@@ -618,6 +618,7 @@ class Issue
     public const CompatibleTypedClassConstant            = 'PhanCompatibleTypedClassConstant';
     public const CompatibleOverrideAttribute             = 'PhanCompatibleOverrideAttribute';
     public const CompatibleEnumPropertyInConstExpression = 'PhanCompatibleEnumPropertyInConstExpression';
+    public const CompatibleClosureInConstExpression      = 'PhanCompatibleClosureInConstExpression';
     public const NonEnumPropertyInConstExpression        = 'PhanNonEnumPropertyInConstExpression';
 
     // Issue::CATEGORY_GENERIC
@@ -5231,6 +5232,14 @@ class Issue
                 'Only properties of enums can be fetched in constant expressions, {TYPE} given',
                 self::REMEDIATION_B,
                 3057
+            ),
+            new Issue(
+                self::CompatibleClosureInConstExpression,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_NORMAL,
+                'Using static closures without use() in constant expressions (e.g. {CODE}) is only supported in PHP 8.5+.',
+                self::REMEDIATION_B,
+                3058
             ),
             new Issue(
                 self::CompatibleAutoload,
