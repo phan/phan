@@ -5,6 +5,6 @@
 %s:46 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $arg of type true but \strlen() takes string
 %s:48 PhanImpossibleCondition Impossible attempt to cast $arg of type false to truthy
 %s:49 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $arg of type false but \strlen() takes string
-%s:57 PhanRedundantCondition Redundant attempt to cast $x of type non-empty-string to string
-%s:58 PhanRedundantCondition Redundant attempt to cast $x of type non-empty-string to truthy
+%s:57 PhanRedundantCondition Redundant attempt to cast $x of type non-falsy-string to string
+%s:58 PhanRedundantCondition Redundant attempt to cast $x of type non-falsy-string to truthy
 %s:63 PhanTypeMismatchArgumentInternal%SReal Argument 1 ($string) is $y of type object but \strlen() takes string

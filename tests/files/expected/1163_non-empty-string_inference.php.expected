@@ -1,2 +1,2 @@
 %s:6 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type non-empty-string(real=non-empty-string)
-%s:9 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type non-empty-string(real=non-empty-string)
+%s:9 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type non-falsy-string(real=non-falsy-string)

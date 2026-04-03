@@ -61,6 +61,7 @@ use Phan\Language\Type\NonEmptyGenericArrayType;
 use Phan\Language\Type\NonEmptyListType;
 use Phan\Language\Type\NonEmptyMixedType;
 use Phan\Language\Type\NonEmptyStringType;
+use Phan\Language\Type\NonFalsyStringType;
 use Phan\Language\Type\NonNullMixedType;
 use Phan\Language\Type\NegativeIntType;
 use Phan\Language\Type\NonZeroIntType;
@@ -119,17 +120,17 @@ class Type implements Stringable
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     public const simple_type_regex =
-        '(\??)(?:callable-(?:string|object|array)|array-key|associative-array|class-string|int-range|key-of|lowercase-string|negative-int|phan-intersection-type|positive-int|value-of|no-return|never-returns?|non-(?:zero-int|null-mixed|empty-(?:associative-array|array|list|string|lowercase-string|numeric-string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
+        '(\??)(?:callable-(?:string|object|array)|array-key|associative-array|class-string|int-range|key-of|lowercase-string|negative-int|phan-intersection-type|positive-int|value-of|no-return|never-returns?|non-(?:zero-int|null-mixed|falsy-string|empty-(?:associative-array|array|list|string|lowercase-string|numeric-string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
 
     public const simple_noncapturing_type_regex =
-        '\\\\?(?:callable-(?:string|object|array)|array-key|associative-array|class-string|int-range|key-of|lowercase-string|negative-int|phan-intersection-type|positive-int|value-of|no-return|never-returns?|non-(?:zero-int|null-mixed|empty-(?:associative-array|array|list|string|lowercase-string|numeric-string|mixed))|[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
+        '\\\\?(?:callable-(?:string|object|array)|array-key|associative-array|class-string|int-range|key-of|lowercase-string|negative-int|phan-intersection-type|positive-int|value-of|no-return|never-returns?|non-(?:zero-int|null-mixed|falsy-string|empty-(?:associative-array|array|list|string|lowercase-string|numeric-string|mixed))|[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
 
     /**
      * @var string
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     public const simple_type_regex_or_this =
-        '(\??)(callable-(?:string|object|array)|array-key|associative-array|class-string|int-range|key-of|lowercase-string|negative-int|numeric-string|phan-intersection-type|positive-int|value-of|no-return|never-returns?|non-(?:zero-int|null-mixed|empty-(?:associative-array|array|list|string|lowercase-string|numeric-string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*|\$this)';
+        '(\??)(callable-(?:string|object|array)|array-key|associative-array|class-string|int-range|key-of|lowercase-string|negative-int|numeric-string|phan-intersection-type|positive-int|value-of|no-return|never-returns?|non-(?:zero-int|null-mixed|falsy-string|empty-(?:associative-array|array|list|string|lowercase-string|numeric-string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*|\$this)';
 
     public const shape_key_regex =
         '(?:[-.\/^;$%*+_a-zA-Z0-9\x7f-\xff]|\\\\(?:[nrt\\\\]|x[0-9a-fA-F]{2}))+\??';
@@ -264,6 +265,7 @@ class Type implements Stringable
         'non-empty-list'  => true,
         'non-empty-string' => true,
         'non-empty-lowercase-string' => true,
+        'non-falsy-string' => true,
         'non-zero-int'    => true,
         'positive-int'    => true,
         'negative-int'    => true,
@@ -596,6 +598,9 @@ class Type implements Stringable
                     case 'non-empty-string':
                     case 'non-empty-lowercase-string':
                         $value = new NonEmptyStringType($is_nullable);
+                        break;
+                    case 'non-falsy-string':
+                        $value = new NonFalsyStringType($is_nullable);
                         break;
                     case 'non-zero-int':
                         $value = new NonZeroIntType($is_nullable);
@@ -939,6 +944,8 @@ class Type implements Stringable
             case 'non-empty-lowercase-string':
             case 'non-empty-string':
                 return NonEmptyStringType::instance($is_nullable);
+            case 'non-falsy-string':
+                return NonFalsyStringType::instance($is_nullable);
             case 'non-zero-int':
                 return NonZeroIntType::instance($is_nullable);
             case 'positive-int':

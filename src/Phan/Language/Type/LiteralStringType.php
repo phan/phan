@@ -277,8 +277,10 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
                         return false;
                     }
                     break;
-                case 'non-empty-string':
+                case 'non-falsy-string':
                     return (bool)$this->value;
+                case 'non-empty-string':
+                    return $this->value !== '';
             }
         }
 
@@ -304,8 +306,10 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
                         }
                     }
                     return true;
-                case 'non-empty-string':
+                case 'non-falsy-string':
                     return (bool)$this->value;
+                case 'non-empty-string':
+                    return $this->value !== '';
                 case 'int':
                     // Allow int or float strings to cast to int or floats
                     if (filter_var($this->value, FILTER_VALIDATE_INT) === false) {
@@ -346,8 +350,10 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
                         return $type->value === $this->value;
                     }
                     return true;
-                case 'non-empty-string':
+                case 'non-falsy-string':
                     return (bool)$this->value;
+                case 'non-empty-string':
+                    return $this->value !== '';
                 default:
                     return $type instanceof StringType;
             }
@@ -387,8 +393,10 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
                     return !$this->isDefiniteNonCallableType($code_base);
                 } elseif ($type instanceof ClassStringType) {
                     return preg_match(self::NAMESPACED_CLASS_REGEX, $this->value) > 0;
-                } elseif ($type instanceof NonEmptyStringType) {
+                } elseif ($type instanceof NonFalsyStringType) {
                     return (bool)$this->value;
+                } elseif ($type instanceof NonEmptyStringType) {
+                    return $this->value !== '';
                 }
                 return true;
             }
@@ -481,7 +489,7 @@ final class LiteralStringType extends StringType implements LiteralTypeInterface
 
     public function asNonFalseyType(): Type
     {
-        return $this->value ? $this->withIsNullable(false) : NonEmptyStringType::instance(false);
+        return $this->value ? $this->withIsNullable(false) : NonFalsyStringType::instance(false);
     }
 
     public function asNonTruthyType(): Type
