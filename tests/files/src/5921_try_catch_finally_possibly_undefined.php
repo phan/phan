@@ -59,5 +59,5 @@ function test_no_catch_with_finally(): void {
     } finally {
         // cleanup
     }
-    echo $variable; // should warn: PhanPossiblyUndeclaredVariable
+    echo $variable; // should not warn: no catch means exception propagates, so this is only reachable if try succeeded
 }

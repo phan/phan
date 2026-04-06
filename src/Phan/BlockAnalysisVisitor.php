@@ -2888,7 +2888,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $catch_context_list = [$try_context];
 
         $catch_nodes = $node->children['catches']->children ?? [];
-        $all_catches_skip_remaining = (bool)$catch_nodes;
+        $all_catches_skip_remaining = true;
 
         foreach ($catch_nodes as $catch_node) {
             // Note: ContextMergeVisitor expects to get each individual catch
