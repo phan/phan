@@ -88,11 +88,11 @@ function test6() {
 }
 
 // Test case 7: No catch blocks
-// Should warn: exception will propagate
+// Should NOT warn: exception propagates, so this is only reachable if try succeeded
 function test7() {
     try {
         $val7 = mayThrow();
     } finally {
     }
-    echo $val7;  // PhanPossiblyUndeclaredVariable
+    echo $val7;  // No warning: exception propagates, $val7 is always defined here
 }
