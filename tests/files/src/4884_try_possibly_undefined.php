@@ -94,5 +94,5 @@ function test7() {
         $val7 = mayThrow();
     } finally {
     }
-    echo $val7;  // PhanPossiblyUndeclaredVariable
+    echo $val7;  // No warning: exception propagates, $val7 is always defined here
 }
