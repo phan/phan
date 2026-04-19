@@ -420,8 +420,33 @@ final class TemplateType extends Type
         if (!$this->bound_union_type || $this->bound_union_type->isEmpty()) {
             return true;
         }
-
+        // NOTE: UnionType::canCastToDeclaredType() iterates over target types one at a time
+        // and returns true on any match, so this uses "bound ∩ target non-empty" semantics
+        // rather than full-subtyping. Full subtyping is enforced by canCastToAnyTypeInSet()
+        // via the main canCastToUnionType() path.
         return $this->bound_union_type->canCastToUnionType($other->asPHPDocUnionType(), $code_base);
+    }
+
+    /**
+     * @param list<Type> $target_type_set
+     */
+    public function canCastToAnyTypeInSet(array $target_type_set, CodeBase $code_base): bool
+    {
+        if (!$this->bound_union_type || $this->bound_union_type->isEmpty()) {
+            return parent::canCastToAnyTypeInSet($target_type_set, $code_base);
+        }
+        // A nullable bounded template cannot cast to a set of non-null-accepting targets.
+        if ($this->is_nullable && !NullType::instance(false)->canCastToAnyTypeInSet($target_type_set, $code_base)) {
+            return false;
+        }
+        // T of Bound casts to the target union if every type in the bound
+        // can cast to at least one type in the target set.
+        foreach ($this->bound_union_type->getTypeSet() as $bound_type) {
+            if (!$bound_type->canCastToAnyTypeInSet($target_type_set, $code_base)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -430,15 +455,22 @@ final class TemplateType extends Type
     public function canCastToAnyTypeInSetWithoutConfig(array $target_type_set, CodeBase $code_base): bool
     {
         if (!$this->bound_union_type || $this->bound_union_type->isEmpty()) {
+            // Preserve prior permissive behavior for unbounded templates in strict (without-config) casts:
+            // templates with no declared bound are treated as acceptable, matching earlier Phan releases.
             return true;
         }
-
-        foreach ($target_type_set as $type) {
-            if ($this->bound_union_type->canCastToUnionType($type->asPHPDocUnionType(), $code_base)) {
-                return true;
+        // A nullable bounded template cannot cast to a set of non-null-accepting targets.
+        if ($this->is_nullable && !NullType::instance(false)->canCastToAnyTypeInSetWithoutConfig($target_type_set, $code_base)) {
+            return false;
+        }
+        // T of Bound casts to the target union if every type in the bound
+        // can cast to at least one type in the target set.
+        foreach ($this->bound_union_type->getTypeSet() as $bound_type) {
+            if (!$bound_type->canCastToAnyTypeInSetWithoutConfig($target_type_set, $code_base)) {
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     public function isPossiblyFalsey(): bool
