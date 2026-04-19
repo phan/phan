@@ -436,6 +436,10 @@ final class TemplateType extends Type
         if (!$this->bound_union_type || $this->bound_union_type->isEmpty()) {
             return parent::canCastToAnyTypeInSet($target_type_set, $code_base);
         }
+        // A nullable bounded template cannot cast to a set of non-null-accepting targets.
+        if ($this->is_nullable && !NullType::instance(false)->canCastToAnyTypeInSet($target_type_set, $code_base)) {
+            return false;
+        }
         // T of Bound casts to the target union if every type in the bound
         // can cast to at least one type in the target set.
         foreach ($this->bound_union_type->getTypeSet() as $bound_type) {
@@ -452,7 +456,13 @@ final class TemplateType extends Type
     public function canCastToAnyTypeInSetWithoutConfig(array $target_type_set, CodeBase $code_base): bool
     {
         if (!$this->bound_union_type || $this->bound_union_type->isEmpty()) {
-            return parent::canCastToAnyTypeInSetWithoutConfig($target_type_set, $code_base);
+            // Preserve prior permissive behavior for unbounded templates in strict (without-config) casts:
+            // templates with no declared bound are treated as acceptable, matching earlier Phan releases.
+            return true;
+        }
+        // A nullable bounded template cannot cast to a set of non-null-accepting targets.
+        if ($this->is_nullable && !NullType::instance(false)->canCastToAnyTypeInSetWithoutConfig($target_type_set, $code_base)) {
+            return false;
         }
         // T of Bound casts to the target union if every type in the bound
         // can cast to at least one type in the target set.

@@ -62,3 +62,13 @@ class ReturnAndProperty {
         $h->prop = $value;  // should warn: T could be B
     }
 }
+
+/**
+ * @template T of A|B
+ */
+class NullableBox {
+    /** @param ?T $value */
+    public function test($value): void {
+        takesAOrB($value);   // should warn: nullable source to non-null target
+    }
+}
