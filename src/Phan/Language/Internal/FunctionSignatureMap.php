@@ -6396,7 +6396,7 @@ return [
 'RecursiveTreeIterator::setPostfix' => ['void', 'postfix'=>'string'],
 'RecursiveTreeIterator::setPrefixPart' => ['void', 'part'=>'int', 'value'=>'string'],
 'RecursiveTreeIterator::valid' => ['bool'],
-'Redis::__construct' => ['void'],
+'Redis::__construct' => ['void', 'options='=>'?array'],
 'Redis::__destruct' => ['void'],
 'Redis::_compress' => ['string'],
 'Redis::_pack' => ['string'],
