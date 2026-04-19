@@ -411,21 +411,20 @@ final class TemplateType extends Type
     }
 
     /**
+     * @unused-param $code_base
      * @unused-param $context
+     * @unused-param $other
      */
     public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
         if (!$this->bound_union_type || $this->bound_union_type->isEmpty()) {
             return true;
         }
-        // T of Bound casts to $other only if every type in the bound is assignable to $other.
-        $other_union = $other->asPHPDocUnionType();
-        foreach ($this->bound_union_type->getTypeSet() as $bound_type) {
-            if (!$bound_type->asPHPDocUnionType()->canCastToUnionType($other_union, $code_base)) {
-                return false;
-            }
-        }
-        return true;
+        // NOTE: UnionType::canCastToDeclaredType() iterates over target types one at a time
+        // and returns true on any match, so this uses "bound ∩ target non-empty" semantics
+        // rather than full-subtyping. Full subtyping is enforced by canCastToAnyTypeInSet()
+        // via the main canCastToUnionType() path.
+        return $this->bound_union_type->canCastToUnionType($other->asPHPDocUnionType(), $code_base);
     }
 
     /**
