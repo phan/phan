@@ -164,7 +164,7 @@ class Type implements Stringable
      */
     public const type_regex =
         '('
-        . '(?:\??\((?-1)(?:[|&](?-1))*\)|'  // Recursion: "?(T)" or "(T)" with brackets. Also allow parsing (a|b) within brackets.
+        . '(?:\??\((?-1)(?:\s*[|&]\s*(?-1))*\)|'  // Recursion: "?(T)" or "(T)" with brackets. Also allow parsing (a|b) within brackets.
         . '(?:'
           . '\??(?:\\\\?Closure|callable)(\((?:[^()]|(?-1))*\))'  // `Closure(...)` can have matching pairs of () inside `...`, recursively
           . '(?:\s*:\s*'  // optional return type, can be ":T" or ":(T1|T2)" or ": ?(T1|T2)"
@@ -179,16 +179,16 @@ class Type implements Stringable
         . '(?:'
           . '<'
             . '('
-              . '(?-5)(?:[|&](?-5))*'
+              . '(?-5)(?:\s*[|&]\s*(?-5))*'
               . '(?:\s*,\s*'
-                . '(?-5)(?:[|&](?-5))*'
+                . '(?-5)(?:\s*[|&]\s*(?-5))*'
               . ')*'
             . ')'
           . '>'
           . '|'
           . '\{('  // Expect either '{' or '<', after a word token.
-            . '(?:' . self::shape_key_regex . '\s*:)?\s*(?-6)(?:[|&](?-6))*=?'  // {shape_key_regex:<type_regex>}
-            . '(?:,(?:\s*' . self::shape_key_regex . '\s*:)?\s*(?-6)(?:[|&](?-6))*=?)*'  // {shape_key_regex:<type_regex>}
+            . '(?:' . self::shape_key_regex . '\s*:)?\s*(?-6)(?:\s*[|&]\s*(?-6))*=?'  // {shape_key_regex:<type_regex>}
+            . '(?:,(?:\s*' . self::shape_key_regex . '\s*:)?\s*(?-6)(?:\s*[|&]\s*(?-6))*=?)*'  // {shape_key_regex:<type_regex>}
           . ')?\})?'
         . ')'
         . '(?:\[\])*'
@@ -206,7 +206,7 @@ class Type implements Stringable
         '('
         . '('
           . '(?:'
-            . '\??\((?-1)(?:[|&](?-1))*\)|'  // Recursion: "?(T)" or "(T)" with brackets. Also allow parsing (a|b) within brackets.
+            . '\??\((?-1)(?:\s*[|&]\s*(?-1))*\)|'  // Recursion: "?(T)" or "(T)" with brackets. Also allow parsing (a|b) within brackets.
             . '(?:'
               . '\??(?:\\\\?Closure|callable)(\((?:[^()]|(?-1))*\))'  // `Closure(...)` can have matching pairs of () inside `...`, recursively
               . '(?:\s*:\s*'  // optional return type, can be ":T" or ":(T1|T2)"
@@ -220,16 +220,16 @@ class Type implements Stringable
             . '(' . self::simple_type_regex_or_this . ')'  // 3 patterns
             . '(?:<'
               . '('
-                . '(?-6)(?:[|&](?-6))*'  // We use relative references instead of named references so that more than one one type_regex can be used in a regex.
+                . '(?-6)(?:\s*[|&]\s*(?-6))*'  // We use relative references instead of named references so that more than one one type_regex can be used in a regex.
                 . '(?:\s*,\s*'
-                  . '(?-6)(?:[|&](?-6))*'
+                  . '(?-6)(?:\s*[|&]\s*(?-6))*'
                 . ')*'
               . ')'
               . '>'
               . '|'
               . '(\{)('  // Expect either '{' or '<', after a word token. Match '{' to disambiguate 'array{}'
-                . '(?:' . self::shape_key_regex . '\s*:)?\s*(?-8)(?:[|&](?-8))*=?'  // {shape_key_regex:<type_regex>}
-                . '(?:,(?:\s*' . self::shape_key_regex . '\s*:)?\s*(?-8)(?:[|&](?-8))*=?)*'  // {shape_key_regex:<type_regex>}
+                . '(?:' . self::shape_key_regex . '\s*:)?\s*(?-8)(?:\s*[|&]\s*(?-8))*=?'  // {shape_key_regex:<type_regex>}
+                . '(?:,(?:\s*' . self::shape_key_regex . '\s*:)?\s*(?-8)(?:\s*[|&]\s*(?-8))*=?)*'  // {shape_key_regex:<type_regex>}
               . ')?\})?'
             . ')'
           . '(?:\[\])*'
