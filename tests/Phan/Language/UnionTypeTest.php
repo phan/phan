@@ -628,6 +628,28 @@ final class UnionTypeTest extends TestBase
         $this->assertFalse($field_union_type->isPossiblyUndefined());
     }
 
+    public function testUnionWithSpacesInArrayShape(): void
+    {
+        // Regression test for https://github.com/phan/phan/issues/5521
+        // Spaces around | and & inside array shapes and generics must be accepted.
+        $shape = self::makePHPDocUnionType('array{key: bool | string}');
+        $this->assertSame(1, $shape->typeCount());
+        $this->assertSame('array{key:bool|string}', (string)$shape);
+        $shape_types = $shape->getTypeSet();
+        $this->assertInstanceOf(ArrayShapeType::class, \reset($shape_types));
+
+        $shape_and = self::makePHPDocUnionType('array{key: bool & string}');
+        $this->assertSame(1, $shape_and->typeCount());
+
+        // array<bool | string> expands the same as array<bool|string> — both produce bool[]|string[]
+        $generic = self::makePHPDocUnionType('array<bool | string>');
+        $generic_nospace = self::makePHPDocUnionType('array<bool|string>');
+        $this->assertSame((string)$generic_nospace, (string)$generic);
+
+        $generic_and = self::makePHPDocUnionType('array<bool & string>');
+        $this->assertGreaterThanOrEqual(1, $generic_and->typeCount());
+    }
+
     public function testFlattenEmptyArrayShape(): void
     {
         $union_type = self::makePHPDocUnionType('array{}|array<int,\stdClass>');
