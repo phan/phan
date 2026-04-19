@@ -7,4 +7,3 @@
 %s:74 PhanTemplateTypeNotUsedInFunctionReturn Template type T not used in return value of function/method accessUnboundedTemplate5433()
 %s:76 PhanTypeArraySuspiciousNullable Suspicious array access to $value of nullable type T
 %s:86 PhanTemplateTypeNotUsedInFunctionReturn Template type T not used in return value of function/method accessStringTemplate5433()
-%s:88 PhanTypeArraySuspicious Suspicious array access to $str of type T

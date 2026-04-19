@@ -411,17 +411,39 @@ final class TemplateType extends Type
     }
 
     /**
-     * @unused-param $code_base
      * @unused-param $context
-     * @unused-param $other
      */
     public function canCastToDeclaredType(CodeBase $code_base, Context $context, Type $other): bool
     {
         if (!$this->bound_union_type || $this->bound_union_type->isEmpty()) {
             return true;
         }
+        // T of Bound casts to $other only if every type in the bound is assignable to $other.
+        $other_union = $other->asPHPDocUnionType();
+        foreach ($this->bound_union_type->getTypeSet() as $bound_type) {
+            if (!$bound_type->asPHPDocUnionType()->canCastToUnionType($other_union, $code_base)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
-        return $this->bound_union_type->canCastToUnionType($other->asPHPDocUnionType(), $code_base);
+    /**
+     * @param list<Type> $target_type_set
+     */
+    public function canCastToAnyTypeInSet(array $target_type_set, CodeBase $code_base): bool
+    {
+        if (!$this->bound_union_type || $this->bound_union_type->isEmpty()) {
+            return parent::canCastToAnyTypeInSet($target_type_set, $code_base);
+        }
+        // T of Bound casts to the target union if every type in the bound
+        // can cast to at least one type in the target set.
+        foreach ($this->bound_union_type->getTypeSet() as $bound_type) {
+            if (!$bound_type->canCastToAnyTypeInSet($target_type_set, $code_base)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -430,15 +452,16 @@ final class TemplateType extends Type
     public function canCastToAnyTypeInSetWithoutConfig(array $target_type_set, CodeBase $code_base): bool
     {
         if (!$this->bound_union_type || $this->bound_union_type->isEmpty()) {
-            return true;
+            return parent::canCastToAnyTypeInSetWithoutConfig($target_type_set, $code_base);
         }
-
-        foreach ($target_type_set as $type) {
-            if ($this->bound_union_type->canCastToUnionType($type->asPHPDocUnionType(), $code_base)) {
-                return true;
+        // T of Bound casts to the target union if every type in the bound
+        // can cast to at least one type in the target set.
+        foreach ($this->bound_union_type->getTypeSet() as $bound_type) {
+            if (!$bound_type->canCastToAnyTypeInSetWithoutConfig($target_type_set, $code_base)) {
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     public function isPossiblyFalsey(): bool

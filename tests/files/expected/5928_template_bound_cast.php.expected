@@ -1,0 +1,4 @@
+%s:19 PhanTypeMismatchArgument Argument 1 ($x) is $value of type T but \takesA() takes \A defined at %s:10
+%s:40 PhanTypeMismatchArgument Argument 1 ($x) is $value of type T but \takesAOrB() takes \A|\B defined at %s:9
+%s:57 PhanTypeMismatchReturn Returning $value of type T but returnA() is declared to return \A
+%s:62 PhanTypeMismatchPropertyReal Assigning $value of type T (no real type) to property but \Holder->prop is \A
