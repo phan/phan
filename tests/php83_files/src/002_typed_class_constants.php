@@ -73,3 +73,23 @@ class NullableTypes {
     const ?string NULLABLE_STR = 'test'; // OK
     const ?int WRONG_NULL = 'not null'; // ERROR
 }
+
+// Test covariant inheritance: narrowing nullable to non-nullable is allowed
+class CovariantParent {
+    const ?string STR = null;
+    const ?int NUM = null;
+}
+
+class CovariantChild extends CovariantParent {
+    const string STR = 'Qux'; // OK: string is covariant with ?string
+    const int NUM = 42;       // OK: int is covariant with ?int
+}
+
+// Test non-covariant inheritance: widening is not allowed
+class NonCovariantParent {
+    const string STR = 'test';
+}
+
+class NonCovariantChild extends NonCovariantParent {
+    const ?string STR = null; // ERROR: ?string widens string (not covariant)
+}
