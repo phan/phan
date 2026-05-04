@@ -292,8 +292,8 @@ class ClassConstantTypesAnalyzer
                     continue;
                 }
 
-                // PHP enforces covariance for typed constants: every type in the child must be a subtype of the parent
-                if (!$constant_real_type->canStrictCastToUnionType($code_base, $inherited_real_type)) {
+                // PHP enforces covariance for typed constants: every type in the child must be a strict subtype of the parent
+                if (!$constant_real_type->isStrictSubtypeOf($code_base, $inherited_real_type)) {
                     Issue::maybeEmit(
                         $code_base,
                         $constant->getContext(),

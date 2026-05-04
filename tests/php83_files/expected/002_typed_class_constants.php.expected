@@ -7,5 +7,6 @@
 %s:60 PhanTypeMismatchDeclaredConstant Constant \ComplexExpressions::WRONG_CALC is declared with type int but has value ('prefix' . self::BASE) of type 'prefix10'
 %s:67 PhanTypeMismatchDeclaredConstant Constant \UnionTypes::WRONG is declared with type int|string but has value 3.14 of type 3.14
 %s:74 PhanTypeMismatchDeclaredConstant Constant \NullableTypes::WRONG_NULL is declared with type ?int but has value 'not null' of type 'not null'
-%s:95 PhanConstantTypeMismatchInheritance Class constant \NonCovariantChild::STR is declared with type ?string which is not covariant with type string inherited from \NonCovariantParent (constant types must be invariant or covariant)
-%s:96 PhanConstantTypeMismatchInheritance Class constant \NonCovariantChild::NUM is declared with type int|string which is not covariant with type int inherited from \NonCovariantParent (constant types must be invariant or covariant)
+%s:96 PhanConstantTypeMismatchInheritance Class constant \NonCovariantChild::STR is declared with type ?string which is not covariant with type string inherited from \NonCovariantParent (constant types must be invariant or covariant)
+%s:97 PhanConstantTypeMismatchInheritance Class constant \NonCovariantChild::NUM is declared with type int|string which is not covariant with type int inherited from \NonCovariantParent (constant types must be invariant or covariant)
+%s:98 PhanConstantTypeMismatchInheritance Class constant \NonCovariantChild::MIXED_PARENT is declared with type mixed which is not covariant with type int inherited from \NonCovariantParent (constant types must be invariant or covariant)

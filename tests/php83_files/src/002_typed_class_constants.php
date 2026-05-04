@@ -89,9 +89,11 @@ class CovariantChild extends CovariantParent {
 class NonCovariantParent {
     const string STR = 'test';
     const int NUM = 1;
+    const int MIXED_PARENT = 1;
 }
 
 class NonCovariantChild extends NonCovariantParent {
     const ?string STR = null;    // ERROR: ?string widens string (not covariant)
     const int|string NUM = 1;    // ERROR: int|string widens int (not covariant)
+    const mixed MIXED_PARENT = 1; // ERROR: mixed widens int (not covariant)
 }
