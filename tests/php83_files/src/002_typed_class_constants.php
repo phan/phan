@@ -88,8 +88,10 @@ class CovariantChild extends CovariantParent {
 // Test non-covariant inheritance: widening is not allowed
 class NonCovariantParent {
     const string STR = 'test';
+    const int NUM = 1;
 }
 
 class NonCovariantChild extends NonCovariantParent {
-    const ?string STR = null; // ERROR: ?string widens string (not covariant)
+    const ?string STR = null;    // ERROR: ?string widens string (not covariant)
+    const int|string NUM = 1;    // ERROR: int|string widens int (not covariant)
 }
