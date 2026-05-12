@@ -1,0 +1,2 @@
+%s:30 PhanAccessReadOnlyProperty Cannot modify read-only property \NullableReadonly->foo defined at %s:26
+%s:41 PhanAccessReadOnlyProperty Cannot modify read-only property \PhpdocReadonly->foo defined at %s:37

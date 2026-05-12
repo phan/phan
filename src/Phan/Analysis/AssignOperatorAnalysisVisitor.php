@@ -475,7 +475,8 @@ class AssignOperatorAnalysisVisitor extends FlagVisitorImplementation
             $this->code_base,
             $this->context,
             $var_node,
-            $new_type
+            $new_type,
+            is_coalesce_assign: true
         ))->__invoke($var_node);
     }
 
