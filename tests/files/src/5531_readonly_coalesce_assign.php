@@ -31,13 +31,21 @@ class NullableReadonly {
     }
 }
 
-// @phan-read-only phpdoc property: treat same as native readonly
+// @phan-read-only phpdoc property: not PHP-enforced, Phan still warns about writes outside __construct
 class PhpdocReadonly {
     /** @phan-read-only */
     public string $foo = 'x';
 
     public function init(): void {
-        // ERROR: @phan-read-only (magic property write is always warned)
+        // ERROR: @phan-read-only properties are excluded from the ??= exemption
         $this->foo ??= 'default';
+    }
+}
+
+// Access from outside the declaring class: ??= still warns (PHP would throw from external scope)
+class ExternalAccessTest {
+    public function test(NonNullableReadonly $obj): void {
+        // ERROR: writing a readonly property from outside its declaring class
+        $obj->foo ??= 'external';
     }
 }

@@ -130,6 +130,11 @@ class AssignmentVisitor extends AnalysisVisitor
      * @param bool $is_conditional_check
      * True if this is being used for conditional type inference (isset/array_key_exists)
      * rather than an actual assignment. Skips read-only property checks.
+     *
+     * @param bool $is_coalesce_assign
+     * True if this assignment comes from a ??= operator. Allows writes to non-nullable
+     * native readonly properties within the declaring class scope, since ??= short-circuits
+     * if the property is already set to a non-null value.
      */
     public function __construct(
         CodeBase $code_base,
@@ -1700,20 +1705,6 @@ class AssignmentVisitor extends AnalysisVisitor
         // Distinguish between native readonly and @phan-read-only
         $is_native_readonly = $property->isReadOnlyReal();
 
-        // For non-nullable native readonly properties, ??= is always safe:
-        // - if uninitialized, PHP treats it as null and assigns once (valid first write)
-        // - if already initialized to a non-null value, ??= short-circuits (no-op, no write attempt)
-        // Nullable readonly properties are excluded: null is a valid initialized state,
-        // so ??= would keep attempting to re-assign after a null initialization.
-        // @phan-read-only (non-native) properties are excluded: not PHP-enforced, Phan should
-        // still warn about writes outside the constructor.
-        if ($this->is_coalesce_assign && $is_native_readonly) {
-            $declared_type = $property->getUnionType();
-            if (!$declared_type->containsNullableOrUndefined()) {
-                return;
-            }
-        }
-
         if ($this->context->isInFunctionLikeScope() && $this->context->isInClassScope()) {
             $method = $this->context->getFunctionLikeInScope($this->code_base);
             $method_class_fqsen = $this->context->getClassFQSEN();
@@ -1734,6 +1725,21 @@ class AssignmentVisitor extends AnalysisVisitor
                     $this->checkMultipleReadOnlyPropertyAssignments($property, $node, $method);
                 }
                 return;
+            }
+
+            // For non-nullable native readonly properties, ??= within the declaring class scope is safe:
+            // - if uninitialized, PHP treats it as null and assigns once (valid first write from same class)
+            // - if already initialized to a non-null value, ??= short-circuits (no-op, no write attempt)
+            // This exemption is scoped to the declaring class: outside the class, PHP would throw
+            // "Cannot initialize readonly property from global scope / outside scope".
+            // Nullable readonly properties are excluded: null is a valid initialized state,
+            // so ??= could keep attempting to re-assign.
+            // @phan-read-only (non-native) properties are excluded: not PHP-enforced.
+            if ($this->is_coalesce_assign && $is_native_readonly && $is_same_or_subclass) {
+                $declared_type = $property->getRealUnionType();
+                if (!$declared_type->containsNullableOrUndefined()) {
+                    return;
+                }
             }
         }
 

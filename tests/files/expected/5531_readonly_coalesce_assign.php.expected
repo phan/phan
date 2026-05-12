@@ -1,2 +1,3 @@
 %s:30 PhanAccessReadOnlyProperty Cannot modify read-only property \NullableReadonly->foo defined at %s:26
 %s:41 PhanAccessReadOnlyProperty Cannot modify read-only property \PhpdocReadonly->foo defined at %s:37
+%s:49 PhanTypeModifyImmutableObjectProperty Saw attempt to modify class \NonNullableReadonly's property $foo declared at %s:7 (immutability of properties is enforced at runtime)
