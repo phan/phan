@@ -3928,6 +3928,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     break;
                 case ast\AST_ASSIGN:
                 case ast\AST_ASSIGN_REF:
+                case ast\AST_ASSIGN_OP:
                     return $prev_parent_node->children['var'] === $cur_parent_node;
                 case ast\AST_ARRAY_ELEM:
                     $prev_parent_node = \prev($parent_node_list);  // this becomes AST_ARRAY
