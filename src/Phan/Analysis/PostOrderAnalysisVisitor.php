@@ -5509,11 +5509,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * @param Node $node
-     * A decl to check to see if its only effect
-     * is the throw an exception
+     * A decl to check to see whether it can never return normally
      *
      * @return bool
-     * True when the decl can only throw an exception or return or exit()
+     * True when no path through the decl returns normally - i.e. every path
+     * throws an exception, exits (exit()/die()), or loops forever.
+     * A path that reaches a `return` (or falls off the end) makes this false.
      */
     private function declNeverReturns(Node $node): bool
     {
