@@ -46,11 +46,10 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
     }
 
     /**
-     * @return bool
-     * @suppress PhanUnreferencedPublicMethod this used to be used
-     *
      * True if this is a global constant set through `define(...)` instead of
-     * `const` keyword
+     * the `const` keyword
+     *
+     * @suppress PhanUnreferencedPublicMethod this used to be used
      */
     public function isDynamicConstant(): bool
     {
