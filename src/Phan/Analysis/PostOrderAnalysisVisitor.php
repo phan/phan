@@ -3941,12 +3941,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * Check if the parent node list contains a null coalescing assignment (??=).
-     * Used for write tracking since ??= is a write even for nested dimensions.
+     * Check if the parent node list contains a compound or null coalescing
+     * assignment such as ??=, .=, +=, etc...
+     *
+     * Used for write tracking since assignment operators count as read and
+     * write for nested dimensions.
      *
      * @param list<Node> $parent_node_list
      */
-    private static function isNestedNullCoalesceAssignment(array $parent_node_list): bool
+    private static function isNestedCompoundAssignment(array $parent_node_list): bool
     {
         $cur_parent_node = \end($parent_node_list);
         for (;; $cur_parent_node = $prev_parent_node) {
@@ -3961,8 +3964,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     }
                     break;
                 case ast\AST_ASSIGN_OP:
-                    return $prev_parent_node->flags === ast\flags\BINARY_COALESCE
-                        && $prev_parent_node->children['var'] === $cur_parent_node;
+                    return $prev_parent_node->children['var'] === $cur_parent_node;
                 default:
                     return false;
             }
@@ -4275,7 +4277,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if (self::shouldSkipNestedAssignDim($parent_node_list)) {
                 return true;
             }
-            return self::isNestedNullCoalesceAssignment($parent_node_list);
+            return self::isNestedCompoundAssignment($parent_node_list);
         } elseif ($parent_kind === ast\AST_ASSIGN || $parent_kind === ast\AST_ASSIGN_OP) {
             return $parent_node->children['var'] === $node;
         } elseif ($parent_kind === ast\AST_ASSIGN_REF) {
