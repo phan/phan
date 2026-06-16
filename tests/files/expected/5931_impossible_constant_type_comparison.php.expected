@@ -1,0 +1,1 @@
+%s:6 PhanImpossibleTypeComparison Impossible attempt to check if STRING_CONST of type string is identical to $intVar of type int

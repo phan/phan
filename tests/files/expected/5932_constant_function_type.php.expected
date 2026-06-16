@@ -1,0 +1,2 @@
+%s:5 PhanDebugAnnotation @phan-debug-var requested for variable $definiteStringVarFromConstantPlain - it has union type string(real=string)
+%s:8 PhanDebugAnnotation @phan-debug-var requested for variable $definiteStringVarFromConstantFn - it has union type string(real=string)

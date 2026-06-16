@@ -292,11 +292,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             if (!$code_base->hasGlobalConstantWithFQSEN($fqsen)) {
                 return $mixed_union_type;
             }
-            $constant = $code_base->getGlobalConstantByFQSEN($fqsen);
-            if ($constant->isDynamicConstant()) {
-                return $mixed_union_type;
-            }
-            return $constant->getUnionType();
+            return $code_base->getGlobalConstantByFQSEN($fqsen)->getUnionType();
         };
         $real_int_type = IntType::instance(false)->asRealUnionType();
         /**
