@@ -51,8 +51,10 @@ function never_in_if5929(bool $x): never
     }
 }
 
-// A closure/arrow-function body that ends by calling a never-returning function
-// must likewise be recognized as never returning (visitClosure path).
+// A closure body that ends by calling a never-returning function must likewise
+// be recognized as never returning (visitClosure path). Arrow functions are not
+// covered here: an arrow function implicitly returns its expression, so a
+// `: never` arrow function is a syntax error (PhanSyntaxReturnStatementInNever).
 $never_closure5929 = function (): never {
     redirect_any5929("/closure");
 };
