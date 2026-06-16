@@ -1668,7 +1668,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         if (!$return_type->isEmpty()
             && !$func->hasReturn()
-            && !self::declNeverReturns($node)
+            && !$this->declNeverReturns($node)
             && !$return_type->isNull()
             && !$return_type->isNeverType()
         ) {
@@ -3398,7 +3398,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             && !$has_interface_class
             && !$return_type->isEmpty()
             && !$method->hasReturn()
-            && !self::declNeverReturns($node)
+            && !$this->declNeverReturns($node)
             && !$return_type->hasType(VoidType::instance(false))
             && !$return_type->hasType(NullType::instance(false))
             && !$return_type->hasType(NeverType::instance(false))
@@ -3461,7 +3461,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         if (!$return_type->isEmpty()
             && !$function->hasReturn()
-            && !self::declNeverReturns($node)
+            && !$this->declNeverReturns($node)
             && !$return_type->hasType(VoidType::instance(false))
             && !$return_type->hasType(NullType::instance(false))
         ) {
@@ -5509,18 +5509,19 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * @param Node $node
-     * A decl to check to see if its only effect
-     * is the throw an exception
+     * A decl to check to see whether it can never return normally
      *
      * @return bool
-     * True when the decl can only throw an exception or return or exit()
+     * True when no path through the decl returns normally - i.e. every path
+     * throws an exception, exits (exit()/die()), or loops forever.
+     * A path that reaches a `return` (or falls off the end) makes this false.
      */
-    private static function declNeverReturns(Node $node): bool
+    private function declNeverReturns(Node $node): bool
     {
         // Work around fallback parser generating methods without statements list.
         // Otherwise, 'stmts' would always be a Node due to preconditions.
         $stmts_node = $node->children['stmts'];
-        return $stmts_node instanceof Node && BlockExitStatusChecker::willUnconditionallyNeverReturn($stmts_node);
+        return $stmts_node instanceof Node && BlockExitStatusChecker::willUnconditionallyNeverReturn($stmts_node, $this->code_base, $this->context);
     }
 
     private function canApplyStaticPropertyOverride(FullyQualifiedClassName $calling_class, FullyQualifiedClassName $target_class): bool
