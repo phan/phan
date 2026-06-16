@@ -81,15 +81,6 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         self::STATUS_PROCEED |
         self::STATUS_GOTO;
 
-    // A metadata bit stored alongside the cached status in Node::$flags (it is
-    // not itself an exit status). It records that the cached status was computed
-    // with a CodeBase available, so the userland never-return check in
-    // computeStatusOfCall() was able to run. A status cached by a context-less
-    // checker lacks this bit and must be recomputed once a CodeBase is available,
-    // otherwise a stale STATUS_PROCEED would hide a nested call to a
-    // never-returning function. See https://github.com/phan/phan/issues/5535
-    public const STATUS_COMPUTED_WITH_CODE_BASE = (1 << 27);
-
     /** @var ?CodeBase */
     private $code_base;
 
@@ -128,39 +119,6 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     public function visit(Node $node): int
     {
         return self::STATUS_PROCEED;
-    }
-
-    /**
-     * Reads the status previously cached on $node->flags, if any.
-     *
-     * Returns 0 (forcing a recompute) when this checker has a CodeBase but the
-     * cached value was computed without one, since that value may be a stale
-     * STATUS_PROCEED that misses a call to a never-returning function.
-     */
-    private function getCachedStatus(Node $node): int
-    {
-        $status = $node->flags & self::STATUS_BITMASK;
-        if (!$status) {
-            return 0;
-        }
-        if ($this->code_base !== null && !($node->flags & self::STATUS_COMPUTED_WITH_CODE_BASE)) {
-            return 0;
-        }
-        return $status;
-    }
-
-    /**
-     * Caches the computed $status on $node->flags, preserving any real AST flags,
-     * and records whether a CodeBase was available when it was computed.
-     *
-     * @return int the status that was passed in (for convenient chaining)
-     */
-    private function setCachedStatus(Node $node, int $status): int
-    {
-        $node->flags = ($node->flags & ~(self::STATUS_BITMASK | self::STATUS_COMPUTED_WITH_CODE_BASE))
-            | $status
-            | ($this->code_base !== null ? self::STATUS_COMPUTED_WITH_CODE_BASE : 0);
-        return $status;
     }
 
     private static function isTruthyLiteral(Node|float|int|string $cond): bool
@@ -210,12 +168,12 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     public function visitTry(Node $node): int
     {
-        $status = $this->getCachedStatus($node);
+        $status = $node->flags & self::STATUS_BITMASK;
         if ($status) {
             return $status;
         }
         $status = $this->computeStatusOfTry($node);
-        $this->setCachedStatus($node, $status);
+        $node->flags = $status;
         return $status;
     }
 
@@ -255,12 +213,12 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     public function visitCatchList(Node $node): int
     {
-        $status = $this->getCachedStatus($node);
+        $status = $node->flags & self::STATUS_BITMASK;
         if ($status) {
             return $status;
         }
         $status = $this->computeStatusOfCatchList($node);
-        $this->setCachedStatus($node, $status);
+        $node->flags = $status;
         return $status;
     }
 
@@ -319,12 +277,12 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     public function visitSwitchList(Node $node): int
     {
-        $status = $this->getCachedStatus($node);
+        $status = $node->flags & self::STATUS_BITMASK;
         if ($status) {
             return $status;
         }
         $status = $this->computeStatusOfSwitchList($node);
-        $this->setCachedStatus($node, $status);
+        $node->flags = $status;
         return $status;
     }
 
@@ -361,12 +319,12 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     private function getStatusOfSwitchCase(Node $case_node, int $index, array $siblings): int
     {
-        $status = $this->getCachedStatus($case_node);
+        $status = $case_node->flags & self::STATUS_BITMASK;
         if ($status) {
             return $status;
         }
         $status = $this->computeStatusOfSwitchCase($case_node, $index, $siblings);
-        $this->setCachedStatus($case_node, $status);
+        $case_node->flags = $status;
         return $status;
     }
 
@@ -398,7 +356,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     public function visitMatch(Node $node): int
     {
-        $status = $this->getCachedStatus($node);
+        $status = $node->flags & self::STATUS_BITMASK;
         if ($status) {
             return $status;
         }
@@ -414,12 +372,12 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     public function visitMatchArmList(Node $node): int
     {
-        $status = $this->getCachedStatus($node);
+        $status = $node->flags & self::STATUS_BITMASK;
         if ($status) {
             return $status;
         }
         $status = $this->computeStatusOfMatchArmList($node);
-        $this->setCachedStatus($node, $status);
+        $node->flags = $status;
         return $status;
     }
 
@@ -428,12 +386,12 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     public function visitMatchArm(Node $node): int
     {
-        $status = $this->getCachedStatus($node);
+        $status = $node->flags & self::STATUS_BITMASK;
         if ($status) {
             return $status;
         }
         $status = $this->computeMatchArmStatus($node);
-        $this->setCachedStatus($node, $status);
+        $node->flags |= $status;
         return $status;
     }
 
@@ -592,12 +550,12 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     public function visitCall(Node $node): int
     {
-        $status = $this->getCachedStatus($node);
+        $status = $node->flags & self::STATUS_BITMASK;
         if ($status) {
             return $status;
         }
         $status = $this->computeStatusOfCall($node);
-        $this->setCachedStatus($node, $status);
+        $node->flags = $status;
         return $status;
     }
 
@@ -608,12 +566,12 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     public function visitStaticCall(Node $node): int
     {
-        $status = $this->getCachedStatus($node);
+        $status = $node->flags & self::STATUS_BITMASK;
         if ($status) {
             return $status;
         }
         $status = $this->computeStatusOfStaticCall($node);
-        $this->setCachedStatus($node, $status);
+        $node->flags = $status;
         return $status;
     }
 
@@ -626,12 +584,12 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     public function visitMethodCall(Node $node): int
     {
-        $status = $this->getCachedStatus($node);
+        $status = $node->flags & self::STATUS_BITMASK;
         if ($status) {
             return $status;
         }
         $status = $this->computeStatusOfMethodCall($node);
-        $this->setCachedStatus($node, $status);
+        $node->flags = $status;
         return $status;
     }
 
@@ -911,12 +869,12 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     public function visitStmtList(Node $node): int
     {
-        $status = $this->getCachedStatus($node);
+        $status = $node->flags & self::STATUS_BITMASK;
         if ($status) {
             return $status;
         }
         $status = $this->computeStatusOfBlock($node->children);
-        $this->setCachedStatus($node, $status);
+        $node->flags = $status;
         return $status;
     }
 
@@ -927,12 +885,12 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     public function visitExprList(Node $node): int
     {
-        $status = $this->getCachedStatus($node);
+        $status = $node->flags & self::STATUS_BITMASK;
         if ($status) {
             return $status;
         }
         $status = $this->computeStatusOfBlock($node->children);
-        $this->setCachedStatus($node, $status);
+        $node->flags = $status;
         return $status;
     }
 
@@ -943,12 +901,12 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     public function visitIf(Node $node): int
     {
-        $status = $this->getCachedStatus($node);
+        $status = $node->flags & self::STATUS_BITMASK;
         if ($status) {
             return $status;
         }
         $status = $this->computeStatusOfIf($node);
-        $this->setCachedStatus($node, $status);
+        $node->flags = $status;
         return $status;
     }
 
@@ -1009,13 +967,13 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     public function visitIfElem(Node $node): int
     {
-        $status = $this->getCachedStatus($node);
+        $status = $node->flags & self::STATUS_BITMASK;
         if ($status) {
             return $status;
         }
         // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null
         $status = $this->visitStmtList($node->children['stmts']);
-        $this->setCachedStatus($node, $status);
+        $node->flags = $status;
         return $status;
     }
 
