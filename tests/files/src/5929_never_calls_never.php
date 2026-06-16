@@ -39,3 +39,43 @@ class Redirector5929
         exit;
     }
 }
+
+// The never-returning call may be nested under a switch, match, or other
+// control-flow construct whose exit status is cached by a context-less
+// BlockExitStatusChecker before this check runs. The cached status must not
+// hide the inner never-returning call. See review of PR #5541.
+function never_in_switch5929(int $x): never
+{
+    switch ($x) {
+        case 1:
+            redirect_any5929("/one");
+            // fallthrough to default; both branches never return
+        default:
+            redirect_any5929("/x");
+    }
+}
+
+function never_in_match5929(int $x): never
+{
+    match ($x) {
+        1 => redirect_any5929("/one"),
+        default => redirect_any5929("/x"),
+    };
+}
+
+function never_in_if5929(bool $x): never
+{
+    if ($x) {
+        redirect_any5929("/a");
+    } else {
+        redirect_any5929("/b");
+    }
+}
+
+// A closure/arrow-function body that ends by calling a never-returning function
+// must likewise be recognized as never returning (visitClosure path).
+$never_closure5929 = function (): never {
+    redirect_any5929("/closure");
+};
+$never_closure5929();
+
