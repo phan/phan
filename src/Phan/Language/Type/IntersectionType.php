@@ -31,6 +31,12 @@ final class IntersectionType extends Type
     /** @var non-empty-list<Type> the parts of the intersection type */
     protected $type_parts;
 
+    /**
+     * @var array<string, IntersectionType> cache of interned intersection types
+     * @phan-suppress PhanReadOnlyPrivateProperty (see https://github.com/phan/phan/issues/5538)
+     */
+    private static $canonical_intersection_map = [];
+
     /** @param non-empty-list<Type> $type_parts */
     private function __construct(array $type_parts)
     {
@@ -49,6 +55,19 @@ final class IntersectionType extends Type
         }
         $this->type_parts = $type_parts;
         parent::__construct('\\', '', [], $is_nullable);
+    }
+
+    /**
+     * Create or retrieve a cached canonicalized IntersectionType instance.
+     * Sorts type parts alphabetically for consistent display, matching UnionType behavior.
+     *
+     * @param non-empty-list<Type> $type_parts
+     */
+    private static function makeCanonicalized(array $type_parts): IntersectionType
+    {
+        \usort($type_parts, static fn(Type $a, Type $b): int => \strcmp((string)$a, (string)$b));
+        $key = \implode(',', \array_map('spl_object_id', $type_parts));
+        return self::$canonical_intersection_map[$key] ??= new self($type_parts);
     }
 
     /**
@@ -72,7 +91,7 @@ final class IntersectionType extends Type
         foreach ($this->type_parts as $type) {
             $new_types[] = $type->withIsNullable($is_nullable);
         }
-        return new self($new_types);
+        return self::makeCanonicalized($new_types);
     }
 
     /**
@@ -114,13 +133,8 @@ final class IntersectionType extends Type
             }
             $new_types = \array_values($new_types);
         }
-        // avoid storing an equivalent copy of an array that may already be referenced elsewhere
-        // to reduce memory usage
-        if ($types !== $new_types) {
-            return new self($new_types);
-        }
-        // @phan-suppress-next-line PhanPartialTypeMismatchArgument
-        return new self($types);
+
+        return self::makeCanonicalized($new_types);
     }
 
     /**
@@ -637,7 +651,7 @@ final class IntersectionType extends Type
         if ($type_parts === $this->type_parts) {
             return $this;
         }
-        return new self($type_parts);
+        return self::makeCanonicalized($type_parts);
     }
 
     /**
@@ -654,7 +668,7 @@ final class IntersectionType extends Type
         if ($type_parts === $this->type_parts) {
             return $this;
         }
-        return new self($type_parts);
+        return self::makeCanonicalized($type_parts);
     }
 
     /**

@@ -894,7 +894,7 @@ final class UnionTypeTest extends TestBase
         $intersection1 = self::makePHPDocUnionType('Countable&ArrayAccess');
         $intersection2 = self::makePHPDocUnionType('\ArrayAccess&\Countable');
         $this->assertSame(1, $intersection1->typeCount());
-        $this->assertSame('(\Countable&\ArrayAccess)|\ArrayAccess|\Countable', $intersection1->asExpandedTypes($code_base)->__toString());
+        $this->assertSame('(\ArrayAccess&\Countable)|\ArrayAccess|\Countable', $intersection1->asExpandedTypes($code_base)->__toString());
 
         $this->assertTrue($intersection1->canCastToUnionType($intersection2, $code_base), 'expected intersection type to cast to itself');
         $this->assertTrue($intersection1->hasSubtypeOf($intersection2, $code_base), 'expect hasSubtypeOf to be true for intersection type');
