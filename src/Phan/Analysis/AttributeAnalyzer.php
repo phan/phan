@@ -291,6 +291,10 @@ class AttributeAnalyzer
                 $attribute_node = $attribute->getNode();
 
                 if ($attribute_node) {
+                    $attribute_context = $declaration instanceof Clazz
+                        ? $declaration->getInternalContext()
+                        : $declaration->getContext();
+
                     foreach ($attribute_node->children['args']->children ?? [] as $arg_node) {
                         if (!$arg_node instanceof Node) {
                             continue;
@@ -300,10 +304,10 @@ class AttributeAnalyzer
                         }
 
                         if ($arg_node instanceof Node) {
-                            (new ParseVisitor($code_base, $declaration->getContext()))->checkNodeIsConstExprOrWarn($arg_node, ParseVisitor::CONSTANT_EXPRESSION_IN_ATTRIBUTE);
+                            (new ParseVisitor($code_base, $attribute_context))->checkNodeIsConstExprOrWarn($arg_node, ParseVisitor::CONSTANT_EXPRESSION_IN_ATTRIBUTE);
                         }
                     }
-                    ArgumentType::analyze($constructor, $attribute_node, $declaration->getContext(), $code_base);
+                    ArgumentType::analyze($constructor, $attribute_node, $attribute_context, $code_base);
                 }
             } else {
                 Issue::maybeEmit(
