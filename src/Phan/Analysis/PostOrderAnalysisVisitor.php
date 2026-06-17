@@ -3940,6 +3940,37 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
     }
 
+    /**
+     * Check if the parent node list contains a compound or null coalescing
+     * assignment such as ??=, .=, +=, etc...
+     *
+     * Used for write tracking since assignment operators count as read and
+     * write for nested dimensions.
+     *
+     * @param list<Node> $parent_node_list
+     */
+    private static function isNestedCompoundAssignment(array $parent_node_list): bool
+    {
+        $cur_parent_node = \end($parent_node_list);
+        for (;; $cur_parent_node = $prev_parent_node) {
+            $prev_parent_node = \prev($parent_node_list);
+            if (!$prev_parent_node instanceof Node) {
+                return false;
+            }
+            switch ($prev_parent_node->kind) {
+                case ast\AST_DIM:
+                    if ($prev_parent_node->children['expr'] !== $cur_parent_node) {
+                        return false;
+                    }
+                    break;
+                case ast\AST_ASSIGN_OP:
+                    return $prev_parent_node->children['var'] === $cur_parent_node;
+                default:
+                    return false;
+            }
+        }
+    }
+
     public function visitStaticProp(Node $node): Context
     {
         return $this->analyzeProp($node, true);
@@ -4240,7 +4271,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $parent_kind = $parent_node->kind;
         }
         if ($parent_kind === ast\AST_DIM) {
-            return $parent_node->children['expr'] === $node && self::shouldSkipNestedAssignDim($parent_node_list);
+            if ($parent_node->children['expr'] !== $node) {
+                return false;
+            }
+            if (self::shouldSkipNestedAssignDim($parent_node_list)) {
+                return true;
+            }
+            return self::isNestedCompoundAssignment($parent_node_list);
         } elseif ($parent_kind === ast\AST_ASSIGN || $parent_kind === ast\AST_ASSIGN_OP) {
             return $parent_node->children['var'] === $node;
         } elseif ($parent_kind === ast\AST_ASSIGN_REF) {
