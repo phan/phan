@@ -3279,7 +3279,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                 if ($declaring_property &&
                     $declaring_property->getPHPDocUnionType()->isEmpty() &&
                     $declaring_property->getRealUnionType()->isEmpty()) {
-                    $overridden_union_type = $this->getOverriddenPropertyUnionType($declaring_property);
+                    $overridden_union_type = $this->getOverriddenPropertyUnionType($declaring_property)
+                        ->withStaticResolvedInContext($property->getContext());
                     if (!$overridden_union_type->isEmpty() && $overridden_union_type !== $union_type
                         && !$overridden_union_type->hasTemplateTypeRecursive()) {
                         $union_type = $union_type->withUnionType($overridden_union_type);
