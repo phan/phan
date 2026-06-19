@@ -38,6 +38,13 @@ class Property extends ClassElement
     private $real_defining_fqsen;
 
     /**
+     * @var ?FullyQualifiedPropertyName If this property redeclares a property from an ancestor class
+     * (e.g. to widen visibility), this is the FQSEN of the ancestor property it overrides.
+     * Used to inherit the ancestor's declared/inferred type when this property has no type of its own.
+     */
+    private $overridden_fqsen;
+
+    /**
      * @var UnionType The real union type of this property
      * This does not change.
      */
@@ -121,6 +128,24 @@ class Property extends ClassElement
     public function getRealDefiningFQSEN(): FullyQualifiedPropertyName
     {
         return $this->real_defining_fqsen ?? $this->getDefiningFQSEN();
+    }
+
+    /**
+     * Records that this property redeclares (overrides) the property with the given FQSEN
+     * from an ancestor class.
+     */
+    public function setOverriddenFQSEN(FullyQualifiedPropertyName $fqsen): void
+    {
+        $this->overridden_fqsen = $fqsen;
+    }
+
+    /**
+     * @return ?FullyQualifiedPropertyName the FQSEN of the ancestor property this property overrides,
+     * or null if this property does not redeclare an ancestor property.
+     */
+    public function getOverriddenFQSEN(): ?FullyQualifiedPropertyName
+    {
+        return $this->overridden_fqsen;
     }
 
     /**

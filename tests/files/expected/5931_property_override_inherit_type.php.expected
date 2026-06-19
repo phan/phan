@@ -1,0 +1,16 @@
+%s:18 PhanUnusedVariable Unused definition of variable $p
+%s:19 PhanDebugAnnotation @phan-debug-var requested for variable $p - it has union type string
+%s:19 PhanDebugAnnotation @phan-debug-var requested for variable $p2 - it has union type string
+%s:19 PhanUnusedVariable Unused definition of variable $p2
+%s:30 PhanUnusedVariable Unused definition of variable $p
+%s:31 PhanDebugAnnotation @phan-debug-var requested for variable $p - it has union type string
+%s:31 PhanDebugAnnotation @phan-debug-var requested for variable $p2 - it has union type string
+%s:31 PhanUnusedVariable Unused definition of variable $p2
+%s:42 PhanDebugAnnotation @phan-debug-var requested for variable $p2 - it has union type int
+%s:42 PhanUnusedVariable Unused definition of variable $p2
+%s:51 PhanUnusedVariable Unused definition of variable $p
+%s:52 PhanDebugAnnotation @phan-debug-var requested for variable $p - it has union type string
+%s:52 PhanDebugAnnotation @phan-debug-var requested for variable $p2 - it has union type string
+%s:52 PhanUnusedVariable Unused definition of variable $p2
+%s:68 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type (empty union type)
+%s:68 PhanUnusedVariable Unused definition of variable $s

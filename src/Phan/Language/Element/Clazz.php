@@ -989,6 +989,18 @@ class Clazz extends AddressableElement
         // However, trait properties are merged into the class, not inherited, so they must remain compatible.
         $is_private_from_ancestor_class = $inherited_property->isPrivate() &&
             !$code_base->getClassByFQSEN($inherited_property->getDefiningFQSEN()->getFullyQualifiedClassName())->isTrait();
+        // Record the overridden ancestor property so that, when the overriding property
+        // declares no type of its own (e.g. it only widens visibility, or uses @inheritDoc),
+        // it can inherit the ancestor's declared/inferred type.
+        // A private property in a (non-trait) ancestor class is not actually overridden in
+        // PHP -- the child declares an independent property -- so do not link to it.
+        // Use the inherited property's own FQSEN (its instance in the ancestor class) rather
+        // than getRealDefiningFQSEN(), which would point at a trait and lose the ancestor
+        // class's accumulated/inferred type.
+        if (!$is_private_from_ancestor_class &&
+            !$overriding_property->isStatic() && !$inherited_property->isStatic()) {
+            $overriding_property->setOverriddenFQSEN($inherited_property->getFQSEN());
+        }
         if ($overriding_property->isStatic() != $inherited_property->isStatic() &&
             !$is_private_from_ancestor_class) {
             Issue::maybeEmit(
