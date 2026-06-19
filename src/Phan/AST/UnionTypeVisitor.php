@@ -3268,6 +3268,18 @@ class UnionTypeVisitor extends AnalysisVisitor
                             $union_type = $union_type->withUnionType($declaring_union_type);
                         }
                     }
+                } else {
+                    // This property redeclares (overrides) an ancestor's property, e.g. to widen
+                    // visibility or via @inheritDoc. When it declares no type of its own, inherit
+                    // the ancestor's declared/inferred type.
+                    $overridden_fqsen = $property->getOverriddenFQSEN();
+                    if ($overridden_fqsen && $property->getPHPDocUnionType()->isEmpty() && $property->getRealUnionType()->isEmpty()
+                        && $this->code_base->hasPropertyWithFQSEN($overridden_fqsen)) {
+                        $overridden_union_type = $this->code_base->getPropertyByFQSEN($overridden_fqsen)->getUnionType();
+                        if ($overridden_union_type !== $union_type && !$overridden_union_type->hasTemplateTypeRecursive()) {
+                            $union_type = $union_type->withUnionType($overridden_union_type);
+                        }
+                    }
                 }
             }
 

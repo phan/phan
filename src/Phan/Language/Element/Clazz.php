@@ -950,6 +950,12 @@ class Clazz extends AddressableElement
         Property $overriding_property
     ): void {
         $overriding_property->setIsOverride(true);
+        // Record the overridden ancestor property so that, when the overriding property
+        // declares no type of its own (e.g. it only widens visibility, or uses @inheritDoc),
+        // it can inherit the ancestor's declared/inferred type.
+        if (!$overriding_property->isStatic() && !$inherited_property->isStatic()) {
+            $overriding_property->setOverriddenFQSEN($inherited_property->getRealDefiningFQSEN());
+        }
         if ($inherited_property->isFromPHPDoc() || $inherited_property->isDynamicProperty() ||
             $overriding_property->isFromPHPDoc() || $overriding_property->isDynamicProperty()) {
             return;
