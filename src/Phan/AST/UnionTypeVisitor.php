@@ -32,6 +32,7 @@ use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\FunctionInterface;
+use Phan\Language\Element\Property;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionLikeName;
@@ -3261,24 +3262,27 @@ class UnionTypeVisitor extends AnalysisVisitor
                 // Inherit any new additional inferred union types from the declaring class,
                 // unless the property type has template types.
                 $defining_fqsen = $property->getDefiningFQSEN();
+                $declaring_property = $property;
                 if ($property->getFQSEN() !== $defining_fqsen) {
+                    $declaring_property = null;
                     if ($this->code_base->hasPropertyWithFQSEN($defining_fqsen)) {
-                        $declaring_union_type = $this->code_base->getPropertyByFQSEN($defining_fqsen)->getUnionType();
+                        $declaring_property = $this->code_base->getPropertyByFQSEN($defining_fqsen);
+                        $declaring_union_type = $declaring_property->getUnionType();
                         if ($declaring_union_type !== $union_type && !$declaring_union_type->hasTemplateTypeRecursive()) {
                             $union_type = $union_type->withUnionType($declaring_union_type);
                         }
                     }
-                } else {
-                    // This property redeclares (overrides) an ancestor's property, e.g. to widen
-                    // visibility or via @inheritDoc. When it declares no type of its own, inherit
-                    // the ancestor's declared/inferred type.
-                    $overridden_fqsen = $property->getOverriddenFQSEN();
-                    if ($overridden_fqsen && $property->getPHPDocUnionType()->isEmpty() && $property->getRealUnionType()->isEmpty()
-                        && $this->code_base->hasPropertyWithFQSEN($overridden_fqsen)) {
-                        $overridden_union_type = $this->code_base->getPropertyByFQSEN($overridden_fqsen)->getUnionType();
-                        if ($overridden_union_type !== $union_type && !$overridden_union_type->hasTemplateTypeRecursive()) {
-                            $union_type = $union_type->withUnionType($overridden_union_type);
-                        }
+                }
+                // If the declaring property redeclares (overrides) an ancestor's property,
+                // e.g. to widen visibility or via @inheritDoc, and declares no type of its own,
+                // inherit the ancestor's declared/inferred type (following the override chain).
+                if ($declaring_property &&
+                    $declaring_property->getPHPDocUnionType()->isEmpty() &&
+                    $declaring_property->getRealUnionType()->isEmpty()) {
+                    $overridden_union_type = $this->getOverriddenPropertyUnionType($declaring_property);
+                    if (!$overridden_union_type->isEmpty() && $overridden_union_type !== $union_type
+                        && !$overridden_union_type->hasTemplateTypeRecursive()) {
+                        $union_type = $union_type->withUnionType($overridden_union_type);
                     }
                 }
             }
@@ -3353,6 +3357,34 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
 
         return UnionType::empty();
+    }
+
+    /**
+     * Compute the union type inherited from the ancestor property that $property redeclares
+     * (overrides), following the override chain. The defining property's union type is used so
+     * that types declared or inferred on the original definition (e.g. from assignments) are
+     * included. Returns the empty union type if $property does not redeclare an ancestor property.
+     */
+    private function getOverriddenPropertyUnionType(Property $property): UnionType
+    {
+        $overridden_fqsen = $property->getOverriddenFQSEN();
+        if (!$overridden_fqsen || !$this->code_base->hasPropertyWithFQSEN($overridden_fqsen)) {
+            return UnionType::empty();
+        }
+        $overridden_property = $this->code_base->getPropertyByFQSEN($overridden_fqsen);
+        // Prefer the defining property so that types inferred on the original definition
+        // (e.g. from assignments within the ancestor class) are included.
+        $defining_fqsen = $overridden_property->getDefiningFQSEN();
+        if ($defining_fqsen !== $overridden_property->getFQSEN() && $this->code_base->hasPropertyWithFQSEN($defining_fqsen)) {
+            $union_type = $this->code_base->getPropertyByFQSEN($defining_fqsen)->getUnionType();
+        } else {
+            $union_type = $overridden_property->getUnionType();
+        }
+        // If the overridden property is itself an untyped redeclaration, keep walking the chain.
+        if ($overridden_property->getPHPDocUnionType()->isEmpty() && $overridden_property->getRealUnionType()->isEmpty()) {
+            $union_type = $union_type->withUnionType($this->getOverriddenPropertyUnionType($overridden_property));
+        }
+        return $union_type;
     }
 
     private function inferStdClassShapePropertyType(?Node $expr_node, string $property_name): ?UnionType
