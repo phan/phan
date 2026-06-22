@@ -82,7 +82,7 @@ final class StringFunctionPlugin extends PluginV3 implements
                 $expected_const_pos,
                 $expected_variable_pos
             ): void {
-                if (!array_key_exists($expected_const_pos, $args) || !array_key_exists($expected_variable_pos, $args)) {
+                if (!\array_key_exists($expected_const_pos, $args) || !\array_key_exists($expected_variable_pos, $args)) {
                     return;
                 }
                 if (!self::isSimpleExpression($args[$expected_const_pos])) {
