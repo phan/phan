@@ -1,7 +1,30 @@
 ## Phan NEWS
 
-Phan 6.0.6-dev
+Jun 22 206, Phan 6.0.6
 --------------
+
+New features:
+- Add `non-falsy-string` type (excludes both `''` and `'0'`); align `non-empty-string` with PHPStan/Psalm semantics to only exclude `''` — `!== ''` now narrows to `non-empty-string` while `if ($x)` narrows to `non-falsy-string` ([#5514](https://github.com/phan/phan/issues/5514), [#5517](https://github.com/phan/phan/pull/5517))
+
+Bug fixes:
+- Fix `PhanUndeclaredVariable` false positive for the implicit `$value` parameter in property set hooks that have no explicit parameter node ([#5512](https://github.com/phan/phan/issues/5512), [#5513](https://github.com/phan/phan/pull/5513))
+- Fix `PhanImpossibleTypeComparison` false positive when comparing a string to `'0'` after narrowing out `''` ([#5514](https://github.com/phan/phan/issues/5514), [#5517](https://github.com/phan/phan/pull/5517))
+- Fix `class_exists()` check losing the `<T>` generic parameter from `class-string<T>` variables inside the if-branch ([#5515](https://github.com/phan/phan/issues/5515), [#5518](https://github.com/phan/phan/pull/5518))
+- Fix `PhanInvalidConstantExpression` false positive for closures and arrow functions in constant expressions on PHP 8.5 ([#5516](https://github.com/phan/phan/issues/5516), [#5519](https://github.com/phan/phan/pull/5519))
+- Fix false positive `PhanPossiblyUndeclaredVariable` for variables assigned in a `try` block when there is no `catch` ([#4419](https://github.com/phan/phan/issues/4419), [#5520](https://github.com/phan/phan/pull/5520))
+- Fix parsing failure for union types with spaces around `|` or `&` inside array shape (`array{...}`) and generic (`array<...>`) annotation syntax ([#5521](https://github.com/phan/phan/issues/5521), [#5524](https://github.com/phan/phan/pull/5524))
+- Fix false positive `PhanTypeMismatchArgument` when a `@template T of A|B` parameter is passed to a function expecting `A|B` ([#5522](https://github.com/phan/phan/issues/5522), [#5525](https://github.com/phan/phan/pull/5525))
+- Fix `PhanConstantTypeMismatchInheritance` false positive for covariant class constant overrides where the child's type is a proper subtype of the parent's ([#5528](https://github.com/phan/phan/issues/5528), [#5530](https://github.com/phan/phan/pull/5530))
+- Fix false positive `PhanAccessReadOnlyProperty` when using `??=` as a lazy-initialization pattern on non-nullable native `readonly` properties ([#5531](https://github.com/phan/phan/issues/5531), [#5532](https://github.com/phan/phan/pull/5532))
+- Fix `self` keyword being incorrectly rejected inside arguments of attributes applied to classes ([#5536](https://github.com/phan/phan/issues/5536), [#5537](https://github.com/phan/phan/pull/5537))
+- Fix false positive `PhanIncompatibleRealPropertyType` when a child class redeclares a property with the same intersection type as the parent — intersection types are now interned so identity comparisons work correctly ([#5534](https://github.com/phan/phan/issues/5534), [#5539](https://github.com/phan/phan/pull/5539))
+- Fix `PhanReadOnlyPrivateProperty` false positive when using compound assignment operators (`??=`, `+=`, etc.) on array keys of a private property ([#5538](https://github.com/phan/phan/issues/5538), [#5540](https://github.com/phan/phan/pull/5540))
+- Fix false positive `PhanTypeMissingReturnReal` for `: never`-declared functions whose last statement calls another `never`-returning userland function — was intermittent due to AST node flag caching ([#5535](https://github.com/phan/phan/issues/5535), [#5541](https://github.com/phan/phan/pull/5541))
+- Fix child class properties that redeclare a parent property (e.g. to widen visibility or via `@inheritDoc`) without their own type annotation being assigned an empty union type instead of inheriting the parent's type ([#5544](https://github.com/phan/phan/issues/5544), [#5545](https://github.com/phan/phan/pull/5545))
+
+Miscellaneous:
+- Fix `Redis::mget()` and `Redis::mset()` stub signatures ([#5529](https://github.com/phan/phan/pull/5529))
+- Update Composer to 2.9.8 in Docker test environment ([#5533](https://github.com/phan/phan/pull/5533))
 
 Mar 27 2026, Phan 6.0.5
 --------------
