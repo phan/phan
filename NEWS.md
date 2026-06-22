@@ -1,7 +1,14 @@
 ## Phan NEWS
 
-Phan 6.0.7-dev
+Phan 6.0.8-dev
 --------------
+
+Jun 22 2026, Phan 6.0.7
+--------------
+
+Miscellaneous:
+- Fix `Redis::setnx()` and `RedisCluster::setoption()` stub parameter definitions ([#5546](https://github.com/phan/phan/pull/5546))
+- Fix `StringFunctionPlugin` crash with `Undefined array key 1` when checked functions are called with named arguments that skip positional parameters ([#5547](https://github.com/phan/phan/issues/5547), [#5548](https://github.com/phan/phan/pull/5548))
 
 Jun 22 2026, Phan 6.0.6
 --------------
@@ -27,8 +34,6 @@ Bug fixes:
 
 Miscellaneous:
 - Fix `Redis::mget()` and `Redis::mset()` stub signatures ([#5529](https://github.com/phan/phan/pull/5529))
-- Fix `Redis::setnx()` and `RedisCluster::setoption()` stub parameter definitions ([#5546](https://github.com/phan/phan/pull/5546))
-- Fix `StringFunctionPlugin` crash with `Undefined array key 1` when checked functions are called with named arguments that skip positional parameters ([#5547](https://github.com/phan/phan/issues/5547), [#5548](https://github.com/phan/phan/pull/5548))
 - Update Composer to 2.9.8 in Docker test environment ([#5533](https://github.com/phan/phan/pull/5533))
 
 Mar 27 2026, Phan 6.0.5
