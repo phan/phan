@@ -70,7 +70,7 @@ final class StringFunctionPlugin extends PluginV3 implements
     {
         $make_order_warner = static function (int $expected_const_pos, int $expected_variable_pos): Closure {
             /**
-             * @param list<Node|int|float|string> $args
+             * @param array<int, Node|int|float|string> $args
              */
             return static function (
                 CodeBase $code_base,

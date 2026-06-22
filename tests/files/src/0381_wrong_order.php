@@ -7,5 +7,5 @@ preg_replace($value, 'subst', '/v/');  // Phan should warn
 $result = stripos('v', $value);  // Phan should warn
 $result = mb_stripos('v', $value);  // Phan should warn
 
-// Named arguments make $args sparse - should not crash (issue #5533)
+// Named arguments make $args sparse - should not crash (issue #5547)
 $csv = str_getcsv("abc,def", escape: '');
