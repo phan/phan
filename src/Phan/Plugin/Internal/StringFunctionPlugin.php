@@ -69,9 +69,8 @@ final class StringFunctionPlugin extends PluginV3 implements
     private static function getAnalyzeFunctionCallClosuresStatic(): array
     {
         $make_order_warner = static function (int $expected_const_pos, int $expected_variable_pos): Closure {
-            $expected_arg_count = 1 + (int)\max($expected_const_pos, $expected_variable_pos);
             /**
-             * @param list<Node|int|float|string> $args
+             * @param array<int, Node|int|float|string> $args
              */
             return static function (
                 CodeBase $code_base,
@@ -81,10 +80,9 @@ final class StringFunctionPlugin extends PluginV3 implements
                 ?Node $_
             ) use (
                 $expected_const_pos,
-                $expected_variable_pos,
-                $expected_arg_count
+                $expected_variable_pos
             ): void {
-                if (\count($args) < $expected_arg_count) {
+                if (!\array_key_exists($expected_const_pos, $args) || !\array_key_exists($expected_variable_pos, $args)) {
                     return;
                 }
                 if (!self::isSimpleExpression($args[$expected_const_pos])) {
