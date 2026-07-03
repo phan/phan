@@ -64,6 +64,9 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
         $nullable_string_union_type = StringType::instance(true)->asPHPDocUnionType();
         $float_union_type = FloatType::instance(false)->asPHPDocUnionType();
         $string_or_float_union_type = $string_union_type->withUnionType($float_union_type);
+        $int_union_type = IntType::instance(false)->asPHPDocUnionType();
+        $hrtime_array_union_type = ArrayShapeType::fromFieldTypes([0 => $int_union_type, 1 => $int_union_type], false)->asPHPDocUnionType();
+        $int_or_hrtime_array_union_type = $int_union_type->withUnionType($hrtime_array_union_type);
 
         /**
          * @phan-return Closure(CodeBase,Context,Func,array):UnionType
@@ -481,6 +484,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             'preg_replace_callback'       => $third_argument_string_or_array_handler,
             'preg_replace_callback_array' => $third_argument_string_or_array_handler,
             'microtime'                   => $make_dependent_type_method(0, $float_union_type, $string_union_type, $string_or_float_union_type),
+            'hrtime'                      => $make_dependent_type_method(0, $int_union_type, $hrtime_array_union_type, $int_or_hrtime_array_union_type),
             // misc
             'getenv'                      => $getenv_handler,
             'version_compare'             => $make_arg_existence_dependent_type_method(2, 'bool', 'int'),
