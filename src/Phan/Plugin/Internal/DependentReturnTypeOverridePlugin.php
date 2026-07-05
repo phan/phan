@@ -229,31 +229,39 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
         $str_replace_types = UnionType::fromFullyQualifiedPHPDocString('string|string[]');
         $str_array_type = UnionType::fromFullyQualifiedPHPDocString('string[]');
 
-        /**
-         * @param array<int,Node|int|float|string> $args
-         */
-        $third_argument_string_or_array_handler = static function (
-            CodeBase $code_base,
-            Context $context,
-            Func $unused_function,
-            array $args
-        ) use (
+        $make_subject_string_or_array_handler = static function (int $subject_index) use (
             $string_union_type,
             $str_replace_types,
             $str_array_type
-        ): UnionType {
-            // Handler for functions such as str_replace()/preg_replace*() where the 3rd argument ($subject)
-            // determines whether the return type is string, string[], or string|string[].
-            if (!array_key_exists(2, $args)) {
-                return $str_replace_types;
-            }
-            $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[2]);
-            $has_array = $union_type->hasArray();
-            if ($union_type->canCastToUnionType($string_union_type, $code_base)) {
-                return $has_array ? $str_replace_types : $string_union_type;
-            }
-            return $has_array ? $str_array_type : $str_replace_types;
+        ): Closure {
+            /**
+             * Handler for functions such as str_replace()/preg_replace*()/substr_replace() where the
+             * $subject argument determines whether the return type is string, string[], or string|string[].
+             * @param array<int,Node|int|float|string> $args
+             */
+            return static function (
+                CodeBase $code_base,
+                Context $context,
+                Func $unused_function,
+                array $args
+            ) use (
+                $subject_index,
+                $string_union_type,
+                $str_replace_types,
+                $str_array_type
+            ): UnionType {
+                if (!array_key_exists($subject_index, $args)) {
+                    return $str_replace_types;
+                }
+                $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[$subject_index]);
+                $has_array = $union_type->hasArray();
+                if ($union_type->canCastToUnionType($string_union_type, $code_base)) {
+                    return $has_array ? $str_replace_types : $string_union_type;
+                }
+                return $has_array ? $str_array_type : $str_replace_types;
+            };
         };
+        $third_argument_string_or_array_handler = $make_subject_string_or_array_handler(2);
         /**
          * @param array<int,Node|int|float|string> $args
          */
@@ -480,9 +488,11 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             'count'                       => $count_handler,
             // Functions with dependent return types
             'str_replace'                 => $third_argument_string_or_array_handler,
+            'str_ireplace'                => $third_argument_string_or_array_handler,
             'preg_replace'                => $third_argument_string_or_array_handler,
             'preg_replace_callback'       => $third_argument_string_or_array_handler,
-            'preg_replace_callback_array' => $third_argument_string_or_array_handler,
+            'preg_replace_callback_array' => $make_subject_string_or_array_handler(1),
+            'substr_replace'              => $make_subject_string_or_array_handler(0),
             'microtime'                   => $make_dependent_type_method(0, $float_union_type, $string_union_type, $string_or_float_union_type),
             'hrtime'                      => $make_dependent_type_method(0, $int_union_type, $hrtime_array_union_type, $int_or_hrtime_array_union_type),
             // misc
