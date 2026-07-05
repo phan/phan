@@ -1,0 +1,8 @@
+%s:9 PhanDebugAnnotation @phan-debug-var requested for variable $string - it has union type string(real=array|string)
+%s:9 PhanDebugAnnotation @phan-debug-var requested for variable $string2 - it has union type string[](real=array|string)
+%s:13 PhanDebugAnnotation @phan-debug-var requested for variable $subString - it has union type string(real=array|string)
+%s:13 PhanDebugAnnotation @phan-debug-var requested for variable $subString2 - it has union type string[](real=array|string)
+%s:18 PhanDebugAnnotation @phan-debug-var requested for variable $iString - it has union type string(real=array|string)
+%s:18 PhanDebugAnnotation @phan-debug-var requested for variable $iString2 - it has union type string[](real=array|string)
+%s:22 PhanDebugAnnotation @phan-debug-var requested for variable $cbString - it has union type string(real=array|null|string)
+%s:22 PhanDebugAnnotation @phan-debug-var requested for variable $cbString2 - it has union type string[](real=array|null|string)
