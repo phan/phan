@@ -87,6 +87,15 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     /** @var ?Context */
     private $context;
 
+    /**
+     * @var list<Node|string|int|float|null> the statement list currently being analyzed by computeStatusOfBlock,
+     * used to resolve `$var = new ClassName(); $var->methodReturningNever();`
+     */
+    private $current_block = [];
+
+    /** @var int the index within $current_block of the statement currently being analyzed */
+    private $current_block_index = -1;
+
     public function __construct(
         ?CodeBase $code_base = null,
         ?Context $context = null
@@ -808,8 +817,14 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
                 return self::STATUS_PROCEED;
             }
         } else {
-            // TODO not yet handled
-            return self::STATUS_PROCEED;
+            // Handle `$foo = new Foo(); $foo->neverReturns();` by scanning
+            // earlier statements of the statement list being analyzed (issue #5553).
+            // A `never` return type can only be overridden by `never` in subclasses,
+            // so resolving through the statically known class is sound.
+            $class_fqsen = $this->findClassOfPrecedingNewAssignment($var_name);
+            if ($class_fqsen === null) {
+                return self::STATUS_PROCEED;
+            }
         }
         $method_fqsen = FullyQualifiedMethodName::make(
             $class_fqsen,
@@ -827,6 +842,149 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         }
         // TODO: Could allow .phan/config.php or plugins to define additional behaviors
         return self::STATUS_PROCEED;
+    }
+
+    /**
+     * Searches the preceding statements of the statement list being analyzed for
+     * `$var_name = new ClassName(...)` and returns ClassName's FQSEN if the class name
+     * can be statically resolved and no intervening statement may reassign $var_name.
+     */
+    private function findClassOfPrecedingNewAssignment(string $var_name): ?FullyQualifiedClassName
+    {
+        if ($this->context === null) {
+            return null;
+        }
+        for ($i = $this->current_block_index - 1; $i >= 0; $i--) {
+            $stmt = $this->current_block[$i] ?? null;
+            if (!($stmt instanceof Node)) {
+                continue;
+            }
+            if ($stmt->kind === ast\AST_ASSIGN) {
+                $target = $stmt->children['var'];
+                if ($target instanceof Node && $target->kind === ast\AST_VAR && $target->children['name'] === $var_name) {
+                    // Found the most recent assignment to $var_name in this statement list.
+                    $value = $stmt->children['expr'];
+                    if (!($value instanceof Node) || $value->kind !== ast\AST_NEW) {
+                        return null;
+                    }
+                    $class_node = $value->children['class'];
+                    if (!($class_node instanceof Node) || $class_node->kind !== ast\AST_NAME) {
+                        return null;
+                    }
+                    $class_name = $class_node->children['name'];
+                    if (!\is_string($class_name)) {
+                        return null;
+                    }
+                    $normalized_class_name = \strtolower($class_name);
+                    if ($normalized_class_name === 'self' || $normalized_class_name === 'static') {
+                        return $this->context->getClassFQSENOrNull();
+                    }
+                    if ($normalized_class_name === 'parent') {
+                        return null;
+                    }
+                    try {
+                        return FullyQualifiedClassName::fromStringInContext($class_name, $this->context);
+                    } catch (FQSENException $e) {
+                        // @phan-suppress-previous-line PhanUnusedVariableCaughtException
+                        return null;
+                    }
+                }
+            }
+            if (self::statementMayModifyVariable($stmt, $var_name)) {
+                // e.g. a nested assignment inside an if block, a by-reference closure use, unset(), etc.
+                return null;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Conservatively checks whether executing $node may reassign the variable $var_name.
+     * (does not attempt to account for functions modifying variables by reference)
+     */
+    private static function statementMayModifyVariable(Node $node, string $var_name): bool
+    {
+        switch ($node->kind) {
+            case ast\AST_ASSIGN:
+            case ast\AST_ASSIGN_REF:
+            case ast\AST_ASSIGN_OP:
+                if (self::assignmentTargetMayBeVariable($node->children['var'], $var_name)) {
+                    return true;
+                }
+                break;
+            case ast\AST_PRE_INC:
+            case ast\AST_PRE_DEC:
+            case ast\AST_POST_INC:
+            case ast\AST_POST_DEC:
+                if (self::assignmentTargetMayBeVariable($node->children['var'], $var_name)) {
+                    return true;
+                }
+                break;
+            case ast\AST_UNSET:
+                if (self::assignmentTargetMayBeVariable($node->children['var'], $var_name)) {
+                    return true;
+                }
+                break;
+            case ast\AST_GLOBAL:
+            case ast\AST_STATIC:
+                $var = $node->children['var'];
+                if ($var instanceof Node && self::assignmentTargetMayBeVariable($var, $var_name)) {
+                    return true;
+                }
+                break;
+            case ast\AST_CLOSURE:
+            case ast\AST_ARROW_FUNC:
+                // Assignments inside a closure body don't affect the outer scope
+                // unless the variable is imported by reference.
+                foreach ($node->children['uses']->children ?? [] as $use) {
+                    if ($use instanceof Node
+                        && ($use->flags & ast\flags\CLOSURE_USE_REF)
+                        && ($use->children['name'] === $var_name || !\is_string($use->children['name']))) {
+                        return true;
+                    }
+                }
+                // Arrow functions capture by value.
+                return false;
+            case ast\AST_FUNC_DECL:
+            case ast\AST_CLASS:
+                return false;
+        }
+        foreach ($node->children as $child) {
+            if ($child instanceof Node && self::statementMayModifyVariable($child, $var_name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks whether an assignment/unset target $target may refer to the variable $var_name.
+     * @param Node|string|int|float|null $target
+     */
+    private static function assignmentTargetMayBeVariable(Node|string|int|float|null $target, string $var_name): bool
+    {
+        if (!($target instanceof Node)) {
+            return false;
+        }
+        switch ($target->kind) {
+            case ast\AST_VAR:
+                $name = $target->children['name'];
+                // A dynamic variable name (e.g. $$x) may refer to any variable.
+                return !\is_string($name) || $name === $var_name;
+            case ast\AST_ARRAY:
+                // list()/array destructuring
+                foreach ($target->children as $elem) {
+                    if ($elem instanceof Node && self::assignmentTargetMayBeVariable($elem->children['value'] ?? null, $var_name)) {
+                        return true;
+                    }
+                }
+                return false;
+            case ast\AST_REF:
+                return self::assignmentTargetMayBeVariable($target->children['var'], $var_name);
+            default:
+                // Property/dim assignments ($x->prop = ..., $x[0] = ...) don't rebind the variable itself.
+                return false;
+        }
     }
 
     /**
@@ -991,24 +1149,33 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     private function computeStatusOfBlock(array $block): int
     {
-        $maybe_status = 0;
-        foreach ($block as $child) {
-            if ($child === null) {
-                continue;
+        $outer_block = $this->current_block;
+        $outer_block_index = $this->current_block_index;
+        $this->current_block = $block;
+        try {
+            $maybe_status = 0;
+            foreach ($block as $i => $child) {
+                if ($child === null) {
+                    continue;
+                }
+                // e.g. can be non-Node for statement lists such as `if ($a) { return; }echo "X";2;` (under unknown conditions)
+                if (!($child instanceof Node)) {
+                    continue;
+                }
+                $this->current_block_index = $i;
+                $status = $this->check($child);
+                if (($status & self::STATUS_PROCEED) === 0) {
+                    // If it's guaranteed we won't proceed after this statement,
+                    // then skip the subsequent statements.
+                    return $status | ($maybe_status & ~self::STATUS_PROCEED);
+                }
+                $maybe_status |= $status;
             }
-            // e.g. can be non-Node for statement lists such as `if ($a) { return; }echo "X";2;` (under unknown conditions)
-            if (!($child instanceof Node)) {
-                continue;
-            }
-            $status = $this->check($child);
-            if (($status & self::STATUS_PROCEED) === 0) {
-                // If it's guaranteed we won't proceed after this statement,
-                // then skip the subsequent statements.
-                return $status | ($maybe_status & ~self::STATUS_PROCEED);
-            }
-            $maybe_status |= $status;
+            return self::STATUS_PROCEED | $maybe_status;
+        } finally {
+            $this->current_block = $outer_block;
+            $this->current_block_index = $outer_block_index;
         }
-        return self::STATUS_PROCEED | $maybe_status;
     }
 
     /**
