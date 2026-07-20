@@ -3,6 +3,9 @@
 Phan 6.0.8-dev
 --------------
 
+Bug fixes:
+- Fix false positives (e.g. `PhanTypeMismatchArgumentNullable`, `PhanPluginNeverReturnMethod`) when a branch calls a `never`-returning instance method on a local variable assigned with `new ClassName()` — the branch is now correctly treated as unreachable ([#5553](https://github.com/phan/phan/issues/5553))
+
 Jun 22 2026, Phan 6.0.7
 --------------
 

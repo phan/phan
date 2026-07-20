@@ -1,3 +1,4 @@
+src/217_noreturn_control_flow_extra.php:10 PhanPluginNeverReturnFunction Function \test8() never returns and has a return type of void, but phpdoc type never could be used instead
 src/217_noreturn_control_flow_extra.php:10 PhanUnreferencedFunction Possibly zero references to function \test8()
 src/217_noreturn_control_flow_extra.php:15 PhanDebugAnnotation @phan-debug-var requested for variable $unknown - it has union type string(real=string)
 src/217_noreturn_control_flow_extra.php:15 PhanPluginNonBoolInLogicalArith Non bool value of type never in logical arithmetic

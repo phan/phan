@@ -1,0 +1,6 @@
+%s:37 PhanUnusedVariable Unused definition of variable $foo
+%s:42 PhanTypeMismatchArgumentNullable Argument 1 ($param1) is $param1 of type ?object but \Runner5932::requiresObject() takes object defined at %s:97 (expected type to be non-nullable)
+%s:55 PhanTypeMismatchArgumentNullable Argument 1 ($param1) is $param1 of type ?object but \Runner5932::requiresObject() takes object defined at %s:97 (expected type to be non-nullable)
+%s:68 PhanTypeMismatchArgumentNullable Argument 1 ($param1) is $param1 of type ?object but \Runner5932::requiresObject() takes object defined at %s:97 (expected type to be non-nullable)
+%s:80 PhanTypeMismatchArgumentNullable Argument 1 ($param1) is $param1 of type ?object but \Runner5932::requiresObject() takes object defined at %s:97 (expected type to be non-nullable)
+%s:94 PhanTypeMismatchArgumentNullable Argument 1 ($param1) is $param1 of type ?object but \Runner5932::requiresObject() takes object defined at %s:97 (expected type to be non-nullable)
