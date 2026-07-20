@@ -882,6 +882,15 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
                     if ($normalized_class_name === 'parent') {
                         return null;
                     }
+                    // Bail if an earlier statement of this list may have created a reference
+                    // to $var_name (e.g. `$alias =& $var;`) - a later write through the alias
+                    // would rebind the variable without a direct assignment.
+                    for ($j = $i - 1; $j >= 0; $j--) {
+                        $earlier_stmt = $this->current_block[$j] ?? null;
+                        if ($earlier_stmt instanceof Node && self::statementMayCreateReferenceToVariable($earlier_stmt, $var_name)) {
+                            return null;
+                        }
+                    }
                     try {
                         return FullyQualifiedClassName::fromStringInContext($class_name, $this->context);
                     } catch (FQSENException $e) {
@@ -905,9 +914,30 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     private static function statementMayModifyVariable(Node $node, string $var_name): bool
     {
         switch ($node->kind) {
-            case ast\AST_ASSIGN:
             case ast\AST_ASSIGN_REF:
+                // `$alias =& $var` makes subsequent writes through $alias rebind $var.
+                if (self::assignmentTargetMayBeVariable($node->children['expr'], $var_name)) {
+                    return true;
+                }
+                if (self::assignmentTargetMayBeVariable($node->children['var'], $var_name)) {
+                    return true;
+                }
+                break;
+            case ast\AST_ASSIGN:
             case ast\AST_ASSIGN_OP:
+                if (self::assignmentTargetMayBeVariable($node->children['var'], $var_name)) {
+                    return true;
+                }
+                break;
+            case ast\AST_FOREACH:
+                // foreach rebinds its value/key variables.
+                if (self::assignmentTargetMayBeVariable($node->children['value'], $var_name)
+                    || self::assignmentTargetMayBeVariable($node->children['key'], $var_name)) {
+                    return true;
+                }
+                break;
+            case ast\AST_CATCH:
+                // catch binds the caught exception to its variable.
                 if (self::assignmentTargetMayBeVariable($node->children['var'], $var_name)) {
                     return true;
                 }
@@ -951,6 +981,50 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         }
         foreach ($node->children as $child) {
             if ($child instanceof Node && self::statementMayModifyVariable($child, $var_name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Conservatively checks whether executing $node may create a reference to the variable $var_name
+     * (making it possible for a later statement to rebind the variable without directly assigning to it).
+     * (does not attempt to account for functions taking arguments by reference)
+     */
+    private static function statementMayCreateReferenceToVariable(Node $node, string $var_name): bool
+    {
+        switch ($node->kind) {
+            case ast\AST_ASSIGN_REF:
+                if (self::assignmentTargetMayBeVariable($node->children['var'], $var_name)
+                    || self::assignmentTargetMayBeVariable($node->children['expr'], $var_name)) {
+                    return true;
+                }
+                break;
+            case ast\AST_GLOBAL:
+            case ast\AST_STATIC:
+                $var = $node->children['var'];
+                if ($var instanceof Node && self::assignmentTargetMayBeVariable($var, $var_name)) {
+                    return true;
+                }
+                break;
+            case ast\AST_CLOSURE:
+            case ast\AST_ARROW_FUNC:
+                foreach ($node->children['uses']->children ?? [] as $use) {
+                    if ($use instanceof Node
+                        && ($use->flags & ast\flags\CLOSURE_USE_REF)
+                        && ($use->children['name'] === $var_name || !\is_string($use->children['name']))) {
+                        return true;
+                    }
+                }
+                // Arrow functions capture by value; assignments inside closure bodies don't escape.
+                return false;
+            case ast\AST_FUNC_DECL:
+            case ast\AST_CLASS:
+                return false;
+        }
+        foreach ($node->children as $child) {
+            if ($child instanceof Node && self::statementMayCreateReferenceToVariable($child, $var_name)) {
                 return true;
             }
         }
