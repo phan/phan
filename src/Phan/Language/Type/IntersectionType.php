@@ -818,7 +818,7 @@ final class IntersectionType extends Type
      */
     public function isCallable(CodeBase $code_base): bool
     {
-        return $this->anyTypePartsMatchMethod(__FUNCTION__);
+        return $this->anyTypePartsMatchMethodWithArgs(__FUNCTION__, $code_base);
     }
 
     /**
