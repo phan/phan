@@ -3639,14 +3639,22 @@ class UnionTypeVisitor extends AnalysisVisitor
 
                     if ($method->hasTemplateType()) {
                         try {
+                            $object_union_type = UnionTypeVisitor::unionTypeFromNode(
+                                $this->code_base,
+                                $this->context,
+                                $class_node,
+                                $this->should_catch_issue_exception
+                            );
+                            if ($static_class_node !== null) {
+                                // e.g. for `$class::method()` where $class is `class-string<Box<int>>`,
+                                // resolve template types (e.g. T) against `Box<int>`, not against
+                                // the class-string type itself (which isn't an object with a known
+                                // FQSEN, and so contributes nothing to the template parameter map).
+                                $object_union_type = self::expandClassStringTypes($object_union_type);
+                            }
                             $method = $method->resolveTemplateType(
                                 $this->code_base,
-                                UnionTypeVisitor::unionTypeFromNode(
-                                    $this->code_base,
-                                    $this->context,
-                                    $class_node,
-                                    $this->should_catch_issue_exception
-                                )
+                                $object_union_type
                             );
                         } catch (RecursionDepthException) {
                         }
@@ -4217,6 +4225,28 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
+     * Expand any `class-string<Foo>` in $union_type into `Foo`, e.g. for the class part of a
+     * static call `$class::method()` used in class-name syntax. Callers are responsible for
+     * only doing this in contexts that accept a class name (not instance-call syntax), since
+     * $class is genuinely a string at runtime.
+     */
+    private static function expandClassStringTypes(UnionType $union_type): UnionType
+    {
+        if (!$union_type->hasTypeMatchingCallback(static fn(Type $type): bool => $type instanceof ClassStringType)) {
+            return $union_type;
+        }
+        $expanded_union_type = UnionType::empty();
+        foreach ($union_type->getTypeSet() as $type) {
+            if ($type instanceof ClassStringType) {
+                $expanded_union_type = $expanded_union_type->withUnionType($type->getClassUnionType());
+            } else {
+                $expanded_union_type = $expanded_union_type->withType($type);
+            }
+        }
+        return $expanded_union_type;
+    }
+
+    /**
      * @phan-return \Generator<Clazz>
      * @return \Generator|Clazz[]
      * A list of classes associated with the given node
@@ -4235,24 +4265,14 @@ class UnionTypeVisitor extends AnalysisVisitor
             $this->should_catch_issue_exception
         )->withStaticResolvedInContext($this->context);
 
-        // Expand `class-string<Foo>` into the classes it represents, so that e.g.
-        // `$class::method()` resolves the same way `$obj::method()` would for a
-        // Foo-typed $obj (nonNativeTypes() below would otherwise drop it, since
-        // class-string is itself a native/string type).
-        // Only do this when the caller tells us $node is used in class-name syntax
-        // (e.g. the class part of a static call) - $class is genuinely a string at
-        // runtime, so e.g. `$class->method()` (instance-call syntax) must not resolve
-        // this as if it were an instance of Foo.
-        if ($expand_class_string_type && $union_type->hasTypeMatchingCallback(static fn(Type $type): bool => $type instanceof ClassStringType)) {
-            $expanded_union_type = UnionType::empty();
-            foreach ($union_type->getTypeSet() as $type) {
-                if ($type instanceof ClassStringType) {
-                    $expanded_union_type = $expanded_union_type->withUnionType($type->getClassUnionType());
-                } else {
-                    $expanded_union_type = $expanded_union_type->withType($type);
-                }
-            }
-            $union_type = $expanded_union_type;
+        // Expand `class-string<Foo>` into the classes it represents (nonNativeTypes() below
+        // would otherwise drop it, since class-string is itself a native/string type).
+        // Only do this when the caller tells us $node is used in class-name syntax (e.g. the
+        // class part of a static call) - $class is genuinely a string at runtime, so e.g.
+        // `$class->method()` (instance-call syntax) must not resolve this as if it were an
+        // instance of Foo.
+        if ($expand_class_string_type) {
+            $union_type = self::expandClassStringTypes($union_type);
         }
 
         // Iterate over each viable class type to see if any

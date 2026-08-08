@@ -69,3 +69,36 @@ function testInstanceSyntaxOnClassStringMustNotResolve(string $class) {
     $x = $class->instanceMethod();
     '@phan-debug-var $x';
 }
+
+/**
+ * @param ?class-string<Foo5935> $class
+ */
+function testNullableClassStringMustStillWarn(?string $class) {
+    // $class could be null at runtime, in which case $class::bar() fatals. The pre-existing
+    // "possibly non-class type" warning for this must keep firing, even though the return
+    // type can still be usefully inferred assuming the non-null case (matching how the
+    // codebase already treats other "possibly invalid, but useful if valid" call sites).
+    $bar = $class::bar();
+    '@phan-debug-var $bar';
+}
+
+/**
+ * @template T
+ */
+class Box5935 {
+    /** @return T */
+    public static function make() {
+        throw new \RuntimeException("stub for testing template resolution, not called");
+    }
+}
+
+/**
+ * @param class-string<Box5935<int>> $class
+ */
+function testTemplateResolvesFromClassString(string $class) {
+    // Resolving the *class part* of the static call through class-string<Box5935<int>> must
+    // resolve class-level T against Box5935<int> (i.e. T=int), not against the class-string
+    // type itself - which isn't an object with a known FQSEN and so would leave T unresolved.
+    $value = $class::make();
+    '@phan-debug-var $value';
+}

@@ -1,5 +1,3 @@
 %s:18 PhanUndeclaredClass Reference to undeclared class \SplObjectHash
 %s:19 PhanNonClassMethodCall Call to method __construct on non-class type ?class-string<\SplObjectHash>
-%s:19 PhanUndeclaredClass Reference to undeclared class \SplObjectHash
 %s:20 PhanNonClassMethodCall Call to method __construct on non-class type ?class-string<\SplObjectHash>
-%s:20 PhanUndeclaredClass Reference to undeclared class \SplObjectHash

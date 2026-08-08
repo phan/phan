@@ -11,3 +11,9 @@
 %s:69 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type (empty union type)
 %s:69 PhanNonClassMethodCall Call to method instanceMethod on non-class type class-string<\Foo5935>
 %s:69 PhanUnusedVariable Unused definition of variable $x
+%s:81 PhanDebugAnnotation @phan-debug-var requested for variable $bar - it has union type \Bar5935(real=\Bar5935)
+%s:81 PhanNonClassMethodCall Call to method bar on non-class type ?class-string<\Foo5935>
+%s:81 PhanUnusedVariable Unused definition of variable $bar
+%s:90 PhanTemplateTypeStaticMethod static method \Box5935::make does not declare template type in its own comment and may not use the template type of class instances
+%s:102 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type int
+%s:102 PhanUnusedVariable Unused definition of variable $value

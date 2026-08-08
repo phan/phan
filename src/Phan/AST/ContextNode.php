@@ -651,6 +651,13 @@ class ContextNode
                         // Only reached when $expected_type_categories accepts a class name
                         // (not for instance-call syntax like `$class->method()`), since
                         // $class is genuinely a string at runtime.
+                        if ($type->isNullable()) {
+                            // Don't treat this as resolved - $class could be null, in which
+                            // case `$class::method()` fatals. Leave $class_list as-is so the
+                            // existing "possibly non-class type" checks below still apply,
+                            // instead of silently accepting a call that can crash.
+                            continue;
+                        }
                         try {
                             foreach ($type->getClassUnionType()->asClassList($this->code_base, $this->context) as $clazz) {
                                 $class_list[] = $clazz;
