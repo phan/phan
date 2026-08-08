@@ -14,3 +14,5 @@
 %s:66 PhanUnusedVariable Unused definition of variable $x
 %s:78 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int|string(real=string)
 %s:78 PhanUnusedVariable Unused definition of variable $x
+%s:90 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type ?\Box5934<\A5934>(real=?\Box5934)
+%s:90 PhanUnusedVariable Unused definition of variable $x

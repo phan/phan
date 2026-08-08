@@ -79,3 +79,15 @@ class Incompatible5934 {
         '@phan-debug-var $x';
     }
 }
+
+class Nullable5934 {
+    // The native type is nullable and the @var type is not - dropping the redundant bare
+    // \Box5934 must not silently drop the nullability that only it was carrying.
+    /** @var Box5934<A5934> */
+    private ?Box5934 $box = null;
+
+    public function test() {
+        $x = $this->box;
+        '@phan-debug-var $x';
+    }
+}
