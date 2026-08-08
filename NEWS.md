@@ -5,6 +5,7 @@ Phan 6.0.8-dev
 
 Bug fixes:
 - Fix false positives (e.g. `PhanTypeMismatchArgumentNullable`, `PhanPluginNeverReturnMethod`) when a branch calls a `never`-returning instance method on a local variable assigned with `new ClassName()` — the branch is now correctly treated as unreachable ([#5553](https://github.com/phan/phan/issues/5553))
+- Fix crash (`ArgumentCountError: Too few arguments to function Phan\Language\Type::isCallable()`) when `is_callable()` narrowing is applied to a value with an intersection type, e.g. `(callable&T)|null` ([#5555](https://github.com/phan/phan/issues/5555), [#5557](https://github.com/phan/phan/pull/5557))
 
 Jun 22 2026, Phan 6.0.7
 --------------
