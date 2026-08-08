@@ -4235,9 +4235,22 @@ class UnionTypeVisitor extends AnalysisVisitor
             $this->should_catch_issue_exception
         )->withStaticResolvedInContext($this->context);
 
+        // Expand `class-string<Foo>` into the classes it represents, so that e.g.
+        // `$class::method()` resolves the same way `$obj::method()` would for an
+        // Foo-typed $obj (nonNativeTypes() below would otherwise drop it, since
+        // class-string is itself a native/string type).
+        $expanded_union_type = UnionType::empty();
+        foreach ($union_type->getTypeSet() as $type) {
+            if ($type instanceof ClassStringType) {
+                $expanded_union_type = $expanded_union_type->withUnionType($type->getClassUnionType());
+            } else {
+                $expanded_union_type = $expanded_union_type->withType($type);
+            }
+        }
+
         // Iterate over each viable class type to see if any
         // have the constant we're looking for
-        foreach ($union_type->nonNativeTypes()->getUniqueFlattenedTypeSet() as $class_type) {
+        foreach ($expanded_union_type->nonNativeTypes()->getUniqueFlattenedTypeSet() as $class_type) {
             if (!$class_type->isObjectWithKnownFQSEN()) {
                 continue;
             }

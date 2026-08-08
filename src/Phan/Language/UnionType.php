@@ -3166,6 +3166,12 @@ class UnionType implements Serializable, Stringable
         // Iterate over each viable class type to see if any
         // have the constant we're looking for
         foreach ($this->getUniqueFlattenedTypeSet() as $class_type) {
+            if ($class_type instanceof ClassStringType) {
+                // Resolve `class-string<Foo>` the same way `Foo` itself would resolve,
+                // e.g. for `$class::method()` where $class is `class-string<Foo>`.
+                yield from $class_type->getClassUnionType()->asClassList($code_base, $context);
+                continue;
+            }
             if ($class_type->isNativeType()) {
                 continue;
             }

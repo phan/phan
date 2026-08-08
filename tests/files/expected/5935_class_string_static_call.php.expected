@@ -1,0 +1,10 @@
+%s:24 PhanDebugAnnotation @phan-debug-var requested for variable $bar - it has union type \Bar5935(real=\Bar5935)
+%s:33 PhanDebugAnnotation @phan-debug-var requested for variable $bar - it has union type (empty union type)
+%s:33 PhanUndeclaredStaticMethod Static call to undeclared method \Foo5935::not_a_function
+%s:33 PhanUnusedVariable Unused definition of variable $bar
+%s:43 PhanDebugAnnotation @phan-debug-var requested for variable $bar - it has union type (empty union type)
+%s:43 PhanUnusedVariable Unused definition of variable $bar
+%s:49 PhanDebugAnnotation @phan-debug-var requested for variable $bar - it has union type \Bar5935(real=\Bar5935)
+%s:55 PhanDebugAnnotation @phan-debug-var requested for variable $bar - it has union type (empty union type)
+%s:55 PhanUndeclaredStaticMethod Static call to undeclared method \Foo5935::not_a_function
+%s:55 PhanUnusedVariable Unused definition of variable $bar
