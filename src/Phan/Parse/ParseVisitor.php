@@ -1102,10 +1102,28 @@ class ParseVisitor extends ScopeVisitor
             })) {
                 // Don't convert `/** @var T[] */ public $x = []` to union type `T[]|array`
                 $property->setUnionType($variable_type->withRealTypeSet($real_type_set));
+            } elseif ($variable_type->isEmpty()) {
+                $property->setUnionType($original_property_type->withUnionType($variable_type)->withRealTypeSet($real_type_set));
             } else {
                 // Set the declared type to the doc-comment type and add
-                // |null if the default value is null
-                $property->setUnionType($original_property_type->withUnionType($variable_type)->withRealTypeSet($real_type_set));
+                // |null if the default value is null.
+                // Drop real types that the doc-comment type already describes more precisely,
+                // e.g. `/** @var Box<A> */ private Box $b;` should be `Box<A>`, not `Box|Box<A>`
+                // (which would lose the template parameter when resolving method calls on $b).
+                $merged = $variable_type;
+                foreach ($original_property_type->getTypeSet() as $type) {
+                    $is_redundant = false;
+                    foreach ($variable_type->getTypeSet() as $doc_type) {
+                        if ($doc_type->isSubtypeOf($type, $this->code_base)) {
+                            $is_redundant = true;
+                            break;
+                        }
+                    }
+                    if (!$is_redundant) {
+                        $merged = $merged->withType($type);
+                    }
+                }
+                $property->setUnionType($merged->withRealTypeSet($real_type_set));
             }
         }
 
