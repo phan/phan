@@ -1102,10 +1102,43 @@ class ParseVisitor extends ScopeVisitor
             })) {
                 // Don't convert `/** @var T[] */ public $x = []` to union type `T[]|array`
                 $property->setUnionType($variable_type->withRealTypeSet($real_type_set));
+            } elseif ($variable_type->isEmpty()) {
+                $property->setUnionType($original_property_type->withRealTypeSet($real_type_set));
             } else {
                 // Set the declared type to the doc-comment type and add
-                // |null if the default value is null
-                $property->setUnionType($original_property_type->withUnionType($variable_type)->withRealTypeSet($real_type_set));
+                // |null if the default value is null.
+                // Drop declared types (derived from the native type) that the doc-comment type
+                // already describes more precisely, e.g. `/** @var Box<A> */ private Box $b;`
+                // should be `Box<A>`, not `Box|Box<A>` (which would lose the template parameter
+                // when resolving method calls on $b). The real type set is unaffected by this,
+                // it is always overwritten below with $real_type_set.
+                $merged = $variable_type;
+                $doc_type_set = $variable_type->getTypeSet();
+                $doc_contains_nullable = $variable_type->containsNullable();
+                $lost_nullable = false;
+                foreach ($original_property_type->getTypeSet() as $type) {
+                    $is_redundant = false;
+                    foreach ($doc_type_set as $doc_type) {
+                        if ($doc_type->isSubtypeOf($type, $this->code_base)) {
+                            $is_redundant = true;
+                            break;
+                        }
+                    }
+                    if ($is_redundant) {
+                        // Don't let dropping this type silently drop nullability that the
+                        // doc-comment type doesn't otherwise account for,
+                        // e.g. `/** @var Box<A> */ private ?Box $b = null;` should stay nullable.
+                        if ($type->isNullable() && !$doc_contains_nullable) {
+                            $lost_nullable = true;
+                        }
+                    } else {
+                        $merged = $merged->withType($type);
+                    }
+                }
+                if ($lost_nullable && !$merged->containsNullable()) {
+                    $merged = $merged->withIsNullable(true);
+                }
+                $property->setUnionType($merged->withRealTypeSet($real_type_set));
             }
         }
 

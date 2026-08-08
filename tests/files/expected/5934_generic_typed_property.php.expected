@@ -1,0 +1,18 @@
+%s:40 PhanUnusedVariable Unused definition of variable $a1
+%s:41 PhanDebugAnnotation @phan-debug-var requested for variable $a1 - it has union type \A5934|null
+%s:41 PhanDebugAnnotation @phan-debug-var requested for variable $a2 - it has union type \A5934|null
+%s:41 PhanUnusedVariable Unused definition of variable $a2
+%s:44 PhanUnusedVariable Unused definition of variable $b1
+%s:45 PhanDebugAnnotation @phan-debug-var requested for variable $b1 - it has union type \A5934|\B5934
+%s:45 PhanDebugAnnotation @phan-debug-var requested for variable $b2 - it has union type \A5934|\B5934
+%s:45 PhanUnusedVariable Unused definition of variable $b2
+%s:53 PhanUnusedVariable Unused definition of variable $a1
+%s:54 PhanDebugAnnotation @phan-debug-var requested for variable $a1 - it has union type \A5934|null
+%s:54 PhanDebugAnnotation @phan-debug-var requested for variable $a2 - it has union type \A5934|null
+%s:54 PhanUnusedVariable Unused definition of variable $a2
+%s:66 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \Traversable<int,\stdClass>|\stdClass[](real=\Traversable)
+%s:66 PhanUnusedVariable Unused definition of variable $x
+%s:78 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int|string(real=string)
+%s:78 PhanUnusedVariable Unused definition of variable $x
+%s:90 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type ?\Box5934<\A5934>(real=?\Box5934)
+%s:90 PhanUnusedVariable Unused definition of variable $x
