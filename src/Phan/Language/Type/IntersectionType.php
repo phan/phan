@@ -814,7 +814,6 @@ final class IntersectionType extends Type
     /**
      * @return bool
      * True if this type is a callable or a Closure.
-     * @unused-param $code_base
      */
     public function isCallable(CodeBase $code_base): bool
     {

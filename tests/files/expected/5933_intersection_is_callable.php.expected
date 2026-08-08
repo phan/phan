@@ -1,0 +1,10 @@
+%s:20 PhanGenericConstructorTypes Missing template parameter for type T on constructor for generic class \HandlerStack5933 defined at %s:11
+%s:26 PhanDebugAnnotation @phan-debug-var requested for variable $handler - it has union type null
+%s:26 PhanUnusedVariable Unused definition of variable $handler
+%s:28 PhanDebugAnnotation @phan-debug-var requested for variable $handler - it has union type callable(real=callable)
+%s:28 PhanUnusedVariable Unused definition of variable $handler
+%s:36 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type callable(real=callable)
+%s:36 PhanImpossibleCondition Impossible attempt to cast $x of type \Countable&\Traversable to callable
+%s:38 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \Countable&\Traversable(real=\Countable&\Traversable)
+%s:50 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \Invokable5933(real=\Invokable5933)
+%s:52 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type (empty union type)
