@@ -3625,7 +3625,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return UnionType::empty();
             }
             $combined_union_type = null;
-            foreach ($this->classListFromNode($class_node) as $class) {
+            foreach ($this->classListFromNode($class_node, $static_class_node !== null) as $class) {
                 if (!$class->hasMethodWithName($this->code_base, $method_name, true)) {
                     continue;
                 }
@@ -4211,9 +4211,9 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * @return \Generator|Clazz[]
      */
-    public static function classListFromNodeAndContext(CodeBase $code_base, Context $context, Node $node): \Generator|array
+    public static function classListFromNodeAndContext(CodeBase $code_base, Context $context, Node $node, bool $expand_class_string_type = false): \Generator|array
     {
-        return (new UnionTypeVisitor($code_base, $context, true))->classListFromNode($node);
+        return (new UnionTypeVisitor($code_base, $context, true))->classListFromNode($node, $expand_class_string_type);
     }
 
     /**
@@ -4225,7 +4225,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * An exception is thrown if we can't find a class for
      * the given type
      */
-    private function classListFromNode(Node $node): \Generator
+    private function classListFromNode(Node $node, bool $expand_class_string_type = false): \Generator
     {
         // Get the types associated with the node
         $union_type = self::unionTypeFromNode(
@@ -4236,21 +4236,28 @@ class UnionTypeVisitor extends AnalysisVisitor
         )->withStaticResolvedInContext($this->context);
 
         // Expand `class-string<Foo>` into the classes it represents, so that e.g.
-        // `$class::method()` resolves the same way `$obj::method()` would for an
+        // `$class::method()` resolves the same way `$obj::method()` would for a
         // Foo-typed $obj (nonNativeTypes() below would otherwise drop it, since
         // class-string is itself a native/string type).
-        $expanded_union_type = UnionType::empty();
-        foreach ($union_type->getTypeSet() as $type) {
-            if ($type instanceof ClassStringType) {
-                $expanded_union_type = $expanded_union_type->withUnionType($type->getClassUnionType());
-            } else {
-                $expanded_union_type = $expanded_union_type->withType($type);
+        // Only do this when the caller tells us $node is used in class-name syntax
+        // (e.g. the class part of a static call) - $class is genuinely a string at
+        // runtime, so e.g. `$class->method()` (instance-call syntax) must not resolve
+        // this as if it were an instance of Foo.
+        if ($expand_class_string_type && $union_type->hasTypeMatchingCallback(static fn(Type $type): bool => $type instanceof ClassStringType)) {
+            $expanded_union_type = UnionType::empty();
+            foreach ($union_type->getTypeSet() as $type) {
+                if ($type instanceof ClassStringType) {
+                    $expanded_union_type = $expanded_union_type->withUnionType($type->getClassUnionType());
+                } else {
+                    $expanded_union_type = $expanded_union_type->withType($type);
+                }
             }
+            $union_type = $expanded_union_type;
         }
 
         // Iterate over each viable class type to see if any
         // have the constant we're looking for
-        foreach ($expanded_union_type->nonNativeTypes()->getUniqueFlattenedTypeSet() as $class_type) {
+        foreach ($union_type->nonNativeTypes()->getUniqueFlattenedTypeSet() as $class_type) {
             if (!$class_type->isObjectWithKnownFQSEN()) {
                 continue;
             }

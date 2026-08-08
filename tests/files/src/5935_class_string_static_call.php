@@ -9,6 +9,9 @@ class Foo5935 {
     public static function bar(): Bar5935 {
         return new Bar5935();
     }
+
+    public function instanceMethod(): void {
+    }
 }
 
 class Bar5935 {
@@ -54,4 +57,15 @@ function testValidMethodViaInstance(Foo5935 $class) {
 function testInvalidMethodViaInstance(Foo5935 $class) {
     $bar = $class::not_a_function();
     '@phan-debug-var $bar';
+}
+
+/**
+ * @param class-string<Foo5935> $class
+ */
+function testInstanceSyntaxOnClassStringMustNotResolve(string $class) {
+    // $class is genuinely a string at runtime - instance-call syntax on it must NOT resolve
+    // as if $class were a Foo5935 instance, unlike the static-call ($class::method()) cases
+    // above. Must warn (e.g. PhanNonClassMethodCall), not silently accept this.
+    $x = $class->instanceMethod();
+    '@phan-debug-var $x';
 }

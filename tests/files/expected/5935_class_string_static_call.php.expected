@@ -1,10 +1,13 @@
-%s:24 PhanDebugAnnotation @phan-debug-var requested for variable $bar - it has union type \Bar5935(real=\Bar5935)
-%s:33 PhanDebugAnnotation @phan-debug-var requested for variable $bar - it has union type (empty union type)
-%s:33 PhanUndeclaredStaticMethod Static call to undeclared method \Foo5935::not_a_function
-%s:33 PhanUnusedVariable Unused definition of variable $bar
-%s:43 PhanDebugAnnotation @phan-debug-var requested for variable $bar - it has union type (empty union type)
-%s:43 PhanUnusedVariable Unused definition of variable $bar
-%s:49 PhanDebugAnnotation @phan-debug-var requested for variable $bar - it has union type \Bar5935(real=\Bar5935)
-%s:55 PhanDebugAnnotation @phan-debug-var requested for variable $bar - it has union type (empty union type)
-%s:55 PhanUndeclaredStaticMethod Static call to undeclared method \Foo5935::not_a_function
-%s:55 PhanUnusedVariable Unused definition of variable $bar
+%s:27 PhanDebugAnnotation @phan-debug-var requested for variable $bar - it has union type \Bar5935(real=\Bar5935)
+%s:36 PhanDebugAnnotation @phan-debug-var requested for variable $bar - it has union type (empty union type)
+%s:36 PhanUndeclaredStaticMethod Static call to undeclared method \Foo5935::not_a_function
+%s:36 PhanUnusedVariable Unused definition of variable $bar
+%s:46 PhanDebugAnnotation @phan-debug-var requested for variable $bar - it has union type (empty union type)
+%s:46 PhanUnusedVariable Unused definition of variable $bar
+%s:52 PhanDebugAnnotation @phan-debug-var requested for variable $bar - it has union type \Bar5935(real=\Bar5935)
+%s:58 PhanDebugAnnotation @phan-debug-var requested for variable $bar - it has union type (empty union type)
+%s:58 PhanUndeclaredStaticMethod Static call to undeclared method \Foo5935::not_a_function
+%s:58 PhanUnusedVariable Unused definition of variable $bar
+%s:69 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type (empty union type)
+%s:69 PhanNonClassMethodCall Call to method instanceMethod on non-class type class-string<\Foo5935>
+%s:69 PhanUnusedVariable Unused definition of variable $x

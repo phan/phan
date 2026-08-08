@@ -42,6 +42,7 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Type;
+use Phan\Language\Type\ClassStringType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
@@ -642,6 +643,29 @@ class ContextNode
                                     $this->node->lineno ?? $this->context->getLineNumberStart(),
                                     $e->getFQSEN()
                                 );
+                            }
+                        }
+                    } elseif ($type instanceof ClassStringType) {
+                        // Resolve `class-string<Foo>` the same way `Foo` itself would resolve,
+                        // e.g. for `$class::method()` where $class is `class-string<Foo>`.
+                        // Only reached when $expected_type_categories accepts a class name
+                        // (not for instance-call syntax like `$class->method()`), since
+                        // $class is genuinely a string at runtime.
+                        try {
+                            foreach ($type->getClassUnionType()->asClassList($this->code_base, $this->context) as $clazz) {
+                                $class_list[] = $clazz;
+                            }
+                        } catch (CodeBaseException $e) {
+                            if ($warn_if_wrong_type) {
+                                $this->emitIssue(
+                                    Issue::UndeclaredClass,
+                                    $this->node->lineno ?? $this->context->getLineNumberStart(),
+                                    (string)$e->getFQSEN()
+                                );
+                            }
+                        } catch (IssueException $e) {
+                            if ($warn_if_wrong_type) {
+                                Issue::maybeEmitInstance($this->code_base, $this->context, $e->getIssueInstance());
                             }
                         }
                     }
