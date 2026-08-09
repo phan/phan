@@ -24,3 +24,6 @@
 %s:172 PhanTemplateTypeNotUsedInFunctionReturn Template type T not used in return value of function/method testBoundedTemplateClassStringResolves()
 %s:177 PhanDebugAnnotation @phan-debug-var requested for variable $bar - it has union type \Bar5935(real=\Bar5935)
 %s:180 PhanUndeclaredStaticMethod Static call to undeclared method \Foo5935::not_a_real_method
+%s:211 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type T(real=T)
+%s:220 PhanDebugAnnotation @phan-debug-var requested for variable $y - it has union type \Sub5935c
+%s:220 PhanUnusedVariable Unused definition of variable $y

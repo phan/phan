@@ -191,3 +191,32 @@ function testBoundedTemplateClassStringPreservesGenericity(string $class) {
     // would falsely mismatch its own `@return T`.
     return new $class();
 }
+
+class Foo5935c {
+    public static function make(): static {
+        return new static();
+    }
+}
+
+/**
+ * @template T of Foo5935c
+ * @param class-string<T> $class
+ * @return T
+ */
+function testBoundedTemplateClassStringLateStaticBinding(string $class) {
+    // `make()`'s `static` return type must resolve back to T (the represented template), not
+    // to the concrete bound Foo5935c used only for member lookup - otherwise this legitimately
+    // generic factory would falsely mismatch its own `@return T`, and would lose subtype
+    // information at call sites that pass a narrower class-string (see the Sub5935c case below).
+    $x = $class::make();
+    '@phan-debug-var $x';
+    return $x;
+}
+
+class Sub5935c extends Foo5935c {
+}
+
+function testBoundedTemplateClassStringLateStaticBindingCallSite(): void {
+    $y = testBoundedTemplateClassStringLateStaticBinding(Sub5935c::class);
+    '@phan-debug-var $y';
+}
