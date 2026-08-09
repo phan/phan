@@ -3069,7 +3069,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $this->code_base,
                 $this->context,
                 $class_node
-            ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
+            ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME, null, true, false);
         } catch (IssueException $exception) {
             if ($this->should_catch_issue_exception) {
                 Issue::maybeEmitInstance($this->code_base, $this->context, $exception->getIssueInstance());
@@ -3625,7 +3625,87 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return UnionType::empty();
             }
             $combined_union_type = null;
-            foreach ($this->classListFromNode($class_node) as $class) {
+            // If $class_node is a class-string whose represented type carries information that
+            // classListFromNode() discards when reducing it to a Clazz for member lookup, a
+            // `static` return type must resolve back to that richer type rather than to the
+            // resolved class. Two cases:
+            //  - `class-string<T>` for an unresolved (bounded) template T - resolve to T, not to
+            //    T's bound, to preserve genericity for a template-aware caller (e.g. `@return T`).
+            //  - `class-string<Box<int>>` - resolve to `Box<int>`, not to bare `Box`, to preserve
+            //    the generic arguments.
+            // Keyed by the FQSEN the type reduces to, so that a union such as
+            // `class-string<T>|class-string<U>` maps each resolved class back to its own
+            // represented type rather than applying whichever was seen last to all of them. Each
+            // entry is a *list*, since distinct represented types may reduce to the same class
+            // (e.g. `@template T of Foo` and `@template U of Foo` both key on `\Foo`).
+            // @var array<string,non-empty-list<Type>> $represented_template_types
+            $represented_template_types = [];
+            if ($static_class_node !== null) {
+                // FQSENs also reachable through a *non*-class-string alternative of the receiver
+                // (e.g. `Foo|class-string<T>` where T is bounded by Foo). Both alternatives
+                // resolve to the same Clazz, so substituting `static` with T there would wrongly
+                // discard the plain `Foo` alternative's own result - leave those classes alone.
+                $concretely_referenced_fqsens = [];
+                foreach (UnionTypeVisitor::unionTypeFromNode(
+                    $this->code_base,
+                    $this->context,
+                    $class_node,
+                    $this->should_catch_issue_exception
+                )->getTypeSet() as $type) {
+                    if (!($type instanceof ClassStringType)) {
+                        // getUniqueFlattenedTypeSet() splits an intersection alternative (e.g.
+                        // `(Foo&Marker)|class-string<T>`) into its constituents - an
+                        // IntersectionType has no single FQSEN of its own, but classListFromNode()
+                        // flattens it and resolves the same classes, so each part counts as
+                        // concretely referenced.
+                        foreach ($type->asPHPDocUnionType()->getUniqueFlattenedTypeSet() as $concrete_type) {
+                            if (!$concrete_type->isObjectWithKnownFQSEN()) {
+                                continue;
+                            }
+                            try {
+                                $concretely_referenced_fqsens[(string)$concrete_type->asFQSEN()] = true;
+                            } catch (FQSENException) {
+                                // A malformed class name such as `('??')::foo()` - it can't
+                                // correspond to any resolved class, so nothing to record.
+                            }
+                        }
+                        continue;
+                    }
+                    foreach ($type->getClassUnionType()->getTypeSet() as $inner_type) {
+                        if ($inner_type instanceof TemplateType) {
+                            // A bounded template reduces to (each type in) its bound.
+                            $reduces_to_union_type = $inner_type->getBoundUnionType();
+                            if (!$reduces_to_union_type) {
+                                continue;
+                            }
+                        } elseif ($inner_type->getTemplateParameterTypeList() && $inner_type->isObjectWithKnownFQSEN()) {
+                            // A generic type such as `Box<int>` reduces to bare `Box`. Types
+                            // without generic arguments are skipped: they reduce to themselves,
+                            // so the normal resolution below already produces the right answer.
+                            $reduces_to_union_type = $inner_type->asPHPDocUnionType();
+                        } else {
+                            continue;
+                        }
+                        // getUniqueFlattenedTypeSet() splits an intersection bound (e.g.
+                        // `@template T of I&J`) into its constituents, matching how member lookup
+                        // flattens it - an IntersectionType itself has no single FQSEN, so it must
+                        // be associated with each part it can be resolved through.
+                        foreach ($reduces_to_union_type->getUniqueFlattenedTypeSet() as $reduced_type) {
+                            if (!$reduced_type->isObjectWithKnownFQSEN()) {
+                                continue;
+                            }
+                            $reduced_fqsen_string = (string)$reduced_type->asFQSEN();
+                            if (!\in_array($inner_type, $represented_template_types[$reduced_fqsen_string] ?? [], true)) {
+                                $represented_template_types[$reduced_fqsen_string][] = $inner_type;
+                            }
+                        }
+                    }
+                }
+                foreach ($concretely_referenced_fqsens as $fqsen_string => $_) {
+                    unset($represented_template_types[$fqsen_string]);
+                }
+            }
+            foreach ($this->classListFromNode($class_node, $static_class_node !== null) as $class) {
                 if (!$class->hasMethodWithName($this->code_base, $method_name, true)) {
                     continue;
                 }
@@ -3639,14 +3719,22 @@ class UnionTypeVisitor extends AnalysisVisitor
 
                     if ($method->hasTemplateType()) {
                         try {
+                            $object_union_type = UnionTypeVisitor::unionTypeFromNode(
+                                $this->code_base,
+                                $this->context,
+                                $class_node,
+                                $this->should_catch_issue_exception
+                            );
+                            if ($static_class_node !== null) {
+                                // e.g. for `$class::method()` where $class is `class-string<Box<int>>`,
+                                // resolve template types (e.g. T) against `Box<int>`, not against
+                                // the class-string type itself (which isn't an object with a known
+                                // FQSEN, and so contributes nothing to the template parameter map).
+                                $object_union_type = self::expandClassStringTypes($object_union_type);
+                            }
                             $method = $method->resolveTemplateType(
                                 $this->code_base,
-                                UnionTypeVisitor::unionTypeFromNode(
-                                    $this->code_base,
-                                    $this->context,
-                                    $class_node,
-                                    $this->should_catch_issue_exception
-                                )
+                                $object_union_type
                             );
                         } catch (RecursionDepthException) {
                         }
@@ -3720,6 +3808,82 @@ class UnionTypeVisitor extends AnalysisVisitor
                         \strcasecmp($static_class_node->children['name'], 'parent') === 0) {
                         // If parent::foo() returns `static`, then use the current class instead of the parent class
                         $union_type = $union_type->withStaticResolvedInContext($this->context);
+                    } elseif (($class_template_types = $represented_template_types[(string)$class->getFQSEN()] ?? null)
+                        && $union_type->hasTypeMatchingCallback(
+                            function (Type $type): bool {
+                                return $type->hasStaticOrSelfTypesRecursive($this->code_base);
+                            }
+                        )
+                    ) {
+                        // Method::getUnionType() unions the declared return type with its own
+                        // declaring-class resolution of `static` - `static` becomes `static|Foo`,
+                        // and `static[]` becomes `static[]|Foo[]`. Substituting on that would
+                        // leave the resolved counterpart behind (`T|Foo`, `T[]|Foo[]`), so use the
+                        // unmodified return type, which keeps `static` abstract and has no
+                        // expansion to strip. Fall back to removing just the bare class type when
+                        // the return type came from a dependent-return-type plugin instead.
+                        // Only `static` maps to the template; a `self` return type always means the
+                        // class that *declared* the method - not the receiver - so an inherited
+                        // `Base::make(): self` called through `class-string<Child>` stays `Base`.
+                        // Several distinct templates may share this bound, in which case the call
+                        // could return any of them, so union the substitution for each.
+                        if ($method->hasDependentReturnType()) {
+                            // The dependent result must be kept - it carries the
+                            // argument-derived template substitutions - but such closures
+                            // typically derive it from Method::getUnionType(), so it has the same
+                            // expansion appended. Subtract exactly the types that expansion added
+                            // (comparing against the unmodified return type), which also covers
+                            // nested forms like `static[]` that a bare-class-type removal misses.
+                            //
+                            // The two origins are indistinguishable by equality alone: for
+                            // `@return static|U`, if an argument makes U resolve to the declaring
+                            // class, the genuine result type coincides with the expansion type and
+                            // must not be dropped. Keep any type that an argument could have
+                            // produced - erring toward a wider (sound) type rather than silently
+                            // discarding a real one.
+                            $base_union_type = $union_type;
+                            $unmodified_union_type = $method->getUnionTypeWithUnmodifiedStatic();
+                            $argument_union_types = [];
+                            foreach ($node->children['args']->children ?? [] as $argument_node) {
+                                $argument_union_types[] = UnionTypeVisitor::unionTypeFromNode(
+                                    $this->code_base,
+                                    $this->context,
+                                    $argument_node,
+                                    $this->should_catch_issue_exception
+                                );
+                            }
+                            foreach ($method->getUnionType()->getTypeSet() as $expanded_type) {
+                                if ($unmodified_union_type->hasType($expanded_type)) {
+                                    continue;
+                                }
+                                foreach ($argument_union_types as $argument_union_type) {
+                                    if ($argument_union_type->hasType($expanded_type)) {
+                                        continue 2;
+                                    }
+                                }
+                                $base_union_type = $base_union_type->withoutType($expanded_type);
+                            }
+                        } else {
+                            $base_union_type = $method->getUnionTypeWithUnmodifiedStatic();
+                        }
+                        $self_context = $class->getInternalContext();
+                        if ($method->hasDefiningFQSEN()) {
+                            $defining_class_fqsen = $method->getDefiningClassFQSEN();
+                            if ($this->code_base->hasClassWithFQSEN($defining_class_fqsen)) {
+                                $self_context = $this->code_base->getClassByFQSEN($defining_class_fqsen)->getInternalContext();
+                            }
+                        }
+                        $substituted_union_types = [];
+                        foreach ($class_template_types as $class_template_type) {
+                            $substituted_union_types[] = $base_union_type
+                                ->withStaticResolvedTo($class_template_type)
+                                ->withSelfResolvedInContext($self_context);
+                        }
+                        // Note: UnionType::merge() is used instead of folding with withUnionType()
+                        // because the latter erases the real type set when starting from an empty
+                        // union type, and merge() short-circuits correctly for the single-template
+                        // case (which is by far the most common).
+                        $union_type = UnionType::merge($substituted_union_types);
                     } else {
                         $union_type = $union_type->withStaticResolvedInContext($class->getInternalContext());
                     }
@@ -4211,9 +4375,31 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * @return \Generator|Clazz[]
      */
-    public static function classListFromNodeAndContext(CodeBase $code_base, Context $context, Node $node): \Generator|array
+    public static function classListFromNodeAndContext(CodeBase $code_base, Context $context, Node $node, bool $expand_class_string_type = false): \Generator|array
     {
-        return (new UnionTypeVisitor($code_base, $context, true))->classListFromNode($node);
+        return (new UnionTypeVisitor($code_base, $context, true))->classListFromNode($node, $expand_class_string_type);
+    }
+
+    /**
+     * Expand any `class-string<Foo>` in $union_type into `Foo`, e.g. for the class part of a
+     * static call `$class::method()` used in class-name syntax. Callers are responsible for
+     * only doing this in contexts that accept a class name (not instance-call syntax), since
+     * $class is genuinely a string at runtime.
+     */
+    public static function expandClassStringTypes(UnionType $union_type): UnionType
+    {
+        if (!$union_type->hasTypeMatchingCallback(static fn(Type $type): bool => $type instanceof ClassStringType)) {
+            return $union_type;
+        }
+        $expanded_union_type = UnionType::empty();
+        foreach ($union_type->getTypeSet() as $type) {
+            if ($type instanceof ClassStringType) {
+                $expanded_union_type = $expanded_union_type->withUnionType($type->getClassUnionTypeResolvingBounds());
+            } else {
+                $expanded_union_type = $expanded_union_type->withType($type);
+            }
+        }
+        return $expanded_union_type;
     }
 
     /**
@@ -4225,7 +4411,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * An exception is thrown if we can't find a class for
      * the given type
      */
-    private function classListFromNode(Node $node): \Generator
+    private function classListFromNode(Node $node, bool $expand_class_string_type = false): \Generator
     {
         // Get the types associated with the node
         $union_type = self::unionTypeFromNode(
@@ -4234,6 +4420,16 @@ class UnionTypeVisitor extends AnalysisVisitor
             $node,
             $this->should_catch_issue_exception
         )->withStaticResolvedInContext($this->context);
+
+        // Expand `class-string<Foo>` into the classes it represents (nonNativeTypes() below
+        // would otherwise drop it, since class-string is itself a native/string type).
+        // Only do this when the caller tells us $node is used in class-name syntax (e.g. the
+        // class part of a static call) - $class is genuinely a string at runtime, so e.g.
+        // `$class->method()` (instance-call syntax) must not resolve this as if it were an
+        // instance of Foo.
+        if ($expand_class_string_type) {
+            $union_type = self::expandClassStringTypes($union_type);
+        }
 
         // Iterate over each viable class type to see if any
         // have the constant we're looking for

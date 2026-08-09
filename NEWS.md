@@ -7,6 +7,7 @@ Bug fixes:
 - Fix false positives (e.g. `PhanTypeMismatchArgumentNullable`, `PhanPluginNeverReturnMethod`) when a branch calls a `never`-returning instance method on a local variable assigned with `new ClassName()` — the branch is now correctly treated as unreachable ([#5553](https://github.com/phan/phan/issues/5553))
 - Fix crash (`ArgumentCountError: Too few arguments to function Phan\Language\Type::isCallable()`) when `is_callable()` narrowing is applied to a value with an intersection type, e.g. `(callable&T)|null` ([#5555](https://github.com/phan/phan/issues/5555), [#5557](https://github.com/phan/phan/pull/5557))
 - Fix `@var Foo<T>` losing its template parameter on properties that also have a native type declaration (e.g. `/** @var Box<A> */ private Box $box;` was inferred as `Box|Box<A>` instead of `Box<A>`, making method calls on `$box` return `mixed` instead of the template argument) ([#5556](https://github.com/phan/phan/issues/5556))
+- Fix static calls (`$class::method()`) not resolving when `$class` is typed `class-string<Foo>` — the return type was inferred as empty and typos in the method name went completely unchecked (no `PhanUndeclaredStaticMethod`), unlike an actual `Foo`-typed variable or `new $class()`, both of which already resolved correctly ([#5558](https://github.com/phan/phan/issues/5558))
 
 Jun 22 2026, Phan 6.0.7
 --------------

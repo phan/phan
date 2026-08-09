@@ -42,6 +42,7 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Type;
+use Phan\Language\Type\ClassStringType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
@@ -557,6 +558,12 @@ class ContextNode
      * If this exists, emit the given issue type (passing in the class's union type as format arg) instead of the default issue type.
      * The issue type passed in must have exactly one template string parameter (e.g. {CLASS}, {TYPE})
      *
+     * @param bool $expand_class_string
+     * If false, don't resolve `class-string<Foo>` to `Foo`. Callers resolving `$class::class`
+     * (`AST_CLASS_NAME`) must pass false: PHP allows `::class` on an object or a literal class
+     * name, but throws a TypeError for a plain string receiver, so a class-string-typed
+     * variable must not be treated as valid here even though it is for e.g. `$class::method()`.
+     *
      * @return list<Clazz>
      * A list of classes representing the non-native types
      * associated with the given node
@@ -573,11 +580,47 @@ class ContextNode
         bool $ignore_missing_classes = false,
         int $expected_type_categories = self::CLASS_LIST_ACCEPT_ANY,
         ?string $custom_issue_type = null,
-        bool $warn_if_wrong_type = true
+        bool $warn_if_wrong_type = true,
+        bool $expand_class_string = true
     ): array {
         [$union_type, $class_list] = $this->getClassListInner($ignore_missing_classes);
         if ($union_type->isEmpty()) {
             return [];
+        }
+
+        if ($expand_class_string && $expected_type_categories !== self::CLASS_LIST_ACCEPT_OBJECT) {
+            // Resolve any `class-string<Foo>` in the union the same way `Foo` itself would
+            // resolve, e.g. for `$class::method()` where $class is `class-string<Foo>`. Done
+            // unconditionally (not just when $class_list is otherwise empty), since a
+            // class-string alternative can be the only union member with the member being
+            // looked up, e.g. `A|class-string<B>` where only B declares the method.
+            // Only reached when $expected_type_categories accepts a class name (not for
+            // instance-call syntax like `$class->method()`), since $class is genuinely a
+            // string at runtime - deliberately not special-cased on nullability, to match how
+            // a nullable object receiver (`?Foo $obj; $obj::method();`) is already resolved and
+            // fully validated without a "possibly null" warning.
+            foreach ($union_type->getTypeSet() as $type) {
+                if (!($type instanceof ClassStringType)) {
+                    continue;
+                }
+                try {
+                    foreach ($type->getClassUnionTypeResolvingBounds()->asClassList($this->code_base, $this->context) as $clazz) {
+                        $class_list[] = $clazz;
+                    }
+                } catch (CodeBaseException $e) {
+                    if ($warn_if_wrong_type) {
+                        $this->emitIssue(
+                            Issue::UndeclaredClass,
+                            $this->node->lineno ?? $this->context->getLineNumberStart(),
+                            (string)$e->getFQSEN()
+                        );
+                    }
+                } catch (IssueException $e) {
+                    if ($warn_if_wrong_type) {
+                        Issue::maybeEmitInstance($this->code_base, $this->context, $e->getIssueInstance());
+                    }
+                }
+            }
         }
 
         if (\count($class_list) === 0) {
@@ -979,10 +1022,17 @@ class ContextNode
                 $method = $class->getMethodByName($this->code_base, $method_name);
                 if ($method->hasTemplateType()) {
                     try {
-                        $method = $method->resolveTemplateType(
-                            $this->code_base,
-                            UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr'] ?? $node->children['class'])
-                        );
+                        $object_union_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr'] ?? $node->children['class']);
+                        if ($is_static && isset($node->children['class'])) {
+                            // e.g. for `$class::method()` where $class is `class-string<Box<int>>`,
+                            // resolve template types (e.g. T) against `Box<int>`, not against the
+                            // class-string type itself (not an object with a known FQSEN, so it
+                            // contributes nothing to the template parameter map) - this affects the
+                            // Method object used for argument validation, separately from the
+                            // equivalent expansion in UnionTypeVisitor used for return type inference.
+                            $object_union_type = UnionTypeVisitor::expandClassStringTypes($object_union_type);
+                        }
+                        $method = $method->resolveTemplateType($this->code_base, $object_union_type);
                     } catch (RecursionDepthException) {
                     }
                 }
@@ -1079,6 +1129,36 @@ class ContextNode
         }
         // Typically, this should only return false for intersection types that include a mix of types that have and don't have the method.
         foreach ($union_type->getTypeSet() as $type) {
+            if ($type instanceof ClassStringType) {
+                // `class-string<Foo>` isn't itself an object with a known FQSEN, but getClassList()
+                // resolves it to Foo for static calls, so check the class it represents here too -
+                // otherwise a union such as `A|class-string<B>` would silently suppress this
+                // warning when only A declares the method.
+                $class_union_type = $type->getClassUnionTypeResolvingBounds();
+                if ($class_union_type->isEmpty()) {
+                    continue;
+                }
+                // The represented type may itself be a union (`class-string<A|B>`), in which case
+                // the string could name either at runtime, so *every* alternative must declare the
+                // method. An individual alternative may in turn be an intersection (e.g.
+                // `@template T of I&J`), where the runtime class implements all constituents, so
+                // there *any* constituent supplying the method is enough - matching the
+                // non-class-string handling below. asClassList() flattens an intersection into its
+                // parts, the same way member lookup resolves it.
+                foreach ($class_union_type->getTypeSet() as $represented_type) {
+                    $alternative_has_method = false;
+                    foreach ($represented_type->asPHPDocUnionType()->asClassList($this->code_base, $this->context) as $class) {
+                        if ($class->hasMethodWithName($this->code_base, $method_name, $is_direct)) {
+                            $alternative_has_method = true;
+                            break;
+                        }
+                    }
+                    if (!$alternative_has_method) {
+                        return false;
+                    }
+                }
+                continue;
+            }
             if (!$type->hasObjectWithKnownFQSEN()) {
                 continue;
             }

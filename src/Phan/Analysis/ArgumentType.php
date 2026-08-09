@@ -1895,7 +1895,8 @@ final class ArgumentType
                     foreach (UnionTypeVisitor::classListFromNodeAndContext(
                         $code_base,
                         $context,
-                        $class_node
+                        $class_node,
+                        $node_kind === ast\AST_STATIC_CALL
                     ) as $class) {
                         if (!$class->hasMethodWithName(
                             $code_base,

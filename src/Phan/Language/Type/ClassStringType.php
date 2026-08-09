@@ -67,6 +67,34 @@ final class ClassStringType extends StringType
     }
 
     /**
+     * Like getClassUnionType(), but also resolves any bounded template type (e.g.
+     * `@template T of Foo`) to its bound, so `class-string<T>` resolves the same way
+     * `class-string<Foo>` would for the purposes of looking up members (methods, etc.) - unlike
+     * getClassUnionType(), which callers use to determine the *resulting value type* of an
+     * expression (e.g. `new $class()`), and must keep an unresolved T as T to preserve
+     * genericity for template-aware return type checks.
+     */
+    public function getClassUnionTypeResolvingBounds(): UnionType
+    {
+        $class_union_type = $this->getClassUnionType();
+        if (!$class_union_type->hasTypeMatchingCallback(static fn(Type $type): bool => $type instanceof TemplateType)) {
+            return $class_union_type;
+        }
+        $result = UnionType::empty();
+        foreach ($class_union_type->getTypeSet() as $type) {
+            if ($type instanceof TemplateType) {
+                $bound_union_type = $type->getBoundUnionType();
+                if ($bound_union_type && !$bound_union_type->isEmpty()) {
+                    $result = $result->withUnionType($bound_union_type);
+                    continue;
+                }
+            }
+            $result = $result->withType($type);
+        }
+        return $result;
+    }
+
+    /**
      * @param CodeBase $code_base may be used for resolving inheritance @phan-unused-param
      * @param TemplateType $template_type the template type that this union type is being searched for
      *

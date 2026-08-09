@@ -4278,6 +4278,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0158
 Call to possibly undeclared method {METHOD} on type {TYPE} ({TYPE} does not declare the method)
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/plugin_test/expected/322_class_string_strict_method_checking.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/plugin_test/src/322_class_string_strict_method_checking.php#L21).
+
 ## PhanPossiblyUndeclaredProperty
 
 ```

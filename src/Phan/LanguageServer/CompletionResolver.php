@@ -239,7 +239,10 @@ class CompletionResolver
             $node->children['class'] ?? $node->children['expr']
         ))->getClassList(
             true,
-            ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME
+            // Only accept a class name (and so resolve `class-string<Foo>` to Foo) for static
+            // syntax. For `$class->` on a `class-string<Foo>` receiver, $class is a string at
+            // runtime and the call would fail, so don't suggest Foo's members.
+            $is_static ? ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME : ContextNode::CLASS_LIST_ACCEPT_OBJECT
         );
 
         // And find all of the instance/static properties that can be used as completions
