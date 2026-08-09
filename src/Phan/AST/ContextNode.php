@@ -1138,12 +1138,15 @@ class ContextNode
                 if ($class_union_type->isEmpty()) {
                     continue;
                 }
+                // The represented type may itself be a union (`class-string<A|B>`), in which case
+                // the string could name any of them at runtime - so *every* represented class must
+                // declare the method, not merely one of them.
                 foreach ($class_union_type->asClassList($this->code_base, $this->context) as $class) {
-                    if ($class->hasMethodWithName($this->code_base, $method_name, $is_direct)) {
-                        continue 2;
+                    if (!$class->hasMethodWithName($this->code_base, $method_name, $is_direct)) {
+                        return false;
                     }
                 }
-                return false;
+                continue;
             }
             if (!$type->hasObjectWithKnownFQSEN()) {
                 continue;

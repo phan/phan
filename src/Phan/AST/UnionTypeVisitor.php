@@ -3637,6 +3637,11 @@ class UnionTypeVisitor extends AnalysisVisitor
             // @var array<string,non-empty-list<TemplateType>> $represented_template_types
             $represented_template_types = [];
             if ($static_class_node !== null) {
+                // FQSENs also reachable through a *non*-class-string alternative of the receiver
+                // (e.g. `Foo|class-string<T>` where T is bounded by Foo). Both alternatives
+                // resolve to the same Clazz, so substituting `static` with T there would wrongly
+                // discard the plain `Foo` alternative's own result - leave those classes alone.
+                $concretely_referenced_fqsens = [];
                 foreach (UnionTypeVisitor::unionTypeFromNode(
                     $this->code_base,
                     $this->context,
@@ -3644,6 +3649,14 @@ class UnionTypeVisitor extends AnalysisVisitor
                     $this->should_catch_issue_exception
                 )->getTypeSet() as $type) {
                     if (!($type instanceof ClassStringType)) {
+                        if ($type->isObjectWithKnownFQSEN()) {
+                            try {
+                                $concretely_referenced_fqsens[(string)$type->asFQSEN()] = true;
+                            } catch (FQSENException) {
+                                // A malformed class name such as `('??')::foo()` - it can't
+                                // correspond to any resolved class, so nothing to record.
+                            }
+                        }
                         continue;
                     }
                     foreach ($type->getClassUnionType()->getTypeSet() as $inner_type) {
@@ -3664,6 +3677,9 @@ class UnionTypeVisitor extends AnalysisVisitor
                             }
                         }
                     }
+                }
+                foreach ($concretely_referenced_fqsens as $fqsen_string => $_) {
+                    unset($represented_template_types[$fqsen_string]);
                 }
             }
             foreach ($this->classListFromNode($class_node, $static_class_node !== null) as $class) {

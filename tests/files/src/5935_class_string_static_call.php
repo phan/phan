@@ -274,3 +274,16 @@ function testUnionOfClassStringsSharingOneBound(string $class) {
     $x = $class::make();
     '@phan-debug-var $x';
 }
+
+/**
+ * @template T of Foo5935c
+ * @param Foo5935c|class-string<T> $receiver
+ */
+function testConcreteAlternativeNotOverriddenByTemplate($receiver) {
+    // Both alternatives resolve to the same Foo5935c class, but the plain object alternative
+    // can genuinely return Foo5935c - substituting `static` with T for the whole class entry
+    // would unsoundly discard that. Keep the concrete resolution when the class is also
+    // reachable without going through a class-string.
+    $x = $receiver::make();
+    '@phan-debug-var $x';
+}

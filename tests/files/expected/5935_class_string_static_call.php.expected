@@ -38,3 +38,6 @@
 %s:271 PhanTemplateTypeNotUsedInFunctionReturn Template type U not used in return value of function/method testUnionOfClassStringsSharingOneBound()
 %s:274 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type T|U(real=T|U)
 %s:274 PhanUnusedVariable Unused definition of variable $x
+%s:282 PhanTemplateTypeNotUsedInFunctionReturn Template type T not used in return value of function/method testConcreteAlternativeNotOverriddenByTemplate()
+%s:287 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \Foo5935c(real=\Foo5935c)
+%s:287 PhanUnusedVariable Unused definition of variable $x

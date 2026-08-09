@@ -36,3 +36,12 @@ function test_plain_object_alternative_322($receiver): void {
 function test_all_alternatives_declare_322($receiver): void {
     $receiver::shared();
 }
+
+/**
+ * The represented type is itself a union - the string could name either class at runtime,
+ * so EVERY represented class must declare the method, not merely one of them.
+ * @param class-string<HasMethod322|LacksMethod322> $class
+ */
+function test_class_string_inner_union_322($class): void {
+    $class::shared();
+}
