@@ -3678,7 +3678,11 @@ class UnionTypeVisitor extends AnalysisVisitor
                         } else {
                             continue;
                         }
-                        foreach ($reduces_to_union_type->getTypeSet() as $reduced_type) {
+                        // getUniqueFlattenedTypeSet() splits an intersection bound (e.g.
+                        // `@template T of I&J`) into its constituents, matching how member lookup
+                        // flattens it - an IntersectionType itself has no single FQSEN, so it must
+                        // be associated with each part it can be resolved through.
+                        foreach ($reduces_to_union_type->getUniqueFlattenedTypeSet() as $reduced_type) {
                             if (!$reduced_type->isObjectWithKnownFQSEN()) {
                                 continue;
                             }

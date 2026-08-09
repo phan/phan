@@ -307,3 +307,24 @@ function testGenericArgumentsPreservedForStaticReturn(string $class) {
     '@phan-debug-var $x';
     return $x;
 }
+
+interface Maker5935g {
+    public static function make(): static;
+}
+interface Marker5935g {
+}
+
+/**
+ * @template T of Maker5935g&Marker5935g
+ * @param class-string<T> $class
+ * @return T
+ */
+function testIntersectionBoundPreservesTemplate(string $class) {
+    // The bound is an intersection, which has no single FQSEN - member lookup flattens it to
+    // find Maker5935g::make(), so the represented template must be associated with each
+    // flattened part. Otherwise `static` resolves to \Maker5935g, dropping the Marker5935g
+    // constraint and falsely mismatching this function's own `@return T`.
+    $x = $class::make();
+    '@phan-debug-var $x';
+    return $x;
+}

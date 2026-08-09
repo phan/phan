@@ -1139,10 +1139,21 @@ class ContextNode
                     continue;
                 }
                 // The represented type may itself be a union (`class-string<A|B>`), in which case
-                // the string could name any of them at runtime - so *every* represented class must
-                // declare the method, not merely one of them.
-                foreach ($class_union_type->asClassList($this->code_base, $this->context) as $class) {
-                    if (!$class->hasMethodWithName($this->code_base, $method_name, $is_direct)) {
+                // the string could name either at runtime, so *every* alternative must declare the
+                // method. An individual alternative may in turn be an intersection (e.g.
+                // `@template T of I&J`), where the runtime class implements all constituents, so
+                // there *any* constituent supplying the method is enough - matching the
+                // non-class-string handling below. asClassList() flattens an intersection into its
+                // parts, the same way member lookup resolves it.
+                foreach ($class_union_type->getTypeSet() as $represented_type) {
+                    $alternative_has_method = false;
+                    foreach ($represented_type->asPHPDocUnionType()->asClassList($this->code_base, $this->context) as $class) {
+                        if ($class->hasMethodWithName($this->code_base, $method_name, $is_direct)) {
+                            $alternative_has_method = true;
+                            break;
+                        }
+                    }
+                    if (!$alternative_has_method) {
                         return false;
                     }
                 }

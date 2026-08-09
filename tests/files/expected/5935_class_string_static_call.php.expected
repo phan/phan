@@ -42,3 +42,5 @@
 %s:287 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \Foo5935c(real=\Foo5935c)
 %s:287 PhanUnusedVariable Unused definition of variable $x
 %s:306 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \Box5935f<int>(real=\Box5935f<int>)
+%s:327 PhanAbstractStaticMethodCall Potentially calling an abstract static method \Maker5935g::make() in $class::make()
+%s:327 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type T(real=T)

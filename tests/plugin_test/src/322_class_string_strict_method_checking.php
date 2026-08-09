@@ -45,3 +45,20 @@ function test_all_alternatives_declare_322($receiver): void {
 function test_class_string_inner_union_322($class): void {
     $class::shared();
 }
+
+interface HasShared322 {
+    public static function sharedIface(): void;
+}
+interface Marker322 {
+}
+
+/**
+ * An intersection bound: the runtime class implements BOTH constituents, so *any* of them
+ * supplying the method is enough - unlike a union, where every alternative must supply it.
+ * Must NOT warn even though Marker322 alone doesn't declare sharedIface().
+ * @template T of HasShared322&Marker322
+ * @param class-string<T> $class
+ */
+function test_class_string_intersection_bound_322($class): void {
+    $class::sharedIface();
+}
