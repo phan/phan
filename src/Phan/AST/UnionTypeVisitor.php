@@ -3625,16 +3625,20 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return UnionType::empty();
             }
             $combined_union_type = null;
-            // If $class_node is `class-string<T>` for an unresolved (bounded) template T,
-            // classListFromNode() below resolves it through T's bound for member lookup - but
-            // a `static` return type must resolve back to T itself, not to the bound, to
-            // preserve genericity for a template-aware caller (e.g. `@return T`).
-            // Keyed by the FQSEN of the bound each template resolves to, so that a union such as
-            // `class-string<T>|class-string<U>` maps each resolved class back to its own template
-            // rather than applying whichever was seen last to all of them. Each entry is a *list*,
-            // since distinct templates may share a bound (e.g. `@template T of Foo` and
-            // `@template U of Foo` both key on `\Foo` and must both be preserved).
-            // @var array<string,non-empty-list<TemplateType>> $represented_template_types
+            // If $class_node is a class-string whose represented type carries information that
+            // classListFromNode() discards when reducing it to a Clazz for member lookup, a
+            // `static` return type must resolve back to that richer type rather than to the
+            // resolved class. Two cases:
+            //  - `class-string<T>` for an unresolved (bounded) template T - resolve to T, not to
+            //    T's bound, to preserve genericity for a template-aware caller (e.g. `@return T`).
+            //  - `class-string<Box<int>>` - resolve to `Box<int>`, not to bare `Box`, to preserve
+            //    the generic arguments.
+            // Keyed by the FQSEN the type reduces to, so that a union such as
+            // `class-string<T>|class-string<U>` maps each resolved class back to its own
+            // represented type rather than applying whichever was seen last to all of them. Each
+            // entry is a *list*, since distinct represented types may reduce to the same class
+            // (e.g. `@template T of Foo` and `@template U of Foo` both key on `\Foo`).
+            // @var array<string,non-empty-list<Type>> $represented_template_types
             $represented_template_types = [];
             if ($static_class_node !== null) {
                 // FQSENs also reachable through a *non*-class-string alternative of the receiver
@@ -3660,20 +3664,27 @@ class UnionTypeVisitor extends AnalysisVisitor
                         continue;
                     }
                     foreach ($type->getClassUnionType()->getTypeSet() as $inner_type) {
-                        if (!($inner_type instanceof TemplateType)) {
-                            continue;
-                        }
-                        $bound_union_type = $inner_type->getBoundUnionType();
-                        if (!$bound_union_type) {
-                            continue;
-                        }
-                        foreach ($bound_union_type->getTypeSet() as $bound_type) {
-                            if (!$bound_type->isObjectWithKnownFQSEN()) {
+                        if ($inner_type instanceof TemplateType) {
+                            // A bounded template reduces to (each type in) its bound.
+                            $reduces_to_union_type = $inner_type->getBoundUnionType();
+                            if (!$reduces_to_union_type) {
                                 continue;
                             }
-                            $bound_fqsen_string = (string)$bound_type->asFQSEN();
-                            if (!\in_array($inner_type, $represented_template_types[$bound_fqsen_string] ?? [], true)) {
-                                $represented_template_types[$bound_fqsen_string][] = $inner_type;
+                        } elseif ($inner_type->getTemplateParameterTypeList() && $inner_type->isObjectWithKnownFQSEN()) {
+                            // A generic type such as `Box<int>` reduces to bare `Box`. Types
+                            // without generic arguments are skipped: they reduce to themselves,
+                            // so the normal resolution below already produces the right answer.
+                            $reduces_to_union_type = $inner_type->asPHPDocUnionType();
+                        } else {
+                            continue;
+                        }
+                        foreach ($reduces_to_union_type->getTypeSet() as $reduced_type) {
+                            if (!$reduced_type->isObjectWithKnownFQSEN()) {
+                                continue;
+                            }
+                            $reduced_fqsen_string = (string)$reduced_type->asFQSEN();
+                            if (!\in_array($inner_type, $represented_template_types[$reduced_fqsen_string] ?? [], true)) {
+                                $represented_template_types[$reduced_fqsen_string][] = $inner_type;
                             }
                         }
                     }

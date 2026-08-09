@@ -287,3 +287,23 @@ function testConcreteAlternativeNotOverriddenByTemplate($receiver) {
     $x = $receiver::make();
     '@phan-debug-var $x';
 }
+
+/** @template T */
+class Box5935f {
+    public static function make(): static {
+        return new static();
+    }
+}
+
+/**
+ * @param class-string<Box5935f<int>> $class
+ * @return Box5935f<int>
+ */
+function testGenericArgumentsPreservedForStaticReturn(string $class) {
+    // classListFromNode() reduces `class-string<Box5935f<int>>` to the bare Box5935f class for
+    // member lookup, so resolving `static` against that class context would drop the <int>.
+    // The generic receiver type must be used for the substitution instead.
+    $x = $class::make();
+    '@phan-debug-var $x';
+    return $x;
+}
