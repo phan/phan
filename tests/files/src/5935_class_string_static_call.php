@@ -388,3 +388,19 @@ function testInheritedSelfResolvesToDeclaringClass(string $class) {
     $x = $class::makeSelf();
     '@phan-debug-var $x';
 }
+
+interface Marker5935j {
+}
+
+/**
+ * @template T of Foo5935c
+ * @param (Foo5935c&Marker5935j)|class-string<T> $receiver
+ */
+function testIntersectionConcreteAlternativeNotOverridden($receiver) {
+    // Like testConcreteAlternativeNotOverriddenByTemplate, but the concrete alternative is an
+    // intersection. An IntersectionType has no single FQSEN, yet classListFromNode() flattens it
+    // and resolves the same Foo5935c class - so its parts must still count as concretely
+    // referenced, or the template substitution would discard this alternative's own result.
+    $x = $receiver::make();
+    '@phan-debug-var $x';
+}

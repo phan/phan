@@ -3653,9 +3653,17 @@ class UnionTypeVisitor extends AnalysisVisitor
                     $this->should_catch_issue_exception
                 )->getTypeSet() as $type) {
                     if (!($type instanceof ClassStringType)) {
-                        if ($type->isObjectWithKnownFQSEN()) {
+                        // getUniqueFlattenedTypeSet() splits an intersection alternative (e.g.
+                        // `(Foo&Marker)|class-string<T>`) into its constituents - an
+                        // IntersectionType has no single FQSEN of its own, but classListFromNode()
+                        // flattens it and resolves the same classes, so each part counts as
+                        // concretely referenced.
+                        foreach ($type->asPHPDocUnionType()->getUniqueFlattenedTypeSet() as $concrete_type) {
+                            if (!$concrete_type->isObjectWithKnownFQSEN()) {
+                                continue;
+                            }
                             try {
-                                $concretely_referenced_fqsens[(string)$type->asFQSEN()] = true;
+                                $concretely_referenced_fqsens[(string)$concrete_type->asFQSEN()] = true;
                             } catch (FQSENException) {
                                 // A malformed class name such as `('??')::foo()` - it can't
                                 // correspond to any resolved class, so nothing to record.
