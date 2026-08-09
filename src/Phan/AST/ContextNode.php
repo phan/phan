@@ -558,6 +558,12 @@ class ContextNode
      * If this exists, emit the given issue type (passing in the class's union type as format arg) instead of the default issue type.
      * The issue type passed in must have exactly one template string parameter (e.g. {CLASS}, {TYPE})
      *
+     * @param bool $expand_class_string
+     * If false, don't resolve `class-string<Foo>` to `Foo`. Callers resolving `$class::class`
+     * (`AST_CLASS_NAME`) must pass false: PHP allows `::class` on an object or a literal class
+     * name, but throws a TypeError for a plain string receiver, so a class-string-typed
+     * variable must not be treated as valid here even though it is for e.g. `$class::method()`.
+     *
      * @return list<Clazz>
      * A list of classes representing the non-native types
      * associated with the given node
@@ -574,14 +580,15 @@ class ContextNode
         bool $ignore_missing_classes = false,
         int $expected_type_categories = self::CLASS_LIST_ACCEPT_ANY,
         ?string $custom_issue_type = null,
-        bool $warn_if_wrong_type = true
+        bool $warn_if_wrong_type = true,
+        bool $expand_class_string = true
     ): array {
         [$union_type, $class_list] = $this->getClassListInner($ignore_missing_classes);
         if ($union_type->isEmpty()) {
             return [];
         }
 
-        if ($expected_type_categories !== self::CLASS_LIST_ACCEPT_OBJECT) {
+        if ($expand_class_string && $expected_type_categories !== self::CLASS_LIST_ACCEPT_OBJECT) {
             // Resolve any `class-string<Foo>` in the union the same way `Foo` itself would
             // resolve, e.g. for `$class::method()` where $class is `class-string<Foo>`. Done
             // unconditionally (not just when $class_list is otherwise empty), since a
@@ -597,7 +604,7 @@ class ContextNode
                     continue;
                 }
                 try {
-                    foreach ($type->getClassUnionType()->asClassList($this->code_base, $this->context) as $clazz) {
+                    foreach ($type->getClassUnionTypeResolvingBounds()->asClassList($this->code_base, $this->context) as $clazz) {
                         $class_list[] = $clazz;
                     }
                 } catch (CodeBaseException $e) {

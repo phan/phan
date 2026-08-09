@@ -19,3 +19,8 @@
 %s:111 PhanUnusedVariable Unused definition of variable $value
 %s:120 PhanTemplateTypeStaticMethod static method \Box5935b::accept does not declare template type in its own comment and may not use the template type of class instances
 %s:134 PhanTypeMismatchArgumentProbablyReal Argument 1 ($value) is 'not_an_int' of type string but \Box5935b::accept() takes int (no real type) defined at %s:120 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:164 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type class-string(real=class-string)
+%s:164 PhanUnusedVariable Unused definition of variable $x
+%s:172 PhanTemplateTypeNotUsedInFunctionReturn Template type T not used in return value of function/method testBoundedTemplateClassStringResolves()
+%s:177 PhanDebugAnnotation @phan-debug-var requested for variable $bar - it has union type \Bar5935(real=\Bar5935)
+%s:180 PhanUndeclaredStaticMethod Static call to undeclared method \Foo5935::not_a_real_method

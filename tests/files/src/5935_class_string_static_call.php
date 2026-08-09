@@ -153,3 +153,41 @@ function testClassStringAlternativeInUnion($receiver) {
     // because $class_list was already non-empty from the other union member.
     $receiver::onlyOnB5935();
 }
+
+/**
+ * @param class-string<Foo5935> $class
+ */
+function testDynamicClassConstMustNotResolve(string $class) {
+    // `$class::class` is a TypeError at runtime for a plain string receiver (unlike
+    // `$obj::class` for an object, or the literal `Foo::class`), so a class-string-typed
+    // variable must NOT be treated as valid here even though `$class::method()` is.
+    $x = $class::class;
+    '@phan-debug-var $x';
+}
+
+/**
+ * @template T of Foo5935
+ * @param class-string<T> $class
+ */
+function testBoundedTemplateClassStringResolves(string $class) {
+    // T has no concrete FQSEN of its own, but its bound (Foo5935) does - member lookup and
+    // return-type inference should go through the bound, the same as class-string<Foo5935>
+    // would, without collapsing the *result* of a generic call (see
+    // testBoundedTemplateClassStringPreservesGenericity below) to that concrete bound.
+    $bar = $class::bar();
+    '@phan-debug-var $bar';
+    $bar->output();
+    $class::not_a_real_method();
+}
+
+/**
+ * @template T of Foo5935
+ * @param class-string<T> $class
+ * @return T
+ */
+function testBoundedTemplateClassStringPreservesGenericity(string $class) {
+    // `new $class()` must still resolve to the (possibly narrower) template type T, not
+    // collapse to the concrete bound Foo5935 - otherwise this legitimately-generic factory
+    // would falsely mismatch its own `@return T`.
+    return new $class();
+}

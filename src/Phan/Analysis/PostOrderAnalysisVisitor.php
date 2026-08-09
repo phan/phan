@@ -1630,7 +1630,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->code_base,
                 $this->context,
                 $node->children['class']
-            ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME) as $class) {
+            ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME, null, true, false) as $class) {
                 $class->addReference($this->context);
             }
         } catch (CodeBaseException $exception) {

@@ -3069,7 +3069,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $this->code_base,
                 $this->context,
                 $class_node
-            ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
+            ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME, null, true, false);
         } catch (IssueException $exception) {
             if ($this->should_catch_issue_exception) {
                 Issue::maybeEmitInstance($this->code_base, $this->context, $exception->getIssueInstance());
@@ -4238,7 +4238,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         $expanded_union_type = UnionType::empty();
         foreach ($union_type->getTypeSet() as $type) {
             if ($type instanceof ClassStringType) {
-                $expanded_union_type = $expanded_union_type->withUnionType($type->getClassUnionType());
+                $expanded_union_type = $expanded_union_type->withUnionType($type->getClassUnionTypeResolvingBounds());
             } else {
                 $expanded_union_type = $expanded_union_type->withType($type);
             }
