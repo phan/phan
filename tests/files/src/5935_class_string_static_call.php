@@ -220,3 +220,45 @@ function testBoundedTemplateClassStringLateStaticBindingCallSite(): void {
     $y = testBoundedTemplateClassStringLateStaticBinding(Sub5935c::class);
     '@phan-debug-var $y';
 }
+
+class Foo5935d {
+    /** @return self */
+    public static function makeSelf() {
+        return new self();
+    }
+}
+
+/**
+ * @template T of Foo5935d
+ * @param class-string<T> $class
+ */
+function testBoundedTemplateClassStringSelfReturn(string $class) {
+    // Unlike `static`, a `self` return type always means the declaring class - it must NOT be
+    // substituted with the template T.
+    $x = $class::makeSelf();
+    '@phan-debug-var $x';
+}
+
+class Foo5935eA {
+    public static function make(): static {
+        return new static();
+    }
+}
+
+class Foo5935eB {
+    public static function make(): static {
+        return new static();
+    }
+}
+
+/**
+ * @template T of Foo5935eA
+ * @template U of Foo5935eB
+ * @param class-string<T>|class-string<U> $class
+ */
+function testUnionOfClassStringsKeepsPerAlternativeTemplates(string $class) {
+    // Each class-string alternative must map back to its OWN template - the result is T|U,
+    // not whichever template happened to be scanned last applied to both classes.
+    $x = $class::make();
+    '@phan-debug-var $x';
+}

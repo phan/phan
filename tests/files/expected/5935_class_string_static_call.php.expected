@@ -27,3 +27,10 @@
 %s:211 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type T(real=T)
 %s:220 PhanDebugAnnotation @phan-debug-var requested for variable $y - it has union type \Sub5935c
 %s:220 PhanUnusedVariable Unused definition of variable $y
+%s:235 PhanTemplateTypeNotUsedInFunctionReturn Template type T not used in return value of function/method testBoundedTemplateClassStringSelfReturn()
+%s:238 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \Foo5935d
+%s:238 PhanUnusedVariable Unused definition of variable $x
+%s:259 PhanTemplateTypeNotUsedInFunctionReturn Template type T not used in return value of function/method testUnionOfClassStringsKeepsPerAlternativeTemplates()
+%s:259 PhanTemplateTypeNotUsedInFunctionReturn Template type U not used in return value of function/method testUnionOfClassStringsKeepsPerAlternativeTemplates()
+%s:262 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type T|U(real=T|U)
+%s:262 PhanUnusedVariable Unused definition of variable $x

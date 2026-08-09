@@ -3627,9 +3627,12 @@ class UnionTypeVisitor extends AnalysisVisitor
             $combined_union_type = null;
             // If $class_node is `class-string<T>` for an unresolved (bounded) template T,
             // classListFromNode() below resolves it through T's bound for member lookup - but
-            // a `static`/`self` return type must resolve back to T itself, not to the bound,
-            // to preserve genericity for a template-aware caller (e.g. `@return T`).
-            $represented_template_type = null;
+            // a `static` return type must resolve back to T itself, not to the bound, to
+            // preserve genericity for a template-aware caller (e.g. `@return T`).
+            // Keyed by the FQSEN of the bound each template resolves to, so that a union such as
+            // `class-string<T>|class-string<U>` maps each resolved class back to its own template
+            // rather than applying whichever was seen last to all of them.
+            $represented_template_types = [];
             if ($static_class_node !== null) {
                 foreach (UnionTypeVisitor::unionTypeFromNode(
                     $this->code_base,
@@ -3641,8 +3644,17 @@ class UnionTypeVisitor extends AnalysisVisitor
                         continue;
                     }
                     foreach ($type->getClassUnionType()->getTypeSet() as $inner_type) {
-                        if ($inner_type instanceof TemplateType) {
-                            $represented_template_type = $inner_type;
+                        if (!($inner_type instanceof TemplateType)) {
+                            continue;
+                        }
+                        $bound_union_type = $inner_type->getBoundUnionType();
+                        if (!$bound_union_type) {
+                            continue;
+                        }
+                        foreach ($bound_union_type->getTypeSet() as $bound_type) {
+                            if ($bound_type->isObjectWithKnownFQSEN()) {
+                                $represented_template_types[(string)$bound_type->asFQSEN()] = $inner_type;
+                            }
                         }
                     }
                 }
@@ -3750,17 +3762,22 @@ class UnionTypeVisitor extends AnalysisVisitor
                         \strcasecmp($static_class_node->children['name'], 'parent') === 0) {
                         // If parent::foo() returns `static`, then use the current class instead of the parent class
                         $union_type = $union_type->withStaticResolvedInContext($this->context);
-                    } elseif ($represented_template_type !== null && $union_type->hasTypeMatchingCallback(
-                        function (Type $type): bool {
-                            return $type->hasStaticOrSelfTypesRecursive($this->code_base);
-                        }
-                    )) {
+                    } elseif (($represented_template_type = $represented_template_types[(string)$class->getFQSEN()] ?? null)
+                        && $union_type->hasTypeMatchingCallback(
+                            function (Type $type): bool {
+                                return $type->hasStaticOrSelfTypesRecursive($this->code_base);
+                            }
+                        )
+                    ) {
                         // Remove the base class type if present (Method::getUnionType() may add it
                         // alongside the abstract `static` marker) before substituting - otherwise
                         // the un-substituted base class type and the substituted template type
                         // would combine into a spurious union, e.g. `T|Foo` instead of just `T`.
+                        // Only `static` maps to the template; a `self` return type always means
+                        // the declaring class, so resolve any remaining `self` normally.
                         $union_type = $union_type->withoutType($class->getFQSEN()->asType())
-                            ->withStaticResolvedTo($represented_template_type);
+                            ->withStaticResolvedTo($represented_template_type)
+                            ->withSelfResolvedInContext($class->getInternalContext());
                     } else {
                         $union_type = $union_type->withStaticResolvedInContext($class->getInternalContext());
                     }
