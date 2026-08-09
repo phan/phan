@@ -3807,15 +3807,20 @@ class UnionTypeVisitor extends AnalysisVisitor
                             }
                         )
                     ) {
-                        // Remove the base class type if present (Method::getUnionType() may add it
-                        // alongside the abstract `static` marker) before substituting - otherwise
-                        // the un-substituted base class type and the substituted template type
-                        // would combine into a spurious union, e.g. `T|Foo` instead of just `T`.
+                        // Method::getUnionType() unions the declared return type with its own
+                        // declaring-class resolution of `static` - `static` becomes `static|Foo`,
+                        // and `static[]` becomes `static[]|Foo[]`. Substituting on that would
+                        // leave the resolved counterpart behind (`T|Foo`, `T[]|Foo[]`), so use the
+                        // unmodified return type, which keeps `static` abstract and has no
+                        // expansion to strip. Fall back to removing just the bare class type when
+                        // the return type came from a dependent-return-type plugin instead.
                         // Only `static` maps to the template; a `self` return type always means
                         // the declaring class, so resolve any remaining `self` normally.
                         // Several distinct templates may share this bound, in which case the call
                         // could return any of them, so union the substitution for each.
-                        $base_union_type = $union_type->withoutType($class->getFQSEN()->asType());
+                        $base_union_type = $method->hasDependentReturnType()
+                            ? $union_type->withoutType($class->getFQSEN()->asType())
+                            : $method->getUnionTypeWithUnmodifiedStatic();
                         $substituted_union_types = [];
                         foreach ($class_template_types as $class_template_type) {
                             $substituted_union_types[] = $base_union_type

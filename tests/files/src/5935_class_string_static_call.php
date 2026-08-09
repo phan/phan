@@ -328,3 +328,41 @@ function testIntersectionBoundPreservesTemplate(string $class) {
     '@phan-debug-var $x';
     return $x;
 }
+
+class Foo5935h {
+    /** @return static[] */
+    public static function makeMany() {
+        return [new static()];
+    }
+
+    /** @return ?static */
+    public static function maybeMake() {
+        return new static();
+    }
+}
+
+/**
+ * @template T of Foo5935h
+ * @param class-string<T> $class
+ * @return T[]
+ */
+function testNestedStaticInArrayReturn(string $class) {
+    // Method::getUnionType() expands `static[]` to `static[]|Foo5935h[]`, so substituting on it
+    // while removing only the bare `Foo5935h` type would leave `Foo5935h[]` behind and infer
+    // `T[]|Foo5935h[]`. The substitution must run on the unmodified (still-abstract) return type.
+    $x = $class::makeMany();
+    '@phan-debug-var $x';
+    return $x;
+}
+
+/**
+ * @template T of Foo5935h
+ * @param class-string<T> $class
+ * @return ?T
+ */
+function testNestedStaticInNullableReturn(string $class) {
+    // Same for `?static`, which expands to `?static|?Foo5935h`.
+    $y = $class::maybeMake();
+    '@phan-debug-var $y';
+    return $y;
+}
