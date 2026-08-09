@@ -581,6 +581,41 @@ class ContextNode
             return [];
         }
 
+        if ($expected_type_categories !== self::CLASS_LIST_ACCEPT_OBJECT) {
+            // Resolve any `class-string<Foo>` in the union the same way `Foo` itself would
+            // resolve, e.g. for `$class::method()` where $class is `class-string<Foo>`. Done
+            // unconditionally (not just when $class_list is otherwise empty), since a
+            // class-string alternative can be the only union member with the member being
+            // looked up, e.g. `A|class-string<B>` where only B declares the method.
+            // Only reached when $expected_type_categories accepts a class name (not for
+            // instance-call syntax like `$class->method()`), since $class is genuinely a
+            // string at runtime - deliberately not special-cased on nullability, to match how
+            // a nullable object receiver (`?Foo $obj; $obj::method();`) is already resolved and
+            // fully validated without a "possibly null" warning.
+            foreach ($union_type->getTypeSet() as $type) {
+                if (!($type instanceof ClassStringType)) {
+                    continue;
+                }
+                try {
+                    foreach ($type->getClassUnionType()->asClassList($this->code_base, $this->context) as $clazz) {
+                        $class_list[] = $clazz;
+                    }
+                } catch (CodeBaseException $e) {
+                    if ($warn_if_wrong_type) {
+                        $this->emitIssue(
+                            Issue::UndeclaredClass,
+                            $this->node->lineno ?? $this->context->getLineNumberStart(),
+                            (string)$e->getFQSEN()
+                        );
+                    }
+                } catch (IssueException $e) {
+                    if ($warn_if_wrong_type) {
+                        Issue::maybeEmitInstance($this->code_base, $this->context, $e->getIssueInstance());
+                    }
+                }
+            }
+        }
+
         if (\count($class_list) === 0) {
             if (!$union_type->hasTypeMatchingCallback(function (Type $type) use ($expected_type_categories): bool {
                 if ($this->node instanceof Node) {
@@ -643,36 +678,6 @@ class ContextNode
                                     $this->node->lineno ?? $this->context->getLineNumberStart(),
                                     $e->getFQSEN()
                                 );
-                            }
-                        }
-                    } elseif ($type instanceof ClassStringType) {
-                        // Resolve `class-string<Foo>` the same way `Foo` itself would resolve,
-                        // e.g. for `$class::method()` where $class is `class-string<Foo>`.
-                        // Only reached when $expected_type_categories accepts a class name
-                        // (not for instance-call syntax like `$class->method()`), since
-                        // $class is genuinely a string at runtime.
-                        if ($type->isNullable()) {
-                            // Don't treat this as resolved - $class could be null, in which
-                            // case `$class::method()` fatals. Leave $class_list as-is so the
-                            // existing "possibly non-class type" checks below still apply,
-                            // instead of silently accepting a call that can crash.
-                            continue;
-                        }
-                        try {
-                            foreach ($type->getClassUnionType()->asClassList($this->code_base, $this->context) as $clazz) {
-                                $class_list[] = $clazz;
-                            }
-                        } catch (CodeBaseException $e) {
-                            if ($warn_if_wrong_type) {
-                                $this->emitIssue(
-                                    Issue::UndeclaredClass,
-                                    $this->node->lineno ?? $this->context->getLineNumberStart(),
-                                    (string)$e->getFQSEN()
-                                );
-                            }
-                        } catch (IssueException $e) {
-                            if ($warn_if_wrong_type) {
-                                Issue::maybeEmitInstance($this->code_base, $this->context, $e->getIssueInstance());
                             }
                         }
                     }
@@ -1010,10 +1015,17 @@ class ContextNode
                 $method = $class->getMethodByName($this->code_base, $method_name);
                 if ($method->hasTemplateType()) {
                     try {
-                        $method = $method->resolveTemplateType(
-                            $this->code_base,
-                            UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr'] ?? $node->children['class'])
-                        );
+                        $object_union_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr'] ?? $node->children['class']);
+                        if ($is_static && isset($node->children['class'])) {
+                            // e.g. for `$class::method()` where $class is `class-string<Box<int>>`,
+                            // resolve template types (e.g. T) against `Box<int>`, not against the
+                            // class-string type itself (not an object with a known FQSEN, so it
+                            // contributes nothing to the template parameter map) - this affects the
+                            // Method object used for argument validation, separately from the
+                            // equivalent expansion in UnionTypeVisitor used for return type inference.
+                            $object_union_type = UnionTypeVisitor::expandClassStringTypes($object_union_type);
+                        }
+                        $method = $method->resolveTemplateType($this->code_base, $object_union_type);
                     } catch (RecursionDepthException) {
                     }
                 }

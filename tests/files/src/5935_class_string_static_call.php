@@ -73,13 +73,22 @@ function testInstanceSyntaxOnClassStringMustNotResolve(string $class) {
 /**
  * @param ?class-string<Foo5935> $class
  */
-function testNullableClassStringMustStillWarn(?string $class) {
-    // $class could be null at runtime, in which case $class::bar() fatals. The pre-existing
-    // "possibly non-class type" warning for this must keep firing, even though the return
-    // type can still be usefully inferred assuming the non-null case (matching how the
-    // codebase already treats other "possibly invalid, but useful if valid" call sites).
+function testNullableClassStringResolvesLikeNullableObject(?string $class) {
+    // $class could be null at runtime (so could a nullable Foo5935 $obj, and
+    // `$obj::bar()` fatals identically in that case) - deliberately not special-cased: a
+    // nullable class-string resolves fully (no "possibly null" warning), matching how a
+    // nullable object receiver is already resolved and validated elsewhere in Phan.
     $bar = $class::bar();
     '@phan-debug-var $bar';
+}
+
+/**
+ * @param ?class-string<Foo5935> $class
+ */
+function testNullableClassStringStillValidatesMembers(?string $class) {
+    // Full member validation must still happen for the nullable case, matching how
+    // `?Foo5935 $obj; $obj::not_a_function();` is already validated.
+    $class::not_a_function();
 }
 
 /**
@@ -101,4 +110,46 @@ function testTemplateResolvesFromClassString(string $class) {
     // type itself - which isn't an object with a known FQSEN and so would leave T unresolved.
     $value = $class::make();
     '@phan-debug-var $value';
+}
+
+/**
+ * @template T
+ */
+class Box5935b {
+    /** @param T $value */
+    public static function accept($value): void {
+    }
+}
+
+/**
+ * @param class-string<Box5935b<int>> $class
+ */
+function testTemplateArgumentValidationFromClassString(string $class) {
+    // The Method object resolved via a class-string<Box<int>> receiver must have class-level T
+    // substituted with int the same way argument validation would for an actual Box<int>
+    // instance - this exercises a separate resolveTemplateType() call site
+    // (ContextNode::getMethodListInternal(), used for argument/visibility checking) from
+    // testTemplateResolvesFromClassString() above (UnionTypeVisitor::visitMethodCall(), used
+    // only for return type inference).
+    $class::accept('not_an_int');
+}
+
+class UnionClassA5935 {
+    public function onlyOnA5935(): void {
+    }
+}
+
+class UnionClassB5935 {
+    public static function onlyOnB5935(): void {
+    }
+}
+
+/**
+ * @param UnionClassA5935|class-string<UnionClassB5935> $receiver
+ */
+function testClassStringAlternativeInUnion($receiver) {
+    // UnionClassA5935 resolves first and doesn't declare onlyOnB5935() - the class-string
+    // alternative (UnionClassB5935, which does) must still be considered, not discarded just
+    // because $class_list was already non-empty from the other union member.
+    $receiver::onlyOnB5935();
 }

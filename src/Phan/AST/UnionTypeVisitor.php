@@ -4230,7 +4230,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * only doing this in contexts that accept a class name (not instance-call syntax), since
      * $class is genuinely a string at runtime.
      */
-    private static function expandClassStringTypes(UnionType $union_type): UnionType
+    public static function expandClassStringTypes(UnionType $union_type): UnionType
     {
         if (!$union_type->hasTypeMatchingCallback(static fn(Type $type): bool => $type instanceof ClassStringType)) {
             return $union_type;
