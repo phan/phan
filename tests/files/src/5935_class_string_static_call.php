@@ -262,3 +262,15 @@ function testUnionOfClassStringsKeepsPerAlternativeTemplates(string $class) {
     $x = $class::make();
     '@phan-debug-var $x';
 }
+
+/**
+ * @template T of Foo5935eA
+ * @template U of Foo5935eA
+ * @param class-string<T>|class-string<U> $class
+ */
+function testUnionOfClassStringsSharingOneBound(string $class) {
+    // T and U share the same bound (Foo5935eA), so both map to the same resolved class - both
+    // must still be preserved (result T|U), rather than one overwriting the other.
+    $x = $class::make();
+    '@phan-debug-var $x';
+}

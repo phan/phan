@@ -1129,6 +1129,22 @@ class ContextNode
         }
         // Typically, this should only return false for intersection types that include a mix of types that have and don't have the method.
         foreach ($union_type->getTypeSet() as $type) {
+            if ($type instanceof ClassStringType) {
+                // `class-string<Foo>` isn't itself an object with a known FQSEN, but getClassList()
+                // resolves it to Foo for static calls, so check the class it represents here too -
+                // otherwise a union such as `A|class-string<B>` would silently suppress this
+                // warning when only A declares the method.
+                $class_union_type = $type->getClassUnionTypeResolvingBounds();
+                if ($class_union_type->isEmpty()) {
+                    continue;
+                }
+                foreach ($class_union_type->asClassList($this->code_base, $this->context) as $class) {
+                    if ($class->hasMethodWithName($this->code_base, $method_name, $is_direct)) {
+                        continue 2;
+                    }
+                }
+                return false;
+            }
             if (!$type->hasObjectWithKnownFQSEN()) {
                 continue;
             }

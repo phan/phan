@@ -1,0 +1,7 @@
+src/322_class_string_strict_method_checking.php:10 PhanPluginUseReturnValueNoopVoid The function/method \HasMethod322::shared() is declared to return void and it has no side effects
+src/322_class_string_strict_method_checking.php:14 PhanUnreferencedClass Possibly zero references to class \LacksMethod322
+src/322_class_string_strict_method_checking.php:20 PhanUnreferencedFunction Possibly zero references to function \test_class_string_alternative_322()
+src/322_class_string_strict_method_checking.php:21 PhanPossiblyUndeclaredMethod Call to possibly undeclared method shared on type \HasMethod322|\LacksMethod322 (\LacksMethod322 does not declare the method)
+src/322_class_string_strict_method_checking.php:28 PhanUnreferencedFunction Possibly zero references to function \test_plain_object_alternative_322()
+src/322_class_string_strict_method_checking.php:29 PhanPossiblyUndeclaredMethod Call to possibly undeclared method shared on type \HasMethod322|\LacksMethod322 (\LacksMethod322 does not declare the method)
+src/322_class_string_strict_method_checking.php:36 PhanUnreferencedFunction Possibly zero references to function \test_all_alternatives_declare_322()
