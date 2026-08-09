@@ -404,3 +404,30 @@ function testIntersectionConcreteAlternativeNotOverridden($receiver) {
     $x = $receiver::make();
     '@phan-debug-var $x';
 }
+
+class Foo5935k {
+    /**
+     * A method-level @template that IS used in the return type installs a dependent-return
+     * closure, which derives its result from Method::getUnionType() - so the result carries
+     * the same `static[]` -> `static[]|Foo5935k[]` expansion.
+     * @template U
+     * @param U $u
+     * @return static[]|U
+     * @suppress PhanParamNameIndicatingUnused
+     */
+    public static function makeMany($u) {
+        return [new static()];
+    }
+}
+
+/**
+ * @template T of Foo5935k
+ * @param class-string<T> $class
+ */
+function testDependentReturnTypeNestedStatic(string $class) {
+    // The dependent result (which carries the argument-derived substitution of U, here the
+    // literal 1) must be kept, while the declaring-class expansion `Foo5935k[]` is removed -
+    // so this is `1|T[]`, not `1|T[]|Foo5935k[]`.
+    $x = $class::makeMany(1);
+    '@phan-debug-var $x';
+}

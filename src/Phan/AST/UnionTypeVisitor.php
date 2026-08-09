@@ -3827,9 +3827,23 @@ class UnionTypeVisitor extends AnalysisVisitor
                         // `Base::make(): self` called through `class-string<Child>` stays `Base`.
                         // Several distinct templates may share this bound, in which case the call
                         // could return any of them, so union the substitution for each.
-                        $base_union_type = $method->hasDependentReturnType()
-                            ? $union_type->withoutType($class->getFQSEN()->asType())
-                            : $method->getUnionTypeWithUnmodifiedStatic();
+                        if ($method->hasDependentReturnType()) {
+                            // The dependent result must be kept - it carries the
+                            // argument-derived template substitutions - but such closures
+                            // typically derive it from Method::getUnionType(), so it has the same
+                            // expansion appended. Subtract exactly the types that expansion added
+                            // (comparing against the unmodified return type), which also covers
+                            // nested forms like `static[]` that a bare-class-type removal misses.
+                            $base_union_type = $union_type;
+                            $unmodified_union_type = $method->getUnionTypeWithUnmodifiedStatic();
+                            foreach ($method->getUnionType()->getTypeSet() as $expanded_type) {
+                                if (!$unmodified_union_type->hasType($expanded_type)) {
+                                    $base_union_type = $base_union_type->withoutType($expanded_type);
+                                }
+                            }
+                        } else {
+                            $base_union_type = $method->getUnionTypeWithUnmodifiedStatic();
+                        }
                         $self_context = $class->getInternalContext();
                         if ($method->hasDefiningFQSEN()) {
                             $defining_class_fqsen = $method->getDefiningClassFQSEN();
