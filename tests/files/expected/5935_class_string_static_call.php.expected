@@ -56,3 +56,6 @@
 %s:427 PhanTemplateTypeNotUsedInFunctionReturn Template type T not used in return value of function/method testDependentReturnTypeNestedStatic()
 %s:431 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type 1|T[]
 %s:431 PhanUnusedVariable Unused definition of variable $x
+%s:451 PhanTemplateTypeNotUsedInFunctionReturn Template type T not used in return value of function/method testDependentReturnTypeColliding()
+%s:455 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type T|\Foo5935m
+%s:455 PhanUnusedVariable Unused definition of variable $x

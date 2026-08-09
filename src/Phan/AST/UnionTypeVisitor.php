@@ -3834,12 +3834,34 @@ class UnionTypeVisitor extends AnalysisVisitor
                             // expansion appended. Subtract exactly the types that expansion added
                             // (comparing against the unmodified return type), which also covers
                             // nested forms like `static[]` that a bare-class-type removal misses.
+                            //
+                            // The two origins are indistinguishable by equality alone: for
+                            // `@return static|U`, if an argument makes U resolve to the declaring
+                            // class, the genuine result type coincides with the expansion type and
+                            // must not be dropped. Keep any type that an argument could have
+                            // produced - erring toward a wider (sound) type rather than silently
+                            // discarding a real one.
                             $base_union_type = $union_type;
                             $unmodified_union_type = $method->getUnionTypeWithUnmodifiedStatic();
+                            $argument_union_types = [];
+                            foreach ($node->children['args']->children ?? [] as $argument_node) {
+                                $argument_union_types[] = UnionTypeVisitor::unionTypeFromNode(
+                                    $this->code_base,
+                                    $this->context,
+                                    $argument_node,
+                                    $this->should_catch_issue_exception
+                                );
+                            }
                             foreach ($method->getUnionType()->getTypeSet() as $expanded_type) {
-                                if (!$unmodified_union_type->hasType($expanded_type)) {
-                                    $base_union_type = $base_union_type->withoutType($expanded_type);
+                                if ($unmodified_union_type->hasType($expanded_type)) {
+                                    continue;
                                 }
+                                foreach ($argument_union_types as $argument_union_type) {
+                                    if ($argument_union_type->hasType($expanded_type)) {
+                                        continue 2;
+                                    }
+                                }
+                                $base_union_type = $base_union_type->withoutType($expanded_type);
                             }
                         } else {
                             $base_union_type = $method->getUnionTypeWithUnmodifiedStatic();

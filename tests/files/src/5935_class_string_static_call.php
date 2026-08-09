@@ -431,3 +431,27 @@ function testDependentReturnTypeNestedStatic(string $class) {
     $x = $class::makeMany(1);
     '@phan-debug-var $x';
 }
+
+class Foo5935m {
+    /**
+     * @template U
+     * @param U $u
+     * @return static|U
+     * @suppress PhanParamNameIndicatingUnused
+     */
+    public static function makeOrArg($u) {
+        return new static();
+    }
+}
+
+/**
+ * @template T of Foo5935m
+ * @param class-string<T> $class
+ */
+function testDependentReturnTypeColliding(string $class, Foo5935m $arg) {
+    // U resolves to Foo5935m - the SAME type Method::getUnionType() appends as the `static`
+    // expansion. The two origins are indistinguishable by equality, so the genuine U result
+    // must not be dropped: this is `T|Foo5935m`, not just `T`.
+    $x = $class::makeOrArg($arg);
+    '@phan-debug-var $x';
+}
