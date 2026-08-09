@@ -3785,15 +3785,17 @@ class UnionTypeVisitor extends AnalysisVisitor
                         // Several distinct templates may share this bound, in which case the call
                         // could return any of them, so union the substitution for each.
                         $base_union_type = $union_type->withoutType($class->getFQSEN()->asType());
-                        $union_type = null;
+                        $substituted_union_types = [];
                         foreach ($class_template_types as $class_template_type) {
-                            $substituted_union_type = $base_union_type
+                            $substituted_union_types[] = $base_union_type
                                 ->withStaticResolvedTo($class_template_type)
                                 ->withSelfResolvedInContext($class->getInternalContext());
-                            $union_type = $union_type
-                                ? $union_type->withUnionType($substituted_union_type)
-                                : $substituted_union_type;
                         }
+                        // Note: UnionType::merge() is used instead of folding with withUnionType()
+                        // because the latter erases the real type set when starting from an empty
+                        // union type, and merge() short-circuits correctly for the single-template
+                        // case (which is by far the most common).
+                        $union_type = UnionType::merge($substituted_union_types);
                     } else {
                         $union_type = $union_type->withStaticResolvedInContext($class->getInternalContext());
                     }
