@@ -3814,18 +3814,26 @@ class UnionTypeVisitor extends AnalysisVisitor
                         // unmodified return type, which keeps `static` abstract and has no
                         // expansion to strip. Fall back to removing just the bare class type when
                         // the return type came from a dependent-return-type plugin instead.
-                        // Only `static` maps to the template; a `self` return type always means
-                        // the declaring class, so resolve any remaining `self` normally.
+                        // Only `static` maps to the template; a `self` return type always means the
+                        // class that *declared* the method - not the receiver - so an inherited
+                        // `Base::make(): self` called through `class-string<Child>` stays `Base`.
                         // Several distinct templates may share this bound, in which case the call
                         // could return any of them, so union the substitution for each.
                         $base_union_type = $method->hasDependentReturnType()
                             ? $union_type->withoutType($class->getFQSEN()->asType())
                             : $method->getUnionTypeWithUnmodifiedStatic();
+                        $self_context = $class->getInternalContext();
+                        if ($method->hasDefiningFQSEN()) {
+                            $defining_class_fqsen = $method->getDefiningClassFQSEN();
+                            if ($this->code_base->hasClassWithFQSEN($defining_class_fqsen)) {
+                                $self_context = $this->code_base->getClassByFQSEN($defining_class_fqsen)->getInternalContext();
+                            }
+                        }
                         $substituted_union_types = [];
                         foreach ($class_template_types as $class_template_type) {
                             $substituted_union_types[] = $base_union_type
                                 ->withStaticResolvedTo($class_template_type)
-                                ->withSelfResolvedInContext($class->getInternalContext());
+                                ->withSelfResolvedInContext($self_context);
                         }
                         // Note: UnionType::merge() is used instead of folding with withUnionType()
                         // because the latter erases the real type set when starting from an empty

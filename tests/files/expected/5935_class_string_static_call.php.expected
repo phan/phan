@@ -47,3 +47,6 @@
 %s:353 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type T[]
 %s:363 PhanTemplateTypeNotUsedInFunctionReturn Template type T not used in return value of function/method testNestedStaticInNullableReturn()
 %s:365 PhanDebugAnnotation @phan-debug-var requested for variable $y - it has union type ?T
+%s:384 PhanTemplateTypeNotUsedInFunctionReturn Template type T not used in return value of function/method testInheritedSelfResolvesToDeclaringClass()
+%s:388 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \Base5935i
+%s:388 PhanUnusedVariable Unused definition of variable $x

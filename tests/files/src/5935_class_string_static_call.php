@@ -366,3 +366,25 @@ function testNestedStaticInNullableReturn(string $class) {
     '@phan-debug-var $y';
     return $y;
 }
+
+class Base5935i {
+    /** @return self */
+    public static function makeSelf() {
+        return new self();
+    }
+}
+
+class Child5935i extends Base5935i {
+}
+
+/**
+ * @template T of Child5935i
+ * @param class-string<T> $class
+ */
+function testInheritedSelfResolvesToDeclaringClass(string $class) {
+    // `self` means the class that DECLARED the method (Base5935i), not the receiver - even
+    // though the receiver is `class-string<T>` bounded by the subclass Child5935i, and even
+    // though `static` in the same position would resolve to T.
+    $x = $class::makeSelf();
+    '@phan-debug-var $x';
+}
