@@ -14394,7 +14394,7 @@ return [
 'imagealphablending' => ['bool', 'image'=>'GdImage', 'enable'=>'bool'],
 'imageantialias' => ['bool', 'image'=>'GdImage', 'enable'=>'bool'],
 'imagearc' => ['bool', 'image'=>'GdImage', 'center_x'=>'int', 'center_y'=>'int', 'width'=>'int', 'height'=>'int', 'start_angle'=>'int', 'end_angle'=>'int', 'color'=>'int'],
-'imageavif' => ['bool', 'image'=>'GdImage', 'file='=>'null|string', 'quality='=>'int', 'speed='=>'int'],
+'imageavif' => ['bool', 'image'=>'GdImage', 'file='=>'null|resource|string', 'quality='=>'int', 'speed='=>'int'],
 'imagebmp' => ['bool', 'image'=>'GdImage', 'file='=>'null|resource|string', 'compressed='=>'bool'],
 'imagechar' => ['bool', 'image'=>'GdImage', 'font'=>'int', 'x'=>'int', 'y'=>'int', 'char'=>'string', 'color'=>'int'],
 'imagecharup' => ['bool', 'image'=>'GdImage', 'font'=>'int', 'x'=>'int', 'y'=>'int', 'char'=>'string', 'color'=>'int'],
