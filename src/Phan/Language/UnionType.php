@@ -1207,9 +1207,15 @@ class UnionType implements Serializable, Stringable
      */
     public function hasTemplateTypeRecursive(): bool
     {
-        return $this->hasTypeMatchingCallback(static function (Type $type): bool {
-            return $type->hasTemplateTypeRecursive();
-        });
+        // Inlined instead of hasTypeMatchingCallback() to avoid allocating a closure.
+        // Method::checkForTemplateTypes() calls this once per parameter of every
+        // method in the codebase, so the allocation is measurable.
+        foreach ($this->type_set as $type) {
+            if ($type->hasTemplateTypeRecursive()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
