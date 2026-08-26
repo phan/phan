@@ -51,6 +51,9 @@ final class InternalStubCacheTest extends TestCase
      * Replaying a cached stub does not re-parse doc comments, so the cache entry has to carry
      * the `@phan-mandatory-param` marker over to the new CodeBase. Without that, a method
      * overriding a cached stub method would silently stop inheriting the mandatory parameter.
+     *
+     * @throws \InvalidArgumentException
+     * @throws \Phan\Exception\FQSENException
      */
     public function testInternalStubCacheRestoresMandatoryParamMarker(): void
     {
