@@ -354,12 +354,17 @@ class CodeBase
     }
 
     /**
-     * Did any doc comment in this CodeBase use `@phan-mandatory-param`?
+     * Has any doc comment parsed into this CodeBase used `@phan-mandatory-param`?
      *
-     * Doc comments are parsed during the parse phase, which finishes before the analysis
-     * phases that read this, so by then this is true if and only if the annotation occurs
-     * somewhere in the parsed codebase. Used to skip a per-parameter walk over ancestor
-     * methods that can only find something when the annotation is actually used.
+     * Doc comments are parsed before the analysis phases that read this, so a false value
+     * means the annotation was absent from everything parsed so far. The flag is only ever
+     * set, never cleared, so in a long-lived CodeBase (daemon mode, the language server, or
+     * an incremental reparse) it can stay true after edits remove the last occurrence. That
+     * is deliberate: a stale true only costs the work this flag is meant to skip, while a
+     * stale false would change analysis results.
+     *
+     * Used to skip a per-parameter walk over ancestor methods that can only find something
+     * when the annotation is actually used.
      * @see \Phan\Language\Element\FunctionTrait::addParamToScopeOfFunctionOrMethod()
      */
     public function sawMandatoryParamAnnotation(): bool
