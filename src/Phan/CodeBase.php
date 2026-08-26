@@ -183,6 +183,12 @@ class CodeBase
     private $should_hydrate_requested_elements = false;
 
     /**
+     * @var bool
+     * True if any doc comment parsed into this CodeBase used `@phan-mandatory-param`.
+     */
+    private $saw_mandatory_param_annotation = false;
+
+    /**
      * @var UndoTracker|null - undoes the addition of global constants, classes, functions, and methods.
      */
     private $undo_tracker;
@@ -334,6 +340,31 @@ class CodeBase
     public function shouldHydrateRequestedElements(): bool
     {
         return $this->should_hydrate_requested_elements;
+    }
+
+    /**
+     * Record that a parsed doc comment used `@phan-mandatory-param`.
+     *
+     * Called while parsing doc comments.
+     * @internal
+     */
+    public function recordSawMandatoryParamAnnotation(): void
+    {
+        $this->saw_mandatory_param_annotation = true;
+    }
+
+    /**
+     * Did any doc comment in this CodeBase use `@phan-mandatory-param`?
+     *
+     * Doc comments are parsed during the parse phase, which finishes before the analysis
+     * phases that read this, so by then this is true if and only if the annotation occurs
+     * somewhere in the parsed codebase. Used to skip a per-parameter walk over ancestor
+     * methods that can only find something when the annotation is actually used.
+     * @see \Phan\Language\Element\FunctionTrait::addParamToScopeOfFunctionOrMethod()
+     */
+    public function sawMandatoryParamAnnotation(): bool
+    {
+        return $this->saw_mandatory_param_annotation;
     }
 
     /**
