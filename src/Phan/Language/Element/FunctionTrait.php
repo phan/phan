@@ -878,7 +878,11 @@ trait FunctionTrait
         }
 
         // Check overridden methods (from parent classes/interfaces) for @phan-mandatory-param
-        if (!$is_mandatory_in_phpdoc && $function instanceof Method) {
+        //
+        // This walk runs for every parameter of every method, so skip it entirely when the
+        // annotation does not occur anywhere in the parsed codebase - in that case it cannot
+        // find anything. Parsing is complete before this runs, so the flag is final here.
+        if (!$is_mandatory_in_phpdoc && $function instanceof Method && $code_base->sawMandatoryParamAnnotation()) {
             foreach ($function->getOverriddenMethods($code_base) as $overridden_method) {
                 $overridden_comment = $overridden_method->getComment();
                 if ($overridden_comment && $overridden_comment->hasParameterWithNameOrOffset($parameter_name, $parameter_offset)) {

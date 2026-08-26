@@ -183,6 +183,12 @@ class CodeBase
     private $should_hydrate_requested_elements = false;
 
     /**
+     * @var bool
+     * True if any doc comment parsed into this CodeBase used `@phan-mandatory-param`.
+     */
+    private $saw_mandatory_param_annotation = false;
+
+    /**
      * @var UndoTracker|null - undoes the addition of global constants, classes, functions, and methods.
      */
     private $undo_tracker;
@@ -334,6 +340,36 @@ class CodeBase
     public function shouldHydrateRequestedElements(): bool
     {
         return $this->should_hydrate_requested_elements;
+    }
+
+    /**
+     * Record that a parsed doc comment used `@phan-mandatory-param`.
+     *
+     * Called while parsing doc comments.
+     * @internal
+     */
+    public function recordSawMandatoryParamAnnotation(): void
+    {
+        $this->saw_mandatory_param_annotation = true;
+    }
+
+    /**
+     * Has any doc comment parsed into this CodeBase used `@phan-mandatory-param`?
+     *
+     * Doc comments are parsed before the analysis phases that read this, so a false value
+     * means the annotation was absent from everything parsed so far. The flag is only ever
+     * set, never cleared, so in a long-lived CodeBase (daemon mode, the language server, or
+     * an incremental reparse) it can stay true after edits remove the last occurrence. That
+     * is deliberate: a stale true only costs the work this flag is meant to skip, while a
+     * stale false would change analysis results.
+     *
+     * Used to skip a per-parameter walk over ancestor methods that can only find something
+     * when the annotation is actually used.
+     * @see \Phan\Language\Element\FunctionTrait::addParamToScopeOfFunctionOrMethod()
+     */
+    public function sawMandatoryParamAnnotation(): bool
+    {
+        return $this->saw_mandatory_param_annotation;
     }
 
     /**

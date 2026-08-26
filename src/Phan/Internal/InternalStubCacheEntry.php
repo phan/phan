@@ -29,6 +29,8 @@ final class InternalStubCacheEntry
      * @param list<GlobalConstant> $global_constants
      * @param list<string> $file_level_suppressions
      * @param array<string,array{methods:list<Method>,properties:list<Property>,constants:list<ClassConstant>}> $class_members
+     * @param bool $saw_mandatory_param_annotation whether any cached function or method
+     *        documents a `@phan-mandatory-param`, so that replaying can restore the marker.
      */
     public function __construct(
         private string $hash,
@@ -37,7 +39,8 @@ final class InternalStubCacheEntry
         private array $functions,
         private array $global_constants,
         private array $file_level_suppressions,
-        private array $class_members
+        private array $class_members,
+        private bool $saw_mandatory_param_annotation = false
     ) {
     }
 
@@ -78,6 +81,13 @@ final class InternalStubCacheEntry
             foreach ($members['methods'] as $method) {
                 $code_base->addMethod(clone $method);
             }
+        }
+        // Replaying elements skips Comment\Builder, so any `@phan-mandatory-param` in this
+        // stub would otherwise go unnoticed by the new CodeBase, and methods overriding a
+        // cached stub method would stop inheriting the mandatory parameter.
+        // @see \Phan\Language\Element\FunctionTrait::addParamToScopeOfFunctionOrMethod()
+        if ($this->saw_mandatory_param_annotation) {
+            $code_base->recordSawMandatoryParamAnnotation();
         }
         $file = $this->context->getFile();
         foreach ($this->file_level_suppressions as $issue_type) {

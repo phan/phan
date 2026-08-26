@@ -28,6 +28,7 @@ use Phan\Internal\InternalStubCacheEntry;
 use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\ClassConstant;
+use Phan\Language\Element\Comment;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
@@ -249,9 +250,55 @@ class Analysis
             $functions,
             $global_constants,
             $file_level_suppressions,
-            $class_members
+            $class_members,
+            self::stubHasMandatoryPHPDocParam($functions, $class_members)
         );
         self::$internal_stub_cache_misses++;
+    }
+
+    /**
+     * Does any cached function or method of a stub document a `@phan-mandatory-param`?
+     *
+     * Replaying a cached stub does not re-parse doc comments, so this is recorded with the
+     * cache entry and restored, keeping CodeBase::sawMandatoryParamAnnotation() accurate for
+     * every CodeBase that reuses the entry.
+     *
+     * @param list<Func> $functions
+     * @param array<string,array{methods:list<Method>,properties:list<Property>,constants:list<ClassConstant>}> $class_members
+     */
+    private static function stubHasMandatoryPHPDocParam(array $functions, array $class_members): bool
+    {
+        foreach ($functions as $function) {
+            if (self::commentHasMandatoryPHPDocParam($function->getComment())) {
+                return true;
+            }
+        }
+        foreach ($class_members as $members) {
+            foreach ($members['methods'] as $method) {
+                if (self::commentHasMandatoryPHPDocParam($method->getComment())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static function commentHasMandatoryPHPDocParam(?Comment $comment): bool
+    {
+        if (!$comment) {
+            return false;
+        }
+        foreach ($comment->getParameterList() as $parameter) {
+            if ($parameter->isMandatoryInPHPDoc()) {
+                return true;
+            }
+        }
+        foreach ($comment->getParameterMap() as $parameter) {
+            if ($parameter->isMandatoryInPHPDoc()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static function normalizeInternalStubPath(string $file_path): string

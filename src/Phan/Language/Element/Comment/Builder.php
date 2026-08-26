@@ -215,6 +215,10 @@ final class Builder
             $is_output_parameter = str_contains($line, '@phan-output-reference');
             $is_ignored_parameter = str_contains($line, '@phan-ignore-reference');
             $is_mandatory_in_phpdoc = str_contains($line, '@phan-mandatory-param');
+            if ($is_mandatory_in_phpdoc) {
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                $this->code_base->recordSawMandatoryParamAnnotation();
+            }
 
             return new Parameter(
                 $variable_name,
