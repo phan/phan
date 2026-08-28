@@ -31,7 +31,8 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
     ];
 
     /**
-     * Sets whether this is a global constant that should be treated as if the real type is unknown.
+     * Sets whether this is a global constant set through `define(...)` instead
+     * of `const` keyword
      */
     public function setIsDynamicConstant(bool $dynamic_constant): void
     {
@@ -45,8 +46,10 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
     }
 
     /**
-     * @return bool
-     * True if this is a global constant that should be treated as if the real type is unknown.
+     * True if this is a global constant set through `define(...)` instead of
+     * the `const` keyword
+     *
+     * @suppress PhanUnreferencedPublicMethod this used to be used
      */
     public function isDynamicConstant(): bool
     {
@@ -64,16 +67,6 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
         }
 
         return parent::getUnionType();
-    }
-
-    public function setUnionType(UnionType $type): void
-    {
-        // Note: in php 8.1, constants can also be objects if those objects are enums.
-        // So the real type set includes every type.
-        if ($this->isDynamicConstant()) {
-            $type = $type->eraseRealTypeSet();
-        }
-        parent::setUnionType($type);
     }
 
     /**

@@ -485,6 +485,7 @@ EOT;
     {
         switch ($ast->kind) {
             case ast\AST_CLASS:
+                // @phan-suppress-next-line PhanImpossibleValueComparison
                 if (Config::AST_VERSION < 85) {
                     unset($ast->children['type']);
                 }

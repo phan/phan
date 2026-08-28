@@ -1,2 +1,3 @@
 %s:23 PhanImpossibleValueComparison Impossible comparison of $result of type bool to MY_GLOBAL of type int (value: 2) with operator '===' (the comparison is always false)
+%s:26 PhanImpossibleValueComparison Impossible comparison of $result of type bool to MY_DYNAMIC_GLOBAL_ENTRY of type int (value: 3) with operator '===' (the comparison is always false)
 %s:31 PhanImpossibleValueComparison Impossible comparison of !$e->getCode() of type bool to HasConst::MY_VAL of type int (value: 1) with operator '===' (the comparison is always false)

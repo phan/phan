@@ -26,5 +26,7 @@
 %s:25 PhanTypeMismatchArgumentInternalReal Argument 1 ($num1) is 'value' of type string but \intdiv() takes int
 %s:26 PhanRedundantCondition Redundant attempt to cast FEATURE_FLAG of type true to truthy
 %s:26 PhanTypeMismatchArgumentInternalReal Argument 1 ($num1) is 'value' of type string but \intdiv() takes int
+%s:27 PhanRedundantCondition Redundant attempt to cast FEATURE_FLAG2 of type true to truthy
 %s:27 PhanTypeMismatchArgumentInternalReal Argument 1 ($num1) is 'value' of type string but \intdiv() takes int
+%s:28 PhanRedundantCondition Redundant attempt to cast FEATURE_FLAG2 of type true to truthy
 %s:28 PhanTypeMismatchArgumentInternalReal Argument 1 ($num1) is 'value' of type string but \intdiv() takes int
