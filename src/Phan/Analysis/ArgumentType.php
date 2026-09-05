@@ -1189,6 +1189,7 @@ final class ArgumentType
             $deprecatedParam = true;
         }
 
+        $arg_count_info = null;
         foreach ($method->alternateGenerator($code_base) as $alternate_method) {
             // Get the parameter associated with this argument
             $candidate_alternate_parameter = $alternate_method->getParameterForCaller($i);
@@ -1199,11 +1200,21 @@ final class ArgumentType
                 // If another function was already checked which had the right number of alternate parameters, don't bother allowing checks with param
                 $arglist = $node->kind === ast\AST_ARG_LIST ? $node : ($node->children['args'] ?? null);
                 if ($arglist) {
-                    $argcount = \count($arglist->children);
+                    // This accounts for argument unpacking: f($a, ...['x', 'y']) passes exactly 3 arguments,
+                    // but the argument count is unknown when unpacking an array of unknown size.
+                    [$argcount, $has_unknown_argcount] = $arg_count_info ??= self::getArgCount($code_base, $context, $arglist->children);
 
-                    // Make sure we have enough arguments
-                    if ($argcount < $alternate_method->getNumberOfRequiredParameters() && !self::isUnpack($arglist->children)) {
-                        continue;
+                    if (!$has_unknown_argcount) {
+                        // Make sure we have enough arguments
+                        if ($argcount < $alternate_method->getNumberOfRequiredParameters()) {
+                            continue;
+                        }
+                        // Make sure this alternate can accept this many arguments.
+                        // Otherwise, an alternate with fewer parameters (e.g. array_udiff(array $array, callable $data_comp_func))
+                        // would accept a callable in a position where the alternates matching the argument count require an array.
+                        if ($argcount > $alternate_method->getNumberOfParameters() && \is_null($alternate_method->getParameterForCaller($argcount - 1))) {
+                            continue;
+                        }
                     }
                 }
             }
