@@ -92,4 +92,14 @@ class CallableArrayType extends ArrayType implements GenericArrayInterface
         }
         return parent::isSubtypeOfNonNullableType($type, $code_base);
     }
+
+    /**
+     * Callable arrays permit any key order (e.g. [1 => 'method', 0 => 'Class']),
+     * so a callable array that is not a list is still a callable array.
+     * @override
+     */
+    public function castToNonEmptyAssociativeArrayTypes(): UnionType
+    {
+        return $this->withIsNullable(false)->asPHPDocUnionType();
+    }
 }

@@ -1227,6 +1227,19 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         return $this->genericArrayElementUnionType()->asListTypes();
     }
 
+    /**
+     * @override
+     */
+    public function castToNonEmptyAssociativeArrayTypes(): UnionType
+    {
+        if ($this->canCastToList()) {
+            // e.g. array{} or array{0:T,1?:U} - every possible value is a list.
+            return UnionType::empty();
+        }
+        // Keep the precise shape, e.g. array{key:T} or array{0?:T,1:U} (which can be [1 => $u])
+        return $this->withIsNullable(false)->asPHPDocUnionType();
+    }
+
     public function getTypesRecursively(): Generator
     {
         yield $this;

@@ -1664,6 +1664,11 @@ final class EmptyUnionType extends UnionType
         return UnionType::fromFullyQualifiedRealString('list');
     }
 
+    public function nonEmptyAssociativeArrayTypesStrictCast(): UnionType
+    {
+        return UnionType::fromFullyQualifiedRealString('non-empty-associative-array');
+    }
+
     public function arrayTypesStrictCastAllowEmpty(): UnionType
     {
         return $this;
