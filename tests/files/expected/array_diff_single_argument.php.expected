@@ -9,4 +9,6 @@
 %s:60 PhanTypeMismatchArgumentInternalProbablyReal Argument 2 ($rest) is 'strcmp' of type string but \array_udiff() takes array
 %s:61 PhanTypeMismatchArgumentInternalProbablyReal Argument 2 ($rest) is 'strcmp' of type string but \array_udiff_uassoc() takes array
 %s:62 PhanTypeMismatchArgumentInternalProbablyReal Argument 2 ($rest) is 'strcmp' of type string but \array_intersect_uassoc() takes array
-%s:64 PhanParamTooFewInternal Call with 1 arg(s) to \array_udiff(array $array, array $rest, callable(mixed,mixed):int $data_comp_func) which requires 3 arg(s)
+%s:64 PhanTypeMismatchArgumentInternalProbablyReal Argument 2 ($rest) is ...(['strcmp','strcmp']) of type string but \array_diff_ukey() takes array
+%s:68 PhanSuspiciousNamedArgumentVariadicInternal Passing named argument data_comp_func: 'strcmp' to the variadic parameter of the internal function \array_udiff(array $array, array $rest, callable(mixed,mixed):int $data_comp_func). Except for a few internal methods that call methods/constructors dynamically, this is usually not supported by internal functions.
+%s:70 PhanParamTooFewInternal Call with 1 arg(s) to \array_udiff(array $array, array $rest, callable(mixed,mixed):int $data_comp_func) which requires 3 arg(s)
