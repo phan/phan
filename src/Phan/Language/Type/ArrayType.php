@@ -471,6 +471,22 @@ class ArrayType extends IterableType
     }
 
     /**
+     * Returns the union type of the values of this type for which `array_is_list()` is false.
+     * Such values are always non-empty (`[]` is a list) and are never lists.
+     *
+     * Returns the empty union type if it is known to be impossible for this to be a non-list.
+     * This is used to infer the type of `$x` when `!array_is_list($x)` is true.
+     */
+    public function castToNonEmptyAssociativeArrayTypes(): UnionType
+    {
+        return NonEmptyAssociativeArrayType::fromElementType(
+            MixedType::instance(false),
+            false,
+            GenericArrayType::KEY_MIXED
+        )->asPHPDocUnionType();
+    }
+
+    /**
      * Convert ArrayTypes with integer-only keys to ListType.
      * Calling withFlattenedArrayShapeTypeInstances first is recommended.
      * @see asListType

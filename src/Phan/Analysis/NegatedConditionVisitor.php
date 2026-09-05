@@ -22,7 +22,6 @@ use Phan\Language\Element\Variable;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FloatType;
-use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntersectionType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
@@ -754,7 +753,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         /** @param list<Node|mixed> $unused_args */
         $remove_list_callback = static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $unused_args): void {
             $union_type = $variable->getUnionType();
-            $variable->setUnionType($union_type->arrayTypesStrictCast()->asNonEmptyAssociativeArrayTypes(GenericArrayType::KEY_MIXED));
+            $variable->setUnionType($union_type->nonEmptyAssociativeArrayTypesStrictCast());
         };
         /** @param list<Node|mixed> $unused_args */
         $remove_object_callback = static function (CodeBase $unused_code_base, Context $unused_context, Variable $variable, array $unused_args): void {

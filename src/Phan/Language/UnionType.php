@@ -3986,6 +3986,43 @@ class UnionType implements Serializable, Stringable
     }
 
     /**
+     * This is the union type Phan infers from `assert(!array_is_list($x))`
+     * Converts `array<key,value>` to `non-empty-associative-array<key,value>`
+     * Takes `list<A>` and returns `non-empty-associative-array<mixed>` (impossible, so falls back to the most general type)
+     * Takes `array{key:A}` and returns `array{key:A}`
+     * Takes `` and returns `non-empty-associative-array<mixed>`
+     */
+    public function nonEmptyAssociativeArrayTypesStrictCast(): UnionType
+    {
+        static $fallback = null;
+        if ($fallback === null) {
+            $fallback = [NonEmptyAssociativeArrayType::fromElementType(MixedType::instance(false), false, GenericArrayType::KEY_MIXED)];
+        }
+        return UnionType::of(
+            self::castToNonEmptyAssociativeArrayTypesStrict($this->type_set) ?: $fallback,
+            self::castToNonEmptyAssociativeArrayTypesStrict($this->real_type_set) ?: $fallback
+        );
+    }
+
+    /**
+     * @param Type[] $type_list
+     * @return list<Type>
+     */
+    private static function castToNonEmptyAssociativeArrayTypesStrict(array $type_list): array
+    {
+        $result = [];
+        foreach ($type_list as $type) {
+            $type = $type->asArrayType();
+            if ($type instanceof ArrayType) {
+                foreach ($type->castToNonEmptyAssociativeArrayTypes()->getTypeSet() as $sub_type) {
+                    $result[] = $sub_type;
+                }
+            }
+        }
+        return $result;
+    }
+
+    /**
      * @param Type[] $type_list
      * @return list<Type>
      */

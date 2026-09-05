@@ -115,4 +115,13 @@ class ListType extends GenericArrayType
     {
         return $this->asPHPDocUnionType();
     }
+
+    /**
+     * A list can never fail `array_is_list()`, so this returns the empty union type.
+     * @override
+     */
+    public function castToNonEmptyAssociativeArrayTypes(): UnionType
+    {
+        return UnionType::empty();
+    }
 }

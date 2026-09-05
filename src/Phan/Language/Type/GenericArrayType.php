@@ -897,4 +897,17 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     {
         return ListType::fromElementType($this->element_type, $this->is_nullable)->asPHPDocUnionType();
     }
+
+    /**
+     * Returns the non-empty associative array type with the same key and element types as this type.
+     * @override
+     */
+    public function castToNonEmptyAssociativeArrayTypes(): UnionType
+    {
+        return NonEmptyAssociativeArrayType::fromElementType(
+            $this->element_type,
+            false,
+            $this->key_type
+        )->asPHPDocUnionType();
+    }
 }
