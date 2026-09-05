@@ -1,0 +1,7 @@
+%s:10 PhanParamTooFewInternalUnpack Call with 0 or more arg(s) to \array_intersect(array $array, array ...$arrays) which requires 1 arg(s). This may throw an ArgumentCountError if there are too few args at runtime.
+%s:32 PhanDebugAnnotation @phan-debug-var requested for variable $result - it has union type associative-array<int,int>(real=?associative-array<mixed,mixed>)
+%s:37 PhanParamTooFewInternal Call with 0 arg(s) to \array_intersect(array $array, array ...$arrays) which requires 1 arg(s)
+%s:38 PhanTypeMismatchArgumentInternalProbablyReal Argument 2 ($arrays) is 'x' of type string but \array_intersect() takes array
+%s:39 PhanTypeMismatchArgumentInternalProbablyReal Argument 3 ($arrays) is 'x' of type string but \array_diff() takes array
+%s:56 PhanTypeMismatchArgumentInternalProbablyReal Argument 2 ($data_comp_func) is 42 of type int (value: 42) but \array_udiff() takes callable(mixed,mixed):int
+%s:58 PhanParamTooFewInternal Call with 1 arg(s) to \array_udiff(array $array, array $rest, callable(mixed,mixed):int $data_comp_func) which requires 3 arg(s)
