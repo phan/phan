@@ -4,4 +4,9 @@
 %s:38 PhanTypeMismatchArgumentInternalProbablyReal Argument 2 ($arrays) is 'x' of type string but \array_intersect() takes array
 %s:39 PhanTypeMismatchArgumentInternalProbablyReal Argument 3 ($arrays) is 'x' of type string but \array_diff() takes array
 %s:56 PhanTypeMismatchArgumentInternalProbablyReal Argument 2 ($data_comp_func) is 42 of type int (value: 42) but \array_udiff() takes callable(mixed,mixed):int
-%s:58 PhanParamTooFewInternal Call with 1 arg(s) to \array_udiff(array $array, array $rest, callable(mixed,mixed):int $data_comp_func) which requires 3 arg(s)
+%s:59 PhanTypeMismatchArgumentInternalProbablyReal Argument 2 ($rest) is 'strcmp' of type string but \array_diff_ukey() takes array
+%s:60 PhanParamTypeMismatch Argument 2 is 'strcmp' but \array_udiff() takes array
+%s:60 PhanTypeMismatchArgumentInternalProbablyReal Argument 2 ($rest) is 'strcmp' of type string but \array_udiff() takes array
+%s:61 PhanTypeMismatchArgumentInternalProbablyReal Argument 2 ($rest) is 'strcmp' of type string but \array_udiff_uassoc() takes array
+%s:62 PhanTypeMismatchArgumentInternalProbablyReal Argument 2 ($rest) is 'strcmp' of type string but \array_intersect_uassoc() takes array
+%s:64 PhanParamTooFewInternal Call with 1 arg(s) to \array_udiff(array $array, array $rest, callable(mixed,mixed):int $data_comp_func) which requires 3 arg(s)

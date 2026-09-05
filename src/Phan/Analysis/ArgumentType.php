@@ -1201,9 +1201,17 @@ final class ArgumentType
                 if ($arglist) {
                     $argcount = \count($arglist->children);
 
-                    // Make sure we have enough arguments
-                    if ($argcount < $alternate_method->getNumberOfRequiredParameters() && !self::isUnpack($arglist->children)) {
-                        continue;
+                    if (!self::isUnpack($arglist->children)) {
+                        // Make sure we have enough arguments
+                        if ($argcount < $alternate_method->getNumberOfRequiredParameters()) {
+                            continue;
+                        }
+                        // Make sure this alternate can accept this many arguments.
+                        // Otherwise, an alternate with fewer parameters (e.g. array_udiff(array $array, callable $data_comp_func))
+                        // would accept a callable in a position where the alternates matching the argument count require an array.
+                        if ($argcount > $alternate_method->getNumberOfParameters() && \is_null($alternate_method->getParameterForCaller($argcount - 1))) {
+                            continue;
+                        }
                     }
                 }
             }

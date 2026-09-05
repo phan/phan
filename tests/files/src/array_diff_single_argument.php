@@ -54,6 +54,12 @@ function single5566(array $a, array $b, array $c): void {
 
     // Still invalid: the callback is not a callable
     var_dump(array_udiff($a, 42));
+    // Still invalid: with three or more arguments, argument 2 must be an array.
+    // The one-array alternate signature must not be used for type checking here.
+    var_dump(array_diff_ukey($a, 'strcmp', 'strcmp'));
+    var_dump(array_udiff($a, 'strcmp', 'strcmp'));
+    var_dump(array_udiff_uassoc($a, 'strcmp', 'strcmp', 'strcmp'));
+    var_dump(array_intersect_uassoc($a, 'strcmp', 'strcmp'));
     // Still invalid: missing everything
     var_dump(array_udiff($a));
     // Missing callback: not detected, since Phan allows arrays to cast to callable
