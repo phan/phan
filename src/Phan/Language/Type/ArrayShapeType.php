@@ -1233,10 +1233,20 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
     public function castToNonEmptyAssociativeArrayTypes(): UnionType
     {
         if ($this->canCastToList()) {
-            // e.g. array{} or array{0:T,1?:U} - every possible value is a list.
-            return UnionType::empty();
+            // Optional keys are independent, so array{0?:T,1?:U} permits [1 => $u], which is not a list.
+            // canCastToList() guarantees that optional keys are trailing, so every possible value
+            // is a list only when at most one key is optional (e.g. array{}, array{0:T,1?:U}, array{0?:T}).
+            $optional_count = 0;
+            foreach ($this->field_types as $field_type) {
+                if ($field_type->isPossiblyUndefined()) {
+                    $optional_count++;
+                }
+            }
+            if ($optional_count <= 1) {
+                return UnionType::empty();
+            }
         }
-        // Keep the precise shape, e.g. array{key:T} or array{0?:T,1:U} (which can be [1 => $u])
+        // Keep the precise shape, e.g. array{key:T}, array{0?:T,1:U}, or array{0?:T,1?:U}
         return $this->withIsNullable(false)->asPHPDocUnionType();
     }
 

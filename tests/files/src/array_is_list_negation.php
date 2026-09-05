@@ -26,6 +26,8 @@ function example5565(string $json): void {
  * @param list<int>|array{a:int} $list_or_shape
  * @param array{0:int,1?:int} $always_list_shape
  * @param array{0?:int,1:int} $maybe_list_shape
+ * @param array{0?:int,1?:string} $two_optional_shape
+ * @param array{0?:int} $one_optional_shape
  * @param non-empty-list<string> $non_empty_list
  * @param associative-array<string> $assoc
  * @param array|false $array_or_false
@@ -39,6 +41,8 @@ function negated5565(
     array $list_or_shape,
     array $always_list_shape,
     array $maybe_list_shape,
+    array $two_optional_shape,
+    array $one_optional_shape,
     array $non_empty_list,
     array $assoc,
     $array_or_false,
@@ -67,6 +71,14 @@ function negated5565(
     }
     if (!array_is_list($maybe_list_shape)) {
         '@phan-debug-var $maybe_list_shape';
+    }
+    if (!array_is_list($two_optional_shape)) {
+        // [1 => 'x'] is permitted and is not a list, so the shape is kept
+        '@phan-debug-var $two_optional_shape';
+    }
+    if (!array_is_list($one_optional_shape)) {
+        // [] and [0 => 1] are both lists, so this falls back to the generic type
+        '@phan-debug-var $one_optional_shape';
     }
     if (!array_is_list($non_empty_list)) {
         '@phan-debug-var $non_empty_list';
