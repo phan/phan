@@ -1506,8 +1506,36 @@ class CodeBase
         if ($this->undo_tracker) {
             $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($global_constant): void {
                 Daemon::debugf("Undoing addGlobalConstant on %s\n", $global_constant->getFQSEN());
-                unset($inner->fqsen_global_constant_map[$global_constant->getFQSEN()]);
+                $inner->removeGlobalConstantDeclaration($global_constant->getFQSEN(), $global_constant->getDeclarationKey());
             });
+        }
+    }
+
+    /**
+     * Removes a single declaration of a global constant (used to undo parsing a file in daemon mode).
+     *
+     * A constant declared with `define()` in several places tracks the additional declarations as alternates
+     * of the first one seen. If the declaration being removed is the one in the code base,
+     * an alternate declaration (from a file that was not changed) is promoted to replace it, if there is one.
+     *
+     * @param string $declaration_key the declaration key of the define() call (see GlobalConstant::getDeclarationKey()), or '' for a `const`
+     */
+    public function removeGlobalConstantDeclaration(FullyQualifiedGlobalConstantName $fqsen, string $declaration_key): void
+    {
+        if (!$this->fqsen_global_constant_map->offsetExists($fqsen)) {
+            return;
+        }
+        $constant = $this->fqsen_global_constant_map[$fqsen];
+        if ($constant->getDeclarationKey() !== $declaration_key) {
+            $constant->removeAlternateDeclaration($declaration_key);
+            return;
+        }
+        $replacement = $constant->promoteAlternateDeclaration();
+        if ($replacement) {
+            Daemon::debugf("Promoting alternate declaration of %s from %s\n", $fqsen, $replacement->getDeclarationKey());
+            $this->fqsen_global_constant_map[$fqsen] = $replacement;
+        } else {
+            unset($this->fqsen_global_constant_map[$fqsen]);
         }
     }
 

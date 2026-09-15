@@ -1926,31 +1926,37 @@ class ParseVisitor extends ScopeVisitor
         // define() is typically used to conditionally set constants or to set them to variable values.
         // TODO: Could add 'configuration_constant_set' to add additional constants to treat as dynamic such as PHP_OS, PHP_VERSION_ID, etc. (convert literals to non-literal types?)
         $constant->setIsDynamicConstant($is_fully_qualified);
+        if ($is_fully_qualified) {
+            // Include a hash of the value so that multiple define() calls on the same line get distinct keys,
+            // while the analysis phase re-registering the same call (with the same value) gets the same key.
+            $constant->setDeclarationKey($context->getFile() . ':' . $lineno . ':' . self::hashDefineValue($value));
+        }
 
+        // The constant with the same name which is already declared, if this is an additional define() call for it.
+        $primary_constant = null;
         if ($code_base->hasGlobalConstantWithFQSEN($fqsen)) {
             $other_constant = $code_base->getGlobalConstantByFQSEN($fqsen);
-            $other_context = $other_constant->getContext();
             $is_other_define = $is_fully_qualified && $other_constant->isDynamicConstant() && !$other_constant->isPHPInternal();
-            $is_same_declaration = $other_context->equals($context);
-            if ($is_same_declaration && $is_other_define) {
-                // Multiple define() calls for the same name on the same line (e.g. a one-line if/else)
-                // are different declarations, not the analysis phase re-registering the same call.
-                $is_same_declaration = self::hashDefineValue($other_constant->getNodeForValue()) === self::hashDefineValue($value);
+            if ($is_other_define) {
+                $is_same_declaration = $other_constant->getDeclarationKey() === $constant->getDeclarationKey();
+            } else {
+                $is_same_declaration = $other_constant->getContext()->equals($context);
             }
             if (!$is_same_declaration) {
-                // Only track the first declaration seen when parsing (or redeclarations of it in the analysis phase).
-                // Note that global constants don't have alternates.
-                if ($is_other_define) {
-                    // This is a different define() call for a constant that was already declared with define()
-                    // (e.g. in the other branch of an if/else, or in a different config file).
-                    // Any of the define() calls may be the one that runs, so union the types of all of them.
-                    self::addAlternateDefinitionType($code_base, $context, $lineno, $other_constant, $value, $use_future_union_type);
+                if (!$is_other_define) {
+                    // Only track the first declaration seen when parsing (or redeclarations of it in the analysis phase).
+                    // Note that global constants don't have alternates.
+                    return;
                 }
-                return;
+                // This is a different define() call for a constant that was already declared with define()
+                // (e.g. in the other branch of an if/else, or in a different config file).
+                // Any of the define() calls may be the one that runs, so union the types of all of them.
+                $primary_constant = $other_constant;
+            } else {
+                // Keep track of old references to the new constant
+                $constant->copyReferencesFrom($other_constant);
+                $constant->copyAlternateDeclarationsFrom($other_constant);
             }
-            // Keep track of old references to the new constant
-            $constant->copyReferencesFrom($other_constant);
-            $constant->copyAlternateDefinitionTypesFrom($other_constant);
 
             // Otherwise, add the constant now that we know about all of the elements in the codebase
         }
@@ -1988,55 +1994,27 @@ class ParseVisitor extends ScopeVisitor
         $constant->setIsDeprecated($comment->isDeprecated());
         $constant->setIsNSInternal($comment->isNSInternal());
 
-        $code_base->addGlobalConstant(
-            $constant
-        );
+        if ($primary_constant) {
+            $primary_constant->addAlternateDeclaration($constant);
+            $undo_tracker = $code_base->getUndoTracker();
+            if ($undo_tracker) {
+                $key = $constant->getDeclarationKey();
+                $undo_tracker->recordUndo(static function (CodeBase $inner) use ($fqsen, $key): void {
+                    $inner->removeGlobalConstantDeclaration($fqsen, $key);
+                });
+            }
+        } else {
+            $code_base->addGlobalConstant(
+                $constant
+            );
+        }
 
         // Track constant declaration for incremental analysis
         DependencyTracker::track($fqsen->__toString(), 'declares');
     }
 
     /**
-     * Records the type of an additional `define()` call for a constant that was already declared elsewhere.
-     *
      * @param Node|mixed $value the value passed to define()
-     */
-    private static function addAlternateDefinitionType(
-        CodeBase $code_base,
-        Context $context,
-        int $lineno,
-        GlobalConstant $constant,
-        mixed $value,
-        bool $use_future_union_type
-    ): void {
-        // Include a hash of the value so that multiple define() calls on the same line get distinct keys,
-        // while the analysis phase re-registering the same call (with the same value) replaces the parse-time type.
-        $key = $context->getFile() . ':' . $lineno . ':' . self::hashDefineValue($value);
-        if ($use_future_union_type) {
-            if ($value instanceof Node) {
-                $type = new FutureUnionType($code_base, $context, $value);
-            } else {
-                $type = Type::fromObject($value)->asRealUnionType();
-            }
-        } else {
-            $type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $value);
-        }
-        $constant->addAlternateDefinitionType($key, $type);
-        $undo_tracker = $code_base->getUndoTracker();
-        if ($undo_tracker) {
-            // Look the constant up again when undoing: the analysis phase may have replaced the GlobalConstant
-            // object for the primary declaration (copying the alternate definition types to the new object).
-            $fqsen = $constant->getFQSEN();
-            $undo_tracker->recordUndo(static function (CodeBase $inner) use ($fqsen, $key): void {
-                if ($inner->hasGlobalConstantWithFQSEN($fqsen)) {
-                    $inner->getGlobalConstantByFQSEN($fqsen)->removeAlternateDefinitionType($key);
-                }
-            });
-        }
-    }
-
-    /**
-     * @param Node|mixed $value the value passed to define() (or the node/value stored on a GlobalConstant)
      * @return string a hash of the value expression, ignoring line numbers
      */
     private static function hashDefineValue(mixed $value): string

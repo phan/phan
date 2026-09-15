@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Phan\Language\Element;
 
+use Closure;
 use InvalidArgumentException;
 use Phan\AST\ASTReverter;
 use Phan\Exception\FQSENException;
-use Phan\Exception\IssueException;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
-use Phan\Language\FutureUnionType;
 use Phan\Language\Type;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FalseType;
@@ -24,7 +23,9 @@ use Phan\Library\StringUtil;
  */
 class GlobalConstant extends AddressableElement implements ConstantInterface
 {
-    use ConstantTrait;
+    use ConstantTrait {
+        createRestoreCallback as private createConstantRestoreCallback;
+    }
 
     /** @var array<string,true> names of internal boolean constants whose values vary between builds */
     private const VOLATILE_BOOLEAN_CONSTANTS = [
@@ -35,18 +36,24 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
     ];
 
     /**
-     * @var array<string,UnionType|FutureUnionType>
-     * Types of additional `define()` calls for this constant (other than the first one seen),
-     * keyed by "file:line". Unresolved FutureUnionTypes are resolved lazily in getUnionType().
+     * @var array<string,GlobalConstant>
+     * Additional `define()` calls for this constant (other than the first one seen),
+     * keyed by their declaration key (see getDeclarationKey()).
      *
      * PHP only allows a constant to be defined once, but when `define()` is used in mutually
      * exclusive branches (e.g. `if ($x) { define('C', 1); } else { define('C', true); }`),
-     * any one of them may be the definition at runtime, so the union of all of them is used.
+     * any one of them may be the definition at runtime, so the union of all of their types is used.
      */
-    private array $alternate_definition_types = [];
+    private array $alternate_declarations = [];
 
     /**
-     * @var UnionType|null the cached union of the primary type and all alternate definition types.
+     * @var string identifies the `define()` call that declared this constant ("file:line:hash of value"),
+     * or '' for constants declared with `const` or by PHP.
+     */
+    private string $declaration_key = '';
+
+    /**
+     * @var UnionType|null the cached union of this constant's type and the types of all alternate declarations.
      */
     private ?UnionType $combined_union_type = null;
 
@@ -86,7 +93,7 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
         if (null !== ($union_type = $this->getFutureUnionType())) {
             $this->setUnionType($union_type);
         }
-        if (!$this->alternate_definition_types) {
+        if (!$this->alternate_declarations) {
             return parent::getUnionType();
         }
         return $this->combined_union_type ??= $this->computeCombinedUnionType();
@@ -95,17 +102,8 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
     private function computeCombinedUnionType(): UnionType
     {
         $result = parent::getUnionType();
-        foreach ($this->alternate_definition_types as $key => $type) {
-            if ($type instanceof FutureUnionType) {
-                try {
-                    $type = self::widenDynamicConstantType($type->get());
-                } catch (IssueException) {
-                    unset($this->alternate_definition_types[$key]);
-                    continue;
-                }
-                $this->alternate_definition_types[$key] = $type;
-            }
-            $result = $result->withUnionType($type);
+        foreach ($this->alternate_declarations as $alternate) {
+            $result = $result->withUnionType($alternate->getUnionType());
         }
         return $result;
     }
@@ -120,38 +118,104 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
     }
 
     /**
-     * Records the type of an additional `define()` call for this constant (in a different location from the first one).
-     *
-     * @param string $key a unique key for the location of the `define()` call, e.g. "file:line"
+     * Sets a key identifying the `define()` call which declared this constant, e.g. "file:line:hash of the value".
+     * The same call is re-registered in the analysis phase and gets the same key.
      */
-    public function addAlternateDefinitionType(string $key, UnionType|FutureUnionType $type): void
+    public function setDeclarationKey(string $key): void
     {
-        if ($type instanceof UnionType) {
-            $type = self::widenDynamicConstantType($type);
-        }
-        $this->alternate_definition_types[$key] = $type;
+        $this->declaration_key = $key;
+    }
+
+    /**
+     * @return string a key identifying the `define()` call which declared this constant, or '' if this was not declared with `define()`.
+     */
+    public function getDeclarationKey(): string
+    {
+        return $this->declaration_key;
+    }
+
+    /**
+     * Records an additional `define()` call for this constant (in a different location from the one which declared it).
+     * A declaration with the same declaration key replaces the previously recorded one.
+     */
+    public function addAlternateDeclaration(GlobalConstant $alternate): void
+    {
+        $this->alternate_declarations[$alternate->declaration_key] = $alternate;
         $this->combined_union_type = null;
     }
 
     /**
-     * Forgets the type recorded by addAlternateDefinitionType() for $key (used to undo parsing a file in daemon mode).
+     * Forgets the alternate declaration with the given declaration key (used to undo parsing a file in daemon mode).
      */
-    public function removeAlternateDefinitionType(string $key): void
+    public function removeAlternateDeclaration(string $key): void
     {
-        unset($this->alternate_definition_types[$key]);
+        unset($this->alternate_declarations[$key]);
         $this->combined_union_type = null;
     }
 
     /**
-     * Copies the alternate definition types from $other (e.g. when this constant replaces $other in the code base).
+     * Copies the alternate declarations from $other (e.g. when this constant replaces $other in the code base).
      */
-    public function copyAlternateDefinitionTypesFrom(GlobalConstant $other): void
+    public function copyAlternateDeclarationsFrom(GlobalConstant $other): void
     {
-        if ($other === $this || !$other->alternate_definition_types) {
+        if ($other === $this || !$other->alternate_declarations) {
             return;
         }
-        $this->alternate_definition_types = $other->alternate_definition_types + $this->alternate_definition_types;
+        $this->alternate_declarations = $other->alternate_declarations + $this->alternate_declarations;
+        unset($this->alternate_declarations[$this->declaration_key]);
         $this->combined_union_type = null;
+    }
+
+    /**
+     * Removes and returns the first alternate declaration, giving it the remaining alternate declarations
+     * (and the references to this constant), so that it can replace this constant in the code base.
+     * Used when the file which declared this constant is changed in daemon mode but other files still define it.
+     */
+    public function promoteAlternateDeclaration(): ?GlobalConstant
+    {
+        $key = \array_key_first($this->alternate_declarations);
+        if ($key === null) {
+            return null;
+        }
+        $replacement = $this->alternate_declarations[$key];
+        unset($this->alternate_declarations[$key]);
+        $replacement->alternate_declarations = $this->alternate_declarations;
+        $replacement->combined_union_type = null;
+        $replacement->copyReferencesFrom($this);
+        $this->alternate_declarations = [];
+        $this->combined_union_type = null;
+        return $replacement;
+    }
+
+    /**
+     * Used by daemon mode (without pcntl) to restore this constant and its alternate declarations
+     * to the state they had before analysis.
+     * @internal
+     */
+    public function createRestoreCallback(): ?Closure
+    {
+        $restore_own_type = $this->createConstantRestoreCallback();
+        $alternates = $this->alternate_declarations;
+        if (!$alternates) {
+            return $restore_own_type;
+        }
+        $alternate_callbacks = [];
+        foreach ($alternates as $alternate) {
+            $callback = $alternate->createRestoreCallback();
+            if ($callback) {
+                $alternate_callbacks[] = $callback;
+            }
+        }
+        return function () use ($restore_own_type, $alternates, $alternate_callbacks): void {
+            if ($restore_own_type) {
+                $restore_own_type();
+            }
+            foreach ($alternate_callbacks as $callback) {
+                $callback();
+            }
+            $this->alternate_declarations = $alternates;
+            $this->combined_union_type = null;
+        };
     }
 
     /**
