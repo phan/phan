@@ -1930,12 +1930,19 @@ class ParseVisitor extends ScopeVisitor
             $other_constant = $code_base->getGlobalConstantByFQSEN($fqsen);
             $other_context = $other_constant->getContext();
             if (!$other_context->equals($context)) {
-                // Be consistent about the constant's type and only track the first declaration seen when parsing (or redeclarations)
+                // Only track the first declaration seen when parsing (or redeclarations of it in the analysis phase).
                 // Note that global constants don't have alternates.
+                if ($is_fully_qualified && $other_constant->isDynamicConstant() && !$other_constant->isPHPInternal()) {
+                    // This is a different define() call for a constant that was already declared with define()
+                    // (e.g. in the other branch of an if/else, or in a different config file).
+                    // Any of the define() calls may be the one that runs, so union the types of all of them.
+                    self::addAlternateDefinitionType($code_base, $context, $lineno, $other_constant, $value, $use_future_union_type);
+                }
                 return;
             }
             // Keep track of old references to the new constant
             $constant->copyReferencesFrom($other_constant);
+            $constant->copyAlternateDefinitionTypesFrom($other_constant);
 
             // Otherwise, add the constant now that we know about all of the elements in the codebase
         }
@@ -1979,6 +1986,38 @@ class ParseVisitor extends ScopeVisitor
 
         // Track constant declaration for incremental analysis
         DependencyTracker::track($fqsen->__toString(), 'declares');
+    }
+
+    /**
+     * Records the type of an additional `define()` call for a constant that was already declared elsewhere.
+     *
+     * @param Node|mixed $value the value passed to define()
+     */
+    private static function addAlternateDefinitionType(
+        CodeBase $code_base,
+        Context $context,
+        int $lineno,
+        GlobalConstant $constant,
+        mixed $value,
+        bool $use_future_union_type
+    ): void {
+        $key = $context->getFile() . ':' . $lineno;
+        if ($use_future_union_type) {
+            if ($value instanceof Node) {
+                $type = new FutureUnionType($code_base, $context, $value);
+            } else {
+                $type = Type::fromObject($value)->asRealUnionType();
+            }
+        } else {
+            $type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $value);
+        }
+        $constant->addAlternateDefinitionType($key, $type);
+        $undo_tracker = $code_base->getUndoTracker();
+        if ($undo_tracker) {
+            $undo_tracker->recordUndo(static function (CodeBase $_) use ($constant, $key): void {
+                $constant->removeAlternateDefinitionType($key);
+            });
+        }
     }
 
     /**

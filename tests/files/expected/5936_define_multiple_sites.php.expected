@@ -1,0 +1,5 @@
+%s:8 PhanDebugAnnotation @phan-debug-var requested for variable $from_constant_fn - it has union type string(real=string)
+%s:16 PhanDebugAnnotation @phan-debug-var requested for variable $from_multi_site - it has union type 3|true(real=bool|int)
+%s:27 PhanImpossibleTypeComparison Impossible attempt to check if DEFINITE_STRING5936 of type string is identical to $intVar of type int
+%s:33 PhanImpossibleTypeComparison Impossible attempt to check if MULTI_SITE5936 of type bool|int is identical to $strVar of type string
+%s:42 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is DEFINITE_STRING5936 of type string but \intdiv() takes int
