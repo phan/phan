@@ -9,6 +9,7 @@ use ast;
 use ast\Node;
 use InvalidArgumentException;
 use Phan\Analysis\ScopeVisitor;
+use Phan\AST\ASTHasher;
 use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
@@ -1925,17 +1926,37 @@ class ParseVisitor extends ScopeVisitor
         // define() is typically used to conditionally set constants or to set them to variable values.
         // TODO: Could add 'configuration_constant_set' to add additional constants to treat as dynamic such as PHP_OS, PHP_VERSION_ID, etc. (convert literals to non-literal types?)
         $constant->setIsDynamicConstant($is_fully_qualified);
+        if ($is_fully_qualified) {
+            // Include a hash of the value so that multiple define() calls on the same line get distinct keys,
+            // while the analysis phase re-registering the same call (with the same value) gets the same key.
+            $constant->setDeclarationKey($context->getFile() . ':' . $lineno . ':' . self::hashDefineValue($value));
+        }
 
+        // The constant with the same name which is already declared, if this is an additional define() call for it.
+        $primary_constant = null;
         if ($code_base->hasGlobalConstantWithFQSEN($fqsen)) {
             $other_constant = $code_base->getGlobalConstantByFQSEN($fqsen);
-            $other_context = $other_constant->getContext();
-            if (!$other_context->equals($context)) {
-                // Be consistent about the constant's type and only track the first declaration seen when parsing (or redeclarations)
-                // Note that global constants don't have alternates.
-                return;
+            $is_other_define = $is_fully_qualified && $other_constant->isDynamicConstant() && !$other_constant->isPHPInternal();
+            if ($is_other_define) {
+                $is_same_declaration = $other_constant->getDeclarationKey() === $constant->getDeclarationKey();
+            } else {
+                $is_same_declaration = $other_constant->getContext()->equals($context);
             }
-            // Keep track of old references to the new constant
-            $constant->copyReferencesFrom($other_constant);
+            if (!$is_same_declaration) {
+                if (!$is_other_define) {
+                    // Only track the first declaration seen when parsing (or redeclarations of it in the analysis phase).
+                    // Note that global constants don't have alternates.
+                    return;
+                }
+                // This is a different define() call for a constant that was already declared with define()
+                // (e.g. in the other branch of an if/else, or in a different config file).
+                // Any of the define() calls may be the one that runs, so union the types of all of them.
+                $primary_constant = $other_constant;
+            } else {
+                // Keep track of old references to the new constant
+                $constant->copyReferencesFrom($other_constant);
+                $constant->copyAlternateDeclarationsFrom($other_constant);
+            }
 
             // Otherwise, add the constant now that we know about all of the elements in the codebase
         }
@@ -1973,12 +1994,36 @@ class ParseVisitor extends ScopeVisitor
         $constant->setIsDeprecated($comment->isDeprecated());
         $constant->setIsNSInternal($comment->isNSInternal());
 
-        $code_base->addGlobalConstant(
-            $constant
-        );
+        if ($primary_constant) {
+            $primary_constant->addAlternateDeclaration($constant);
+            $undo_tracker = $code_base->getUndoTracker();
+            if ($undo_tracker) {
+                $key = $constant->getDeclarationKey();
+                $undo_tracker->recordUndo(static function (CodeBase $inner) use ($fqsen, $key): void {
+                    $inner->removeGlobalConstantDeclaration($fqsen, $key);
+                });
+            }
+        } else {
+            $code_base->addGlobalConstant(
+                $constant
+            );
+        }
 
         // Track constant declaration for incremental analysis
         DependencyTracker::track($fqsen->__toString(), 'declares');
+    }
+
+    /**
+     * @param Node|mixed $value the value passed to define()
+     * @return string a hash of the value expression, ignoring line numbers
+     */
+    private static function hashDefineValue(mixed $value): string
+    {
+        if ($value instanceof Node || \is_int($value) || \is_float($value) || \is_string($value) || $value === null) {
+            return ASTHasher::hash($value);
+        }
+        // bool or resource (only for internal constants, which are not merged)
+        return \is_bool($value) ? ($value ? 'true' : 'false') : \gettype($value);
     }
 
     /**

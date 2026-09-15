@@ -80,6 +80,7 @@
       <file>tests/Phan/CLITest.php</file>
       <file>tests/Phan/ConfigTest.php</file>
       <directory>tests/Phan/Config</directory>
+      <file>tests/Phan/GlobalConstantDeclarationUndoTest.php</file>
     </testsuite>
   </testsuites>
   <source>
