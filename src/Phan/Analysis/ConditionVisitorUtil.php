@@ -468,8 +468,8 @@ trait ConditionVisitorUtil
                 return $condition instanceof IdenticalCondition || $expr_node != null;
             }
             $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $expr_node);
-            if ($type->isEmpty() || $type->containsNullable()) {
-                // Note that mixed is treated as nullable.
+            if ($type->isEmpty() || $type->containsNullableOrUndefined()) {
+                // Note that mixed is treated as nullable, and that reading a possibly undefined variable can yield null.
                 return false;
             }
             // For `==`, falsey values such as false, 0, '' and [] are loosely equal to null.

@@ -119,6 +119,15 @@ function v9(?A5937 $x): void {
     }
 }
 
+function v10(?A5937 $x, bool $flag): void {
+    if ($flag) {
+        $y = true;
+    }
+    if ($x?->m() === $y) {  // $y is possibly undefined, i.e. possibly null
+        takesA5937($x);  // should warn
+    }
+}
+
 class Holder5937 {
     public ?A5937 $a = null;
     public function check(): void {
