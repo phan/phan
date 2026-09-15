@@ -45,6 +45,7 @@ use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
+use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use Phan\Library\StringUtil;
 use Phan\Parse\ParseVisitor;
@@ -200,6 +201,16 @@ trait ConditionVisitorUtil
     // Remove any types which are definitely falsey from that variable (NullType, FalseType)
     final protected function removeFalseyFromVariable(Node $var_node, Context $context, bool $suppress_issues): Context
     {
+        if (self::isNullsafeAccessChain($var_node)) {
+            // e.g. `$x?->prop` is only truthy if `$x` is non-null.
+            $context = $this->removeNullFromNullsafeReceivers($var_node, $context);
+            if ($var_node->kind === ast\AST_NULLSAFE_PROP) {
+                // Now that the receiver is known to be non-null, narrow `$x?->prop` the same way as `$x->prop`.
+                $var_node = new Node(ast\AST_PROP, $var_node->flags, $var_node->children, $var_node->lineno);
+            } elseif (!self::isVariableLikeNode($var_node)) {
+                return $context;
+            }
+        }
         return $this->updateVariableWithConditionalFilter(
             $var_node,
             $context,
@@ -375,6 +386,120 @@ trait ConditionVisitorUtil
     }
 
     /**
+     * Returns true if $node is a chain of property/method/array accesses containing at least one
+     * nullsafe access (`?->`), e.g. `$x?->prop`, `$x?->method()['key']` or `$this->prop?->method()->other`.
+     */
+    final protected static function isNullsafeAccessChain(Node|float|int|string $node): bool
+    {
+        while ($node instanceof Node) {
+            switch ($node->kind) {
+                case ast\AST_NULLSAFE_METHOD_CALL:
+                case ast\AST_NULLSAFE_PROP:
+                    return true;
+                case ast\AST_METHOD_CALL:
+                case ast\AST_PROP:
+                case ast\AST_DIM:
+                    $node = $node->children['expr'];
+                    break;
+                default:
+                    return false;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns true if updateVariableWithConditionalFilter() can narrow the type of $node
+     * (a variable, or a property/array access/class constant treated like a variable).
+     */
+    private static function isVariableLikeNode(Node $node): bool
+    {
+        return \in_array($node->kind, [ast\AST_VAR, ast\AST_DIM, ast\AST_PROP, ast\AST_STATIC_PROP, ast\AST_CLASS_CONST], true);
+    }
+
+    /**
+     * Returns a context where the receivers of the nullsafe accesses in $node are non-null.
+     *
+     * This is for conditions which imply that the expression $node evaluated to a non-null value:
+     * `$x?->method()` evaluates to null when `$x` is null, so `if ($x?->method())`, `if ($x?->method() === true)`,
+     * `if (isset($x?->prop))`, etc. imply that `$x` is not null.
+     *
+     * Only the receivers are narrowed (the variable `$x` in `$x?->prop?->method()`, and `$x->prop` when it is
+     * a property of a variable); nothing is inferred about the result of the expression itself.
+     */
+    final protected function removeNullFromNullsafeReceivers(Node $node, Context $context): Context
+    {
+        while (true) {
+            switch ($node->kind) {
+                case ast\AST_NULLSAFE_METHOD_CALL:
+                case ast\AST_NULLSAFE_PROP:
+                    $expr = $node->children['expr'];
+                    if (!$expr instanceof Node) {
+                        return $context;
+                    }
+                    // The receiver is non-null. removeNullFromVariable handles nullsafe accesses within the receiver.
+                    return $this->removeNullFromVariable($expr, $context, true);
+                case ast\AST_METHOD_CALL:
+                case ast\AST_PROP:
+                case ast\AST_DIM:
+                    $node = $node->children['expr'];
+                    if (!$node instanceof Node) {
+                        return $context;
+                    }
+                    break;
+                default:
+                    return $context;
+            }
+        }
+    }
+
+    /**
+     * Returns true if the comparison `$condition` between an expression and $expr_node being true implies
+     * that the expression is not null.
+     *
+     * e.g. `expr === true`, `expr == 'value'`, `expr !== null` and `expr != false` imply that expr is not null,
+     * while `expr === null`, `expr == 0` (null == 0) and `expr != '0'` ('0' != null) do not.
+     */
+    private function doesConditionImplyNonNull(BinaryCondition $condition, Node|float|int|string $expr_node): bool
+    {
+        if ($condition instanceof IdenticalCondition || $condition instanceof EqualsCondition) {
+            if (!$expr_node instanceof Node) {
+                // An int/float/string literal is never identical to null, but 0, 0.0 and '' are loosely equal to null.
+                return $condition instanceof IdenticalCondition || $expr_node != null;
+            }
+            $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $expr_node);
+            if ($type->isEmpty() || $type->containsNullableOrUndefined()) {
+                // Note that mixed is treated as nullable, and that reading a possibly undefined variable can yield null.
+                return false;
+            }
+            // For `==`, falsey values such as false, 0, '' and [] are loosely equal to null.
+            return $condition instanceof IdenticalCondition || !$type->containsFalsey();
+        }
+        if ($condition instanceof NotIdenticalCondition || $condition instanceof NotEqualsCondition) {
+            if (!$expr_node instanceof Node) {
+                // `expr != 0` implies expr is not null because null == 0 (this is not the case for '0')
+                return $condition instanceof NotEqualsCondition && $expr_node == null;
+            }
+            $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $expr_node);
+            if ($type->isEmpty()) {
+                return false;
+            }
+            foreach ($type->getTypeSet() as $single_type) {
+                if ($single_type instanceof NullType || $single_type instanceof VoidType) {
+                    continue;
+                }
+                // `expr != false` implies expr is not null because null == false
+                if ($condition instanceof NotEqualsCondition && $single_type instanceof FalseType) {
+                    continue;
+                }
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * overridden in subclasses
      * @param Node|mixed $node @unused-param
      */
@@ -385,6 +510,16 @@ trait ConditionVisitorUtil
 
     final protected function removeNullFromVariable(Node $var_node, Context $context, bool $suppress_issues): Context
     {
+        if (self::isNullsafeAccessChain($var_node)) {
+            // e.g. `$x?->prop` is only non-null if `$x` is non-null.
+            $context = $this->removeNullFromNullsafeReceivers($var_node, $context);
+            if ($var_node->kind === ast\AST_NULLSAFE_PROP) {
+                // Now that the receiver is known to be non-null, narrow `$x?->prop` the same way as `$x->prop`.
+                $var_node = new Node(ast\AST_PROP, $var_node->flags, $var_node->children, $var_node->lineno);
+            } elseif (!self::isVariableLikeNode($var_node)) {
+                return $context;
+            }
+        }
         return $this->updateVariableWithConditionalFilter(
             $var_node,
             $context,
@@ -1349,6 +1484,10 @@ trait ConditionVisitorUtil
      */
     private function analyzeBinaryConditionSide(Node $var_node, Node|float|int|string $expr_node, BinaryCondition $condition): ?Context
     {
+        if (self::isNullsafeAccessChain($var_node) && $this->doesConditionImplyNonNull($condition, $expr_node)) {
+            // e.g. `$x?->method() === true` implies that `$x` is not null.
+            return $this->removeNullFromNullsafeReceivers($var_node, $this->context);
+        }
         '@phan-var ConditionVisitorUtil|ConditionVisitorInterface $this';
         $kind = $var_node->kind;
         if ($kind === ast\AST_VAR || $kind === ast\AST_DIM) {

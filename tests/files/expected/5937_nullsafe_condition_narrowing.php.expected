@@ -1,0 +1,8 @@
+%s:29 PhanTypeMismatchArgumentNullable Argument 1 ($a) is $x of type ?\A5937 but \takesA5937() takes \A5937 defined at %s:22 (expected type to be non-nullable)
+%s:61 PhanTypeMismatchArgumentNullable Argument 1 ($a) is $x of type ?\A5937 but \takesA5937() takes \A5937 defined at %s:22 (expected type to be non-nullable)
+%s:66 PhanTypeMismatchArgumentNullable Argument 1 ($a) is $x of type ?\A5937 but \takesA5937() takes \A5937 defined at %s:22 (expected type to be non-nullable)
+%s:69 PhanTypeMismatchArgumentNullable Argument 1 ($a) is $x of type ?\A5937 but \takesA5937() takes \A5937 defined at %s:22 (expected type to be non-nullable)
+%s:85 PhanTypeMismatchArgumentNullable Argument 1 ($a) is $x of type ?\A5937 but \takesA5937() takes \A5937 defined at %s:22 (expected type to be non-nullable)
+%s:126 PhanPossiblyUndeclaredVariable Variable $y is possibly undeclared
+%s:127 PhanTypeMismatchArgumentNullable Argument 1 ($a) is $x of type ?\A5937 but \takesA5937() takes \A5937 defined at %s:22 (expected type to be non-nullable)
+%s:137 PhanTypeMismatchArgumentNullable Argument 1 ($a) is $this->a of type ?\A5937 but \takesA5937() takes \A5937 defined at %s:22 (expected type to be non-nullable)

@@ -452,6 +452,8 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      */
     private function checkComplexIsset(Node $node): Context
     {
+        // isset($x?->prop) implies that $x is not null
+        $this->context = $this->removeNullFromNullsafeReceivers($node, $this->context);
         // Loop to support getting the var name in is_array($x['field'][0])
         $has_prop_access = false;
         $context = $this->context;
@@ -645,7 +647,38 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
 
     public function visitNullsafeProp(Node $node): Context
     {
+        // `$x?->prop` is only truthy if `$x` is not null
+        $this->context = $this->removeNullFromNullsafeReceivers($node, $this->context);
         return $this->visitProp($node);
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse, with kind ast\AST_NULLSAFE_METHOD_CALL (e.g. `if ($x?->method())`)
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitNullsafeMethodCall(Node $node): Context
+    {
+        $this->visit($node);
+        // `$x?->method()` is only truthy if `$x` is not null
+        return $this->removeNullFromNullsafeReceivers($node, $this->context);
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse, with kind ast\AST_METHOD_CALL (e.g. `if ($x?->prop->method())`)
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitMethodCall(Node $node): Context
+    {
+        $this->visit($node);
+        return $this->removeNullFromNullsafeReceivers($node, $this->context);
     }
 
     /**
@@ -663,6 +696,8 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
         if (!($expr_node instanceof Node)) {
             return $this->context;
         }
+        // `$x?->prop->other` is only truthy if `$x` is not null
+        $this->context = $this->removeNullFromNullsafeReceivers($node, $this->context);
         if ($expr_node->kind !== ast\AST_VAR || $expr_node->children['name'] !== 'this') {
             return $this->context;
         }
@@ -712,6 +747,8 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
     public function visitDim(Node $node): Context
     {
         $this->checkVariablesDefined($node);
+        // `$x?->prop['key']` is only truthy if `$x` is not null
+        $this->context = $this->removeNullFromNullsafeReceivers($node, $this->context);
         if (Config::getValue('redundant_condition_detection')) {
             $this->checkRedundantOrImpossibleTruthyCondition($node, $this->context, null, false);
         }
@@ -757,6 +794,8 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             return $context;
         }
         if ($expr_node->kind !== ast\AST_VAR) {
+            // `$x?->method() instanceof SomeClass` implies that `$x` is not null
+            $context = $this->removeNullFromNullsafeReceivers($expr_node, $context);
             return $this->modifyComplexExpression(
                 $expr_node,
                 /**
