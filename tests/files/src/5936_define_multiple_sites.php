@@ -41,3 +41,8 @@ function check5936(int $intVar, bool $boolVar, string $strVar) {
     }
     return intdiv(DEFINITE_STRING5936, 2);  // should warn (Real)
 }
+
+// Multiple define() calls on the same line are still distinct definitions.
+if ($_ENV['A']) { define('ONE_LINE5936', 1); } elseif ($_ENV['B']) { define('ONE_LINE5936', 'x'); } else { define('ONE_LINE5936', 2.5); }
+$from_one_line = constant('ONE_LINE5936');
+'@phan-debug-var $from_one_line';

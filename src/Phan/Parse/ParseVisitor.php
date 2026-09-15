@@ -9,6 +9,7 @@ use ast;
 use ast\Node;
 use InvalidArgumentException;
 use Phan\Analysis\ScopeVisitor;
+use Phan\AST\ASTHasher;
 use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
@@ -1929,10 +1930,17 @@ class ParseVisitor extends ScopeVisitor
         if ($code_base->hasGlobalConstantWithFQSEN($fqsen)) {
             $other_constant = $code_base->getGlobalConstantByFQSEN($fqsen);
             $other_context = $other_constant->getContext();
-            if (!$other_context->equals($context)) {
+            $is_other_define = $is_fully_qualified && $other_constant->isDynamicConstant() && !$other_constant->isPHPInternal();
+            $is_same_declaration = $other_context->equals($context);
+            if ($is_same_declaration && $is_other_define) {
+                // Multiple define() calls for the same name on the same line (e.g. a one-line if/else)
+                // are different declarations, not the analysis phase re-registering the same call.
+                $is_same_declaration = self::hashDefineValue($other_constant->getNodeForValue()) === self::hashDefineValue($value);
+            }
+            if (!$is_same_declaration) {
                 // Only track the first declaration seen when parsing (or redeclarations of it in the analysis phase).
                 // Note that global constants don't have alternates.
-                if ($is_fully_qualified && $other_constant->isDynamicConstant() && !$other_constant->isPHPInternal()) {
+                if ($is_other_define) {
                     // This is a different define() call for a constant that was already declared with define()
                     // (e.g. in the other branch of an if/else, or in a different config file).
                     // Any of the define() calls may be the one that runs, so union the types of all of them.
@@ -2001,7 +2009,9 @@ class ParseVisitor extends ScopeVisitor
         mixed $value,
         bool $use_future_union_type
     ): void {
-        $key = $context->getFile() . ':' . $lineno;
+        // Include a hash of the value so that multiple define() calls on the same line get distinct keys,
+        // while the analysis phase re-registering the same call (with the same value) replaces the parse-time type.
+        $key = $context->getFile() . ':' . $lineno . ':' . self::hashDefineValue($value);
         if ($use_future_union_type) {
             if ($value instanceof Node) {
                 $type = new FutureUnionType($code_base, $context, $value);
@@ -2014,10 +2024,28 @@ class ParseVisitor extends ScopeVisitor
         $constant->addAlternateDefinitionType($key, $type);
         $undo_tracker = $code_base->getUndoTracker();
         if ($undo_tracker) {
-            $undo_tracker->recordUndo(static function (CodeBase $_) use ($constant, $key): void {
-                $constant->removeAlternateDefinitionType($key);
+            // Look the constant up again when undoing: the analysis phase may have replaced the GlobalConstant
+            // object for the primary declaration (copying the alternate definition types to the new object).
+            $fqsen = $constant->getFQSEN();
+            $undo_tracker->recordUndo(static function (CodeBase $inner) use ($fqsen, $key): void {
+                if ($inner->hasGlobalConstantWithFQSEN($fqsen)) {
+                    $inner->getGlobalConstantByFQSEN($fqsen)->removeAlternateDefinitionType($key);
+                }
             });
         }
+    }
+
+    /**
+     * @param Node|mixed $value the value passed to define() (or the node/value stored on a GlobalConstant)
+     * @return string a hash of the value expression, ignoring line numbers
+     */
+    private static function hashDefineValue(mixed $value): string
+    {
+        if ($value instanceof Node || \is_int($value) || \is_float($value) || \is_string($value) || $value === null) {
+            return ASTHasher::hash($value);
+        }
+        // bool or resource (only for internal constants, which are not merged)
+        return \is_bool($value) ? ($value ? 'true' : 'false') : \gettype($value);
     }
 
     /**

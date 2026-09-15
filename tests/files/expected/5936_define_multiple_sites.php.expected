@@ -3,3 +3,4 @@
 %s:27 PhanImpossibleTypeComparison Impossible attempt to check if DEFINITE_STRING5936 of type string is identical to $intVar of type int
 %s:33 PhanImpossibleTypeComparison Impossible attempt to check if MULTI_SITE5936 of type bool|int is identical to $strVar of type string
 %s:42 PhanTypeMismatchArgumentInternal Argument 1 ($num1) is DEFINITE_STRING5936 of type string but \intdiv() takes int
+%s:47 PhanDebugAnnotation @phan-debug-var requested for variable $from_one_line - it has union type 'x'|1|2.5(real=float|int|string)
