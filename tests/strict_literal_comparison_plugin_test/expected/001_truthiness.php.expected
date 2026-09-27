@@ -1,0 +1,5 @@
+%s:5 PhanPluginComparisonNotStrictForTruthyScalar Expected strict equality check when comparing mixed to 'value' in ($value == 'value')
+%s:6 PhanPluginComparisonNotStrictForTruthyScalar Expected strict equality check when comparing 42 to mixed in (42 != $value)
+%s:7 PhanPluginComparisonNotStrictForScalar Expected strict equality check when comparing mixed to '' in ($value == '')
+%s:8 PhanPluginComparisonNotStrictForScalar Expected strict equality check when comparing mixed to '0' in ($value != '0')
+%s:9 PhanPluginComparisonNotStrictForScalar Expected strict equality check when comparing 0 to mixed in (0 == $value)

@@ -38,6 +38,11 @@ class StrictLiteralComparisonPlugin extends PluginV3 implements
  */
 class StrictLiteralComparisonVisitor extends PluginAwarePostAnalysisVisitor
 {
+    public const ComparisonNotStrictForScalar = 'PhanPluginComparisonNotStrictForScalar';
+    public const ComparisonNotStrictForTruthyScalar = 'PhanPluginComparisonNotStrictForTruthyScalar';
+
+    private const ISSUE_MESSAGE = 'Expected strict equality check when comparing {TYPE} to {TYPE} in {CODE}';
+
     /**
      * @param Node $node
      * A node of kind ast\AST_BINARY_OP to analyze
@@ -72,11 +77,18 @@ class StrictLiteralComparisonVisitor extends PluginAwarePostAnalysisVisitor
                 return;
             }
         }
+        $scalar_value = $const_type->asSingleScalarValueOrNullOrSelf();
+        $issue_type = self::ComparisonNotStrictForScalar;
+        if ((\is_int($scalar_value) || \is_string($scalar_value))
+            && $scalar_value !== 0 && $scalar_value !== '' && $scalar_value !== '0'
+        ) {
+            $issue_type = self::ComparisonNotStrictForTruthyScalar;
+        }
         self::emitPluginIssue(
             $this->code_base,
             $this->context,
-            'PhanPluginComparisonNotStrictForScalar',
-            "Expected strict equality check when comparing {TYPE} to {TYPE} in {CODE}",
+            $issue_type,
+            self::ISSUE_MESSAGE,
             [
                 UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $left),
                 UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $right),
