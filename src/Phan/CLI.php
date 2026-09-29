@@ -183,6 +183,7 @@ class CLI
         'no-search-parents',
         'output:',
         'output-mode:',
+        'output-log',
         'parent-constructor-required:',
         'plugin:',
         'print-memory-usage-summary',
@@ -973,6 +974,7 @@ class CLI
                 case 'C':
                 case 'color':
                 case 'no-color':
+                case 'output-log':
                 case 'analyze-all-files':
                     // Handled before processing the CLI flag `--help`
                     break;
@@ -1046,8 +1048,7 @@ class CLI
         }
         Config::setValue('progress_bar', $progress_bar);
 
-        $output = $this->output;
-        $printer = $factory->getPrinter($printer_type, $output);
+        $printer = $factory->getPrinter($printer_type, $this->output);
 
         // Build filter chain
         $filters = [
@@ -1068,7 +1069,14 @@ class CLI
 
         self::checkAllArgsUsed($opts, $argv);
 
+
         Phan::setPrinter($printer);
+
+        if ( isset($opts['output-log']) ) {
+            Phan::addPrinter(
+                $factory->getPrinter('text', new StreamOutput(STDERR))
+            );
+        }
         Phan::setIssueCollector($collector);
 
         $no_config_mode = array_key_exists('n', $opts) || array_key_exists('no-config-file', $opts);
@@ -1713,6 +1721,9 @@ EOT;
 
  -o, --output <filename>
   Output filename
+
+ --output-log
+  Also output issues to stderr in mode 'text'.
 
 $init_help
  -C, --color, --no-color

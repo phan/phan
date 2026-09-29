@@ -68,8 +68,8 @@ use const STDERR;
  */
 class Phan implements IgnoredFilesFilterInterface
 {
-    /** @var IssuePrinterInterface used to print formatted issues. */
-    public static $printer;
+    /** @var IssuePrinterInterface[] used to print formatted issues. */
+    public static $printers = [];
 
     /** @var IssueCollectorInterface used to gather issues to be printed (or used) once analysis is finished */
     private static $issue_collector;
@@ -254,7 +254,7 @@ class Phan implements IgnoredFilesFilterInterface
      * Returns a list of files to scan
      *
      * @return bool
-     * We emit messages to the configured printer and return
+     * We emit messages to the configured printers and return
      * true if issues were found.
      *
      * @see \Phan\CodeBase
@@ -519,7 +519,7 @@ class Phan implements IgnoredFilesFilterInterface
                 }
                 LanguageServerLogger::logInfo(sprintf("language server (pid=%s) accepted connection", getmypid() ?: 'unknown'));
             }
-            self::setPrinter($request->getPrinter());
+            self::addPrinter($request->getPrinter());
 
             // This is the list of all of the parsed files
             // (Also includes files which don't declare classes/functions/constants)
@@ -922,18 +922,19 @@ class Phan implements IgnoredFilesFilterInterface
     {
         $collector = self::$issue_collector;
 
-        $printer = self::$printer;
+        foreach( self::$printers as $printer ) {
 
-        foreach ($collector->getCollectedIssues() as $issue) {
-            $printer->print($issue);
+            foreach ($collector->getCollectedIssues() as $issue) {
+                $printer->print($issue);
+            }
+
+            if ($printer instanceof BufferedPrinterInterface) {
+                $printer->flush();
+            }
         }
 
         if ($collector instanceof BufferingCollector) {
             $collector->flush();
-        }
-
-        if ($printer instanceof BufferedPrinterInterface) {
-            $printer->flush();
         }
     }
 
@@ -961,12 +962,32 @@ class Phan implements IgnoredFilesFilterInterface
     }
 
     /**
-     * Set the printer to use for emitting issues.
+     * Set the printer to use for emitting issues. Erase any other printers
+     * previously set.
      */
     public static function setPrinter(
         IssuePrinterInterface $printer
     ): void {
-        self::$printer = $printer;
+        self::setPrinters([$printer]);
+    }
+
+    /**
+     * Set the printers to use for emitting issues.
+     * @param IssuePrinterInterface[] $printers
+     */
+    public static function setPrinters(
+        array $printers
+    ): void {
+        self::$printers = $printers;
+    }
+
+    /**
+     * Add a printer
+     */
+    public static function addPrinter(
+        IssuePrinterInterface $printer
+    ): void {
+        self::$printers[] = $printer;
     }
 
     /**
