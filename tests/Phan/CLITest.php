@@ -9,6 +9,7 @@ use Phan\Config;
 use Phan\Daemon\ExitException;
 use Phan\Exception\UsageException;
 use Phan\Output\Printer\CSVPrinter;
+use Phan\Output\Printer\JSONPrinter;
 use Phan\Output\Printer\PlainTextPrinter;
 use Phan\Output\Printer\PylintPrinter;
 use Phan\Phan;
@@ -114,10 +115,13 @@ final class CLITest extends TestBase
             'src' . \DIRECTORY_SEPARATOR . 'empty.php',
         ], $cli->getFileList());
 
-        $printer_class = $extra['printer_class'] ?? null;
-        unset($extra['printer_class']);
-        if ($printer_class) {
-            $this->assertInstanceOf($printer_class, Phan::$printer);
+        $printer_classes = $extra['printer_classes'] ?? null;
+        unset($extra['printer_classes']);
+        if ($printer_classes) {
+            $this->assertEquals(
+                $printer_classes,
+                array_map('\get_class', Phan::$printers)
+            );
         }
         $this->assertSame($extra, []);
     }
@@ -131,7 +135,7 @@ final class CLITest extends TestBase
             [
                 [],
                 [],
-                ['printer_class' => PlainTextPrinter::class],
+                ['printer_classes' => [PlainTextPrinter::class]],
             ],
             [
                 [
@@ -165,22 +169,51 @@ final class CLITest extends TestBase
                 ['processes' => 5, 'quick_mode' => true],
                 ['processes' => '5', 'quick' => false],
             ],
-            [
-                [],
-                ['output-mode' => 'pylint'],
-                ['printer_class' => PylintPrinter::class],
-            ],
             // Affects MinimumSeverityFilter of the ChainedIssueFilter of the IssueCollector
             [
                 [],
                 ['minimum-severity' => '10'],
                 [],
             ],
+            // Output modes
+            [
+                [],
+                [],
+                ['printer_classes' => [PlainTextPrinter::class]],
+            ],
+            [
+                [],
+                ['output-mode' => 'pylint'],
+                ['printer_classes' => [PylintPrinter::class]],
+            ],
             [
                 [],
                 ['output-mode' => 'csv'],
-                ['printer_class' => CsvPrinter::class],
+                ['printer_classes' => [CSVPrinter::class]],
             ],
+            [
+                [],
+                ['output-mode' => 'json', 'output' => 'result.json'],
+                ['printer_classes' => [JSONPrinter::class]],
+            ],
+            [
+                [],
+                ['console-output' => true],
+                ['printer_classes' => [PlainTextPrinter::class]],
+            ],
+            [
+                [],
+                [
+                    'output-mode' => 'json',
+                    'output' => 'result.json',
+                    'console-output' => true
+                ],
+                ['printer_classes' => [
+                    JSONPrinter::class,
+                    PlainTextPrinter::class,
+                ]],
+            ],
+
             // --language-server-enable-feature are now no-ops for tested features.
             [
                 [],

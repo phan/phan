@@ -65,6 +65,9 @@ Usage: ./phan [options] [files...]
  -o, --output <filename>
   Output filename
 
+ --console-output
+  Output text to console in addition of output set by -o.
+
  --init
    [--init-level=3]
    [--init-analyze-dir=path/to/src]
