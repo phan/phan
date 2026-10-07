@@ -1678,6 +1678,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/1094
 Saw a call with arguments ({CODE}) and ({CODE}) passed to the same parameter of {FUNCTIONLIKE} defined at {FILE}:{LINE}
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/5938_conditional_return_type.php.expected#L15) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/5938_conditional_return_type.php#L59).
 
 ## PhanDuplicateNamedArgumentInternal
 
@@ -5064,7 +5065,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0373
 Saw a conditional @return referring to ${PARAMETER}, but it was not found in the param list of {FUNCTIONLIKE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/5938_conditional_return_type.php.expected#L46) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/5938_conditional_return_type.php#L222).
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/5938_conditional_return_type.php.expected#L49) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/5938_conditional_return_type.php#L225).
 
 ## PhanCommentUnextractableTypeAlias
 

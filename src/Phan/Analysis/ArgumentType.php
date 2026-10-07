@@ -2035,7 +2035,15 @@ final class ArgumentType
             if ($arg instanceof Node && $arg->kind === ast\AST_NAMED_ARG) {
                 $name = $arg->children['name'];
                 if (isset($name_to_position[$name])) {
-                    $result[$name_to_position[$name]] = $arg->children['expr'];
+                    $position = $name_to_position[$name];
+                    $existing = $result[$position] ?? null;
+                    if ($existing instanceof Node && $existing->kind === ast\AST_UNPACK) {
+                        // `f(...$args, x: 1)`: the unpacked array may or may not contain `x`, so keep the unpack
+                        // (callers treat it as "unknown argument positions") instead of overwriting it.
+                        $unmatched[] = $arg;
+                        continue;
+                    }
+                    $result[$position] = $arg->children['expr'];
                 } else {
                     // Keep unmatched named args (e.g. forwarded via variadic) as-is
                     $unmatched[] = $arg;

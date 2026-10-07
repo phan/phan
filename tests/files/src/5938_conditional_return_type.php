@@ -55,6 +55,9 @@ function testMockery(MockI $m, MockImpl $impl, MockRenamed $renamed, ?string $ma
     '@phan-debug-var $j';
     $k = $m->shouldHaveReceived(...);
     '@phan-debug-var $k';
+    // The unpacked array may already contain 'method', so the named argument doesn't make this unambiguous.
+    $l = $m->shouldHaveReceived(...$list, method: 'x');
+    '@phan-debug-var $l';
 }
 
 /**
