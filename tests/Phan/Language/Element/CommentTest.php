@@ -8,6 +8,7 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\Comment;
+use Phan\Language\Element\Comment\ConditionalReturnType;
 use Phan\Language\Type;
 use Phan\Language\Type\StaticType;
 use Phan\Library\None;
@@ -167,6 +168,82 @@ final class CommentTest extends TestBase
         $this->assertTrue($comment->hasReturnUnionType());
         $return_type = $comment->getReturnType();
         $this->assertSame('int|string', (string)$return_type);
+    }
+
+    public function testGetReturnTypeConditional(): void
+    {
+        $comment = Comment::fromStringInContext(
+            '/** @return ($x is null ? int : string) */',
+            $this->code_base,
+            new Context(),
+            1,
+            Comment::ON_METHOD
+        );
+        $this->assertTrue($comment->hasReturnUnionType());
+        $this->assertSame('int|string', (string)$comment->getReturnType());
+        $conditional = $comment->getConditionalReturnType();
+        $this->assertNotNull($conditional);
+        $this->assertSame('x', $conditional->getParamName());
+        $this->assertSame('null', (string)$conditional->getCondition());
+        $this->assertFalse($conditional->isNegated());
+        $this->assertSame('int', (string)$conditional->getIfTrue());
+        $this->assertSame('string', (string)$conditional->getIfFalse());
+        $this->assertSame(['x'], $conditional->getParamNames());
+        $this->assertSame('($x is null ? int : string)', (string)$conditional);
+    }
+
+    public function testGetReturnTypeConditionalNested(): void
+    {
+        $comment = Comment::fromStringInContext(
+            '/** @psalm-return ($a is not int|float ? Closure():int : ($b is \'foo\' ? array{k:int} : ?bool)) */',
+            $this->code_base,
+            new Context(),
+            1,
+            Comment::ON_FUNCTION
+        );
+        $this->assertTrue($comment->hasReturnUnionType());
+        $this->assertSame('?bool|Closure():int|array{k:int}', (string)$comment->getReturnType());
+        $conditional = $comment->getConditionalReturnType();
+        $this->assertNotNull($conditional);
+        $this->assertTrue($conditional->isNegated());
+        $this->assertSame('float|int', (string)$conditional->getCondition());
+        $this->assertSame('Closure():int', (string)$conditional->getIfTrue());
+        $nested = $conditional->getIfFalse();
+        $this->assertInstanceOf(ConditionalReturnType::class, $nested);
+        $this->assertSame('b', $nested->getParamName());
+        $this->assertSame("'foo'", (string)$nested->getCondition());
+        $this->assertSame(['a', 'b'], $conditional->getParamNames());
+        $this->assertSame("(\$a is not float|int ? Closure():int : (\$b is 'foo' ? array{k:int} : ?bool))", (string)$conditional);
+        $renamed = $conditional->withRenamedParams(['b' => 'c']);
+        $this->assertSame(['a', 'c'], $renamed->getParamNames());
+    }
+
+    public function testGetReturnTypeConditionalMergedWithPlainReturn(): void
+    {
+        $comment = Comment::fromStringInContext(
+            "/**\n * @return int|string\n * @psalm-return (\$x is null ? int : string)\n */",
+            $this->code_base,
+            new Context(),
+            1,
+            Comment::ON_FUNCTION
+        );
+        $this->assertSame('int|string', (string)$comment->getReturnType());
+        $this->assertNotNull($comment->getConditionalReturnType());
+    }
+
+    public function testGetReturnTypeConditionalUnparsable(): void
+    {
+        // Conditions on template type names aren't supported: this falls back to the regular (failing) parse.
+        $comment = Comment::fromStringInContext(
+            '/** @return (T is int ? int : string) */',
+            $this->code_base,
+            new Context(),
+            1,
+            Comment::ON_FUNCTION
+        );
+        $this->assertTrue($comment->hasReturnUnionType());
+        $this->assertSame('', (string)$comment->getReturnType());
+        $this->assertNull($comment->getConditionalReturnType());
     }
 
     public function testGetReturnTypeThis(): void

@@ -5058,6 +5058,14 @@ Saw an @param annotation for ${PARAMETER}, but it was not found in the param lis
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0373_reject_bad_type_narrowing.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0373_reject_bad_type_narrowing.php#L4).
 
+## PhanCommentReturnConditionalWithoutRealParam
+
+```
+Saw a conditional @return referring to ${PARAMETER}, but it was not found in the param list of {FUNCTIONLIKE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/5938_conditional_return_type.php.expected#L35) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/5938_conditional_return_type.php#L172).
+
 ## PhanCommentUnextractableTypeAlias
 
 ```

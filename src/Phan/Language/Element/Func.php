@@ -316,6 +316,25 @@ class Func extends AddressableElement implements FunctionInterface
             $func->setUnionType($new_type);
             $func->setPHPDocReturnType($union_type);
         }
+        $conditional_return_type = $comment->getConditionalReturnType();
+        if ($conditional_return_type) {
+            // FIXME properly handle self/static in closures declared within methods.
+            // (ContextNotObjectUsingSelf was already emitted above for the flattened type if applicable)
+            $conditional_return_type = $conditional_return_type->mapTypes(static function (UnionType $union_type) use ($context): UnionType {
+                if (!$union_type->hasSelfType()) {
+                    return $union_type;
+                }
+                $union_type = $union_type->makeFromFilter(static function (Type $type): bool {
+                    return !$type->isSelfType();
+                });
+                if ($context->isInClassScope()) {
+                    $union_type = $union_type->withType($context->getClassFQSEN()->asType());
+                }
+                return $union_type;
+            });
+            $func->setConditionalReturnType($conditional_return_type);
+            $func->warnAboutUndeclaredConditionalReturnParams($code_base, $element_context, $comment->getReturnLineno());
+        }
         $element_context->freeElementReference();
 
         $func->setOriginalReturnType();

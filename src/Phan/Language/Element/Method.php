@@ -187,6 +187,10 @@ class Method extends ClassElement implements FunctionInterface
                 return;
             }
         }
+        if ($this->conditional_return_type?->hasTemplateTypeRecursive()) {
+            $this->recordHasTemplateType(true);
+            return;
+        }
         $this->recordHasTemplateType(false);
     }
 
@@ -486,6 +490,7 @@ class Method extends ClassElement implements FunctionInterface
         $method->setNumberOfOptionalParameters($this->getNumberOfOptionalParameters());
         // Copy the comment so that features such as templates will work
         $method->comment = $this->comment;
+        $method->conditional_return_type = $this->conditional_return_type;
 
         return $method;
     }
@@ -684,6 +689,16 @@ class Method extends ClassElement implements FunctionInterface
             $method->setUnionType($new_type);
             $method->setPHPDocReturnType($comment_return_union_type);
         }
+        $conditional_return_type = $comment->getConditionalReturnType();
+        if ($conditional_return_type) {
+            if (!$is_trait) {
+                $conditional_return_type = $conditional_return_type->mapTypes(static function (UnionType $type) use ($context): UnionType {
+                    return $type->withSelfResolvedInContext($context);
+                });
+            }
+            $method->setConditionalReturnType($conditional_return_type);
+            $method->warnAboutUndeclaredConditionalReturnParams($code_base, $element_context, $comment->getReturnLineno());
+        }
         $element_context->freeElementReference();
         // Populate the original return type.
         $method->setOriginalReturnType();
@@ -771,8 +786,14 @@ class Method extends ClassElement implements FunctionInterface
             $union_type = parent::getUnionType();
         }
 
-        // If the type contains 'static', add this method's class
-        // to the return type.
+        return $this->withStaticExpandedToDeclaringClass($union_type);
+    }
+
+    /**
+     * If $union_type contains 'static', add this method's class to it (keeping 'static').
+     */
+    public function withStaticExpandedToDeclaringClass(UnionType $union_type): UnionType
+    {
         $scope = new ClassScope(new GlobalScope(), $this->fqsen->getFullyQualifiedClassName(), 0);
         $new_union_type = $union_type->withStaticResolvedInContext((clone $this->getContext())->withScope($scope));
         if ($new_union_type !== $union_type) {
@@ -1116,6 +1137,10 @@ class Method extends ClassElement implements FunctionInterface
             }
         }
 
+        if (!$has_template_types && $this->conditional_return_type?->hasTemplateTypeRecursive()) {
+            $has_template_types = true;
+        }
+
         if (!$has_template_types && ($comment = $this->comment)) {
             if ($comment->hasReturnUnionType() &&
                 $comment->getReturnType()->hasTemplateTypeRecursive()) {
@@ -1142,6 +1167,12 @@ class Method extends ClassElement implements FunctionInterface
             $method->setUnionType(
                 $method->getUnionType()->withTemplateParameterTypeMap($template_type_map)
             );
+        }
+        $map_template_types = static function (UnionType $type) use ($template_type_map): UnionType {
+            return $type->withTemplateParameterTypeMap($template_type_map);
+        };
+        if ($method->conditional_return_type?->hasTemplateTypeRecursive()) {
+            $method->conditional_return_type = $method->conditional_return_type->mapTypes($map_template_types);
         }
 
         // Map each method parameter
@@ -1204,7 +1235,8 @@ class Method extends ClassElement implements FunctionInterface
                 }
                 $new_return_comment = new \Phan\Language\Element\Comment\ReturnComment(
                     $return_type,
-                    $old_return_comment->getLineno()
+                    $old_return_comment->getLineno(),
+                    $old_return_comment->getConditional()?->mapTypes($map_template_types)
                 );
                 $reflection->setValue($comment, $new_return_comment);
 

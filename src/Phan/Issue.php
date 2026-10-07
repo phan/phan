@@ -648,6 +648,7 @@ class Issue
     public const UnextractableAnnotationElementName = 'PhanUnextractableAnnotationElementName';
     public const CommentParamWithoutRealParam     = 'PhanCommentParamWithoutRealParam';
     public const CommentParamAssertionWithoutRealParam = 'PhanCommentParamAssertionWithoutRealParam';
+    public const CommentReturnConditionalWithoutRealParam = 'PhanCommentReturnConditionalWithoutRealParam';
     public const CommentParamOnEmptyParamList     = 'PhanCommentParamOnEmptyParamList';
     public const CommentOverrideOnNonOverrideMethod = 'PhanCommentOverrideOnNonOverrideMethod';
     public const CommentInheritDocOnNonOverrideMethod = 'PhanCommentInheritDocOnNonOverrideMethod';
@@ -5591,6 +5592,14 @@ class Issue
                 "Saw an @inheritDoc annotation for method {METHOD}, but could not find an overridden method and it is not a magic method",
                 self::REMEDIATION_B,
                 16031
+            ),
+            new Issue(
+                self::CommentReturnConditionalWithoutRealParam,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                'Saw a conditional @return referring to ${PARAMETER}, but it was not found in the param list of {FUNCTIONLIKE}',
+                self::REMEDIATION_B,
+                16032
             ),
             new Issue(
                 self::CommentOverrideOnNonOverrideConstant,
