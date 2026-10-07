@@ -5064,7 +5064,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0373
 Saw a conditional @return referring to ${PARAMETER}, but it was not found in the param list of {FUNCTIONLIKE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/5938_conditional_return_type.php.expected#L35) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/5938_conditional_return_type.php#L172).
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/5938_conditional_return_type.php.expected#L46) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/5938_conditional_return_type.php#L222).
 
 ## PhanCommentUnextractableTypeAlias
 

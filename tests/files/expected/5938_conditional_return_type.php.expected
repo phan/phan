@@ -25,34 +25,37 @@
 %s:111 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type bool|float|int
 %s:113 PhanDebugAnnotation @phan-debug-var requested for variable $n - it has union type float
 %s:115 PhanDebugAnnotation @phan-debug-var requested for variable $o - it has union type float|int
-%s:167 PhanDebugAnnotation @phan-debug-var requested for variable $ta - it has union type string
-%s:169 PhanDebugAnnotation @phan-debug-var requested for variable $tb - it has union type null
-%s:171 PhanDebugAnnotation @phan-debug-var requested for variable $tc - it has union type null|string
-%s:174 PhanDebugAnnotation @phan-debug-var requested for variable $td - it has union type 1|string
-%s:176 PhanDebugAnnotation @phan-debug-var requested for variable $te - it has union type 1
-%s:178 PhanDebugAnnotation @phan-debug-var requested for variable $tf - it has union type string
-%s:180 PhanDebugAnnotation @phan-debug-var requested for variable $tg - it has union type int|string
-%s:180 PhanParamTooFewUnpack Call with 0 or more arg(s) to \NS5938\templated(T $x) which requires 1 arg(s) defined at %s:124. This may throw an ArgumentCountError if there are too few args at runtime.
-%s:182 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type int
-%s:184 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \stdClass
-%s:187 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type ?'str'
-%s:189 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type 'str'
-%s:191 PhanDebugAnnotation @phan-debug-var requested for variable $e - it has union type \NS5938\Box<'str'>
-%s:193 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type \NS5938\Box<'str'>
-%s:195 PhanDebugAnnotation @phan-debug-var requested for variable $g - it has union type \NS5938\IntBox
-%s:207 PhanCommentReturnConditionalWithoutRealParam Saw a conditional @return referring to $nope, but it was not found in the param list of \NS5938\unknownParam()
-%s:221 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @return (T is int ? int : string)'
-%s:223 PhanTemplateTypeNotUsedInFunctionReturn Template type T not used in return value of function/method templateCondition()
-%s:243 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type \NS5938\SubFactory
-%s:245 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type int
-%s:247 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type \NS5938\SubFactory
-%s:249 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type \NS5938\Factory|int
-%s:251 PhanDebugAnnotation @phan-debug-var requested for variable $e - it has union type int
-%s:253 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type string
-%s:255 PhanDebugAnnotation @phan-debug-var requested for variable $g - it has union type int(real=mixed)
-%s:259 PhanDebugAnnotation @phan-debug-var requested for variable $h - it has union type int|string(real=mixed)
-%s:261 PhanDebugAnnotation @phan-debug-var requested for variable $i - it has union type int(real=mixed)
-%s:266 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type \NS5938\A|\NS5938\B
-%s:268 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \NS5938\A
-%s:270 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type \NS5938\B
-%s:272 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type int|string
+%s:176 PhanDebugAnnotation @phan-debug-var requested for variable $ta - it has union type string
+%s:178 PhanDebugAnnotation @phan-debug-var requested for variable $tb - it has union type null
+%s:180 PhanDebugAnnotation @phan-debug-var requested for variable $tc - it has union type null|string
+%s:183 PhanDebugAnnotation @phan-debug-var requested for variable $td - it has union type 1|string
+%s:185 PhanDebugAnnotation @phan-debug-var requested for variable $te - it has union type 1
+%s:187 PhanDebugAnnotation @phan-debug-var requested for variable $tf - it has union type string
+%s:189 PhanDebugAnnotation @phan-debug-var requested for variable $tg - it has union type int|string
+%s:189 PhanParamTooFewUnpack Call with 0 or more arg(s) to \NS5938\templated(T $x) which requires 1 arg(s) defined at %s:124. This may throw an ArgumentCountError if there are too few args at runtime.
+%s:191 PhanDebugAnnotation @phan-debug-var requested for variable $th - it has union type int
+%s:193 PhanDebugAnnotation @phan-debug-var requested for variable $ti - it has union type string
+%s:195 PhanDebugAnnotation @phan-debug-var requested for variable $tj - it has union type int|string
+%s:197 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type int
+%s:199 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \stdClass
+%s:202 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type ?'str'
+%s:204 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type 'str'
+%s:206 PhanDebugAnnotation @phan-debug-var requested for variable $e - it has union type \NS5938\Box<'str'>
+%s:208 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type \NS5938\Box<'str'>
+%s:210 PhanDebugAnnotation @phan-debug-var requested for variable $g - it has union type \NS5938\IntBox
+%s:222 PhanCommentReturnConditionalWithoutRealParam Saw a conditional @return referring to $nope, but it was not found in the param list of \NS5938\unknownParam()
+%s:236 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @return (T is int ? int : string)'
+%s:238 PhanTemplateTypeNotUsedInFunctionReturn Template type T not used in return value of function/method templateCondition()
+%s:258 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type \NS5938\SubFactory
+%s:260 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type int
+%s:262 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type \NS5938\SubFactory
+%s:264 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type \NS5938\Factory|int
+%s:266 PhanDebugAnnotation @phan-debug-var requested for variable $e - it has union type int
+%s:268 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type string
+%s:270 PhanDebugAnnotation @phan-debug-var requested for variable $g - it has union type int(real=mixed)
+%s:274 PhanDebugAnnotation @phan-debug-var requested for variable $h - it has union type int|string(real=mixed)
+%s:276 PhanDebugAnnotation @phan-debug-var requested for variable $i - it has union type int(real=mixed)
+%s:281 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type \NS5938\A|\NS5938\B
+%s:283 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \NS5938\A
+%s:285 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type \NS5938\B
+%s:287 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type int|string

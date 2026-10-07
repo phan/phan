@@ -1785,6 +1785,10 @@ trait FunctionTrait
             // used in `@return`
             return true;
         }
+        if ($this->conditional_return_type?->usesTemplateType($type)) {
+            // used in the condition of `@return ($x is T ? ... : ...)` (the branches are part of getUnionType())
+            return true;
+        }
 
         if ($this->comment) {
             foreach ($this->comment->getParamAssertionMap() as $assertion) {

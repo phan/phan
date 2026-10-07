@@ -152,6 +152,15 @@ class IntBox extends Box {}
 function sameType($a, $b) { return $a === $b ? $a : null; }
 
 /**
+ * The template is only used in the condition.
+ * @template T
+ * @param T $a
+ * @param mixed $b
+ * @return ($b is T ? int : string)
+ */
+function isSameType($a, $b) { return $a === $b ? 1 : 'x'; }
+
+/**
  * @template T
  * @param T $seed
  * @param ?string $flag
@@ -179,6 +188,12 @@ function testTemplates(\stdClass $obj, Box $generic, string $s, mixed $mixed, ar
     '@phan-debug-var $tf';
     $tg = templated(...$strings);
     '@phan-debug-var $tg';
+    $th = isSameType($s, $s);
+    '@phan-debug-var $th';
+    $ti = isSameType($s, 1);
+    '@phan-debug-var $ti';
+    $tj = isSameType($s, $mixed);
+    '@phan-debug-var $tj';
     $a = templated(null);
     '@phan-debug-var $a';
     $b = templated($obj);

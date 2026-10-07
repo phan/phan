@@ -6,6 +6,7 @@ namespace Phan\Language\Element\Comment;
 
 use Closure;
 use Phan\CodeBase;
+use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
 
 /**
@@ -153,6 +154,22 @@ final class ConditionalReturnType
         }
         foreach ([$this->if_true, $this->if_false] as $branch) {
             if ($branch->hasTemplateTypeRecursive()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * True if the condition or any branch uses the template type $template_type.
+     */
+    public function usesTemplateType(TemplateType $template_type): bool
+    {
+        if ($this->condition->usesTemplateType($template_type)) {
+            return true;
+        }
+        foreach ([$this->if_true, $this->if_false] as $branch) {
+            if ($branch->usesTemplateType($template_type)) {
                 return true;
             }
         }
