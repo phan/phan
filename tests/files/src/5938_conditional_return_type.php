@@ -143,7 +143,42 @@ class Box {
 /** @extends Box<int> */
 class IntBox extends Box {}
 
-function testTemplates(\stdClass $obj, Box $generic) {
+/**
+ * @template T
+ * @param T $a
+ * @param mixed $b
+ * @return ($b is T ? T : null)
+ */
+function sameType($a, $b) { return $a === $b ? $a : null; }
+
+/**
+ * @template T
+ * @param T $seed
+ * @param ?string $flag
+ * @return ($flag is null ? T : string)
+ */
+function templatedWithDefault($seed, $flag = null) { return $flag === null ? $seed : 'x'; }
+
+/**
+ * @param list<string> $strings
+ * @param list<?string> $maybe_strings
+ */
+function testTemplates(\stdClass $obj, Box $generic, string $s, mixed $mixed, array $strings, array $maybe_strings) {
+    $ta = sameType($s, $s);
+    '@phan-debug-var $ta';
+    $tb = sameType($s, 1);
+    '@phan-debug-var $tb';
+    $tc = sameType($s, $mixed);
+    '@phan-debug-var $tc';
+    // Unpacking: $maybe_strings may be empty (default flag => T) or not (string), so the result must keep both branches
+    $td = templatedWithDefault(1, ...$maybe_strings);
+    '@phan-debug-var $td';
+    $te = templatedWithDefault(1);
+    '@phan-debug-var $te';
+    $tf = templatedWithDefault(1, 'f');
+    '@phan-debug-var $tf';
+    $tg = templated(...$strings);
+    '@phan-debug-var $tg';
     $a = templated(null);
     '@phan-debug-var $a';
     $b = templated($obj);
@@ -217,6 +252,14 @@ function testStaticCalls(string $cls, ?int $maybe) {
     '@phan-debug-var $e';
     $f = phanReturnOverride(2);
     '@phan-debug-var $f';
+    $g = call_user_func_array('\\NS5938\\literalCondition', ['foo']);
+    '@phan-debug-var $g';
+    // Named arguments through call_user_func_array: positions are unknown, so both branches are kept.
+    // @phan-suppress-next-line PhanTypeMismatchArgumentInternal
+    $h = call_user_func_array('\\NS5938\\literalCondition', ['x' => 'foo']);
+    '@phan-debug-var $h';
+    $i = call_user_func('\\NS5938\\literalCondition', 'foo');
+    '@phan-debug-var $i';
 }
 
 function testMisc() {

@@ -356,8 +356,9 @@ interface FunctionInterface extends AddressableElementInterface
     /**
      * Resolves the phpdoc conditional return type for a call with $args, or returns null if there is none.
      * @param list<Node|int|string|float|UnionType> $args
+     * @param array<string,UnionType> $template_type_map template types inferred for this call, substituted before resolving
      */
-    public function resolveConditionalReturnType(CodeBase $code_base, Context $context, array $args): ?UnionType;
+    public function resolveConditionalReturnType(CodeBase $code_base, Context $context, array $args, array $template_type_map = []): ?UnionType;
 
     /**
      * Returns true if this function or method has additional analysis logic for invocations (From internal and user defined plugins)

@@ -766,8 +766,9 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     /**
      * @override
      * @param list<Node|int|string|float|UnionType> $args
+     * @param array<string,UnionType> $template_type_map
      */
-    public function resolveConditionalReturnType(CodeBase $code_base, Context $context, array $args): ?UnionType
+    public function resolveConditionalReturnType(CodeBase $code_base, Context $context, array $args, array $template_type_map = []): ?UnionType
     {
         return null;
     }

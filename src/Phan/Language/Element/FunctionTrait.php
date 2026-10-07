@@ -1237,13 +1237,20 @@ trait FunctionTrait
      * Resolves the phpdoc conditional return type for a call with the given arguments.
      *
      * @param list<Node|int|string|float|UnionType> $args the arguments in declaration order (see ArgumentType::normalizeNamedArgs)
+     * @param array<string,UnionType> $template_type_map the template types inferred for this call, substituted into the
+     *        conditional (including the condition itself, e.g. `$x is T`) before resolving it.
      * @return ?UnionType null if this function has no conditional return type
      */
-    public function resolveConditionalReturnType(CodeBase $code_base, Context $context, array $args): ?UnionType
+    public function resolveConditionalReturnType(CodeBase $code_base, Context $context, array $args, array $template_type_map = []): ?UnionType
     {
         $conditional = $this->conditional_return_type;
         if (!$conditional) {
             return null;
+        }
+        if ($template_type_map && $conditional->hasTemplateTypeRecursive()) {
+            $conditional = $conditional->mapTypes(static function (UnionType $type) use ($template_type_map): UnionType {
+                return $type->withTemplateParameterTypeMap($template_type_map);
+            });
         }
         $arg_type_cache = [];
         $lookup = function (string $param_name) use ($code_base, $context, $args, &$arg_type_cache): ?UnionType {
@@ -1909,8 +1916,10 @@ trait FunctionTrait
             foreach ($parameter_extractor_map as $name => $closure) {
                 $template_type_map[$name] = $closure($args_types, $context);
             }
-            // A conditional return type (`(at)return ($x is null ? T : int)`) picks the branch first, then templates are substituted.
-            $base_type = $function->resolveConditionalReturnType($code_base, $context, $args_types) ?? $function->getUnionType();
+            // A conditional return type (`(at)return ($x is null ? T : int)`) picks the branch first (with the inferred
+            // templates substituted into the condition), then templates are substituted into the result.
+            // Pass the raw $args so that argument unpacking is still detected.
+            $base_type = $function->resolveConditionalReturnType($code_base, $context, $args, $template_type_map) ?? $function->getUnionType();
             return $base_type->withTemplateParameterTypeMap($template_type_map);
         };
         $this->setDependentReturnTypeClosure($analyzer);

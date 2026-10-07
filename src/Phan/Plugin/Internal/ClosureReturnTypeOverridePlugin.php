@@ -46,6 +46,11 @@ final class ClosureReturnTypeOverridePlugin extends PluginV3 implements
                 if (!($child instanceof Node)) {
                     continue;
                 }
+                if ($child->kind !== \ast\AST_ARRAY_ELEM || $child->children['key'] !== null) {
+                    // `[...$args]` or `['name' => $arg]` (named arguments in php 8): the positions of the arguments
+                    // are unknown, so don't pretend they're positional.
+                    return null;
+                }
                 $arguments[] = $child->children['value'];
             }
             return $arguments;
