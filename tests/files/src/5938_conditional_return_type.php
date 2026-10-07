@@ -277,6 +277,42 @@ function testStaticCalls(string $cls, ?int $maybe) {
     '@phan-debug-var $i';
 }
 
+class Sig {
+    /**
+     * The real return type wins over an incompatible branch (like it does for a plain @return).
+     * @return ($x is null ? int : string)
+     */
+    public function narrowedBySignature(?int $x): int { return 1; }
+
+    /**
+     * @return ($x is null ? static : int)
+     */
+    public function staticSig(?int $x): static { return $this; }
+
+    /**
+     * @return ($x is null ? static : self)
+     */
+    public function selfSig(?int $x): self { return $this; }
+}
+class SubSig extends Sig {}
+
+function testSignatureCompat(SubSig $s, ?int $maybe) {
+    $a = $s->narrowedBySignature(null);
+    '@phan-debug-var $a';
+    $b = $s->narrowedBySignature(1);
+    '@phan-debug-var $b';
+    $c = $s->staticSig(null);
+    '@phan-debug-var $c';
+    $d = $s->staticSig(1);
+    '@phan-debug-var $d';
+    $e = $s->selfSig(null);
+    '@phan-debug-var $e';
+    $f = $s->selfSig(1);
+    '@phan-debug-var $f';
+    $g = $s->selfSig($maybe);
+    '@phan-debug-var $g';
+}
+
 function testMisc() {
     $a = parenthesizedUnionStillWorks();
     '@phan-debug-var $a';

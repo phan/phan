@@ -55,7 +55,16 @@
 %s:270 PhanDebugAnnotation @phan-debug-var requested for variable $g - it has union type int(real=mixed)
 %s:274 PhanDebugAnnotation @phan-debug-var requested for variable $h - it has union type int|string(real=mixed)
 %s:276 PhanDebugAnnotation @phan-debug-var requested for variable $i - it has union type int(real=mixed)
-%s:281 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type \NS5938\A|\NS5938\B
-%s:283 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \NS5938\A
-%s:285 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type \NS5938\B
-%s:287 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type int|string
+%s:283 PhanTypeMismatchDeclaredReturn Doc-block of narrowedBySignature contains declared return type string which is incompatible with the return type int declared in the signature
+%s:288 PhanTypeMismatchDeclaredReturn Doc-block of staticSig contains declared return type int which is incompatible with the return type static declared in the signature
+%s:300 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type int(real=int)
+%s:302 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type int|string(real=int)
+%s:304 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type \NS5938\SubSig(real=\NS5938\SubSig)
+%s:306 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type \NS5938\SubSig|int(real=\NS5938\SubSig)
+%s:308 PhanDebugAnnotation @phan-debug-var requested for variable $e - it has union type \NS5938\SubSig(real=\NS5938\Sig)
+%s:310 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type \NS5938\Sig(real=\NS5938\Sig)
+%s:312 PhanDebugAnnotation @phan-debug-var requested for variable $g - it has union type \NS5938\Sig|\NS5938\SubSig(real=\NS5938\Sig)
+%s:317 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type \NS5938\A|\NS5938\B
+%s:319 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \NS5938\A
+%s:321 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type \NS5938\B
+%s:323 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type int|string

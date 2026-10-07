@@ -1259,14 +1259,40 @@ trait FunctionTrait
             }
             return $arg_type_cache[$param_name];
         };
-        $result = $conditional->resolve($code_base, $lookup);
+        $result = $this->withoutTypesIncompatibleWithRealReturnType($code_base, $conditional->resolve($code_base, $lookup));
+        if ($result->isEmpty()) {
+            // Nothing in the chosen branch is compatible with the real signature; trust the signature like computeNewTypeForComment does.
+            return $this->getUnionType();
+        }
         if ($this instanceof Method) {
             $result = $this->withStaticExpandedToDeclaringClass($result);
         }
+        return $result;
+    }
+
+    /**
+     * Drops every type of $union_type that can't be returned by the real (signature) return type,
+     * the same way Method::computeNewTypeForComment() filters a phpdoc (at)return.
+     * `static` is allowed to satisfy a real return type of the declaring class.
+     */
+    private function withoutTypesIncompatibleWithRealReturnType(CodeBase $code_base, UnionType $union_type): UnionType
+    {
         $real_return_type = $this->getRealReturnType();
-        if (!$real_return_type->isEmpty() && !$result->isEmpty() && !$result->canCastToUnionType($real_return_type, $code_base)) {
-            // The chosen branch is incompatible with the real signature; trust the signature like computeNewTypeForComment does.
-            return $this->getUnionType();
+        if ($real_return_type->isEmpty() || $union_type->isEmpty()) {
+            return $union_type;
+        }
+        $result = $union_type;
+        foreach ($union_type->getTypeSet() as $type) {
+            if ($type->asPHPDocUnionType()->canAnyTypeStrictCastToUnionType($code_base, $real_return_type)) {
+                continue;
+            }
+            if ($this instanceof Method) {
+                $resolved_type = $type->withStaticResolvedInContext($this->getDeclaringClassContext());
+                if ($resolved_type !== $type && $resolved_type->asPHPDocUnionType()->canAnyTypeStrictCastToUnionType($code_base, $real_return_type)) {
+                    continue;
+                }
+            }
+            $result = $result->withoutType($type);
         }
         return $result;
     }

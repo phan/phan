@@ -794,13 +794,21 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function withStaticExpandedToDeclaringClass(UnionType $union_type): UnionType
     {
-        $scope = new ClassScope(new GlobalScope(), $this->fqsen->getFullyQualifiedClassName(), 0);
-        $new_union_type = $union_type->withStaticResolvedInContext((clone $this->getContext())->withScope($scope));
+        $new_union_type = $union_type->withStaticResolvedInContext($this->getDeclaringClassContext());
         if ($new_union_type !== $union_type) {
             $union_type = $union_type->withUnionType($new_union_type);
         }
 
         return $union_type;
+    }
+
+    /**
+     * A context whose scope is the class declaring this method (used to resolve `static`)
+     */
+    public function getDeclaringClassContext(): Context
+    {
+        $scope = new ClassScope(new GlobalScope(), $this->fqsen->getFullyQualifiedClassName(), 0);
+        return (clone $this->getContext())->withScope($scope);
     }
 
     public function getUnionTypeWithUnmodifiedStatic(): UnionType
