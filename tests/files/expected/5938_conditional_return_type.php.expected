@@ -86,7 +86,9 @@
 %s:380 PhanDebugAnnotation @phan-debug-var requested for variable $e - it has union type int|string
 %s:382 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type string
 %s:389 PhanCommentReturnConditionalWithoutRealParam Saw a conditional @return referring to $nope, but it was not found in the param list of \NS5938\unknownParamOnSecondLine()
-%s:394 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type \NS5938\A|\NS5938\B
-%s:396 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \NS5938\A
-%s:398 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type \NS5938\B
-%s:400 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type int|string
+%s:401 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type \NS5938\A|\NS5938\B
+%s:403 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \NS5938\A
+%s:405 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type \NS5938\B
+%s:407 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type int|string
+%s:409 PhanDebugAnnotation @phan-debug-var requested for variable $e - it has union type \NS5938\A|false
+%s:411 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type \NS5938\B|false

@@ -390,6 +390,13 @@ function testSpecificCallableCondition(string $s, $callable_string, $callable_ar
  */
 function unknownParamOnSecondLine(int $x) { return $x ? 1 : 'x'; }
 
+/**
+ * `false` is only in the plain annotation, so it is possible for every call.
+ * @return A|B|false
+ * @psalm-return ($x is null ? A : B)
+ */
+function mergedReturnLinesWithExtra(?int $x) { return $x === null ? new A() : ($x > 0 ? new B() : false); }
+
 function testMisc() {
     $a = parenthesizedUnionStillWorks();
     '@phan-debug-var $a';
@@ -399,4 +406,8 @@ function testMisc() {
     '@phan-debug-var $c';
     $d = unknownParam(1);
     '@phan-debug-var $d';
+    $e = mergedReturnLinesWithExtra(null);
+    '@phan-debug-var $e';
+    $f = mergedReturnLinesWithExtra(1);
+    '@phan-debug-var $f';
 }
