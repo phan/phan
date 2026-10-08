@@ -440,6 +440,40 @@ function testExtrasAndNestedNarrowing(ExtraImpl $impl, UsesExtraTrait $uses, int
     '@phan-debug-var $g';
 }
 
+/**
+ * `?string` is split into null and string when it reaches the nested conditions.
+ * @return ($x is null ? ($x is string ? A : B) : C)
+ */
+function nestedNullable(?string $x) { return $x === null ? new B() : new C(); }
+
+/**
+ * @return ($x is string ? A : ($x is null ? B : C))
+ */
+function nestedNullableElse(?string $x) { return $x === null ? new B() : new A(); }
+
+/**
+ * Two conditionals on one comment: the first one is kept, the second one's types are always possible.
+ * @return ($x is null ? A : B)
+ * @psalm-return ($x is null ? C : D)
+ */
+function twoConditionals(?int $x) { return $x === null ? new A() : new B(); }
+class D {}
+
+function testNullableNarrowing(?string $maybe, ?int $maybe_int) {
+    $a = nestedNullable($maybe);
+    '@phan-debug-var $a';
+    $b = nestedNullable(null);
+    '@phan-debug-var $b';
+    $c = nestedNullable('s');
+    '@phan-debug-var $c';
+    $d = nestedNullableElse($maybe);
+    '@phan-debug-var $d';
+    $e = twoConditionals(null);
+    '@phan-debug-var $e';
+    $f = twoConditionals($maybe_int);
+    '@phan-debug-var $f';
+}
+
 function testMisc() {
     $a = parenthesizedUnionStillWorks();
     '@phan-debug-var $a';

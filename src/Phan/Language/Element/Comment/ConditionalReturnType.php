@@ -12,6 +12,7 @@ use Phan\Language\Type\CallableArrayType;
 use Phan\Language\Type\CallableObjectType;
 use Phan\Language\Type\CallableStringType;
 use Phan\Language\Type\CallableType;
+use Phan\Language\Type\NullType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
 
@@ -280,7 +281,7 @@ final class ConditionalReturnType
         if ($arg_type->hasMixedOrNonEmptyMixedType()) {
             return $condition;
         }
-        $narrowed = $arg_type->makeFromFilter(static function (Type $type) use ($code_base, $condition): bool {
+        $narrowed = self::withNullSplitOff($arg_type)->makeFromFilter(static function (Type $type) use ($code_base, $condition): bool {
             return $type->asPHPDocUnionType()->hasAnyTypeOverlap($code_base, $condition);
         });
         return $narrowed->isEmpty() ? null : $narrowed;
@@ -291,8 +292,20 @@ final class ConditionalReturnType
      */
     private static function excludeCondition(CodeBase $code_base, UnionType $arg_type, UnionType $condition): ?UnionType
     {
-        $remaining = ConditionVisitor::excludeMatchingTypes($code_base, $arg_type, $condition);
+        $remaining = ConditionVisitor::excludeMatchingTypes($code_base, self::withNullSplitOff($arg_type), $condition);
         return $remaining->isEmpty() ? null : $remaining;
+    }
+
+    /**
+     * `?string` is one type to Phan; represent it as `string|null` so that `$x is null` / `$x is string`
+     * can keep or drop each part separately.
+     */
+    private static function withNullSplitOff(UnionType $union_type): UnionType
+    {
+        if (!$union_type->containsNullable()) {
+            return $union_type;
+        }
+        return $union_type->nonNullableClone()->withType(NullType::instance(false));
     }
 
     /**

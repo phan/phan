@@ -1035,6 +1035,9 @@ final class Builder
                 $return_comment->setConditional($conditional->withPlainAnnotationTypes($old_type));
             } elseif (!$conditional && $old_conditional) {
                 $return_comment->setConditional($old_conditional->withPlainAnnotationTypes($new_type));
+            } elseif ($conditional && $old_conditional) {
+                // Two conditionals: keep the first one's structure, and treat the second one's types as always possible.
+                $return_comment->setConditional($old_conditional->withPlainAnnotationTypes($new_type));
             }
         } else {
             $this->return_comment = new ReturnComment($new_type, $this->guessActualLineLocation($i), $conditional);
