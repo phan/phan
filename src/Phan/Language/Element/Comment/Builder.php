@@ -1026,10 +1026,15 @@ final class Builder
             $new_type = $this->returnOrThrowsTypeFromCommentLine($line, $i);
         }
         if ($return_comment) {
-            // e.g. `@return A|B` followed by `@psalm-return ($x is null ? A : B)`
-            $return_comment->setType($return_comment->getType()->withUnionType($new_type));
-            if ($conditional && !$return_comment->getConditional()) {
-                $return_comment->setConditional($conditional);
+            // e.g. `@return A|B|false` followed by `@psalm-return ($x is null ? A : B)`:
+            // the flattened type is the union of both, and `false` is possible for every call of the conditional.
+            $old_type = $return_comment->getType();
+            $return_comment->setType($old_type->withUnionType($new_type));
+            $old_conditional = $return_comment->getConditional();
+            if ($conditional && !$old_conditional) {
+                $return_comment->setConditional($conditional->withPlainAnnotationTypes($old_type));
+            } elseif (!$conditional && $old_conditional) {
+                $return_comment->setConditional($old_conditional->withPlainAnnotationTypes($new_type));
             }
         } else {
             $this->return_comment = new ReturnComment($new_type, $this->guessActualLineLocation($i), $conditional);

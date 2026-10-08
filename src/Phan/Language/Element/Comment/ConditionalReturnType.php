@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan\Language\Element\Comment;
 
 use Closure;
+use Phan\Analysis\ConditionVisitor;
 use Phan\CodeBase;
 use Phan\Language\Type;
 use Phan\Language\Type\CallableArrayType;
@@ -128,6 +129,35 @@ final class ConditionalReturnType
     }
 
     /**
+     * Returns a copy with the members of $plain_type that this conditional doesn't already mention added to every leaf.
+     * Used for `@return A|B|false` combined with `@psalm-return ($x is null ? A : B)`: `false` is possible for every call.
+     */
+    public function withPlainAnnotationTypes(UnionType $plain_type): self
+    {
+        $extra_types = $plain_type;
+        foreach ($this->asFlattenedUnionType()->getTypeSet() as $type) {
+            $extra_types = $extra_types->withoutType($type);
+        }
+        if ($extra_types->isEmpty()) {
+            return $this;
+        }
+        return $this->mapLeafTypes(static function (UnionType $type) use ($extra_types): UnionType {
+            return $type->withUnionType($extra_types);
+        });
+    }
+
+    /**
+     * Returns a copy with $mapper applied to every leaf type (but not to the conditions).
+     * @param Closure(UnionType):UnionType $mapper
+     */
+    private function mapLeafTypes(Closure $mapper): self
+    {
+        $new_if_true = $this->if_true instanceof self ? $this->if_true->mapLeafTypes($mapper) : $mapper($this->if_true);
+        $new_if_false = $this->if_false instanceof self ? $this->if_false->mapLeafTypes($mapper) : $mapper($this->if_false);
+        return new self($this->param_name, $this->condition, $this->negated, $new_if_true, $new_if_false, $this->lineno);
+    }
+
+    /**
      * Returns a copy where parameter names are renamed according to $name_map (old name => new name).
      * Used when an overriding method renames the parameters of the method it inherits the conditional from.
      *
@@ -214,9 +244,55 @@ final class ConditionalReturnType
         if ($verdict === false) {
             return self::resolveBranch($code_base, $if_false, $arg_type_lookup);
         }
-        return self::resolveBranch($code_base, $if_true, $arg_type_lookup)->withUnionType(
-            self::resolveBranch($code_base, $if_false, $arg_type_lookup)
+        // Ambiguous: a nested condition on the same parameter only sees the part of the argument type
+        // that reaches its branch, e.g. `($x is int ? A : ($x is string ? B : C))` with `int|string` gives `A|B`.
+        $matching_lookup = $arg_type_lookup;
+        $remaining_lookup = $arg_type_lookup;
+        if ($arg_type !== null) {
+            $matching_lookup = $this->lookupWithNarrowedSubject($arg_type_lookup, self::narrowToCondition($code_base, $arg_type, $this->condition));
+            $remaining_lookup = $this->lookupWithNarrowedSubject($arg_type_lookup, self::excludeCondition($code_base, $arg_type, $this->condition));
+        }
+        return self::resolveBranch($code_base, $if_true, $matching_lookup)->withUnionType(
+            self::resolveBranch($code_base, $if_false, $remaining_lookup)
         );
+    }
+
+    /**
+     * @param Closure(string):(?UnionType) $arg_type_lookup
+     * @return Closure(string):(?UnionType) the same lookup, but returning $narrowed_type for this conditional's parameter
+     */
+    private function lookupWithNarrowedSubject(Closure $arg_type_lookup, ?UnionType $narrowed_type): Closure
+    {
+        if ($narrowed_type === null) {
+            return $arg_type_lookup;
+        }
+        $param_name = $this->param_name;
+        return static function (string $name) use ($arg_type_lookup, $param_name, $narrowed_type): ?UnionType {
+            return $name === $param_name ? $narrowed_type : $arg_type_lookup($name);
+        };
+    }
+
+    /**
+     * @return ?UnionType the part of $arg_type that may satisfy `is $condition`, or null if that can't be narrowed
+     */
+    private static function narrowToCondition(CodeBase $code_base, UnionType $arg_type, UnionType $condition): ?UnionType
+    {
+        if ($arg_type->hasMixedOrNonEmptyMixedType()) {
+            return $condition;
+        }
+        $narrowed = $arg_type->makeFromFilter(static function (Type $type) use ($code_base, $condition): bool {
+            return $type->asPHPDocUnionType()->hasAnyTypeOverlap($code_base, $condition);
+        });
+        return $narrowed->isEmpty() ? null : $narrowed;
+    }
+
+    /**
+     * @return ?UnionType the part of $arg_type that may fail `is $condition`, or null if that can't be narrowed
+     */
+    private static function excludeCondition(CodeBase $code_base, UnionType $arg_type, UnionType $condition): ?UnionType
+    {
+        $remaining = ConditionVisitor::excludeMatchingTypes($code_base, $arg_type, $condition);
+        return $remaining->isEmpty() ? null : $remaining;
     }
 
     /**

@@ -1247,17 +1247,6 @@ trait FunctionTrait
         if (!$conditional) {
             return null;
         }
-        // `@return A|B|false` + `@psalm-return ($x is null ? A : B)`: the members that only the plain annotation
-        // mentions (`false`) are possible for every call, so add them to whichever branch is chosen.
-        $extra_types = $this->phpdoc_return_type;
-        if ($extra_types && !$extra_types->isEmpty()) {
-            foreach ($conditional->asFlattenedUnionType()->getTypeSet() as $type) {
-                $extra_types = $extra_types->withoutType($type);
-            }
-            if ($template_type_map && !$extra_types->isEmpty()) {
-                $extra_types = $extra_types->withTemplateParameterTypeMap($template_type_map);
-            }
-        }
         if ($template_type_map && $conditional->hasTemplateTypeRecursive()) {
             $conditional = $conditional->mapTypes(static function (UnionType $type) use ($template_type_map): UnionType {
                 return $type->withTemplateParameterTypeMap($template_type_map);
@@ -1270,14 +1259,11 @@ trait FunctionTrait
             }
             return $arg_type_cache[$param_name];
         };
-        $result = $conditional->resolve($code_base, $lookup);
-        if ($extra_types && !$extra_types->isEmpty()) {
-            $result = $result->withUnionType($extra_types);
-        }
-        $result = $this->withoutTypesIncompatibleWithRealReturnType($code_base, $result);
+        $result = $this->withoutTypesIncompatibleWithRealReturnType($code_base, $conditional->resolve($code_base, $lookup));
         if ($result->isEmpty()) {
-            // Nothing in the chosen branch is compatible with the real signature; trust the signature like computeNewTypeForComment does.
-            return $this->getUnionType();
+            // Nothing in the chosen branch is compatible with the real signature, which is what a successful call returns.
+            $real_return_type = $this->getRealReturnType();
+            $result = $real_return_type->isEmpty() ? $this->getUnionType() : $real_return_type;
         }
         if ($this instanceof Method) {
             $result = $this->withStaticExpandedToDeclaringClass($result);

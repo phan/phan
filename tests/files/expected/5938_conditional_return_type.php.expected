@@ -61,9 +61,9 @@
 %s:286 PhanTypeMismatchDeclaredReturn Doc-block of narrowedBySignature contains declared return type string which is incompatible with the return type int declared in the signature
 %s:291 PhanTypeMismatchDeclaredReturn Doc-block of staticSig contains declared return type int which is incompatible with the return type static declared in the signature
 %s:303 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type int(real=int)
-%s:305 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type int|string(real=int)
+%s:305 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type int(real=int)
 %s:307 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type \NS5938\SubSig(real=\NS5938\SubSig)
-%s:309 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type \NS5938\SubSig|int(real=\NS5938\SubSig)
+%s:309 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type \NS5938\SubSig(real=\NS5938\SubSig)
 %s:311 PhanDebugAnnotation @phan-debug-var requested for variable $e - it has union type \NS5938\SubSig(real=\NS5938\Sig)
 %s:313 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type \NS5938\Sig(real=\NS5938\Sig)
 %s:315 PhanDebugAnnotation @phan-debug-var requested for variable $g - it has union type \NS5938\Sig|\NS5938\SubSig(real=\NS5938\Sig)
@@ -86,9 +86,16 @@
 %s:380 PhanDebugAnnotation @phan-debug-var requested for variable $e - it has union type int|string
 %s:382 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type string
 %s:389 PhanCommentReturnConditionalWithoutRealParam Saw a conditional @return referring to $nope, but it was not found in the param list of \NS5938\unknownParamOnSecondLine()
-%s:401 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type \NS5938\A|\NS5938\B
-%s:403 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \NS5938\A
-%s:405 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type \NS5938\B
-%s:407 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type int|string
-%s:409 PhanDebugAnnotation @phan-debug-var requested for variable $e - it has union type \NS5938\A|false
-%s:411 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type \NS5938\B|false
+%s:427 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type \NS5938\A|false
+%s:429 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \NS5938\B|false
+%s:431 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type \NS5938\A|false
+%s:433 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type \NS5938\A|\NS5938\B
+%s:435 PhanDebugAnnotation @phan-debug-var requested for variable $e - it has union type \NS5938\A|\NS5938\B|\NS5938\C
+%s:437 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type \NS5938\B
+%s:439 PhanDebugAnnotation @phan-debug-var requested for variable $g - it has union type \NS5938\C
+%s:444 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type \NS5938\A|\NS5938\B
+%s:446 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \NS5938\A
+%s:448 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type \NS5938\B
+%s:450 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type int|string
+%s:452 PhanDebugAnnotation @phan-debug-var requested for variable $e - it has union type \NS5938\A|false
+%s:454 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type \NS5938\B|false

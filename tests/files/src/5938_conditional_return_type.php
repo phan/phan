@@ -397,6 +397,49 @@ function unknownParamOnSecondLine(int $x) { return $x ? 1 : 'x'; }
  */
 function mergedReturnLinesWithExtra(?int $x) { return $x === null ? new A() : ($x > 0 ? new B() : false); }
 
+interface ExtraI {
+    /**
+     * @return A|B|false
+     * @psalm-return ($x is null ? A : B)
+     */
+    public function extra(?int $x);
+}
+class ExtraImpl implements ExtraI {
+    public function extra(?int $x) { return $x === null ? new A() : ($x > 0 ? new B() : false); }
+}
+trait ExtraTrait {
+    /**
+     * @return A|B|false
+     * @psalm-return ($x is null ? A : B)
+     */
+    public function viaTrait(?int $x) { return $x === null ? new A() : ($x > 0 ? new B() : false); }
+}
+class UsesExtraTrait { use ExtraTrait; }
+
+/**
+ * A nested condition on the same parameter only sees what reaches its branch.
+ * @return ($x is int ? A : ($x is string ? B : C))
+ */
+function nestedSameParam(int|string|float $x) { return is_int($x) ? new A() : (is_string($x) ? new B() : new C()); }
+class C {}
+
+function testExtrasAndNestedNarrowing(ExtraImpl $impl, UsesExtraTrait $uses, int|string $int_or_string, int|string|float $any, string $s) {
+    $a = $impl->extra(null);
+    '@phan-debug-var $a';
+    $b = $impl->extra(1);
+    '@phan-debug-var $b';
+    $c = $uses->viaTrait(null);
+    '@phan-debug-var $c';
+    $d = nestedSameParam($int_or_string);
+    '@phan-debug-var $d';
+    $e = nestedSameParam($any);
+    '@phan-debug-var $e';
+    $f = nestedSameParam($s);
+    '@phan-debug-var $f';
+    $g = nestedSameParam(1.5);
+    '@phan-debug-var $g';
+}
+
 function testMisc() {
     $a = parenthesizedUnionStillWorks();
     '@phan-debug-var $a';
