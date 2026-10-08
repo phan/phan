@@ -148,6 +148,20 @@ final class ConditionalReturnType
     }
 
     /**
+     * Returns a copy with every member of $union_type added to every leaf.
+     * Used when a docblock has a second conditional annotation: its types are treated as always possible.
+     */
+    public function withTypesAddedToLeaves(UnionType $union_type): self
+    {
+        if ($union_type->isEmpty()) {
+            return $this;
+        }
+        return $this->mapLeafTypes(static function (UnionType $type) use ($union_type): UnionType {
+            return $type->withUnionType($union_type);
+        });
+    }
+
+    /**
      * Returns a copy with $mapper applied to every leaf type (but not to the conditions).
      * @param Closure(UnionType):UnionType $mapper
      */
@@ -281,9 +295,19 @@ final class ConditionalReturnType
         if ($arg_type->hasMixedOrNonEmptyMixedType()) {
             return $condition;
         }
-        $narrowed = self::withNullSplitOff($arg_type)->makeFromFilter(static function (Type $type) use ($code_base, $condition): bool {
-            return $type->asPHPDocUnionType()->hasAnyTypeOverlap($code_base, $condition);
-        });
+        $narrowed = UnionType::empty();
+        foreach (self::withNullSplitOff($arg_type)->getTypeSet() as $type) {
+            $type_as_union = $type->asPHPDocUnionType();
+            if (!$type_as_union->hasAnyTypeOverlap($code_base, $condition)) {
+                continue;
+            }
+            if ($condition->isStrictSubtypeOf($code_base, $type_as_union)) {
+                // e.g. `int` tested with `is positive-int`: only the positive-int part reaches the branch.
+                $narrowed = $narrowed->withUnionType($condition);
+            } else {
+                $narrowed = $narrowed->withType($type);
+            }
+        }
         return $narrowed->isEmpty() ? null : $narrowed;
     }
 

@@ -55,9 +55,12 @@ function testMockery(MockI $m, MockImpl $impl, MockRenamed $renamed, ?string $ma
     '@phan-debug-var $j';
     $k = $m->shouldHaveReceived(...);
     '@phan-debug-var $k';
-    // The unpacked array may already contain 'method', so the named argument doesn't make this unambiguous.
+    // Any call that doesn't throw passes 'x' for $method (an unpacked 'method' would be an error).
     $l = $m->shouldHaveReceived(...$list, method: 'x');
     '@phan-debug-var $l';
+    // ... but the unpacked array may still fill $args.
+    $n = $m->shouldHaveReceived(...$list, args: [1]);
+    '@phan-debug-var $n';
 }
 
 /**
@@ -441,6 +444,24 @@ function testExtrasAndNestedNarrowing(ExtraImpl $impl, UsesExtraTrait $uses, int
 }
 
 /**
+ * `string` tested with `is non-empty-string` only passes the non-empty-string part on to the nested condition.
+ * @return ($x is non-empty-string ? ($x is '' ? A : B) : C)
+ */
+function nestedNonEmpty(string $x) { return $x !== '' ? new B() : new C(); }
+
+/**
+ * @return ($x is negative-int ? A : B)
+ */
+function negativeCondition(int $x) { return $x < 0 ? new A() : new B(); }
+
+/**
+ * Two conditionals with overlapping types: every type of the second one stays possible.
+ * @return ($x is null ? A : B)
+ * @psalm-return ($x is null ? B : A)
+ */
+function twoOverlappingConditionals(?int $x) { return $x === null ? new A() : new B(); }
+
+/**
  * `?string` is split into null and string when it reaches the nested conditions.
  * @return ($x is null ? ($x is string ? A : B) : C)
  */
@@ -472,6 +493,21 @@ function testNullableNarrowing(?string $maybe, ?int $maybe_int) {
     '@phan-debug-var $e';
     $f = twoConditionals($maybe_int);
     '@phan-debug-var $f';
+    $g = nestedNonEmpty('foo');
+    '@phan-debug-var $g';
+    $h = twoOverlappingConditionals(null);
+    '@phan-debug-var $h';
+}
+
+function testPartialOverlap(string $s, int $int) {
+    $a = nestedNonEmpty($s);
+    '@phan-debug-var $a';
+    $b = negativeCondition(5);
+    '@phan-debug-var $b';
+    $c = negativeCondition(-5);
+    '@phan-debug-var $c';
+    $d = negativeCondition($int);
+    '@phan-debug-var $d';
 }
 
 function testMisc() {

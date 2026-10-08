@@ -1312,27 +1312,28 @@ trait FunctionTrait
         if ($parameter->isVariadic()) {
             return null;
         }
-        foreach ($args as $j => $arg) {
-            if ($j > $i) {
-                break;
+        if (\array_key_exists($i, $args)) {
+            $arg = $args[$i];
+            if ($arg instanceof UnionType) {
+                return $arg;
             }
-            // Argument unpacking (or a named argument that didn't match a parameter) before or at this position
-            // makes it unknown which argument ends up in this parameter.
             if ($arg instanceof Node && ($arg->kind === ast\AST_UNPACK || $arg->kind === ast\AST_NAMED_ARG)) {
+                // Argument unpacking (or a named argument that didn't match a parameter) at this position:
+                // it's unknown which argument ends up in this parameter.
+                return null;
+            }
+            return UnionTypeVisitor::unionTypeFromNode($code_base, $context, $arg);
+        }
+        foreach ($args as $arg) {
+            if ($arg instanceof Node && $arg->kind === ast\AST_UNPACK) {
+                // No explicit argument for this position, but an unpacked array may fill it.
                 return null;
             }
         }
-        if (!\array_key_exists($i, $args)) {
-            if ($parameter->hasDefaultValue()) {
-                return $parameter->getDefaultValueLiteralType();
-            }
-            return null;
+        if ($parameter->hasDefaultValue()) {
+            return $parameter->getDefaultValueLiteralType();
         }
-        $arg = $args[$i];
-        if ($arg instanceof UnionType) {
-            return $arg;
-        }
-        return UnionTypeVisitor::unionTypeFromNode($code_base, $context, $arg);
+        return null;
     }
 
     /**
