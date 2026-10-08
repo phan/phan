@@ -189,6 +189,7 @@ final class CommentTest extends TestBase
         $this->assertSame('int', (string)$conditional->getIfTrue());
         $this->assertSame('string', (string)$conditional->getIfFalse());
         $this->assertSame(['x'], $conditional->getParamNames());
+        $this->assertSame(1, $conditional->getLineno());
         $this->assertSame('($x is null ? int : string)', (string)$conditional);
     }
 

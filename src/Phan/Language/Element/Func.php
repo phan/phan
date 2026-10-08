@@ -333,7 +333,7 @@ class Func extends AddressableElement implements FunctionInterface
                 return $union_type;
             });
             $func->setConditionalReturnType($conditional_return_type);
-            $func->warnAboutUndeclaredConditionalReturnParams($code_base, $element_context, $comment->getReturnLineno());
+            $func->warnAboutUndeclaredConditionalReturnParams($code_base, $element_context);
         }
         $element_context->freeElementReference();
 

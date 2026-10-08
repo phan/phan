@@ -41,18 +41,29 @@ final class ConditionalReturnType
     /** @var UnionType|ConditionalReturnType the result when the condition does not hold */
     private $if_false;
 
+    /** @var int the line of the annotation this was parsed from (0 if unknown) */
+    private $lineno;
+
     public function __construct(
         string $param_name,
         UnionType $condition,
         bool $negated,
         UnionType|ConditionalReturnType $if_true,
-        UnionType|ConditionalReturnType $if_false
+        UnionType|ConditionalReturnType $if_false,
+        int $lineno = 0
     ) {
         $this->param_name = $param_name;
         $this->condition = $condition;
         $this->negated = $negated;
         $this->if_true = $if_true;
         $this->if_false = $if_false;
+        $this->lineno = $lineno;
+    }
+
+    /** The line of the annotation this was parsed from (0 if unknown) */
+    public function getLineno(): int
+    {
+        return $this->lineno;
     }
 
     /** The name of the parameter being tested, without the leading '$' */
@@ -113,7 +124,7 @@ final class ConditionalReturnType
         if ($new_condition === $this->condition && $new_if_true === $this->if_true && $new_if_false === $this->if_false) {
             return $this;
         }
-        return new self($this->param_name, $new_condition, $this->negated, $new_if_true, $new_if_false);
+        return new self($this->param_name, $new_condition, $this->negated, $new_if_true, $new_if_false, $this->lineno);
     }
 
     /**
@@ -130,7 +141,7 @@ final class ConditionalReturnType
         if ($new_name === $this->param_name && $new_if_true === $this->if_true && $new_if_false === $this->if_false) {
             return $this;
         }
-        return new self($new_name, $this->condition, $this->negated, $new_if_true, $new_if_false);
+        return new self($new_name, $this->condition, $this->negated, $new_if_true, $new_if_false, $this->lineno);
     }
 
     /**
@@ -256,8 +267,9 @@ final class ConditionalReturnType
     /**
      * `$x is callable` for a string or array argument can only be decided at runtime, but Phan's cast rules let any
      * non-empty string or array cast to `callable`. So only types known to be callable (Closure, callable-string,
-     * classes with __invoke(), ...) select the first branch, only types that can't be callable select the second
-     * (int, false, a string literal that isn't a function name, ...), and everything else keeps both.
+     * classes with __invoke(), ...) select the first branch, only types that can't be callable (int, false, a string
+     * literal that isn't a function name, ...) or can't be the specific kind of callable (a Closure for
+     * `callable-string`) select the second, and everything else keeps both.
      */
     private static function evaluateCallableCondition(CodeBase $code_base, UnionType $arg_type, UnionType $condition): ?bool
     {
@@ -274,7 +286,8 @@ final class ConditionalReturnType
         if ($all_callable && $arg_type->isStrictSubtypeOf($code_base, $condition)) {
             return true;
         }
-        if ($all_non_callable) {
+        // e.g. a Closure can never be a callable-string
+        if ($all_non_callable || !$arg_type->hasAnyTypeOverlap($code_base, $condition)) {
             return false;
         }
         return null;

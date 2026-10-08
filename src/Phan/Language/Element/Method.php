@@ -697,7 +697,7 @@ class Method extends ClassElement implements FunctionInterface
                 });
             }
             $method->setConditionalReturnType($conditional_return_type);
-            $method->warnAboutUndeclaredConditionalReturnParams($code_base, $element_context, $comment->getReturnLineno());
+            $method->warnAboutUndeclaredConditionalReturnParams($code_base, $element_context);
         }
         $element_context->freeElementReference();
         // Populate the original return type.

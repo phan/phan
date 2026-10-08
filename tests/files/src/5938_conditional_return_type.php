@@ -358,6 +358,38 @@ function testCallableCondition(string $s, array $strings, $callable_string, Invo
     '@phan-debug-var $l';
 }
 
+/**
+ * @return ($x is callable-string ? int : string)
+ */
+function callableStringCondition($x) { return is_callable($x) ? 1 : 'x'; }
+
+/**
+ * @param callable-string $callable_string
+ * @param callable-array $callable_array
+ */
+function testSpecificCallableCondition(string $s, $callable_string, $callable_array, Invokable $invokable, \Closure $closure) {
+    $a = callableStringCondition($callable_string);
+    '@phan-debug-var $a';
+    // A Closure (or a callable array, or an invokable object) can never be a callable-string.
+    $b = callableStringCondition($closure);
+    '@phan-debug-var $b';
+    $c = callableStringCondition($callable_array);
+    '@phan-debug-var $c';
+    $d = callableStringCondition($invokable);
+    '@phan-debug-var $d';
+    $e = callableStringCondition($s);
+    '@phan-debug-var $e';
+    $f = callableStringCondition('not callable');
+    '@phan-debug-var $f';
+}
+
+/**
+ * The issue is reported on the line of the conditional annotation, not the plain @return before it.
+ * @return int|string
+ * @psalm-return ($nope is null ? int : string)
+ */
+function unknownParamOnSecondLine(int $x) { return $x ? 1 : 'x'; }
+
 function testMisc() {
     $a = parenthesizedUnionStillWorks();
     '@phan-debug-var $a';

@@ -1213,7 +1213,7 @@ trait FunctionTrait
     /**
      * Emits an issue for every parameter named in the conditional return type that this function doesn't declare.
      */
-    public function warnAboutUndeclaredConditionalReturnParams(CodeBase $code_base, Context $context, int $lineno): void
+    public function warnAboutUndeclaredConditionalReturnParams(CodeBase $code_base, Context $context): void
     {
         $conditional = $this->conditional_return_type;
         if (!$conditional) {
@@ -1225,7 +1225,7 @@ trait FunctionTrait
                     $code_base,
                     $context,
                     Issue::CommentReturnConditionalWithoutRealParam,
-                    $lineno,
+                    $conditional->getLineno() ?: $context->getLineNumberStart(),
                     $param_name,
                     $this->getRepresentationForIssue()
                 );

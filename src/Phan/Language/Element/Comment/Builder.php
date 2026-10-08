@@ -326,7 +326,7 @@ final class Builder
             return null;
         }
         $offset = $match[0][1] + \strlen($match[0][0]);
-        $conditional = $this->parseConditionalAt($line, $offset);
+        $conditional = $this->parseConditionalAt($line, $offset, $this->guessActualLineLocation($i));
         if (!$conditional) {
             return null;
         }
@@ -346,8 +346,9 @@ final class Builder
     /**
      * Parses `($name is [not] Type ? Branch : Branch)` starting at $offset.
      * @param int $offset the offset of the opening parenthesis. On success, this is advanced past the closing parenthesis.
+     * @param int $lineno the line of the annotation, recorded on the result
      */
-    private function parseConditionalAt(string $line, int &$offset): ?ConditionalReturnType
+    private function parseConditionalAt(string $line, int &$offset, int $lineno): ?ConditionalReturnType
     {
         if (!\preg_match(self::CONDITIONAL_HEAD_REGEX, $line, $match, 0, $offset)) {
             return null;
@@ -357,7 +358,7 @@ final class Builder
         $condition = $this->unionTypeFromConditionalPart($match[3]);
         $offset += \strlen($match[0]);
 
-        $if_true = $this->parseConditionalBranchAt($line, $offset);
+        $if_true = $this->parseConditionalBranchAt($line, $offset, $lineno);
         if ($if_true === null) {
             return null;
         }
@@ -365,7 +366,7 @@ final class Builder
             return null;
         }
         $offset += \strlen($match[0]);
-        $if_false = $this->parseConditionalBranchAt($line, $offset);
+        $if_false = $this->parseConditionalBranchAt($line, $offset, $lineno);
         if ($if_false === null) {
             return null;
         }
@@ -373,17 +374,17 @@ final class Builder
             return null;
         }
         $offset += \strlen($match[0]);
-        return new ConditionalReturnType($param_name, $condition, $negated, $if_true, $if_false);
+        return new ConditionalReturnType($param_name, $condition, $negated, $if_true, $if_false, $lineno);
     }
 
     /**
      * Parses one branch of a conditional: either a nested conditional or a union type.
      * @param int $offset advanced past the branch on success
      */
-    private function parseConditionalBranchAt(string $line, int &$offset): UnionType|ConditionalReturnType|null
+    private function parseConditionalBranchAt(string $line, int &$offset, int $lineno): UnionType|ConditionalReturnType|null
     {
         if (\preg_match(self::CONDITIONAL_NESTED_LOOKAHEAD_REGEX, $line, $unused_match, 0, $offset)) {
-            return $this->parseConditionalAt($line, $offset);
+            return $this->parseConditionalAt($line, $offset, $lineno);
         }
         if (!\preg_match(self::CONDITIONAL_LEAF_REGEX, $line, $match, 0, $offset)) {
             return null;
