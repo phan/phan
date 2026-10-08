@@ -455,6 +455,12 @@ function nestedNonEmpty(string $x) { return $x !== '' ? new B() : new C(); }
 function negativeCondition(int $x) { return $x < 0 ? new A() : new B(); }
 
 /**
+ * Each member of a union condition is intersected with the argument separately.
+ * @return ($x is non-empty-string|int ? ($x is '' ? A : B) : C)
+ */
+function nestedUnionCondition(string|float $x) { return is_string($x) && $x !== '' ? new B() : new C(); }
+
+/**
  * Two conditionals with overlapping types: every type of the second one stays possible.
  * @return ($x is null ? A : B)
  * @psalm-return ($x is null ? B : A)
@@ -508,6 +514,10 @@ function testPartialOverlap(string $s, int $int) {
     '@phan-debug-var $c';
     $d = negativeCondition($int);
     '@phan-debug-var $d';
+    $e = nestedUnionCondition($s);
+    '@phan-debug-var $e';
+    $f = nestedUnionCondition(1.5);
+    '@phan-debug-var $f';
 }
 
 function testMisc() {

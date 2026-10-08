@@ -298,14 +298,17 @@ final class ConditionalReturnType
         $narrowed = UnionType::empty();
         foreach (self::withNullSplitOff($arg_type)->getTypeSet() as $type) {
             $type_as_union = $type->asPHPDocUnionType();
-            if (!$type_as_union->hasAnyTypeOverlap($code_base, $condition)) {
-                continue;
-            }
-            if ($condition->isStrictSubtypeOf($code_base, $type_as_union)) {
-                // e.g. `int` tested with `is positive-int`: only the positive-int part reaches the branch.
-                $narrowed = $narrowed->withUnionType($condition);
-            } else {
-                $narrowed = $narrowed->withType($type);
+            foreach ($condition->getTypeSet() as $condition_type) {
+                $condition_type_as_union = $condition_type->asPHPDocUnionType();
+                if (!$type_as_union->hasAnyTypeOverlap($code_base, $condition_type_as_union)) {
+                    continue;
+                }
+                if ($condition_type_as_union->isStrictSubtypeOf($code_base, $type_as_union)) {
+                    // e.g. `string` tested with `is non-empty-string|int`: only the non-empty-string part reaches the branch.
+                    $narrowed = $narrowed->withType($condition_type);
+                } else {
+                    $narrowed = $narrowed->withType($type);
+                }
             }
         }
         return $narrowed->isEmpty() ? null : $narrowed;
