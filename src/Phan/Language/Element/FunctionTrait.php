@@ -1249,7 +1249,7 @@ trait FunctionTrait
         }
         // `@return A|B|false` + `@psalm-return ($x is null ? A : B)`: the members that only the plain annotation
         // mentions (`false`) are possible for every call, so add them to whichever branch is chosen.
-        $extra_types = $this->getPHPDocReturnType();
+        $extra_types = $this->phpdoc_return_type;
         if ($extra_types && !$extra_types->isEmpty()) {
             foreach ($conditional->asFlattenedUnionType()->getTypeSet() as $type) {
                 $extra_types = $extra_types->withoutType($type);
