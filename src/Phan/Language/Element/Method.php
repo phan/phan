@@ -712,17 +712,7 @@ class Method extends ClassElement implements FunctionInterface
 
     private static function computeNewTypeForComment(CodeBase $code_base, Context $context, UnionType $signature_union_type, UnionType $comment_return_union_type): UnionType
     {
-        $new_type = $comment_return_union_type;
-        foreach ($comment_return_union_type->getTypeSet() as $type) {
-            if (!$type->asPHPDocUnionType()->canAnyTypeStrictCastToUnionType($code_base, $signature_union_type)) {
-                // Allow `@return static` to override a real type of MyClass.
-                // php8 may add a real type of static.
-                $resolved_type = $type->withStaticResolvedInContext($context);
-                if ($resolved_type === $type || !$resolved_type->asPHPDocUnionType()->canAnyTypeStrictCastToUnionType($code_base, $signature_union_type)) {
-                    $new_type = $new_type->withoutType($type);
-                }
-            }
-        }
+        $new_type = self::withoutTypesNotCastableToSignatureType($code_base, $context, $signature_union_type, $comment_return_union_type);
 
         if ($new_type !== $comment_return_union_type) {
             $new_type = $signature_union_type->withUnionType($new_type)->withRealTypeSet($signature_union_type->getRealTypeSet());
@@ -1241,10 +1231,14 @@ class Method extends ClassElement implements FunctionInterface
                 if (!($old_return_comment instanceof \Phan\Language\Element\Comment\ReturnComment)) {
                     throw new \AssertionError('Expected ReturnComment when hasReturnUnionType is true');
                 }
+                $old_conditional = $old_return_comment->getConditional();
+                if ($old_conditional && $old_conditional->hasTemplateTypeRecursive()) {
+                    $old_conditional = $old_conditional->mapTypes($map_template_types);
+                }
                 $new_return_comment = new \Phan\Language\Element\Comment\ReturnComment(
                     $return_type,
                     $old_return_comment->getLineno(),
-                    $old_return_comment->getConditional()?->mapTypes($map_template_types)
+                    $old_conditional
                 );
                 $reflection->setValue($comment, $new_return_comment);
 

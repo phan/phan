@@ -1095,6 +1095,11 @@ class ParameterTypesAnalyzer
             }
         }
         if ($inherited_union_type->isExclusivelyNarrowedFormOf($code_base, $method->getUnionType())) {
+            if (!$inherited_union_type->isEqualTo($method->getUnionType())) {
+                // The return type changed (e.g. a second interface narrowed it), so a conditional inherited
+                // from an earlier overridden method no longer describes it.
+                $method->setConditionalReturnType(null);
+            }
             $method->setUnionType($inherited_union_type);
             self::maybeInheritConditionalReturnType($method, $overridden_method);
         }

@@ -115,3 +115,10 @@
 %s:530 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type int|string
 %s:532 PhanDebugAnnotation @phan-debug-var requested for variable $e - it has union type \NS5938\A|false
 %s:534 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type \NS5938\B|false
+%s:572 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type \NS5938\A
+%s:574 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \NS5938\A
+%s:576 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type \NS5938\A
+%s:578 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type \NS5938\A
+%s:580 PhanDebugAnnotation @phan-debug-var requested for variable $e - it has union type \NS5938\B
+%s:582 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type \NS5938\A(real=\NS5938\A|\NS5938\B)
+%s:584 PhanDebugAnnotation @phan-debug-var requested for variable $g - it has union type \NS5938\A|\NS5938\B(real=\NS5938\A|\NS5938\B)

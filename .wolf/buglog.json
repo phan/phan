@@ -1,0 +1,889 @@
+{
+  "version": 1,
+  "bugs": [
+    {
+      "id": "bug-001",
+      "timestamp": "2026-04-06T18:46:33.762Z",
+      "error_message": "Wrong reference: bool should be true",
+      "file": "src/Phan/BlockAnalysisVisitor.php",
+      "root_cause": "Used \"bool\" instead of \"true\"",
+      "fix": "Changed bool \u2192 true",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "php"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-06T18:46:33.762Z"
+    },
+    {
+      "id": "bug-002",
+      "timestamp": "2026-04-06T19:15:56.797Z",
+      "error_message": "Wrong reference: PhanPossiblyUndeclaredVariable should be No",
+      "file": "tests/files/src/4884_try_possibly_undefined.php",
+      "root_cause": "Used \"PhanPossiblyUndeclaredVariable\" instead of \"No\"",
+      "fix": "Changed PhanPossiblyUndeclaredVariable \u2192 No",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "php"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-06T19:15:56.797Z"
+    },
+    {
+      "id": "bug-003",
+      "timestamp": "2026-04-06T19:23:46.772Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/Phan/BlockAnalysisVisitor.php",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 6\u21924 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "php"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-06T19:23:46.772Z"
+    },
+    {
+      "id": "bug-004",
+      "timestamp": "2026-04-19T12:37:07.112Z",
+      "error_message": "Significant refactor of ",
+      "file": "tests/Phan/Language/UnionTypeTest.php",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 6\u21927 lines (3 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "php"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T12:37:07.112Z"
+    },
+    {
+      "id": "bug-005",
+      "timestamp": "2026-04-19T13:11:16.467Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/Phan/Language/Type/TemplateType.php",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 16\u219235 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "php"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T13:11:16.467Z"
+    },
+    {
+      "id": "bug-006",
+      "timestamp": "2026-04-19T13:52:55.704Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/Phan/Language/Type/TemplateType.php",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 13\u219217 lines (3 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "php"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T13:52:55.704Z"
+    },
+    {
+      "id": "bug-007",
+      "timestamp": "2026-04-19T14:38:48.233Z",
+      "error_message": "Incorrect value in code",
+      "file": "bug5522.md",
+      "root_cause": "Had ` return type (warns, exercises `",
+      "fix": "Changed to ` return type (warns \u2014 emitted via `",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T14:38:48.233Z"
+    },
+    {
+      "id": "bug-008",
+      "timestamp": "2026-05-04T21:46:14.782Z",
+      "error_message": "Wrong condition in logic",
+      "file": "src/Phan/Analysis/ClassConstantTypesAnalyzer.php",
+      "root_cause": "Condition was: if (!$constant_real_type->isEqualTo($inherited_real_ty)",
+      "fix": "Changed to: if (!$constant_real_type->canCastToUnionType($inherite)",
+      "tags": [
+        "auto-detected",
+        "logic-fix",
+        "php"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T21:46:14.782Z"
+    },
+    {
+      "id": "bug-009",
+      "timestamp": "2026-05-04T22:21:09.723Z",
+      "error_message": "Wrong condition in logic",
+      "file": "src/Phan/Analysis/ClassConstantTypesAnalyzer.php",
+      "root_cause": "Condition was: if (!$constant_real_type->canCastToUnionType($inherite)",
+      "fix": "Changed to: if (!$constant_real_type->canStrictCastToUnionType($co)",
+      "tags": [
+        "auto-detected",
+        "logic-fix",
+        "php"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T22:21:09.723Z"
+    },
+    {
+      "id": "bug-010",
+      "timestamp": "2026-05-04T22:36:21.628Z",
+      "error_message": "Wrong condition in logic",
+      "file": "src/Phan/Analysis/ClassConstantTypesAnalyzer.php",
+      "root_cause": "Condition was: if (!$constant_real_type->canStrictCastToUnionType($co)",
+      "fix": "Changed to: if (!$constant_real_type->isStrictSubtypeOf($code_base)",
+      "tags": [
+        "auto-detected",
+        "logic-fix",
+        "php"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T22:36:21.628Z"
+    },
+    {
+      "id": "bug-011",
+      "timestamp": "2026-05-12T10:40:38.153Z",
+      "error_message": "Significant refactor of ",
+      "file": "bug5531.md",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 13\u219215 lines (3 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-12T10:40:38.153Z"
+    },
+    {
+      "id": "bug-012",
+      "timestamp": "2026-06-16T11:25:13.180Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/Phan/Analysis/BlockExitStatusChecker.php",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "php"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-16T11:25:13.180Z"
+    },
+    {
+      "id": "bug-013",
+      "timestamp": "2026-06-16T11:59:32.591Z",
+      "error_message": "Significant refactor of ",
+      "file": "tests/files/src/5929_never_calls_never.php",
+      "root_cause": "16 lines replaced/restructured",
+      "fix": "Rewrote 31\u219210 lines (16 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "php"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-16T11:59:32.591Z"
+    },
+    {
+      "id": "bug-014",
+      "timestamp": "2026-06-16T12:53:44.512Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/Phan/Analysis/PostOrderAnalysisVisitor.php",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 9\u219210 lines (3 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "php"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-16T12:53:44.512Z"
+    },
+    {
+      "id": "bug-015",
+      "timestamp": "2026-06-16T13:34:39.140Z",
+      "error_message": "Incorrect value in code",
+      "file": "tests/docker/Dockerfile",
+      "root_cause": "Had \"59b2c50e10cafa0d8efc19ede9a326d782f096c674a26baf9",
+      "fix": "Changed to \"345b9c6a98da5c30dcbd4b0d99fc8710bf0ae98a3898eea18",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "unknown"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-16T13:34:39.140Z"
+    },
+    {
+      "id": "bug-016",
+      "timestamp": "2026-06-19T10:18:15.887Z",
+      "error_message": "Wrong condition in logic",
+      "file": "src/Phan/Language/Element/Clazz.php",
+      "root_cause": "Condition was: if ($inherited_property->isFromPHPDoc()",
+      "fix": "Changed to: if (!$overriding_property->isStatic()",
+      "tags": [
+        "auto-detected",
+        "logic-fix",
+        "php"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-19T10:18:15.887Z"
+    },
+    {
+      "id": "bug-017",
+      "timestamp": "2026-06-19T10:20:26.644Z",
+      "error_message": "Wrong reference: narrow should be int",
+      "file": "tests/files/src/5931_property_override_inherit_type.php",
+      "root_cause": "Used \"narrow\" instead of \"int\"",
+      "fix": "Changed narrow \u2192 int",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "php"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-19T10:20:26.644Z"
+    },
+    {
+      "id": "bug-018",
+      "timestamp": "2026-06-19T10:47:02.423Z",
+      "error_message": "Wrong condition in logic",
+      "file": "src/Phan/Language/Element/Clazz.php",
+      "root_cause": "Condition was: if ($overriding_property->isStatic()",
+      "fix": "Changed to: if (!$is_private_from_ancestor_class &&\n            !$)",
+      "tags": [
+        "auto-detected",
+        "logic-fix",
+        "php"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-19T10:47:02.423Z"
+    },
+    {
+      "id": "bug-019",
+      "timestamp": "2026-06-19T10:47:41.010Z",
+      "error_message": "Wrong condition in logic",
+      "file": "src/Phan/AST/UnionTypeVisitor.php",
+      "root_cause": "Condition was: if (!$expr_node instanceof Node)",
+      "fix": "Changed to: if (!$overridden_fqsen || !$this->code_base->hasProper)",
+      "tags": [
+        "auto-detected",
+        "logic-fix",
+        "php"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-19T10:47:41.010Z"
+    },
+    {
+      "id": "bug-020",
+      "timestamp": "2026-06-19T10:47:52.476Z",
+      "error_message": "Wrong reference: Variable should be Property",
+      "file": "src/Phan/AST/UnionTypeVisitor.php",
+      "root_cause": "Used \"Variable\" instead of \"Property\"",
+      "fix": "Changed Variable \u2192 Property",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "php"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-19T10:47:52.476Z"
+    },
+    {
+      "id": "bug-021",
+      "timestamp": "2026-06-22T20:14:56.185Z",
+      "error_message": "Missing error handling in expecting",
+      "file": "NEWS.md",
+      "root_cause": "Code path had no error handling \u2014 exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-22T20:14:56.185Z"
+    },
+    {
+      "id": "bug-022",
+      "timestamp": "2026-06-22T20:24:03.385Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/Phan/CLI.php",
+      "root_cause": "Had '6.0.6'",
+      "fix": "Changed to '6.0.7-dev'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "php"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-06-22T20:24:03.385Z"
+    },
+    {
+      "id": "bug-023",
+      "timestamp": "2026-06-22T20:53:48.531Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/Phan/CLI.php",
+      "root_cause": "Had '6.0.7-dev'",
+      "fix": "Changed to '6.0.7'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "php"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-06-22T20:54:09.351Z"
+    },
+    {
+      "id": "bug-024",
+      "timestamp": "2026-07-04T23:55:46.781Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/Phan/Plugin/Internal/DependentReturnTypeOverridePlugin.php",
+      "root_cause": "5 lines replaced/restructured",
+      "fix": "Rewrote 25\u219233 lines (5 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "php"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-07-04T23:55:46.781Z"
+    },
+    {
+      "date": "2026-07-04",
+      "error_message": "Issue #5551: substr_replace() return type stays string|string[] regardless of subject, causing PhanPartialTypeMismatchArgumentInternal with strict_param_checking when result passed to strtolower()",
+      "root_cause": "DependentReturnTypeOverridePlugin had no handler for substr_replace (subject is arg 0). Also preg_replace_callback_array was registered with the third-argument handler but its subject is arg 1, and str_ireplace had no basic handler at all.",
+      "fix": "Refactored third_argument_string_or_array_handler into $make_subject_string_or_array_handler(int $subject_index) factory in src/Phan/Plugin/Internal/DependentReturnTypeOverridePlugin.php; registered substr_replace (index 0), preg_replace_callback_array (index 1), str_ireplace (index 2). Test: tests/files/src/substr_replace_dependent_return.php",
+      "tags": [
+        "issue-5551",
+        "DependentReturnTypeOverridePlugin",
+        "return-type-override",
+        "substr_replace",
+        "false-positive"
+      ]
+    },
+    {
+      "date": "2026-07-20",
+      "error_message": "Issue #5553: PhanTypeMismatchArgumentNullable / PhanPluginNeverReturnMethod false positives when a branch calls a never-returning instance method on a local variable ($foo = new Foo(); $foo->neverReturns();) - branch not treated as unreachable",
+      "root_cause": "BlockExitStatusChecker::computeStatusOfMethodCall only resolved $this->method() calls; any other variable hit a 'TODO not yet handled' branch returning STATUS_PROCEED. UseReturnValuePlugin's node-flag marking couldn't compensate because plugin analyzeMethod hooks (AlwaysReturnPlugin) run in Analysis::analyzeFunctions before analyzeFile marks flags, and phan -n runs no plugins at all.",
+      "fix": "BlockExitStatusChecker now tracks the current statement list/index in computeStatusOfBlock and computeStatusOfMethodCall scans preceding sibling statements for `$var = new ClassName(...)`, bailing conservatively if any intervening statement may reassign the variable (nested assign, unset, by-ref closure use, dynamic var, destructuring). Sound because PHP covariance only allows never to override never. Tests: tests/files/src/5932_never_instance_method_unreachable.php, tests/plugin_test/src/321_noreturn_method_instance_variable.php; updated tests/plugin_test/expected/217_noreturn_control_flow_extra.php.expected (new correct PhanPluginNeverReturnFunction inference).",
+      "tags": [
+        "issue-5553",
+        "BlockExitStatusChecker",
+        "never-type",
+        "control-flow",
+        "false-positive",
+        "unreachable-code"
+      ]
+    },
+    {
+      "id": "bug-027",
+      "timestamp": "2026-09-05T16:11:42.647Z",
+      "error_message": "Issue #5565: after `if (array_is_list($x)) return;` a variable of type `array` is inferred as non-empty-associative-array<array>, causing false PhanTypeMismatchProperty",
+      "file": "src/Phan/Analysis/NegatedConditionVisitor.php",
+      "root_cause": "$remove_list_callback used UnionType::asNonEmptyAssociativeArrayTypes(), a constructor helper that wraps each type as an ELEMENT type, instead of converting each array type to its associative form",
+      "fix": "Added polymorphic ArrayType::castToNonEmptyAssociativeArrayTypes() (overrides in GenericArrayType, ListType, ArrayShapeType, CallableArrayType) and UnionType::nonEmptyAssociativeArrayTypesStrictCast(), mirroring castToListTypes()/listTypesStrictCast(); updated 1129_array_is_list expected output and added array_is_list_negation test",
+      "tags": [
+        "type-inference",
+        "array_is_list",
+        "negated-condition",
+        "false-positive",
+        "php"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-09-05T16:11:42.647Z"
+    },
+    {
+      "id": "bug-028",
+      "timestamp": "2026-09-05T16:55:56.284Z",
+      "error_message": "PR #5567 Codex review (P1): ArrayShapeType::castToNonEmptyAssociativeArrayTypes() returned empty for array{0?:int,1?:string}, which permits the non-list [1 => 'x']",
+      "file": "src/Phan/Language/Type/ArrayShapeType.php",
+      "root_cause": "canCastToList() only means the shape is list-compatible; optional keys are independent, so with 2+ trailing optional keys an instantiation can skip an earlier key and not be a list",
+      "fix": "Return empty only when at most one field is possibly undefined; otherwise keep the shape non-nullable. Added array{0?:int,1?:string} (kept) and array{0?:int} (dropped) cases to array_is_list_negation test",
+      "tags": [
+        "array-shape",
+        "array_is_list",
+        "unsound-narrowing",
+        "code-review",
+        "php"
+      ],
+      "related_bugs": [
+        "bug-027"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-09-05T16:55:56.284Z"
+    },
+    {
+      "id": "bug-029",
+      "timestamp": "2026-09-05T17:14:37.657Z",
+      "error_message": "Issue #5566: PhanParamTooFewInternal / PhanParamTooFewInternalUnpack for one-argument calls to array_diff/array_intersect family: 'requires 2 arg(s)'",
+      "file": "src/Phan/Language/Internal/FunctionSignatureMap.php",
+      "root_cause": "Signature map still had the PHP 7 shape ('array', 'arrays', '...args=') requiring two arrays; PHP 8.0+ is (array $array, array ...$arrays). Callback variants (array_udiff etc.) likewise required a second array before the callback.",
+      "fix": "Changed the six plain entries to 'array'=>'array', '...arrays='=>'array'. Added a '2 alternate signature (array + callback(s)) for the ten callback variants; Phan selects alternates by arg count.",
+      "tags": [
+        "signature-map",
+        "php8",
+        "array_diff",
+        "array_intersect",
+        "false-positive",
+        "php"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-09-05T17:14:37.657Z"
+    },
+    {
+      "id": "bug-030",
+      "timestamp": "2026-09-05T19:41:32.375Z",
+      "error_message": "PR #5568 Codex review (P2): the new '2 alternate (array + callback) let array_diff_ukey($a, 'strcmp', 'strcmp') pass type checking although PHP throws TypeError for argument 2",
+      "file": "src/Phan/Analysis/ArgumentType.php",
+      "root_cause": "analyzeParameter() iterates all alternates per argument and only skipped alternates requiring MORE args than passed; an alternate with FEWER max params than the call's arg count (non-variadic) still participated in type matching",
+      "fix": "In the same guard block, skip an alternate when argcount > getNumberOfParameters() and getParameterForCaller(argcount-1) is null (i.e. not variadic). Added the review's calls to array_diff_single_argument test.",
+      "tags": [
+        "argument-type",
+        "alternate-signatures",
+        "code-review",
+        "false-negative",
+        "php"
+      ],
+      "related_bugs": [
+        "bug-029"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-09-05T19:41:32.375Z"
+    },
+    {
+      "id": "bug-031",
+      "timestamp": "2026-09-05T21:37:32.238Z",
+      "error_message": "PR #5568 Codex review round 2 (P2): the alternate max-count guard was bypassed for any unpacking, so array_diff_ukey($a, ...['strcmp','strcmp']) was no longer reported",
+      "file": "src/Phan/Analysis/ArgumentType.php",
+      "root_cause": "Guard used count(children) and skipped entirely on isUnpack(); ArgumentType::getArgCount() already computes an exact count for fixed-size unpacked arrays and flags unknown sizes",
+      "fix": "Guard now uses getArgCount() (computed lazily once per analyzeParameter call) and applies both count checks whenever the count is known, unpacking included. Named-argument comment needed no code change: PhanSuspiciousNamedArgumentVariadicInternal already covers it.",
+      "tags": [
+        "argument-type",
+        "alternate-signatures",
+        "unpack",
+        "code-review",
+        "php"
+      ],
+      "related_bugs": [
+        "bug-030"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-09-05T21:37:32.238Z"
+    },
+    {
+      "id": "bug-032",
+      "timestamp": "2026-09-15T14:39:05.526059Z",
+      "error_message": "define()d constants have real type erased (no PhanImpossibleTypeComparison for STRING_CONST === $int); constant('NAME') returns mixed for them (#5542)",
+      "file": "src/Phan/Language/Element/GlobalConstant.php",
+      "root_cause": "4a449b66 erased the real type of dynamic constants instead of widening it; ParseVisitor::addConstant keeps only the first define() site so trusting the real type would make conditional define()s (if/else) unsound; DependentReturnTypeOverridePlugin returned mixed for dynamic constants in constant()",
+      "fix": "Widen real type of define()d constants to non-literal (true/false->bool, 3->int) instead of erasing; union all define() sites via GlobalConstant::addAlternateDefinitionType (keyed file:line, lazily resolved, undo-tracked); constant() returns the union type",
+      "tags": [
+        "global-constant",
+        "define",
+        "real-type",
+        "false-positive",
+        "5542"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-09-15T14:39:05.526059Z"
+    },
+    {
+      "id": "bug-033",
+      "timestamp": "2026-09-15T18:35:11.811646Z",
+      "error_message": "PhanTypeMismatchArgumentNullable after `if ($x?->m())` / `if ($x?->prop === true)` etc.: nullsafe condition does not narrow receiver to non-null (#5569)",
+      "file": "src/Phan/Analysis/ConditionVisitorUtil.php",
+      "root_cause": "ConditionVisitor had no visitNullsafeMethodCall and visitNullsafeProp only delegated to the $this->prop path; analyzeBinaryConditionSide ignored nullsafe chain nodes",
+      "fix": "Added isNullsafeAccessChain/removeNullFromNullsafeReceivers/doesConditionImplyNonNull helpers in ConditionVisitorUtil; hooked into removeNullFromVariable, removeFalseyFromVariable, analyzeBinaryConditionSide, and ConditionVisitor truthy/isset/instanceof visitors; nullsafe prop receivers narrowed via synthetic AST_PROP node",
+      "tags": [
+        "nullsafe",
+        "condition-visitor",
+        "type-narrowing",
+        "false-positive",
+        "5569"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-09-15T18:35:11.811646Z"
+    },
+    {
+      "id": "bug-034",
+      "timestamp": "2026-10-07T03:13:33.597504Z",
+      "error_message": "Conditional return type (#5574/PR 5576) ignored `...$unpack` when the function also declares @template: templated(1, ...$maybeEmpty) narrowed to one branch (Codex + Copilot review)",
+      "file": "src/Phan/Language/Element/FunctionTrait.php",
+      "root_cause": "addClosureForDependentTemplateType's analyzer passed $args_types (every arg already converted to UnionType) to resolveConditionalReturnType, erasing AST_UNPACK/AST_NAMED_ARG markers that computeArgumentTypeForConditionalReturn checks",
+      "fix": "Pass the raw $args to resolveConditionalReturnType from the template analyzer; the resolver evaluates only the conditioned argument",
+      "tags": [
+        "conditional-return",
+        "templates",
+        "unpack",
+        "review-finding"
+      ]
+    },
+    {
+      "id": "bug-035",
+      "timestamp": "2026-10-07T03:13:33.597504Z",
+      "error_message": "`@return ($b is T ? T : null)` compared the argument against the unsubstituted template T (Codex review)",
+      "file": "src/Phan/Language/Element/FunctionTrait.php",
+      "root_cause": "The template map was applied only to the resolved result, not to the condition type before evaluateCondition()",
+      "fix": "resolveConditionalReturnType() takes an optional $template_type_map and maps the whole ConditionalReturnType (condition + branches) before resolving; the template analyzer passes its inferred map",
+      "tags": [
+        "conditional-return",
+        "templates",
+        "review-finding"
+      ]
+    },
+    {
+      "id": "bug-036",
+      "timestamp": "2026-10-07T03:13:33.597504Z",
+      "error_message": "call_user_func_array('f', ['name' => $v]) resolved dependent return types positionally (Copilot review)",
+      "file": "src/Phan/Plugin/Internal/ClosureReturnTypeOverridePlugin.php",
+      "root_cause": "extractArrayArgs() dropped array keys and unpack elements, so keyed arrays (php 8 named args) were treated as positional for every dependent-return closure, now including conditionals",
+      "fix": "extractArrayArgs() returns null (=> fall back to the plain union return type) when any element has a key or is `...$x`",
+      "tags": [
+        "call_user_func_array",
+        "named-args",
+        "review-finding"
+      ]
+    },
+    {
+      "id": "bug-037",
+      "timestamp": "2026-10-07T03:43:32.894511Z",
+      "error_message": "`@return ($b is T ? int : string)` (template only in the condition) emitted PhanTemplateTypeNotUsedInFunctionReturn and never installed the template closure (Copilot review, PR 5576)",
+      "file": "src/Phan/Language/Element/FunctionTrait.php",
+      "root_cause": "isTemplateTypeUsed() only inspected the flattened return union (int|string) and @phan-assert types, not the conditional's condition type",
+      "fix": "Added ConditionalReturnType::usesTemplateType() and checked it in isTemplateTypeUsed()",
+      "tags": [
+        "conditional-return",
+        "templates",
+        "review-finding"
+      ]
+    },
+    {
+      "id": "bug-038",
+      "timestamp": "2026-10-07T03:43:32.894511Z",
+      "error_message": "internal/Issue-Types-Caught-by-Phan.md example anchors for PhanCommentReturnConditionalWithoutRealParam went stale after the test file grew (Copilot review)",
+      "file": "internal/Issue-Types-Caught-by-Phan.md",
+      "root_cause": "WikiIssueTypesTest only regenerates entries for undocumented issues; it does not re-check line anchors of existing entries, so extending a test file silently invalidates them",
+      "fix": "Updated the anchors by hand (#L46 / #L222). When a test file referenced by that doc changes, recompute the anchors manually",
+      "tags": [
+        "docs",
+        "review-finding"
+      ]
+    },
+    {
+      "id": "bug-039",
+      "timestamp": "2026-10-07T21:22:31.954692Z",
+      "error_message": "Conditional return branch `int|string` survived a native `: int` signature because the compatibility guard used any-member canCastToUnionType() (Copilot review, PR 5576)",
+      "file": "src/Phan/Language/Element/FunctionTrait.php",
+      "root_cause": "resolveConditionalReturnType() checked the whole resolved union with canCastToUnionType(), which succeeds if any member casts",
+      "fix": "Added withoutTypesIncompatibleWithRealReturnType(): per-member canAnyTypeStrictCastToUnionType against the real return type (static resolved via Method::getDeclaringClassContext()), falling back to getUnionType() only when nothing survives, mirroring Method::computeNewTypeForComment()",
+      "tags": [
+        "conditional-return",
+        "signature",
+        "review-finding"
+      ]
+    },
+    {
+      "id": "bug-040",
+      "timestamp": "2026-10-07T22:00:58.748024Z",
+      "error_message": "f(...$args, x: 1): conditional on optional $y resolved from its default instead of staying ambiguous (Codex review, PR 5576)",
+      "file": "src/Phan/Analysis/ArgumentType.php",
+      "root_cause": "normalizeNamedArgs() stored the AST_UNPACK node at index 0 and then overwrote it with the named argument targeting position 0, erasing the unpack marker that dependent-return resolution relies on",
+      "fix": "When a named argument targets a position already holding an AST_UNPACK node, keep the unpack and append the named arg as an unmatched AST_NAMED_ARG node",
+      "tags": [
+        "named-args",
+        "unpack",
+        "conditional-return",
+        "review-finding"
+      ]
+    },
+    {
+      "id": "bug-041",
+      "timestamp": "2026-10-08T15:45:49.690575Z",
+      "error_message": "`@return ($x is callable ? A : B)` selected A for 'not callable' / any non-empty string or array (Copilot review, PR 5576)",
+      "file": "src/Phan/Language/Element/Comment/ConditionalReturnType.php",
+      "root_cause": "UnionType::isStrictSubtypeOf() follows Phan's cast matrix, where non-empty-string/literal strings/arrays cast to callable, so they counted as definite subtypes",
+      "fix": "For conditions made only of callable/callable-string/callable-array/callable-object, decide with Type::isCallable() (all true => first branch) and Type::isDefiniteNonCallableType() (all true => second branch), otherwise keep both branches",
+      "tags": [
+        "conditional-return",
+        "callable",
+        "review-finding"
+      ]
+    },
+    {
+      "id": "bug-042",
+      "timestamp": "2026-10-08T15:45:49.690575Z",
+      "error_message": "call_user_func_array($cb, [0 => $arg]) lost dependent/conditional return analysis after the keyed-array fix (Copilot review, PR 5576)",
+      "file": "src/Phan/Plugin/Internal/ClosureReturnTypeOverridePlugin.php",
+      "root_cause": "extractArrayArgs() rejected every explicit key, but PHP passes integer keys positionally in array order; only string keys (named args), non-literal keys and unpacking make positions unknown",
+      "fix": "Accept null and literal int keys as positional; return null for anything else",
+      "tags": [
+        "call_user_func_array",
+        "review-finding"
+      ]
+    },
+    {
+      "id": "bug-043",
+      "timestamp": "2026-10-08T16:17:45.696919Z",
+      "error_message": "`@return ($x is callable-string ? A : B)` kept both branches for a Closure argument instead of selecting B (Copilot review, PR 5576)",
+      "file": "src/Phan/Language/Element/Comment/ConditionalReturnType.php",
+      "root_cause": "evaluateCallableCondition() only returned false when every argument type was definitely non-callable; a callable of the wrong kind (Closure vs callable-string) fell through to the ambiguous result",
+      "fix": "Also return false when the argument type has no overlap with the specific callable condition type (hasAnyTypeOverlap)",
+      "tags": [
+        "conditional-return",
+        "callable",
+        "review-finding"
+      ]
+    },
+    {
+      "id": "bug-044",
+      "timestamp": "2026-10-08T16:17:45.696919Z",
+      "error_message": "PhanCommentReturnConditionalWithoutRealParam reported on the plain @return line when a conditional @psalm-return followed it (Copilot review, PR 5576)",
+      "file": "src/Phan/Language/Element/Comment/Builder.php",
+      "root_cause": "The conditional was attached to the pre-existing ReturnComment and the warning used ReturnComment::getLineno(), i.e. the first annotation's line",
+      "fix": "ConditionalReturnType now records its own line number (threaded through the recursive parser) and warnAboutUndeclaredConditionalReturnParams() uses it",
+      "tags": [
+        "conditional-return",
+        "line-numbers",
+        "review-finding"
+      ]
+    },
+    {
+      "id": "bug-045",
+      "timestamp": "2026-10-08T16:30:14.482540Z",
+      "error_message": "`@return A|B|false` + `@psalm-return ($x is null ? A : B)`: call sites resolved to A or B and dropped `false` (Copilot review, PR 5576)",
+      "file": "src/Phan/Language/Element/FunctionTrait.php",
+      "root_cause": "Builder merged the plain annotation into the flattened ReturnComment type, but resolveConditionalReturnType() returned only the chosen conditional branch",
+      "fix": "Compute the members of getPHPDocReturnType() not present in the conditional's flattened union (template-mapped when applicable) and union them into every resolved result",
+      "tags": [
+        "conditional-return",
+        "merged-annotations",
+        "review-finding"
+      ]
+    },
+    {
+      "id": "bug-046",
+      "timestamp": "2026-10-08T16:35:15.056312Z",
+      "error_message": "CI __FakeSelfFallbackTest failed: src/Phan/Language/Element/FunctionTrait.php:1252 PhanPluginAvoidableGetterInTrait Can replace $this->getPHPDocReturnType() with $this->phpdoc_return_type (PR 5576)",
+      "file": "src/Phan/Language/Element/FunctionTrait.php",
+      "root_cause": "tests/run_test enables extra plugins (e.g. AvoidableGetterPlugin) for __FakeSelfFallbackTest that plain `./phan` self-analysis does not, so a getter call inside the trait that owns the property passed locally",
+      "fix": "Read $this->phpdoc_return_type directly",
+      "tags": [
+        "ci",
+        "self-analysis",
+        "plugins"
+      ]
+    },
+    {
+      "id": "bug-047",
+      "timestamp": "2026-10-08T17:09:23.925452Z",
+      "error_message": "narrowedBySignature(1) with `: int` and `@return ($x is null ? int : string)` resolved to int|string: the fallback reintroduced the incompatible branch (Copilot review, PR 5576)",
+      "file": "src/Phan/Language/Element/FunctionTrait.php",
+      "root_cause": "When nothing in the chosen branch survived the signature filter, resolveConditionalReturnType() fell back to getUnionType(), which is the phpdoc-enriched union rather than the native signature",
+      "fix": "Fall back to getRealReturnType() when it is non-empty (then apply static expansion), and to getUnionType() only when there is no real return type",
+      "tags": [
+        "conditional-return",
+        "signature",
+        "review-finding"
+      ]
+    },
+    {
+      "id": "bug-048",
+      "timestamp": "2026-10-08T17:09:23.925452Z",
+      "error_message": "Inherited and trait-imported conditionals lost the members only the plain @return mentioned (`@return A|B|false` + psalm conditional A : B => child/trait call narrowed to A) (Copilot review, PR 5576)",
+      "file": "src/Phan/Language/Element/Comment/Builder.php",
+      "root_cause": "The extras were recovered at resolve time from the function's phpdoc_return_type, which inheritPHPDoc() and Method::createUseAlias() don't copy",
+      "fix": "Bake the extras into the conditional's leaves at parse time (ConditionalReturnType::withPlainAnnotationTypes()) so every clone/inheritance path carries them; drop the phpdoc lookup from resolveConditionalReturnType()",
+      "tags": [
+        "conditional-return",
+        "inheritance",
+        "traits",
+        "review-finding"
+      ]
+    },
+    {
+      "id": "bug-049",
+      "timestamp": "2026-10-08T17:09:23.925452Z",
+      "error_message": "`($x is int ? A : ($x is string ? B : C))` with int|string resolved to A|B|C instead of A|B (Copilot review, PR 5576)",
+      "file": "src/Phan/Language/Element/Comment/ConditionalReturnType.php",
+      "root_cause": "When the outer verdict was ambiguous, both nested branches were resolved against the original argument type",
+      "fix": "Resolve the matching branch with the argument narrowed to the condition (types overlapping it, or the condition for mixed) and the other branch with ConditionVisitor::excludeMatchingTypes(); note ConditionVisitorUtil is a trait, so call the static through ConditionVisitor",
+      "tags": [
+        "conditional-return",
+        "nested",
+        "narrowing",
+        "review-finding"
+      ]
+    },
+    {
+      "id": "bug-050",
+      "timestamp": "2026-10-08T17:36:45.790762Z",
+      "error_message": "`($x is null ? ($x is string ? A : B) : C)` with ?string gave A|B|C instead of B|C: the nested branch saw the whole nullable type (Codex review, PR 5576)",
+      "file": "src/Phan/Language/Element/Comment/ConditionalReturnType.php",
+      "root_cause": "Phan represents ?string as a single nullable Type, so the per-type overlap filter kept all of it for `is null` and excludeMatchingTypes couldn't drop just the null part",
+      "fix": "Split nullable union types into non-nullable|null (withNullSplitOff) before narrowing/excluding for nested conditions",
+      "tags": [
+        "conditional-return",
+        "nullable",
+        "nested",
+        "review-finding"
+      ]
+    },
+    {
+      "id": "bug-051",
+      "timestamp": "2026-10-08T17:36:45.790762Z",
+      "error_message": "Two conditional annotations on one docblock: the second one's branch types were dropped from per-call resolution (Codex review, PR 5576)",
+      "file": "src/Phan/Language/Element/Comment/Builder.php",
+      "root_cause": "The merge in maybeParseReturn() only handled plain+conditional combinations; conditional+conditional kept the first and ignored the second",
+      "fix": "Keep the first conditional's structure and add the second's flattened types to every leaf (withPlainAnnotationTypes)",
+      "tags": [
+        "conditional-return",
+        "merged-annotations",
+        "review-finding"
+      ]
+    },
+    {
+      "id": "bug-052",
+      "timestamp": "2026-10-08T18:04:41.669701Z",
+      "error_message": "`@return ($x is null ? A : B)` + `@psalm-return ($x is null ? B : A)`: null call resolved to A only (Codex review, PR 5576)",
+      "file": "src/Phan/Language/Element/Comment/Builder.php",
+      "root_cause": "withPlainAnnotationTypes() subtracted every type already present anywhere in the first conditional before adding to leaves, so an overlapping second conditional contributed nothing",
+      "fix": "For conditional+conditional, add the second one's whole flattened type to every leaf (withTypesAddedToLeaves)",
+      "tags": [
+        "conditional-return",
+        "merged-annotations",
+        "review-finding"
+      ]
+    },
+    {
+      "id": "bug-053",
+      "timestamp": "2026-10-08T18:04:41.669701Z",
+      "error_message": "`($x is non-empty-string ? ($x is '' ? A : B) : C)` with string gave A|B|C: nested branch saw the whole `string` instead of `non-empty-string` (Codex review, PR 5576)",
+      "file": "src/Phan/Language/Element/Comment/ConditionalReturnType.php",
+      "root_cause": "narrowToCondition() kept an entire atomic type whenever it overlapped the condition",
+      "fix": "When the condition is a strict subtype of the argument's atom, narrow to the condition instead of keeping the atom",
+      "tags": [
+        "conditional-return",
+        "nested",
+        "narrowing",
+        "review-finding"
+      ]
+    },
+    {
+      "id": "bug-054",
+      "timestamp": "2026-10-08T18:04:41.669701Z",
+      "error_message": "f(...$args, x: 1): conditional on $x stayed ambiguous although any non-throwing call passes 1 for $x (Codex review, PR 5576; reverses its earlier suggestion)",
+      "file": "src/Phan/Analysis/ArgumentType.php",
+      "root_cause": "The previous fix kept the AST_UNPACK node in the matched slot and appended the named arg; PHP throws if the unpacked array also supplies x, so the explicit value is the only possibility",
+      "fix": "Put the named value at its position and move the unpack node to the appended tail; the resolver now uses an explicit value when present and treats missing positions as ambiguous only if an unpack exists anywhere",
+      "tags": [
+        "named-args",
+        "unpack",
+        "conditional-return",
+        "review-finding"
+      ]
+    },
+    {
+      "id": "bug-055",
+      "timestamp": "2026-10-08T18:04:41.669701Z",
+      "error_message": "LiteralIntType(5)->isStrictSubtypeOf(negative-int) returned true (found while testing conditional returns)",
+      "file": "src/Phan/Language/Type/LiteralIntType.php",
+      "root_cause": "isSubtypeOfNonNullableType() returned true for any IntType subclass other than LiteralIntType/NonZeroIntType, including PositiveIntType, NegativeIntType and IntRangeType",
+      "fix": "Check the literal value against positive-int, negative-int and int ranges (containsValue). Note: positive-int/negative-int still 'overlap' per canCastToNonNullableType; that laxity is pre-existing and out of scope",
+      "tags": [
+        "types",
+        "int-range",
+        "literal"
+      ]
+    },
+    {
+      "id": "bug-056",
+      "timestamp": "2026-10-08T18:17:02.950708Z",
+      "error_message": "`($x is non-empty-string|int ? ($x is '' ? A : B) : C)` with string kept `string` in the nested branch (Codex review, PR 5576)",
+      "file": "src/Phan/Language/Element/Comment/ConditionalReturnType.php",
+      "root_cause": "narrowToCondition() tested whether the whole condition union was a subtype of the argument atom; with a union condition that never holds even when one member is",
+      "fix": "Intersect each condition member with each argument atom separately",
+      "tags": [
+        "conditional-return",
+        "nested",
+        "narrowing",
+        "review-finding"
+      ]
+    },
+    {
+      "date": "2026-10-08",
+      "error_message": "Method implementing two interfaces (conditional @return first, plain narrower @return second) returned the conditional's other branch (B) from a call whose declared type was A",
+      "root_cause": "ParameterTypesAnalyzer::maybeInheritCommentReturnType narrowed the child's union type from the later overridden method but left the conditional_return_type inherited from the earlier one in place, so getDependentReturnType resolved a stale conditional",
+      "fix": "Clear the child's conditional before adopting a different (narrower) inherited union type, then re-inherit from the current overridden method; test cases CondThenPlain/PlainThenCond/CondThenSameUnion in tests/files/src/5938_conditional_return_type.php",
+      "tags": [
+        "conditional-return",
+        "inheritance",
+        "ParameterTypesAnalyzer",
+        "ultrareview"
+      ]
+    },
+    {
+      "date": "2026-10-08",
+      "error_message": "Conditional @return on a function with @phan-real-return lost the real type set at call sites (plain @return kept it)",
+      "root_cause": "getDependentReturnType only re-attached getRealReturnType() (native signature); @phan-real-return lives only in getUnionType()->getRealTypeSet()",
+      "fix": "FunctionTrait::resolveConditionalReturnType attaches getUnionType()->getRealTypeSet() when the resolved branch has none",
+      "tags": [
+        "conditional-return",
+        "real-type-set",
+        "phan-real-return",
+        "ultrareview"
+      ]
+    },
+    {
+      "date": "2026-10-08",
+      "error_message": "PhanPossiblyNonClassMethodCall on `$x?->foo() ? $x->bar() : $x` ternary in Method::cloneWithTemplateParameterTypeMap",
+      "root_cause": "Phan does not narrow a nullsafe-call truthiness check in a ternary condition onto the same expression in the true branch",
+      "fix": "Assign the nullable value to a local and use an explicit `if ($local && ...)`",
+      "tags": [
+        "self-analysis",
+        "nullsafe",
+        "ternary"
+      ]
+    }
+  ]
+}

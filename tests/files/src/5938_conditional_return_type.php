@@ -534,3 +534,53 @@ function testMisc() {
     $f = mergedReturnLinesWithExtra(1);
     '@phan-debug-var $f';
 }
+
+interface CondFirstI {
+    /** @return ($x is null ? A : B) */
+    public function make(?int $x = null);
+}
+interface PlainI {
+    /** @return A */
+    public function make(?int $x = null);
+}
+/** Inherits from the conditional interface first, then the narrower plain one: the plain type wins. */
+class CondThenPlain implements CondFirstI, PlainI {
+    public function make(?int $x = null) { return new A(); }
+}
+/** Same, in the other order. */
+class PlainThenCond implements PlainI, CondFirstI {
+    public function make(?int $x = null) { return new A(); }
+}
+interface SameUnionI {
+    /** @return A|B */
+    public function make(?int $x = null);
+}
+/** A second interface with the same (flattened) type keeps the inherited conditional. */
+class CondThenSameUnion implements CondFirstI, SameUnionI {
+    public function make(?int $x = null) { return new A(); }
+}
+
+/**
+ * @phan-real-return A|B
+ * @return ($x is null ? A : B)
+ */
+function realReturnOverride(?int $x) {
+    return $x === null ? new A() : new B();
+}
+
+function testInheritanceOrderAndRealReturn(?int $maybe_int) {
+    $a = (new CondThenPlain())->make(null);
+    '@phan-debug-var $a';
+    $b = (new CondThenPlain())->make(1);
+    '@phan-debug-var $b';
+    $c = (new PlainThenCond())->make(1);
+    '@phan-debug-var $c';
+    $d = (new CondThenSameUnion())->make(null);
+    '@phan-debug-var $d';
+    $e = (new CondThenSameUnion())->make(1);
+    '@phan-debug-var $e';
+    $f = realReturnOverride(null);
+    '@phan-debug-var $f';
+    $g = realReturnOverride($maybe_int);
+    '@phan-debug-var $g';
+}

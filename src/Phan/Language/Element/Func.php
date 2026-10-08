@@ -142,6 +142,22 @@ class Func extends AddressableElement implements FunctionInterface
 
 
     /**
+     * Replaces `self` in a closure's phpdoc return type with the class the closure was declared in, if any.
+     *
+     * FIXME properly handle self/static in closures declared within methods.
+     */
+    private static function withSelfTypeResolvedForClosure(UnionType $union_type, Context $context): UnionType
+    {
+        $union_type = $union_type->makeFromFilter(static function (Type $type): bool {
+            return !$type->isSelfType();
+        });
+        if ($context->isInClassScope()) {
+            $union_type = $union_type->withType($context->getClassFQSEN()->asType());
+        }
+        return $union_type;
+    }
+
+    /**
      * @param Context $context
      * The context in which the node appears
      *
@@ -288,16 +304,9 @@ class Func extends AddressableElement implements FunctionInterface
             // See if we have a return type specified in the comment
             $union_type = $comment->getReturnType();
 
-            // FIXME properly handle self/static in closures declared within methods.
             if ($union_type->hasSelfType()) {
-                $union_type = $union_type->makeFromFilter(static function (Type $type): bool {
-                    return !$type->isSelfType();
-                });
-                if ($context->isInClassScope()) {
-                    $union_type = $union_type->withType(
-                        $context->getClassFQSEN()->asType()
-                    );
-                } else {
+                $union_type = self::withSelfTypeResolvedForClosure($union_type, $context);
+                if (!$context->isInClassScope()) {
                     Issue::maybeEmit(
                         $code_base,
                         $context,
@@ -318,19 +327,9 @@ class Func extends AddressableElement implements FunctionInterface
         }
         $conditional_return_type = $comment->getConditionalReturnType();
         if ($conditional_return_type) {
-            // FIXME properly handle self/static in closures declared within methods.
             // (ContextNotObjectUsingSelf was already emitted above for the flattened type if applicable)
             $conditional_return_type = $conditional_return_type->mapTypes(static function (UnionType $union_type) use ($context): UnionType {
-                if (!$union_type->hasSelfType()) {
-                    return $union_type;
-                }
-                $union_type = $union_type->makeFromFilter(static function (Type $type): bool {
-                    return !$type->isSelfType();
-                });
-                if ($context->isInClassScope()) {
-                    $union_type = $union_type->withType($context->getClassFQSEN()->asType());
-                }
-                return $union_type;
+                return $union_type->hasSelfType() ? self::withSelfTypeResolvedForClosure($union_type, $context) : $union_type;
             });
             $func->setConditionalReturnType($conditional_return_type);
             $func->warnAboutUndeclaredConditionalReturnParams($code_base, $element_context);

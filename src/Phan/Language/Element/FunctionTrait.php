@@ -1268,12 +1268,19 @@ trait FunctionTrait
         if ($this instanceof Method) {
             $result = $this->withStaticExpandedToDeclaringClass($result);
         }
+        if (!$result->hasRealTypeSet()) {
+            // Keep the real types of the signature or of (at)phan-real-return, the same as a plain (at)return would.
+            $real_type_set = $this->getUnionType()->getRealTypeSet();
+            if ($real_type_set) {
+                $result = $result->withRealTypeSet($real_type_set);
+            }
+        }
         return $result;
     }
 
     /**
      * Drops every type of $union_type that can't be returned by the real (signature) return type,
-     * the same way Method::computeNewTypeForComment() filters a phpdoc (at)return.
+     * the same way Method::computeNewTypeForComment() filters a plain phpdoc (at)return.
      * `static` is allowed to satisfy a real return type of the declaring class.
      */
     private function withoutTypesIncompatibleWithRealReturnType(CodeBase $code_base, UnionType $union_type): UnionType
@@ -1282,20 +1289,28 @@ trait FunctionTrait
         if ($real_return_type->isEmpty() || $union_type->isEmpty()) {
             return $union_type;
         }
-        $result = $union_type;
+        $context = $this instanceof Method ? $this->getDeclaringClassContext() : $this->getContext();
+        return self::withoutTypesNotCastableToSignatureType($code_base, $context, $real_return_type, $union_type);
+    }
+
+    /**
+     * Returns $union_type without the types that can't be cast to $signature_union_type.
+     * `static` is resolved in $context first, so that `(at)return static` can override a real type of MyClass
+     * (php8 may add a real type of static).
+     */
+    protected static function withoutTypesNotCastableToSignatureType(CodeBase $code_base, Context $context, UnionType $signature_union_type, UnionType $union_type): UnionType
+    {
+        $new_type = $union_type;
         foreach ($union_type->getTypeSet() as $type) {
-            if ($type->asPHPDocUnionType()->canAnyTypeStrictCastToUnionType($code_base, $real_return_type)) {
+            if ($type->asPHPDocUnionType()->canAnyTypeStrictCastToUnionType($code_base, $signature_union_type)) {
                 continue;
             }
-            if ($this instanceof Method) {
-                $resolved_type = $type->withStaticResolvedInContext($this->getDeclaringClassContext());
-                if ($resolved_type !== $type && $resolved_type->asPHPDocUnionType()->canAnyTypeStrictCastToUnionType($code_base, $real_return_type)) {
-                    continue;
-                }
+            $resolved_type = $type->withStaticResolvedInContext($context);
+            if ($resolved_type === $type || !$resolved_type->asPHPDocUnionType()->canAnyTypeStrictCastToUnionType($code_base, $signature_union_type)) {
+                $new_type = $new_type->withoutType($type);
             }
-            $result = $result->withoutType($type);
         }
-        return $result;
+        return $new_type;
     }
 
     /**

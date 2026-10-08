@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "openwolf": {
+    "enabled": true,
+    "anatomy": {
+      "auto_scan_on_init": true,
+      "rescan_interval_hours": 6,
+      "max_description_length": 100,
+      "max_files": 500,
+      "exclude_patterns": [
+        "node_modules",
+        ".git",
+        "dist",
+        "build",
+        ".wolf",
+        ".next",
+        ".nuxt",
+        "coverage",
+        "__pycache__",
+        ".cache",
+        "target",
+        ".vscode",
+        ".idea",
+        ".turbo",
+        ".vercel",
+        ".netlify",
+        ".output",
+        "*.min.js",
+        "*.min.css"
+      ]
+    },
+    "token_audit": {
+      "enabled": true,
+      "report_frequency": "weekly",
+      "waste_threshold_percent": 15,
+      "chars_per_token_code": 3.5,
+      "chars_per_token_prose": 4.0
+    },
+    "cron": {
+      "enabled": true,
+      "max_retry_attempts": 3,
+      "dead_letter_enabled": true,
+      "heartbeat_interval_minutes": 30,
+      "use_claude_p": true,
+      "api_key_env": null
+    },
+    "memory": {
+      "consolidation_after_days": 7,
+      "max_entries_before_consolidation": 200
+    },
+    "cerebrum": {
+      "max_tokens": 2000,
+      "reflection_frequency": "weekly"
+    },
+    "daemon": {
+      "port": 18790,
+      "log_level": "info"
+    },
+    "dashboard": {
+      "enabled": true,
+      "port": 18791
+    },
+    "designqc": {
+      "enabled": true,
+      "viewports": [
+        { "name": "desktop", "width": 1440, "height": 900 },
+        { "name": "mobile", "width": 375, "height": 812 }
+      ],
+      "max_screenshots": 6,
+      "chrome_path": null
+    }
+  }
+}
