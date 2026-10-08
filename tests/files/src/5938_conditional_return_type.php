@@ -316,6 +316,48 @@ function testSignatureCompat(SubSig $s, ?int $maybe) {
     '@phan-debug-var $g';
 }
 
+/**
+ * @return ($x is callable ? int : string)
+ */
+function callableCondition($x) { return is_callable($x) ? 1 : 'x'; }
+
+class Invokable { public function __invoke(): void {} }
+
+/**
+ * @param list<string> $strings
+ * @param callable-string $callable_string
+ */
+function testCallableCondition(string $s, array $strings, $callable_string, Invokable $invokable, ?\Closure $maybe_closure, int $key) {
+    $a = callableCondition(static function (): int { return 1; });
+    '@phan-debug-var $a';
+    $b = callableCondition($invokable);
+    '@phan-debug-var $b';
+    $c = callableCondition($callable_string);
+    '@phan-debug-var $c';
+    $d = callableCondition(1);
+    '@phan-debug-var $d';
+    $e = callableCondition(false);
+    '@phan-debug-var $e';
+    // A string literal that can't name a function or method is known to be non-callable.
+    $f = callableCondition('not callable');
+    '@phan-debug-var $f';
+    // Any other string or array may or may not be callable at runtime.
+    $g = callableCondition('strlen');
+    '@phan-debug-var $g';
+    $h = callableCondition($s);
+    '@phan-debug-var $h';
+    $i = callableCondition($strings);
+    '@phan-debug-var $i';
+    $j = callableCondition($maybe_closure);
+    '@phan-debug-var $j';
+    // Integer keys are positional (in array order); other keys make the positions unknown.
+    $k = call_user_func_array('\\NS5938\\literalCondition', [0 => 'foo']);
+    '@phan-debug-var $k';
+    // @phan-suppress-next-line PhanTypeMismatchArgumentInternal
+    $l = call_user_func_array('\\NS5938\\literalCondition', [$key => 'foo']);
+    '@phan-debug-var $l';
+}
+
 function testMisc() {
     $a = parenthesizedUnionStillWorks();
     '@phan-debug-var $a';

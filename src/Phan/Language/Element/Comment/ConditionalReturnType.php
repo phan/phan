@@ -6,6 +6,11 @@ namespace Phan\Language\Element\Comment;
 
 use Closure;
 use Phan\CodeBase;
+use Phan\Language\Type;
+use Phan\Language\Type\CallableArrayType;
+use Phan\Language\Type\CallableObjectType;
+use Phan\Language\Type\CallableStringType;
+use Phan\Language\Type\CallableType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
 
@@ -221,6 +226,9 @@ final class ConditionalReturnType
         if ($arg_type->isEmpty() || $condition->isEmpty() || $arg_type->hasMixedOrNonEmptyMixedType() || $arg_type->hasTemplateTypeRecursive()) {
             return null;
         }
+        if (self::isCallableCondition($condition)) {
+            return self::evaluateCallableCondition($code_base, $arg_type, $condition);
+        }
         if ($arg_type->isStrictSubtypeOf($code_base, $condition)) {
             return true;
         }
@@ -233,6 +241,43 @@ final class ConditionalReturnType
             return null;
         }
         return false;
+    }
+
+    /**
+     * True if $condition consists only of `callable`, `callable-string`, `callable-array` or `callable-object`.
+     */
+    private static function isCallableCondition(UnionType $condition): bool
+    {
+        return !$condition->hasTypeMatchingCallback(static function (Type $type): bool {
+            return !($type instanceof CallableType || $type instanceof CallableStringType || $type instanceof CallableArrayType || $type instanceof CallableObjectType);
+        });
+    }
+
+    /**
+     * `$x is callable` for a string or array argument can only be decided at runtime, but Phan's cast rules let any
+     * non-empty string or array cast to `callable`. So only types known to be callable (Closure, callable-string,
+     * classes with __invoke(), ...) select the first branch, only types that can't be callable select the second
+     * (int, false, a string literal that isn't a function name, ...), and everything else keeps both.
+     */
+    private static function evaluateCallableCondition(CodeBase $code_base, UnionType $arg_type, UnionType $condition): ?bool
+    {
+        $all_callable = true;
+        $all_non_callable = true;
+        foreach ($arg_type->getTypeSet() as $type) {
+            if ($type->isNullable() || !$type->isCallable($code_base)) {
+                $all_callable = false;
+            }
+            if (!$type->isDefiniteNonCallableType($code_base)) {
+                $all_non_callable = false;
+            }
+        }
+        if ($all_callable && $arg_type->isStrictSubtypeOf($code_base, $condition)) {
+            return true;
+        }
+        if ($all_non_callable) {
+            return false;
+        }
+        return null;
     }
 
     /** The PHPStan syntax for this conditional, e.g. `($x is null ? int : string)` */

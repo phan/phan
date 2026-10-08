@@ -1678,7 +1678,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/1094
 Saw a call with arguments ({CODE}) and ({CODE}) passed to the same parameter of {FUNCTIONLIKE} defined at {FILE}:{LINE}
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/5938_conditional_return_type.php.expected#L15) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/5938_conditional_return_type.php#L59).
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/5938_conditional_return_type.php.expected#L13) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/5938_conditional_return_type.php#L59).
 
 ## PhanDuplicateNamedArgumentInternal
 
