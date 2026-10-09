@@ -877,6 +877,17 @@ class ParseVisitor extends ScopeVisitor
     }
 
     /**
+     * Returns true if $union_type refers to any class (including in generics, array shapes, closures, etc.)
+     */
+    private static function referencesClasses(UnionType $union_type): bool
+    {
+        foreach ($union_type->getReferencedClasses() as $_) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * @param Node|string|float|int|null $default_node
      * @param list<Attribute> $attributes
      */
@@ -1063,20 +1074,31 @@ class ParseVisitor extends ScopeVisitor
                 }
             }
 
-            // During the parse phase, classes referenced by the default value (and their parents, interfaces
-            // and __invoke methods) may not have been parsed yet, so a failed check is repeated by
-            // PropertyTypesAnalyzer once all classes are known (issue #5578).
             if ($default_node !== null &&
                 !$original_union_type->isType(NullType::instance(false)) &&
                 !$variable->getUnionType()->canCastToUnionType($original_union_type, $this->code_base) &&
                 !$original_union_type->canCastToUnionType($variable->getUnionType(), $this->code_base)
             ) {
-                $property->setPendingDefaultTypeCheck(
-                    $variable->getUnionType(),
-                    $original_union_type,
-                    ASTReverter::toShortString($default_node),
-                    $lineno
-                );
+                if (self::referencesClasses($original_union_type) || self::referencesClasses($variable->getUnionType())) {
+                    // During the parse phase, classes referenced by either type (and their parents, interfaces
+                    // and __invoke methods) may not have been parsed yet, so the failed check is repeated by
+                    // PropertyTypesAnalyzer once all classes are known (issue #5578).
+                    $property->setPendingDefaultTypeCheck(
+                        $variable->getUnionType(),
+                        $original_union_type,
+                        ASTReverter::toShortString($default_node),
+                        $lineno
+                    );
+                } elseif (!$property->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchPropertyDefault)) {
+                    $this->emitIssue(
+                        Issue::TypeMismatchPropertyDefault,
+                        $lineno,
+                        (string)$variable->getUnionType(),
+                        $property->getName(),
+                        ASTReverter::toShortString($default_node),
+                        (string)$original_union_type
+                    );
+                }
             }
 
             $original_property_type = $property->getUnionType();

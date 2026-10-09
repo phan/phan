@@ -588,9 +588,6 @@ class Property extends ClassElement
     }
 
     /**
-     * Record the union type of the default value (for declared properties)
-     */
-    /**
      * Inherited properties are clones of the declaring class's property (see Clazz::addProperty()).
      * Only the declaring property should repeat the pending default type check.
      */
@@ -609,16 +606,18 @@ class Property extends ClassElement
     }
 
     /**
-     * Returns and clears the check recorded by setPendingDefaultTypeCheck(), if any.
+     * Returns the check recorded by setPendingDefaultTypeCheck(), if any.
+     * This is not cleared, because daemon mode and the language server analyze classes repeatedly without re-parsing them.
      * @return ?array{0:UnionType,1:UnionType,2:string,3:int}
      */
-    public function takePendingDefaultTypeCheck(): ?array
+    public function getPendingDefaultTypeCheck(): ?array
     {
-        $check = $this->pending_default_type_check;
-        $this->pending_default_type_check = null;
-        return $check;
+        return $this->pending_default_type_check;
     }
 
+    /**
+     * Record the union type of the default value (for declared properties)
+     */
     public function setDefaultType(UnionType $type): void
     {
         $this->default_type = $type;

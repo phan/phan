@@ -36,3 +36,36 @@ class Baz5941 {}
 class Sub5941 extends Baz5941 {}
 
 return new Foo5941();
+
+// The same checks when the classes were declared before use, including an inherited property
+// (inherited properties are clones; the pending check must only be repeated for the declaring property).
+class SubBefore5941 extends FooBefore5941 {}
+
+class FooBefore5941 {
+    /** @var int */
+    public $scalarMismatch = 'str';
+    /** @var string */
+    public $scalarOk = 'ok';
+    /**
+     * @var int
+     * @suppress PhanTypeMismatchPropertyDefault
+     */
+    public $scalarSuppressed = 'str';
+
+    /**
+     * @param callable(int): int $callback
+     * @param BazInterface5941 $impl
+     * @param callable $notInvokable
+     */
+    public function __construct(
+        private $callback = new Bar5941(),
+        private $impl = new Impl5941(),
+        private $notInvokable = new NoInvoke5941(),
+    ) {
+        var_dump($this->callback, $this->impl, $this->notInvokable);
+    }
+}
+
+class SubAfter5941 extends FooBefore5941 {}
+
+return [new SubBefore5941(), new SubAfter5941()];

@@ -26,7 +26,7 @@ class PropertyTypesAnalyzer
      */
     private static function checkPendingDefaultType(CodeBase $code_base, Property $property): void
     {
-        $check = $property->takePendingDefaultTypeCheck();
+        $check = $property->getPendingDefaultTypeCheck();
         if ($check === null) {
             return;
         }
@@ -58,6 +58,8 @@ class PropertyTypesAnalyzer
             $property_context = $property->getContext();
             // This phase is done before the analysis phase, so there aren't any dynamic properties to filter out.
 
+            self::checkPendingDefaultType($code_base, $property);
+
             // Get the union type of this property. This may throw (e.g. it can refers to missing elements).
             try {
                 $union_type = $property->getUnionType();
@@ -71,8 +73,6 @@ class PropertyTypesAnalyzer
             }
             // @phan-suppress-next-line PhanPluginUseReturnValueKnown this is invoked to emit issues
             $union_type->checkImpossibleCombination($code_base, $property_context);
-
-            self::checkPendingDefaultType($code_base, $property);
 
             // Look at each type in the parameter's Union Type
             foreach ($union_type->withFlattenedArrayShapeOrLiteralTypeInstances()->getTypeSet() as $outer_type) {
