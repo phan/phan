@@ -10,6 +10,7 @@ use InvalidArgumentException;
 use Phan\ForkPool\Progress;
 use Phan\ForkPool\Reader;
 use Phan\ForkPool\Writer;
+use Phan\Library\PhaseTimer;
 use Phan\Library\StringUtil;
 
 use function count;
@@ -51,6 +52,12 @@ class ForkPool
 
     /** @var float the previous update time */
     private $previous_update_time = 0.0;
+
+    /**
+     * @var array<int,int> exit statuses of workers that were reaped while reading results, by worker index.
+     * Only used when phase timings are enabled, to record when each worker exited.
+     */
+    private $reaped_status = [];
 
     private function updateProgress(int $i, Progress $progress): void
     {
@@ -180,6 +187,12 @@ class ForkPool
                                 \array_push($this->issues, ...$issues);
                             }
                             break;
+                        case Writer::TYPE_PHASE_TIMINGS:
+                            $timings = unserialize($payload, ['allowed_classes' => false]);
+                            if (\is_array($timings)) {
+                                PhaseTimer::recordWorker($i, $timings);
+                            }
+                            break;
                     }
                 });
                 continue;
@@ -203,12 +216,14 @@ class ForkPool
         }
         $write_stream = self::streamForChild($sockets);
         Writer::initialize($write_stream);
+        PhaseTimer::beginWorker($proc_id, \count($process_task_data_iterator[$proc_id]));
 
         // Execute anything the children wanted to execute upon
         // starting up
         $startup_closure();
 
         // Get the work for this process
+        PhaseTimer::begin('worker_analyze');
         $task_data_iterator = $process_task_data_iterator[$proc_id];
         $task_count = \count($task_data_iterator);
         foreach ($task_data_iterator as $i => $task_data) {
@@ -217,10 +232,16 @@ class ForkPool
 
         // Execute each child's shutdown closure before
         // exiting the process
+        PhaseTimer::begin('worker_finalize');
         $results = $shutdown_closure();
 
         // Serialize this child's produced results and send them to the parent.
+        PhaseTimer::begin('worker_emit');
         Writer::emitIssues($results ?: []);
+
+        if (PhaseTimer::$enabled) {
+            Writer::emitPhaseTimings(PhaseTimer::finishWorker());
+        }
 
         \fclose($write_stream);
 
@@ -287,14 +308,22 @@ class ForkPool
             $streams[intval($stream)] = $stream;
         }
 
+        // When collecting phase timings, wake up periodically to record when each worker exits.
+        $record_exit_times = PhaseTimer::$enabled;
+
         // Read the data off of all the stream.
         while (count($streams) > 0) {
             $needs_read = \array_values($streams);
             $needs_write = null;
             $needs_except = null;
 
-            // Wait for data on at least one stream.
-            $num = \stream_select($needs_read, $needs_write, $needs_except, null /* no timeout */);
+            if ($record_exit_times) {
+                $num = \stream_select($needs_read, $needs_write, $needs_except, 0, 10000);
+                $this->reapExitedWorkers();
+            } else {
+                // Wait for data on at least one stream.
+                $num = \stream_select($needs_read, $needs_write, $needs_except, null /* no timeout */);
+            }
             if ($num === false) {
                 \error_log("unable to select on read stream");
                 exit(EXIT_FAILURE);
@@ -339,6 +368,31 @@ class ForkPool
     }
 
     /**
+     * Reap the workers that have exited without blocking, and record when they were reaped.
+     * Only used when phase timings are enabled.
+     */
+    private function reapExitedWorkers(): void
+    {
+        foreach ($this->child_pid_list as $i => $child_pid) {
+            if (\array_key_exists($i, $this->reaped_status)) {
+                continue;
+            }
+            $status = 0;
+            $result = \pcntl_waitpid($child_pid, $status, \WNOHANG);
+            if ($result === 0) {
+                // Still running
+                continue;
+            }
+            if ($result < 0) {
+                \error_log(\posix_strerror(\posix_get_last_error()));
+            } else {
+                PhaseTimer::recordWorkerExit($i, \hrtime(true));
+            }
+            $this->reaped_status[$i] = $status;
+        }
+    }
+
+    /**
      * Wait for all child processes to complete
      * @return list<IssueInstance>
      */
@@ -347,9 +401,21 @@ class ForkPool
         // Read all the streams from child processes into an array.
         $content = $this->readResultsFromChildren();
 
+        if (PhaseTimer::$enabled) {
+            // Poll so that the time at which each worker exited is recorded accurately.
+            while (count($this->reaped_status) < count($this->child_pid_list)) {
+                $this->reapExitedWorkers();
+                if (count($this->reaped_status) < count($this->child_pid_list)) {
+                    \usleep(1000);
+                }
+            }
+        }
+
         // Wait for all children to return
-        foreach ($this->child_pid_list as $child_pid) {
-            if (\pcntl_waitpid($child_pid, $status) < 0) {
+        foreach ($this->child_pid_list as $i => $child_pid) {
+            if (\array_key_exists($i, $this->reaped_status)) {
+                $status = $this->reaped_status[$i];
+            } elseif (\pcntl_waitpid($child_pid, $status) < 0) {
                 \error_log(\posix_strerror(\posix_get_last_error()));
             }
 
