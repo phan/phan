@@ -244,6 +244,15 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
                 if ($type instanceof NonZeroIntType) {
                     return (bool)$this->value;
                 }
+                if ($type instanceof PositiveIntType) {
+                    return $this->value > 0;
+                }
+                if ($type instanceof NegativeIntType) {
+                    return $this->value < 0;
+                }
+                if ($type instanceof IntRangeType) {
+                    return $type->containsValue($this->value);
+                }
                 return true;
             }
             return false;

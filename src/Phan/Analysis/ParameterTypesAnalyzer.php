@@ -1044,17 +1044,47 @@ class ParameterTypesAnalyzer
             $phpdoc_return_type = $method->getUnionType();
             if ($phpdoc_return_type->isEmpty()) {
                 $method->setUnionType($parent_phpdoc_return_type);
+                self::maybeInheritConditionalReturnType($method, $overridden_method);
             } else {
-                self::maybeInheritCommentReturnType($code_base, $method, $parent_phpdoc_return_type);
+                self::maybeInheritCommentReturnType($code_base, $method, $overridden_method, $parent_phpdoc_return_type);
             }
         }
+    }
+
+    /**
+     * Inherit the parent's conditional return type (`(at)return ($x is null ? A : B)`) when the child has no (at)return of its own.
+     * Parameters renamed by the child are renamed in the inherited conditional by position.
+     */
+    private static function maybeInheritConditionalReturnType(Method $method, Method $overridden_method): void
+    {
+        if ($method->getConditionalReturnType()) {
+            return;
+        }
+        $conditional = $overridden_method->getConditionalReturnType();
+        if (!$conditional) {
+            return;
+        }
+        $comment = $method->getComment();
+        if ($comment && $comment->hasReturnUnionType() && !$comment->getReturnType()->isEmpty()) {
+            // This comment explicitly specified the desired return type.
+            return;
+        }
+        $name_map = [];
+        $child_parameter_list = $method->getParameterList();
+        foreach ($overridden_method->getParameterList() as $i => $parent_parameter) {
+            $child_parameter = $child_parameter_list[$i] ?? null;
+            if ($child_parameter && $child_parameter->getName() !== $parent_parameter->getName()) {
+                $name_map[$parent_parameter->getName()] = $child_parameter->getName();
+            }
+        }
+        $method->setConditionalReturnType($name_map ? $conditional->withRenamedParams($name_map) : $conditional);
     }
 
     /**
      * @param Method $method a method which has a union type, but is permitted to inherit a more specific type.
      * @param UnionType $inherited_union_type a non-empty union type
      */
-    private static function maybeInheritCommentReturnType(CodeBase $code_base, Method $method, UnionType $inherited_union_type): void
+    private static function maybeInheritCommentReturnType(CodeBase $code_base, Method $method, Method $overridden_method, UnionType $inherited_union_type): void
     {
         $comment = $method->getComment();
         if ($comment && $comment->hasReturnUnionType()) {
@@ -1065,7 +1095,13 @@ class ParameterTypesAnalyzer
             }
         }
         if ($inherited_union_type->isExclusivelyNarrowedFormOf($code_base, $method->getUnionType())) {
+            if (!$inherited_union_type->isEqualTo($method->getUnionType())) {
+                // The return type changed (e.g. a second interface narrowed it), so a conditional inherited
+                // from an earlier overridden method no longer describes it.
+                $method->setConditionalReturnType(null);
+            }
             $method->setUnionType($inherited_union_type);
+            self::maybeInheritConditionalReturnType($method, $overridden_method);
         }
     }
 

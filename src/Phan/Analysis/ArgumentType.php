@@ -2004,6 +2004,8 @@ final class ArgumentType
      * For purely positional calls this returns the input unchanged (fast path).
      * Gaps for unspecified optional parameters are left absent — callers
      * should continue using `$args[$i] ?? null`.
+     * Unmatched named arguments, and an `...$unpack` that a named argument replaced,
+     * are appended after the matched positions.
      *
      * @param list<Node|int|string|float> $args Raw argument nodes from $node->children['args']->children
      * @param FunctionInterface $method The function/method being called
@@ -2035,7 +2037,15 @@ final class ArgumentType
             if ($arg instanceof Node && $arg->kind === ast\AST_NAMED_ARG) {
                 $name = $arg->children['name'];
                 if (isset($name_to_position[$name])) {
-                    $result[$name_to_position[$name]] = $arg->children['expr'];
+                    $position = $name_to_position[$name];
+                    $existing = $result[$position] ?? null;
+                    if ($existing instanceof Node && $existing->kind === ast\AST_UNPACK) {
+                        // `f(...$args, x: 1)`: any call that doesn't throw passes `1` for `x` (an `x` in the unpacked
+                        // array would be an error), but the unpack may still fill the later parameters.
+                        // Keep the unpack node (after the matched positions) so callers know that.
+                        $unmatched[] = $existing;
+                    }
+                    $result[$position] = $arg->children['expr'];
                 } else {
                     // Keep unmatched named args (e.g. forwarded via variadic) as-is
                     $unmatched[] = $arg;

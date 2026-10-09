@@ -12,6 +12,7 @@ use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Comment\Assertion;
 use Phan\Language\Element\Comment\Builder;
+use Phan\Language\Element\Comment\ConditionalReturnType;
 use Phan\Language\Element\Comment\Method as CommentMethod;
 use Phan\Language\Element\Comment\NullComment;
 use Phan\Language\Element\Comment\Parameter as CommentParameter;
@@ -354,7 +355,7 @@ class Comment
             return;
         }
         $return_type = $old_comment->getType()->withRealTypeSet($real_return_comment->getType()->getRealTypeSet());
-        $this->return_comment = new ReturnComment($return_type, $old_comment->getLineno());
+        $this->return_comment = $old_comment->withType($return_type);
     }
 
     private function applyOverride(string $key, mixed $value): void
@@ -643,6 +644,15 @@ class Comment
     public function hasReturnUnionType(): bool
     {
         return $this->return_comment !== null;
+    }
+
+    /**
+     * @return ?ConditionalReturnType
+     * The conditional return type (e.g. `@return ($x is null ? A : B)`), if the (at)return directive was one.
+     */
+    public function getConditionalReturnType(): ?ConditionalReturnType
+    {
+        return $this->return_comment?->getConditional();
     }
 
     /**

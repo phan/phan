@@ -187,6 +187,10 @@ class Method extends ClassElement implements FunctionInterface
                 return;
             }
         }
+        if ($this->conditional_return_type?->hasTemplateTypeRecursive()) {
+            $this->recordHasTemplateType(true);
+            return;
+        }
         $this->recordHasTemplateType(false);
     }
 
@@ -486,6 +490,7 @@ class Method extends ClassElement implements FunctionInterface
         $method->setNumberOfOptionalParameters($this->getNumberOfOptionalParameters());
         // Copy the comment so that features such as templates will work
         $method->comment = $this->comment;
+        $method->conditional_return_type = $this->conditional_return_type;
 
         return $method;
     }
@@ -684,6 +689,16 @@ class Method extends ClassElement implements FunctionInterface
             $method->setUnionType($new_type);
             $method->setPHPDocReturnType($comment_return_union_type);
         }
+        $conditional_return_type = $comment->getConditionalReturnType();
+        if ($conditional_return_type) {
+            if (!$is_trait) {
+                $conditional_return_type = $conditional_return_type->mapTypes(static function (UnionType $type) use ($context): UnionType {
+                    return $type->withSelfResolvedInContext($context);
+                });
+            }
+            $method->setConditionalReturnType($conditional_return_type);
+            $method->warnAboutUndeclaredConditionalReturnParams($code_base, $element_context);
+        }
         $element_context->freeElementReference();
         // Populate the original return type.
         $method->setOriginalReturnType();
@@ -697,17 +712,7 @@ class Method extends ClassElement implements FunctionInterface
 
     private static function computeNewTypeForComment(CodeBase $code_base, Context $context, UnionType $signature_union_type, UnionType $comment_return_union_type): UnionType
     {
-        $new_type = $comment_return_union_type;
-        foreach ($comment_return_union_type->getTypeSet() as $type) {
-            if (!$type->asPHPDocUnionType()->canAnyTypeStrictCastToUnionType($code_base, $signature_union_type)) {
-                // Allow `@return static` to override a real type of MyClass.
-                // php8 may add a real type of static.
-                $resolved_type = $type->withStaticResolvedInContext($context);
-                if ($resolved_type === $type || !$resolved_type->asPHPDocUnionType()->canAnyTypeStrictCastToUnionType($code_base, $signature_union_type)) {
-                    $new_type = $new_type->withoutType($type);
-                }
-            }
-        }
+        $new_type = self::withoutTypesNotCastableToSignatureType($code_base, $context, $signature_union_type, $comment_return_union_type);
 
         if ($new_type !== $comment_return_union_type) {
             $new_type = $signature_union_type->withUnionType($new_type)->withRealTypeSet($signature_union_type->getRealTypeSet());
@@ -771,15 +776,29 @@ class Method extends ClassElement implements FunctionInterface
             $union_type = parent::getUnionType();
         }
 
-        // If the type contains 'static', add this method's class
-        // to the return type.
-        $scope = new ClassScope(new GlobalScope(), $this->fqsen->getFullyQualifiedClassName(), 0);
-        $new_union_type = $union_type->withStaticResolvedInContext((clone $this->getContext())->withScope($scope));
+        return $this->withStaticExpandedToDeclaringClass($union_type);
+    }
+
+    /**
+     * If $union_type contains 'static', add this method's class to it (keeping 'static').
+     */
+    public function withStaticExpandedToDeclaringClass(UnionType $union_type): UnionType
+    {
+        $new_union_type = $union_type->withStaticResolvedInContext($this->getDeclaringClassContext());
         if ($new_union_type !== $union_type) {
             $union_type = $union_type->withUnionType($new_union_type);
         }
 
         return $union_type;
+    }
+
+    /**
+     * A context whose scope is the class declaring this method (used to resolve `static`)
+     */
+    public function getDeclaringClassContext(): Context
+    {
+        $scope = new ClassScope(new GlobalScope(), $this->fqsen->getFullyQualifiedClassName(), 0);
+        return (clone $this->getContext())->withScope($scope);
     }
 
     public function getUnionTypeWithUnmodifiedStatic(): UnionType
@@ -1116,6 +1135,10 @@ class Method extends ClassElement implements FunctionInterface
             }
         }
 
+        if (!$has_template_types && $this->conditional_return_type?->hasTemplateTypeRecursive()) {
+            $has_template_types = true;
+        }
+
         if (!$has_template_types && ($comment = $this->comment)) {
             if ($comment->hasReturnUnionType() &&
                 $comment->getReturnType()->hasTemplateTypeRecursive()) {
@@ -1142,6 +1165,12 @@ class Method extends ClassElement implements FunctionInterface
             $method->setUnionType(
                 $method->getUnionType()->withTemplateParameterTypeMap($template_type_map)
             );
+        }
+        $map_template_types = static function (UnionType $type) use ($template_type_map): UnionType {
+            return $type->withTemplateParameterTypeMap($template_type_map);
+        };
+        if ($method->conditional_return_type?->hasTemplateTypeRecursive()) {
+            $method->conditional_return_type = $method->conditional_return_type->mapTypes($map_template_types);
         }
 
         // Map each method parameter
@@ -1202,9 +1231,14 @@ class Method extends ClassElement implements FunctionInterface
                 if (!($old_return_comment instanceof \Phan\Language\Element\Comment\ReturnComment)) {
                     throw new \AssertionError('Expected ReturnComment when hasReturnUnionType is true');
                 }
+                $old_conditional = $old_return_comment->getConditional();
+                if ($old_conditional && $old_conditional->hasTemplateTypeRecursive()) {
+                    $old_conditional = $old_conditional->mapTypes($map_template_types);
+                }
                 $new_return_comment = new \Phan\Language\Element\Comment\ReturnComment(
                     $return_type,
-                    $old_return_comment->getLineno()
+                    $old_return_comment->getLineno(),
+                    $old_conditional
                 );
                 $reflection->setValue($comment, $new_return_comment);
 

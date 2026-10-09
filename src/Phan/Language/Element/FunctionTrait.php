@@ -20,6 +20,7 @@ use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Comment\Assertion;
+use Phan\Language\Element\Comment\ConditionalReturnType;
 use Phan\Language\FileRef;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -227,6 +228,13 @@ trait FunctionTrait
      * @var ?Closure(CodeBase, Context, FunctionInterface, list<Node|int|string|float>):UnionType
      */
     private $return_type_callback = null;
+
+    /**
+     * @var ?ConditionalReturnType
+     * The conditional return type from phpdoc (e.g. `(at)return ($x is null ? A : B)`), if any.
+     * Resolved per call site in getDependentReturnType() unless a plugin/template closure takes priority.
+     */
+    private $conditional_return_type = null;
 
     /**
      * @var ?Closure(CodeBase, Context, FunctionInterface, list<Node|int|string|float>, ?Node):void
@@ -1152,7 +1160,7 @@ trait FunctionTrait
      */
     public function hasDependentReturnType(): bool
     {
-        return $this->return_type_callback !== null;
+        return $this->return_type_callback !== null || $this->conditional_return_type !== null;
     }
 
     /**
@@ -1164,8 +1172,14 @@ trait FunctionTrait
      */
     public function getDependentReturnType(CodeBase $code_base, Context $context, array $args): UnionType
     {
-        // @phan-suppress-next-line PhanTypeMismatchArgument, PhanTypePossiblyInvalidCallable - Callers should check hasDependentReturnType
-        $result = ($this->return_type_callback)($code_base, $context, $this, $args);
+        $callback = $this->return_type_callback;
+        if ($callback) {
+            // @phan-suppress-next-line PhanTypeMismatchArgument
+            $result = $callback($code_base, $context, $this, $args);
+        } else {
+            // Callers should check hasDependentReturnType
+            $result = $this->resolveConditionalReturnType($code_base, $context, $args) ?? $this->getUnionType();
+        }
         if (!$result->hasRealTypeSet()) {
             $real_return_type = $this->getRealReturnType();
             if (!$real_return_type->isEmpty()) {
@@ -1178,6 +1192,163 @@ trait FunctionTrait
     public function setDependentReturnTypeClosure(Closure $closure): void
     {
         $this->return_type_callback = $closure;
+    }
+
+    /**
+     * @return ?ConditionalReturnType the phpdoc conditional return type (e.g. `(at)return ($x is null ? A : B)`), if any
+     */
+    public function getConditionalReturnType(): ?ConditionalReturnType
+    {
+        return $this->conditional_return_type;
+    }
+
+    /**
+     * Sets the phpdoc conditional return type (or removes it, with null)
+     */
+    public function setConditionalReturnType(?ConditionalReturnType $conditional): void
+    {
+        $this->conditional_return_type = $conditional;
+    }
+
+    /**
+     * Emits an issue for every parameter named in the conditional return type that this function doesn't declare.
+     */
+    public function warnAboutUndeclaredConditionalReturnParams(CodeBase $code_base, Context $context): void
+    {
+        $conditional = $this->conditional_return_type;
+        if (!$conditional) {
+            return;
+        }
+        foreach ($conditional->getParamNames() as $param_name) {
+            if ($this->getParamIndexForName($param_name) === null) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::CommentReturnConditionalWithoutRealParam,
+                    $conditional->getLineno() ?: $context->getLineNumberStart(),
+                    $param_name,
+                    $this->getRepresentationForIssue()
+                );
+            }
+        }
+    }
+
+    /**
+     * Resolves the phpdoc conditional return type for a call with the given arguments.
+     *
+     * @param list<Node|int|string|float|UnionType> $args the arguments in declaration order (see ArgumentType::normalizeNamedArgs)
+     * @param array<string,UnionType> $template_type_map the template types inferred for this call, substituted into the
+     *        conditional (including the condition itself, e.g. `$x is T`) before resolving it.
+     * @return ?UnionType null if this function has no conditional return type
+     */
+    public function resolveConditionalReturnType(CodeBase $code_base, Context $context, array $args, array $template_type_map = []): ?UnionType
+    {
+        $conditional = $this->conditional_return_type;
+        if (!$conditional) {
+            return null;
+        }
+        if ($template_type_map && $conditional->hasTemplateTypeRecursive()) {
+            $conditional = $conditional->mapTypes(static function (UnionType $type) use ($template_type_map): UnionType {
+                return $type->withTemplateParameterTypeMap($template_type_map);
+            });
+        }
+        $arg_type_cache = [];
+        $lookup = function (string $param_name) use ($code_base, $context, $args, &$arg_type_cache): ?UnionType {
+            if (!\array_key_exists($param_name, $arg_type_cache)) {
+                $arg_type_cache[$param_name] = $this->computeArgumentTypeForConditionalReturn($code_base, $context, $args, $param_name);
+            }
+            return $arg_type_cache[$param_name];
+        };
+        $result = $this->withoutTypesIncompatibleWithRealReturnType($code_base, $conditional->resolve($code_base, $lookup));
+        if ($result->isEmpty()) {
+            // Nothing in the chosen branch is compatible with the real signature, which is what a successful call returns.
+            $real_return_type = $this->getRealReturnType();
+            $result = $real_return_type->isEmpty() ? $this->getUnionType() : $real_return_type;
+        }
+        if ($this instanceof Method) {
+            $result = $this->withStaticExpandedToDeclaringClass($result);
+        }
+        if (!$result->hasRealTypeSet()) {
+            // Keep the real types of the signature or of (at)phan-real-return, the same as a plain (at)return would.
+            $real_type_set = $this->getUnionType()->getRealTypeSet();
+            if ($real_type_set) {
+                $result = $result->withRealTypeSet($real_type_set);
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Drops every type of $union_type that can't be returned by the real (signature) return type,
+     * the same way Method::computeNewTypeForComment() filters a plain phpdoc (at)return.
+     * `static` is allowed to satisfy a real return type of the declaring class.
+     */
+    private function withoutTypesIncompatibleWithRealReturnType(CodeBase $code_base, UnionType $union_type): UnionType
+    {
+        $real_return_type = $this->getRealReturnType();
+        if ($real_return_type->isEmpty() || $union_type->isEmpty()) {
+            return $union_type;
+        }
+        $context = $this instanceof Method ? $this->getDeclaringClassContext() : $this->getContext();
+        return self::withoutTypesNotCastableToSignatureType($code_base, $context, $real_return_type, $union_type);
+    }
+
+    /**
+     * Returns $union_type without the types that can't be cast to $signature_union_type.
+     * `static` is resolved in $context first, so that `(at)return static` can override a real type of MyClass
+     * (php8 may add a real type of static).
+     */
+    protected static function withoutTypesNotCastableToSignatureType(CodeBase $code_base, Context $context, UnionType $signature_union_type, UnionType $union_type): UnionType
+    {
+        $new_type = $union_type;
+        foreach ($union_type->getTypeSet() as $type) {
+            if ($type->asPHPDocUnionType()->canAnyTypeStrictCastToUnionType($code_base, $signature_union_type)) {
+                continue;
+            }
+            $resolved_type = $type->withStaticResolvedInContext($context);
+            if ($resolved_type === $type || !$resolved_type->asPHPDocUnionType()->canAnyTypeStrictCastToUnionType($code_base, $signature_union_type)) {
+                $new_type = $new_type->withoutType($type);
+            }
+        }
+        return $new_type;
+    }
+
+    /**
+     * @param list<Node|int|string|float|UnionType> $args
+     * @return ?UnionType the type of the argument passed for $param_name, or null if it can't be determined
+     */
+    private function computeArgumentTypeForConditionalReturn(CodeBase $code_base, Context $context, array $args, string $param_name): ?UnionType
+    {
+        $i = $this->getParamIndexForName($param_name);
+        if ($i === null) {
+            return null;
+        }
+        $parameter = $this->parameter_list[$i];
+        if ($parameter->isVariadic()) {
+            return null;
+        }
+        if (\array_key_exists($i, $args)) {
+            $arg = $args[$i];
+            if ($arg instanceof UnionType) {
+                return $arg;
+            }
+            if ($arg instanceof Node && ($arg->kind === ast\AST_UNPACK || $arg->kind === ast\AST_NAMED_ARG)) {
+                // Argument unpacking (or a named argument that didn't match a parameter) at this position:
+                // it's unknown which argument ends up in this parameter.
+                return null;
+            }
+            return UnionTypeVisitor::unionTypeFromNode($code_base, $context, $arg);
+        }
+        foreach ($args as $arg) {
+            if ($arg instanceof Node && $arg->kind === ast\AST_UNPACK) {
+                // No explicit argument for this position, but an unpacked array may fill it.
+                return null;
+            }
+        }
+        if ($parameter->hasDefaultValue()) {
+            return $parameter->getDefaultValueLiteralType();
+        }
+        return null;
     }
 
     /**
@@ -1657,6 +1828,10 @@ trait FunctionTrait
             // used in `@return`
             return true;
         }
+        if ($this->conditional_return_type?->usesTemplateType($type)) {
+            // used in the condition of `@return ($x is T ? ... : ...)` (the branches are part of getUnionType())
+            return true;
+        }
 
         if ($this->comment) {
             foreach ($this->comment->getParamAssertionMap() as $assertion) {
@@ -1675,8 +1850,9 @@ trait FunctionTrait
      */
     private function addClosureForDependentTemplateType(CodeBase $code_base, Context $context, array $template_type_list): void
     {
-        if ($this->hasDependentReturnType()) {
+        if ($this->return_type_callback !== null) {
             // We already added this or this conflicts with a plugin.
+            // (A conditional return type alone doesn't block this: it's composed into the closure below)
             return;
         }
         if (!$template_type_list) {
@@ -1787,7 +1963,11 @@ trait FunctionTrait
             foreach ($parameter_extractor_map as $name => $closure) {
                 $template_type_map[$name] = $closure($args_types, $context);
             }
-            return $function->getUnionType()->withTemplateParameterTypeMap($template_type_map);
+            // A conditional return type (`(at)return ($x is null ? T : int)`) picks the branch first (with the inferred
+            // templates substituted into the condition), then templates are substituted into the result.
+            // Pass the raw $args so that argument unpacking is still detected.
+            $base_type = $function->resolveConditionalReturnType($code_base, $context, $args, $template_type_map) ?? $function->getUnionType();
+            return $base_type->withTemplateParameterTypeMap($template_type_map);
         };
         $this->setDependentReturnTypeClosure($analyzer);
     }

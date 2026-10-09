@@ -297,6 +297,112 @@ final class Builder
         );
     }
 
+    /**
+     * Matches the start of a conditional return type annotation, e.g. `(at)return ($x is null ? A : B)`.
+     * Anchored to the tag at the start of the comment line, and deliberately cheap:
+     * ordinary (at)return annotations fail at the lookahead.
+     * @internal
+     */
+    public const CONDITIONAL_RETURN_START_REGEX = '/^[\s\/*]*@(?:phan-|psalm-)?return\s+(?=\(\s*\$)/';
+
+    private const CONDITIONAL_HEAD_REGEX = '/\G\(\s*\$' . self::WORD_REGEX . '\s+is\s+(not\s+)?(' . UnionType::union_type_regex_or_this . ')\s*\?\s*/';
+    private const CONDITIONAL_LEAF_REGEX = '/\G(' . UnionType::union_type_regex_or_this . ')/';
+    private const CONDITIONAL_NESTED_LOOKAHEAD_REGEX = '/\G\(\s*\$/';
+    private const CONDITIONAL_SEPARATOR_REGEX = '/\G\s*:\s*/';
+    private const CONDITIONAL_END_REGEX = '/\G\s*\)/';
+
+    /**
+     * Parses a PHPStan/Psalm-style conditional return type such as `(at)return ($x is null ? A : B)`.
+     *
+     * Only `$param is [not] Type` conditions are supported (not conditions on template type names),
+     * and either branch may be another conditional.
+     *
+     * @return ?ConditionalReturnType null if $line is not a conditional return type, or could not be parsed as one.
+     * Callers should then fall back to the regular (at)return parsing, which emits the usual issues.
+     */
+    private function parseConditionalReturnFromCommentLine(string $line, int $i): ?ConditionalReturnType
+    {
+        if (!\preg_match(self::CONDITIONAL_RETURN_START_REGEX, $line, $match, \PREG_OFFSET_CAPTURE)) {
+            return null;
+        }
+        $offset = $match[0][1] + \strlen($match[0][0]);
+        $conditional = $this->parseConditionalAt($line, $offset, $this->guessActualLineLocation($i));
+        if (!$conditional) {
+            return null;
+        }
+        $char_at_end_offset = $line[$offset] ?? ' ';
+        if (\ord($char_at_end_offset) > 32 && !\preg_match('@^\*+/$@D', \substr($line, $offset))) {  // Not a control character or space
+            $this->emitIssue(
+                Issue::UnextractableAnnotationSuffix,
+                $this->guessActualLineLocation($i),
+                \trim($line),
+                (string)$conditional,
+                $char_at_end_offset
+            );
+        }
+        return $conditional;
+    }
+
+    /**
+     * Parses `($name is [not] Type ? Branch : Branch)` starting at $offset.
+     * @param int $offset the offset of the opening parenthesis. On success, this is advanced past the closing parenthesis.
+     * @param int $lineno the line of the annotation, recorded on the result
+     */
+    private function parseConditionalAt(string $line, int &$offset, int $lineno): ?ConditionalReturnType
+    {
+        if (!\preg_match(self::CONDITIONAL_HEAD_REGEX, $line, $match, 0, $offset)) {
+            return null;
+        }
+        $param_name = $match[1];
+        $negated = ($match[2] ?? '') !== '';
+        $condition = $this->unionTypeFromConditionalPart($match[3]);
+        $offset += \strlen($match[0]);
+
+        $if_true = $this->parseConditionalBranchAt($line, $offset, $lineno);
+        if ($if_true === null) {
+            return null;
+        }
+        if (!\preg_match(self::CONDITIONAL_SEPARATOR_REGEX, $line, $match, 0, $offset)) {
+            return null;
+        }
+        $offset += \strlen($match[0]);
+        $if_false = $this->parseConditionalBranchAt($line, $offset, $lineno);
+        if ($if_false === null) {
+            return null;
+        }
+        if (!\preg_match(self::CONDITIONAL_END_REGEX, $line, $match, 0, $offset)) {
+            return null;
+        }
+        $offset += \strlen($match[0]);
+        return new ConditionalReturnType($param_name, $condition, $negated, $if_true, $if_false, $lineno);
+    }
+
+    /**
+     * Parses one branch of a conditional: either a nested conditional or a union type.
+     * @param int $offset advanced past the branch on success
+     */
+    private function parseConditionalBranchAt(string $line, int &$offset, int $lineno): UnionType|ConditionalReturnType|null
+    {
+        if (\preg_match(self::CONDITIONAL_NESTED_LOOKAHEAD_REGEX, $line, $unused_match, 0, $offset)) {
+            return $this->parseConditionalAt($line, $offset, $lineno);
+        }
+        if (!\preg_match(self::CONDITIONAL_LEAF_REGEX, $line, $match, 0, $offset)) {
+            return null;
+        }
+        $offset += \strlen($match[0]);
+        return $this->unionTypeFromConditionalPart($match[1]);
+    }
+
+    private function unionTypeFromConditionalPart(string $type_string): UnionType
+    {
+        return UnionType::fromStringInContext(
+            self::rewritePHPDocType($type_string),
+            $this->context,
+            Type::FROM_PHPDOC,
+            $this->code_base
+        );
+    }
+
     private static function rewritePHPDocType(
         string $original_type
     ): string {
@@ -913,11 +1019,28 @@ final class Builder
             return;
         }
         $return_comment = $this->return_comment;
-        $new_type = $this->returnOrThrowsTypeFromCommentLine($line, $i);
-        if ($return_comment) {
-            $return_comment->setType($return_comment->getType()->withUnionType($new_type));
+        $conditional = $this->parseConditionalReturnFromCommentLine($line, $i);
+        if ($conditional) {
+            $new_type = $conditional->asFlattenedUnionType();
         } else {
-            $this->return_comment = new ReturnComment($new_type, $this->guessActualLineLocation($i));
+            $new_type = $this->returnOrThrowsTypeFromCommentLine($line, $i);
+        }
+        if ($return_comment) {
+            // e.g. `@return A|B|false` followed by `@psalm-return ($x is null ? A : B)`:
+            // the flattened type is the union of both, and `false` is possible for every call of the conditional.
+            $old_type = $return_comment->getType();
+            $return_comment->setType($old_type->withUnionType($new_type));
+            $old_conditional = $return_comment->getConditional();
+            if ($conditional && !$old_conditional) {
+                $return_comment->setConditional($conditional->withPlainAnnotationTypes($old_type));
+            } elseif (!$conditional && $old_conditional) {
+                $return_comment->setConditional($old_conditional->withPlainAnnotationTypes($new_type));
+            } elseif ($conditional && $old_conditional) {
+                // Two conditionals: keep the first one's structure, and treat the second one's types as always possible.
+                $return_comment->setConditional($old_conditional->withTypesAddedToLeaves($new_type));
+            }
+        } else {
+            $this->return_comment = new ReturnComment($new_type, $this->guessActualLineLocation($i), $conditional);
         }
     }
 
@@ -1019,7 +1142,9 @@ final class Builder
                 return;
             case 'phan-return':
                 if ($this->checkCompatible('@phan-return', Comment::FUNCTION_LIKE, $i)) {
-                    $this->phan_overrides['return'] = new ReturnComment($this->returnOrThrowsTypeFromCommentLine($line, $i), $this->guessActualLineLocation($i));
+                    $conditional = $this->parseConditionalReturnFromCommentLine($line, $i);
+                    $type = $conditional ? $conditional->asFlattenedUnionType() : $this->returnOrThrowsTypeFromCommentLine($line, $i);
+                    $this->phan_overrides['return'] = new ReturnComment($type, $this->guessActualLineLocation($i), $conditional);
                 }
                 return;
             case 'phan-override':

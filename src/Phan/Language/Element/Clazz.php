@@ -3491,6 +3491,12 @@ class Clazz extends AddressableElement
         $method->setRealReturnType(
             $method->getRealReturnType()->withSelfResolvedInContext($context)
         );
+        $conditional_return_type = $method->getConditionalReturnType();
+        if ($conditional_return_type) {
+            $method->setConditionalReturnType($conditional_return_type->mapTypes(static function (UnionType $type) use ($context): UnionType {
+                return $type->withSelfResolvedInContext($context);
+            }));
+        }
         $parameter_list = $method->getParameterList();
         $changed = false;
         foreach ($parameter_list as $i => $parameter) {

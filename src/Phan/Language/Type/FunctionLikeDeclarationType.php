@@ -11,6 +11,7 @@ use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Element\AddressableElementInterface;
 use Phan\Language\Element\Comment;
+use Phan\Language\Element\Comment\ConditionalReturnType;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Parameter;
 use Phan\Language\FileRef;
@@ -746,6 +747,30 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     public function setDependentReturnTypeClosure(Closure $analyzer): void
     {
         throw new \AssertionError('unexpected call to ' . __METHOD__);
+    }
+
+    /** @override */
+    public function getConditionalReturnType(): ?ConditionalReturnType
+    {
+        return null;
+    }
+
+    /**
+     * @return never
+     */
+    public function setConditionalReturnType(?ConditionalReturnType $conditional): void
+    {
+        throw new \AssertionError('unexpected call to ' . __METHOD__);
+    }
+
+    /**
+     * @override
+     * @param list<Node|int|string|float|UnionType> $args
+     * @param array<string,UnionType> $template_type_map
+     */
+    public function resolveConditionalReturnType(CodeBase $code_base, Context $context, array $args, array $template_type_map = []): ?UnionType
+    {
+        return null;
     }
 
     /**
