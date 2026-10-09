@@ -973,7 +973,8 @@ final class TypeTest extends CodeBaseAwareTestBase
         $context = (new Context())->withScope(
             new ClassScope(new GlobalScope(), FullyQualifiedClassName::fromFullyQualifiedString('\stdClass'), 0)
         );
-        foreach (['int', '?string', 'mixed', 'void', '\stdClass', '?\ArrayObject', 'callable(int):int'] as $type_string) {
+        // (An intersection type is a no-op when every part is: \stdClass&\Countable resolves to itself)
+        foreach (['int', '?string', 'mixed', 'void', '\stdClass', '?\ArrayObject', 'callable(int):int', '\stdClass&\Countable'] as $type_string) {
             $union_type = UnionType::fromFullyQualifiedPHPDocString($type_string);
             $this->assertTrue($union_type->isStaticResolutionNoOp(), "expected $type_string to be a static resolution no-op");
             $this->assertSame($union_type, $union_type->withStaticResolvedInContext($context), "expected resolving static in $type_string to return the same union type");
@@ -983,7 +984,7 @@ final class TypeTest extends CodeBaseAwareTestBase
             }
         }
         // Types that override withStaticResolvedInContext() or have template parameters are not no-ops.
-        foreach (['static', '?static', 'static[]', 'array<string,int>', 'list<int>', 'array{a:int}', '\stdClass&\Countable', '\ArrayObject<int>'] as $type_string) {
+        foreach (['static', '?static', 'static[]', 'array<string,int>', 'list<int>', 'array{a:int}', '\Countable&static', '\ArrayObject<int>'] as $type_string) {
             $union_type = UnionType::fromFullyQualifiedPHPDocString($type_string);
             $this->assertFalse($union_type->isStaticResolutionNoOp(), "expected $type_string not to be a static resolution no-op");
             foreach ($union_type->getTypeSet() as $type) {

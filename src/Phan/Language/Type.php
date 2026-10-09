@@ -3621,8 +3621,9 @@ class Type implements Stringable
      *
      * This is the case when this has no template parameter types
      * and its class does not override withStaticResolvedInContext().
+     * (Subclasses that override withStaticResolvedInContext() may override this to return false directly.)
      */
-    final public function isStaticResolutionNoOp(): bool
+    public function isStaticResolutionNoOp(): bool
     {
         if ($this->template_parameter_type_list) {
             return false;
