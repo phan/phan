@@ -591,6 +591,16 @@ class Property extends ClassElement
      * Record the union type of the default value (for declared properties)
      */
     /**
+     * Inherited properties are clones of the declaring class's property (see Clazz::addProperty()).
+     * Only the declaring property should repeat the pending default type check.
+     */
+    public function __clone()
+    {
+        parent::__clone();
+        $this->pending_default_type_check = null;
+    }
+
+    /**
      * Record a TypeMismatchPropertyDefault check that failed during the parse phase, to be repeated during class analysis.
      */
     public function setPendingDefaultTypeCheck(UnionType $phpdoc_type, UnionType $default_type, string $default_representation, int $lineno): void
