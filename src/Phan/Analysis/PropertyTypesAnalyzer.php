@@ -9,6 +9,7 @@ use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\Property;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
@@ -20,6 +21,35 @@ class PropertyTypesAnalyzer
 {
 
     /**
+     * Repeat a TypeMismatchPropertyDefault check that failed during the parse phase,
+     * now that all classes (and their parents, interfaces and __invoke methods) are known.
+     */
+    private static function checkPendingDefaultType(CodeBase $code_base, Property $property): void
+    {
+        $check = $property->getPendingDefaultTypeCheck();
+        if ($check === null) {
+            return;
+        }
+        [$phpdoc_type, $default_type, $default_representation, $lineno] = $check;
+        if ($phpdoc_type->canCastToUnionType($default_type, $code_base) ||
+            $default_type->canCastToUnionType($phpdoc_type, $code_base) ||
+            $property->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchPropertyDefault)
+        ) {
+            return;
+        }
+        Issue::maybeEmit(
+            $code_base,
+            $property->getContext(),
+            Issue::TypeMismatchPropertyDefault,
+            $lineno,
+            (string)$phpdoc_type,
+            $property->getName(),
+            $default_representation,
+            (string)$default_type
+        );
+    }
+
+    /**
      * Check to see if the given class's properties have issues.
      */
     public static function analyzePropertyTypes(CodeBase $code_base, Clazz $clazz): void
@@ -27,6 +57,8 @@ class PropertyTypesAnalyzer
         foreach ($clazz->getPropertyMap($code_base) as $property) {
             $property_context = $property->getContext();
             // This phase is done before the analysis phase, so there aren't any dynamic properties to filter out.
+
+            self::checkPendingDefaultType($code_base, $property);
 
             // Get the union type of this property. This may throw (e.g. it can refers to missing elements).
             try {

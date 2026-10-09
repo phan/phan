@@ -61,6 +61,15 @@ class Property extends ClassElement
     private $default_type;
 
     /**
+     * @var ?array{0:UnionType,1:UnionType,2:string,3:int}
+     * [phpdoc type, default type, representation of the default, line number] of a TypeMismatchPropertyDefault
+     * check that failed during the parse phase. Classes referenced by the default (e.g. an invokable class, or an
+     * implementation of the declared interface) may not have been parsed yet, so the check is repeated
+     * in PropertyTypesAnalyzer once all classes are known.
+     */
+    private $pending_default_type_check;
+
+    /**
      * @var ?PropertyHook The 'get' hook for this property (PHP 8.4+)
      */
     private $get_hook;
@@ -576,6 +585,34 @@ class Property extends ClassElement
     public function getPHPDocUnionType(): UnionType
     {
         return $this->phpdoc_union_type ?? UnionType::empty();
+    }
+
+    /**
+     * Inherited properties are clones of the declaring class's property (see Clazz::addProperty()).
+     * Only the declaring property should repeat the pending default type check.
+     */
+    public function __clone()
+    {
+        parent::__clone();
+        $this->pending_default_type_check = null;
+    }
+
+    /**
+     * Record a TypeMismatchPropertyDefault check that failed during the parse phase, to be repeated during class analysis.
+     */
+    public function setPendingDefaultTypeCheck(UnionType $phpdoc_type, UnionType $default_type, string $default_representation, int $lineno): void
+    {
+        $this->pending_default_type_check = [$phpdoc_type, $default_type, $default_representation, $lineno];
+    }
+
+    /**
+     * Returns the check recorded by setPendingDefaultTypeCheck(), if any.
+     * This is not cleared, because daemon mode and the language server analyze classes repeatedly without re-parsing them.
+     * @return ?array{0:UnionType,1:UnionType,2:string,3:int}
+     */
+    public function getPendingDefaultTypeCheck(): ?array
+    {
+        return $this->pending_default_type_check;
     }
 
     /**
