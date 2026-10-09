@@ -39,6 +39,7 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\GlobalScope;
 use Phan\Library\FileCache;
 use Phan\Library\Map;
+use Phan\Library\PhaseTimer;
 use Phan\Library\StringUtil;
 use Phan\Parse\ParseVisitor;
 use Phan\Plugin\ConfigPluginSet;
@@ -588,9 +589,15 @@ class Analysis
 
         // Analyze user-defined method declarations.
         // Plugins may also analyze user-defined methods here.
+        PhaseTimer::begin('analyze_methods');
         $i = 0;
         $method_set = $code_base->getMethodSet();
         CLI::progress('method', 0.0, null);
+        $collect_timings = PhaseTimer::$enabled;
+        // Nanoseconds spent on methods, split by declared vs. inherited and by excluded vs. analyzed file (--dump-phase-timings)
+        $method_ns = ['declared' => 0, 'inherited' => 0, 'excluded' => 0, 'analyzed' => 0];
+        /** @var array<string,bool> $is_excluded_file */
+        $is_excluded_file = [];
         foreach ($method_set as $method) {
             if ($show_progress) {
                 // Method analysis can trigger class hydration which adds
@@ -598,7 +605,56 @@ class Analysis
                 // is needed so that the progress bar is accurate.
                 CLI::progress('method', (++$i) / (count($method_set)), $method);
             }
+            if ($collect_timings) {
+                $start_ns = \hrtime(true);
+                $analyze_function_or_method($method);
+                $elapsed_ns = \hrtime(true) - $start_ns;
+                if (!$method->isPHPInternal()) {
+                    $file = $method->getContext()->getFile();
+                    $method_ns[$method->getDefiningFQSEN() !== $method->getFQSEN() ? 'inherited' : 'declared'] += $elapsed_ns;
+                    $method_ns[($is_excluded_file[$file] ??= Phan::isExcludedAnalysisFile($file)) ? 'excluded' : 'analyzed'] += $elapsed_ns;
+                }
+                continue;
+            }
             $analyze_function_or_method($method);
+        }
+        if ($collect_timings) {
+            self::recordMethodSetStats($code_base, $method_ns, $is_excluded_file);
+        }
+    }
+
+    /**
+     * Record the number of user-defined classes and methods (for --dump-phase-timings).
+     * Inherited methods are clones of the method declared in the ancestor class or trait.
+     *
+     * @param array<string,int> $method_ns nanoseconds spent analyzing methods, by category
+     * @param array<string,bool> &$is_excluded_file cache of Phan::isExcludedAnalysisFile()
+     */
+    private static function recordMethodSetStats(CodeBase $code_base, array $method_ns, array &$is_excluded_file): void
+    {
+        $counts = ['declared' => 0, 'inherited_clones' => 0, 'excluded' => 0, 'analyzed' => 0, 'internal' => 0];
+        foreach ($code_base->getMethodSet() as $method) {
+            if ($method->isPHPInternal()) {
+                $counts['internal']++;
+                continue;
+            }
+            $counts[$method->getDefiningFQSEN() !== $method->getFQSEN() ? 'inherited_clones' : 'declared']++;
+            $file = $method->getContext()->getFile();
+            $counts[($is_excluded_file[$file] ??= Phan::isExcludedAnalysisFile($file)) ? 'excluded' : 'analyzed']++;
+        }
+        $user_function_count = 0;
+        foreach ($code_base->getFunctionMap() as $function) {
+            if (!$function->isPHPInternal()) {
+                $user_function_count++;
+            }
+        }
+        PhaseTimer::note('user_classes', count($code_base->getUserDefinedClassMap()));
+        PhaseTimer::note('user_functions', $user_function_count);
+        foreach ($counts as $key => $count) {
+            PhaseTimer::note("methods_$key", $count);
+        }
+        foreach ($method_ns as $key => $ns) {
+            PhaseTimer::note("methods_{$key}_s", \round($ns / 1e9, 6));
         }
     }
 

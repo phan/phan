@@ -16,6 +16,7 @@ use Phan\Language\Element\AddressableElement;
 use Phan\Language\Element\Comment\Builder;
 use Phan\Language\FQSEN;
 use Phan\Language\Type;
+use Phan\Library\PhaseTimer;
 use Phan\Library\Restarter;
 use Phan\Library\StderrLogger;
 use Phan\Library\StringUtil;
@@ -124,6 +125,7 @@ class CLI
         'dump-ast',
         'dump-ctags:',
         'dump-parsed-file-list',
+        'dump-phase-timings',
         'dump-signatures-file:',
         'find-signature:',
         'exclude-directory-list:',
@@ -184,6 +186,7 @@ class CLI
         'output:',
         'output-mode:',
         'parent-constructor-required:',
+        'phase-timings-json:',
         'plugin:',
         'print-memory-usage-summary',
         'processes:',
@@ -402,6 +405,8 @@ class CLI
      */
     private function __construct(array $opts, array $argv)
     {
+        // Start collecting phase timings (if requested) before anything else happens.
+        PhaseTimer::enableFromCliOpts($opts);
         self::detectAndConfigureColorSupport($opts);
 
         if (array_key_exists('extended-help', $opts)) {
@@ -482,6 +487,7 @@ class CLI
 
         // Now that we have a root directory, attempt to read a
         // configuration file `.phan/config.php` if it exists
+        PhaseTimer::begin('config');
         $search_parents = !array_key_exists('no-search-parents', $opts);
         if (array_key_exists('no-config-file', $opts) || array_key_exists('n', $opts)) {
             if (array_key_exists('require-config-exists', $opts)) {
@@ -497,8 +503,10 @@ class CLI
         // We need to know the process count after `--processes N` is parsed if that CLI flag is passed in,
         // to know if grpc should be excluded.
         // Before that, we need to have parsed the config file to override config settings.
+        PhaseTimer::begin('restart_check');
         self::parseProcessCountOverride($opts);
         self::restartWithoutProblematicExtensions();
+        PhaseTimer::begin('cli_options');
 
         // Only after restarting, emit output.
         $this->warnSuspiciousShortOptions($argv);
@@ -963,6 +971,10 @@ class CLI
                 case 'print-memory-usage-summary':
                     Config::setValue('print_memory_usage_summary', true);
                     break;
+                case 'dump-phase-timings':
+                case 'phase-timings-json':
+                    // Handled by PhaseTimer::enableFromCliOpts() at the start of this constructor
+                    break;
                 case 'markdown-issue-messages':
                     Config::setValue('markdown_issue_messages', true);
                     break;
@@ -1138,6 +1150,7 @@ class CLI
             }
         }
 
+        PhaseTimer::begin('file_list');
         $this->recomputeFileList();
 
         // We can't run dead code detection on multiple cores because
@@ -1417,10 +1430,17 @@ class CLI
         }
     }
 
+    /**
+     * @throws UsageException if an option that is incompatible with daemon mode / the language server was passed
+     */
     private static function ensureServerRunsSingleAnalysisProcess(): void
     {
         if (!self::isDaemonOrLanguageServer()) {
             return;
+        }
+        if (PhaseTimer::$enabled) {
+            // The reports are emitted when the CLI exits, which a daemon or language server does not do after a request.
+            throw new UsageException("--dump-phase-timings and --phase-timings-json are not supported in Daemon mode or as a language server.", 1);
         }
         // If the client has multiple files open at once (and requests analysis of multiple files),
         // then there there would be multiple processes doing analysis.
@@ -1976,6 +1996,16 @@ Extended help:
  --print-memory-usage-summary
   Prints a summary of memory usage and maximum memory usage.
   This is accurate when there is one analysis process.
+
+ --dump-phase-timings
+  Prints the wall clock time, CPU time and memory usage of each phase
+  of the analysis (and of each analysis worker) to stderr when Phan exits,
+  along with per-file parse/analysis time statistics.
+
+ --phase-timings-json <path>
+  Writes the same phase timings as `--dump-phase-timings` to <path> as JSON.
+  Relative paths are resolved against the working directory
+  (after `--project-root-directory` is applied).
 
  --markdown-issue-messages
   Emit issue messages with markdown formatting.

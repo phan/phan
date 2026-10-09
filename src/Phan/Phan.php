@@ -16,6 +16,7 @@ use Phan\Language\Type;
 use Phan\LanguageServer\LanguageServer;
 use Phan\LanguageServer\Logger as LanguageServerLogger;
 use Phan\Library\FileCache;
+use Phan\Library\PhaseTimer;
 use Phan\Library\StringUtil;
 use Phan\Output\BufferedPrinterInterface;
 use Phan\Output\Collector\NullCollector;
@@ -299,6 +300,7 @@ class Phan implements IgnoredFilesFilterInterface
             gc_enable();
         }
 
+        PhaseTimer::begin('stubs');
         Shim::load();
         FileCache::setMaxCacheSize(FileCache::MINIMUM_CACHE_SIZE);
         self::checkForSlowPHPOptions();
@@ -371,6 +373,7 @@ class Phan implements IgnoredFilesFilterInterface
         // === END INCREMENTAL ANALYSIS ===
 
         $file_count = count($file_path_list);
+        PhaseTimer::note('parsed_files', $file_count);
         if ($file_count === 0) {
             fprintf(STDERR, "Phan did not parse any files in the project %s - This may be an issue with the Phan config or CLI options.\n", StringUtil::jsonEncode(Config::getProjectRootDirectory()));
         }
@@ -395,6 +398,7 @@ class Phan implements IgnoredFilesFilterInterface
         // This first pass parses code and populates the
         // global state we'll need for doing a second
         // analysis after.
+        PhaseTimer::begin('parse');
         CLI::progress('parse', 0.0, null, 0, $file_count);
         $code_base->setCurrentParsedFile(null);
 
@@ -428,7 +432,13 @@ class Phan implements IgnoredFilesFilterInterface
                 // === END INCREMENTAL ANALYSIS ===
 
                 // Parse the file
-                Analysis::parseFile($code_base, $file_path);
+                if (PhaseTimer::$enabled) {
+                    $parse_start_ns = \hrtime(true);
+                    Analysis::parseFile($code_base, $file_path);
+                    PhaseTimer::recordFile(PhaseTimer::FILE_PARSE, $file_path, \hrtime(true) - $parse_start_ns);
+                } else {
+                    Analysis::parseFile($code_base, $file_path);
+                }
 
                 // === INCREMENTAL ANALYSIS: Integration Point 2 - Update manifest with file metadata ===
                 if ($incremental_manifest !== null) {
@@ -461,6 +471,7 @@ class Phan implements IgnoredFilesFilterInterface
             }
         }
         $code_base->setCurrentParsedFile(null);
+        PhaseTimer::begin('before_analyze');
         ConfigPluginSet::instance()->beforeAnalyze($code_base);
         if ($is_undoable_request) {
             $code_base->setExpectChangesToFileContents();
@@ -618,6 +629,7 @@ class Phan implements IgnoredFilesFilterInterface
             // hydrating all classes, we only hydrate the things we
             // actually need. When running as multiple processes this
             // lets us only need to do hydrate a subset of classes.
+            PhaseTimer::begin('class_aliases');
             $code_base->setShouldHydrateRequestedElements(true);
 
             // This is only needed when `pcntl` *isn't* used.
@@ -638,20 +650,27 @@ class Phan implements IgnoredFilesFilterInterface
             // Take a pass over all classes verifying
             // various states now that we have the whole
             // state in memory
+            PhaseTimer::begin('analyze_classes');
             Analysis::analyzeClasses($code_base, $path_filter);
 
             // Take a pass over all functions verifying
             // various states now that we have the whole
             // state in memory
+            // (Analysis::analyzeFunctions() starts the 'analyze_methods' phase after analyzing global functions.)
+            PhaseTimer::begin('analyze_functions');
             Analysis::analyzeFunctions($code_base, $path_filter);
 
             if (Config::getValue('dump_matching_functions')) {
                 exit(EXIT_SUCCESS);
             }
 
+            PhaseTimer::begin('load_method_plugins');
             Analysis::loadMethodPlugins($code_base);
 
+            PhaseTimer::begin('before_analyze_phase');
             ConfigPluginSet::instance()->beforeAnalyzePhase($code_base);
+
+            PhaseTimer::begin('ordering');
 
             // Filter out any files that are to be excluded from
             // analysis
@@ -668,6 +687,7 @@ class Phan implements IgnoredFilesFilterInterface
 
             // Get the count of all files we're going to analyze
             $file_count = count($analyze_file_path_list);
+            PhaseTimer::note('analyzed_files', $file_count);
 
             // Prevent an ugly failure if we have no files to
             // analyze.
@@ -682,12 +702,21 @@ class Phan implements IgnoredFilesFilterInterface
                     Config::getValue('processes'),
                     $analyze_file_path_list
                 );
+            if (PhaseTimer::$enabled) {
+                self::recordOrderingStats($code_base, $process_file_list_map);
+            }
 
             /**
              * This worker takes a file and analyzes it
              */
             $analysis_worker = static function (int $i, string $file_path, int $file_count) use ($code_base, $temporary_file_mapping, $request): void {
                 CLI::progress('analyze', ($i + 1) / $file_count, $file_path, $i + 1, $file_count);
+                if (PhaseTimer::$enabled) {
+                    $analyze_start_ns = \hrtime(true);
+                    Analysis::analyzeFile($code_base, $file_path, $request, $temporary_file_mapping[$file_path] ?? null);
+                    PhaseTimer::recordFile(PhaseTimer::FILE_ANALYZE, $file_path, \hrtime(true) - $analyze_start_ns);
+                    return;
+                }
                 Analysis::analyzeFile($code_base, $file_path, $request, $temporary_file_mapping[$file_path] ?? null);
             };
 
@@ -717,6 +746,7 @@ class Phan implements IgnoredFilesFilterInterface
                 }
                 // Run analysis one file at a time, splitting the set of
                 // files up among a given number of child processes.
+                PhaseTimer::begin('fork');
                 $pool = new ForkPool(
                     $process_file_list_map,
                     static function (): void {
@@ -739,12 +769,16 @@ class Phan implements IgnoredFilesFilterInterface
                 );
 
                 // Wait for all tasks to complete and collect the results.
-                self::collectSerializedResults($pool->wait());
+                PhaseTimer::begin('analyze_wait');
+                $issues = $pool->wait();
+                PhaseTimer::begin('collect_results');
+                self::collectSerializedResults($issues);
                 $did_fork_pool_have_error = $pool->didHaveError();
             } else {
                 // Get the task data from the 0th processor
                 $analyze_file_path_list = array_values($process_file_list_map)[0];
 
+                PhaseTimer::begin('analyze');
                 if ($analyze_twice) {
                     self::analyzeMultiplePasses($code_base, $analyze_file_path_list, $file_count, $analysis_worker);
                 } else {
@@ -757,14 +791,18 @@ class Phan implements IgnoredFilesFilterInterface
                 // Scan through all globally accessible elements
                 // in the code base and emit errors for dead
                 // code.
+                PhaseTimer::begin('dead_code');
                 Analysis::analyzeDeadCode($code_base);
 
                 // If there are any plugins defining finalizeProcess(), run those.
+                PhaseTimer::begin('finalize');
                 ConfigPluginSet::instance()->finalizeProcess($code_base);
             }
 
             // Get a count of the number of issues that were found
+            PhaseTimer::begin('display');
             $issue_count = count((self::$issue_collector)->getCollectedIssues());
+            PhaseTimer::note('issues', $issue_count);
             $is_issue_found =
                 0 !== $issue_count;
 
@@ -950,6 +988,73 @@ class Phan implements IgnoredFilesFilterInterface
             return EXIT_FAILURE;
         }
         return EXIT_SUCCESS;
+    }
+
+    /**
+     * Record how Ordering distributed the files among analysis processes (for --dump-phase-timings).
+     * Workers are numbered in the same way as ForkPool (in the iteration order of $process_file_list_map).
+     *
+     * @param array<int,list<string>> $process_file_list_map
+     */
+    private static function recordOrderingStats(CodeBase $code_base, array $process_file_list_map): void
+    {
+        $file_info = [];
+        foreach (array_values($process_file_list_map) as $process_id => $file_list) {
+            $bytes = 0;
+            foreach ($file_list as $file_path) {
+                $size = \is_file($file_path) ? \filesize($file_path) : false;
+                $size = \is_int($size) ? $size : 0;
+                $file_info[$file_path] = [$process_id, $size];
+                $bytes += $size;
+            }
+            PhaseTimer::note("ordering_worker{$process_id}_files", count($file_list));
+            PhaseTimer::note("ordering_worker{$process_id}_bytes", $bytes);
+        }
+        if (Config::getValue('randomize_file_order')) {
+            // Ordering does not group files by class hierarchy in this mode,
+            // and computing the hierarchy roots of other classes could hydrate them.
+            return;
+        }
+        // Group files the same way as Ordering::orderForProcessCount(): by the root of the class hierarchy
+        // of the first class declared in each file. Ordering has already resolved these roots.
+        $remaining = $file_info;
+        $buckets = [];
+        foreach ($code_base->getUserDefinedClassMap() as $class) {
+            $file_path = $class->getContext()->getFile();
+            if (!isset($remaining[$file_path])) {
+                continue;
+            }
+            [$process_id, $size] = $remaining[$file_path];
+            unset($remaining[$file_path]);
+            $root = (string)$class->getHierarchyRootFQSEN($code_base);
+            $bucket = $buckets[$root] ?? ['files' => 0, 'bytes' => 0, 'worker' => $process_id];
+            $bucket['files']++;
+            $bucket['bytes'] += $size;
+            $buckets[$root] = $bucket;
+        }
+        \uasort(
+            $buckets,
+            /**
+             * Sort by descending file count
+             * @param array{files:int,bytes:int,worker:int} $a
+             * @param array{files:int,bytes:int,worker:int} $b
+             */
+            static function (array $a, array $b): int {
+                return $b['files'] <=> $a['files'];
+            }
+        );
+        PhaseTimer::note('ordering_buckets', count($buckets));
+        PhaseTimer::note('ordering_classless_files', count($remaining));
+        $rank = 0;
+        foreach ($buckets as $root => $bucket) {
+            if (++$rank > 10) {
+                break;
+            }
+            PhaseTimer::note("ordering_bucket{$rank}_root", (string)$root);
+            PhaseTimer::note("ordering_bucket{$rank}_files", $bucket['files']);
+            PhaseTimer::note("ordering_bucket{$rank}_bytes", $bucket['bytes']);
+            PhaseTimer::note("ordering_bucket{$rank}_worker", (int)$bucket['worker']);
+        }
     }
 
     private static function printMemoryUsageSummary(): void

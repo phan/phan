@@ -18,6 +18,8 @@ class Writer
 {
     public const TYPE_ISSUE_LIST = 'issue-list';
     public const TYPE_PROGRESS   = 'progress';
+    /** Only sent when phase timings are enabled (--dump-phase-timings or --phase-timings-json) */
+    public const TYPE_PHASE_TIMINGS = 'phase-timings';
 
     /** @var resource */
     private static $output;
@@ -51,6 +53,15 @@ class Writer
     public static function emitIssues(array $issues): void
     {
         self::writeNotification(self::TYPE_ISSUE_LIST, \serialize($issues));
+    }
+
+    /**
+     * Report the phase timings collected by this analysis worker.
+     * @param array<string,mixed> $payload from PhaseTimer::finishWorker()
+     */
+    public static function emitPhaseTimings(array $payload): void
+    {
+        self::writeNotification(self::TYPE_PHASE_TIMINGS, \serialize($payload));
     }
 
     /**
