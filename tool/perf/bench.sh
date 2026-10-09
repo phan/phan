@@ -8,8 +8,8 @@ set -u -o pipefail
 usage() {
     cat <<'EOF'
 Usage: bench.sh -t TARGET [-j N] [-r K] [-w W] [-v VARIANT] [--phan PATH]
-                [--baseline] [--mem-max 12G] [--pin] [--no-timings] [--label X]
-                [-- extra phan args]
+                [--self-root DIR] [--baseline] [--mem-max 12G] [--pin] [--no-timings]
+                [--label X] [-- extra phan args]
 
   -t TARGET     self | self-quick | self-noisy | project-subset
   -j N          phan --processes (default 1)
@@ -17,7 +17,10 @@ Usage: bench.sh -t TARGET [-j N] [-r K] [-w W] [-v VARIANT] [--phan PATH]
   -w W          warmup runs, discarded (default 1)
   -v VARIANT    ci | nocache | shm | jit (default ci)
   --phan PATH   phan entry point to benchmark (default: this checkout's ./phan);
-                its directory is the phan repo used for git info and self targets
+                its directory is the phan repo used for git info
+  --self-root DIR  self* targets: the phan checkout whose source is analyzed
+                (--project-root-directory DIR -k .phan/config.php, cwd DIR); default
+                the --phan repo. Pin it when comparing analyzers (ab.sh does).
   --baseline    project-subset only: --load-baseline .phan/baseline.php
   --mem-max SZ  systemd MemoryMax for the run's scope (default 12G)
   --pin         taskset -c 0-3
@@ -35,6 +38,7 @@ Environment:
                     (default /usr/lib/php/20240924/phan_helpers.so)
   PHP_BIN           php binary (default php)
   PHAN_PERF_NO_CGROUP=1  do not use systemd-run (no memory cap, no cgroup stats)
+  PHAN_PERF_SELF_ROOT  default for --self-root
   PHAN_PERF_PROJECT_ROOT       project tree for project-subset
                                (default $PHAN_PERF_HOME/project-src)
   PHAN_PERF_SUBSET_DIR         config.frozen.php / subset.files / subset.analyze.files /
@@ -67,7 +71,7 @@ FAIL_RE='Child terminated with return code|Saw errors for an analysis worker|PHP
 STDOUT_FAIL_RE='^(PHP )?Fatal error:|Allowed memory size of'
 
 target= j=1 runs= warm=1 variant=ci phan= baseline=0 mem_max=12G pin=0 timings=auto label=
-run_dir= run_offset=0 summarize=1
+run_dir= run_offset=0 summarize=1 self_root=${PHAN_PERF_SELF_ROOT:-}
 extra=()
 
 # Accept attached short-option values (-j4, -r2, -vjit) and --opt=value.
@@ -97,6 +101,7 @@ while (($#)); do
         --pin) pin=1; shift ;;
         --no-timings) timings=off; shift ;;
         --label) label=${2?missing value for $1}; shift 2 ;;
+        --self-root) self_root=${2?missing value for $1}; shift 2 ;;
         --run-dir) run_dir=${2?missing value for $1}; shift 2 ;;
         --run-offset) run_offset=${2?missing value for $1}; shift 2 ;;
         --no-summary) summarize=0; shift ;;
@@ -136,14 +141,23 @@ php_extra=()
 analyze_list=
 case $target in
     self|self-quick|self-noisy)
-        workdir=$phan_repo
-        target_args=(-k .phan/config.php)
+        # The analyzer is $phan; the corpus is the phan source tree in $self_root.
+        if [[ -z $self_root ]]; then
+            [[ -n $run_dir ]] && warn "A/B run of $target without --self-root: each side analyzes its own source, so issue diffs include corpus changes"
+            self_root=$phan_repo
+        fi
+        self_root=$(realpath -e -- "$self_root") || die "--self-root not found: $self_root"
+        [[ -f $self_root/.phan/config.php ]] || die "$self_root/.phan/config.php not found"
+        [[ $self_root != "$phan_repo" ]] && info "analyzer $phan_repo, corpus $self_root"
+        workdir=$self_root
+        target_args=(--project-root-directory "$self_root" -k .phan/config.php)
         [[ $target == self-quick ]] && target_args+=(--quick)
         [[ $target == self-noisy ]] && target_args+=(--analyze-all-files)
         default_runs=5
         ((baseline)) && warn "--baseline is ignored for $target"
         ;;
     project-subset)
+        [[ -n $self_root ]] && self_root= # only meaningful for self* targets
         project_root=${PHAN_PERF_PROJECT_ROOT:-$PERF/project-src}
         subset_dir=${PHAN_PERF_SUBSET_DIR:-$PERF/project}
         project_root=$(realpath -e -- "$project_root") || die "project root not found (set PHAN_PERF_PROJECT_ROOT)"
@@ -180,6 +194,16 @@ else
 fi
 sha10=${sha:0:10}
 build_id=$sha10${dirty:+-dirty-$dirty}
+self_root_sha=
+self_root_dirty=
+if [[ -n $self_root ]]; then
+    if self_root_sha=$(git -C "$self_root" rev-parse HEAD 2>/dev/null); then
+        d=$(git --no-optional-locks -C "$self_root" diff HEAD 2>/dev/null | sha1sum | cut -c1-40)
+        [[ $d == da39a3ee5e6b4b0d3255bfef95601890afd80709 ]] || self_root_dirty=${d:0:8}
+    else
+        self_root_sha=unknown
+    fi
+fi
 
 # ---- project-subset tree pin ----------------------------------------------
 tree_pin=
@@ -317,7 +341,7 @@ export BENCH_ENV_FILE=$run_dir/env.json BENCH_PHP_INFO=$php_info_json BENCH_PHP_
     BENCH_AST_SO=$ast_so BENCH_AST_SHA256=$ast_sha256 BENCH_HELPERS_SO=$PHAN_HELPERS_SO \
     BENCH_HELPERS_SHA256=$helpers_sha256 BENCH_LOAD1=$load1 BENCH_NPROC=$(nproc) \
     BENCH_MEM_AVAIL_KB=$mem_avail_kb BENCH_MEM_MAX=$mem_max BENCH_CGROUP=$cg_ok BENCH_PIN=$pin \
-    BENCH_TIMINGS=$timings BENCH_PERF=$PERF BENCH_TREE_PIN=$tree_pin BENCH_ANALYZE_LIST=$analyze_list BENCH_ANALYZE_COUNT=$analyze_count BENCH_KERNEL=$(uname -r) \
+    BENCH_TIMINGS=$timings BENCH_PERF=$PERF BENCH_TREE_PIN=$tree_pin BENCH_SELF_ROOT=$self_root BENCH_SELF_ROOT_SHA=$self_root_sha BENCH_SELF_ROOT_DIRTY=$self_root_dirty BENCH_ANALYZE_LIST=$analyze_list BENCH_ANALYZE_COUNT=$analyze_count BENCH_KERNEL=$(uname -r) \
     BENCH_CPU=$(awk -F': ' '/^model name/ { print $2; exit }' /proc/cpuinfo)
 "$PHP_BIN" -n -- "${php_cmd[@]}" -- "${target_args[@]}" -- "${extra[@]}" <<'PHP' || die "cannot write env.json"
 <?php
@@ -367,6 +391,10 @@ $env = [
     'kernel' => $e('BENCH_KERNEL'),
     'cpu' => $e('BENCH_CPU'),
     'tree_pin' => $e('BENCH_TREE_PIN') ?: null,
+    'self_root' => $e('BENCH_SELF_ROOT') ?: null,
+    'self_root_sha' => $e('BENCH_SELF_ROOT_SHA') ?: null,
+    'self_root_dirty' => $e('BENCH_SELF_ROOT_DIRTY'),
+    'self_root_is_phan_repo' => $e('BENCH_SELF_ROOT') !== '' ? $e('BENCH_SELF_ROOT') === $e('BENCH_PHAN_REPO') : null,
     'analysis_file_list' => $e('BENCH_ANALYZE_LIST') ?: null,
     'analysis_file_list_used' => $e('BENCH_ANALYZE_LIST') !== '',
     'analysis_file_count' => $e('BENCH_ANALYZE_COUNT') !== '' ? (int)$e('BENCH_ANALYZE_COUNT') : null,

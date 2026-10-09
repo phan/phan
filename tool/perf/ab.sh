@@ -6,6 +6,9 @@
 # is identical, else `composer install`). Runs W warmups per side, then K rounds of
 # A,B interleaved (bench.sh -r 1 -w 0 each), summarizes both sides, prints the
 # deltas against the noise rule, and diffs the issues of the first run of each.
+# Both sides analyze the same corpus: --self-root defaults to A's worktree, so for the
+# self* targets only the analyzer differs (a src/ change would otherwise also change
+# the analyzed source and show up as issue differences).
 #
 # -r K / -w W in the bench.sh args set the rounds / warmups (defaults as bench.sh).
 # Gate: at -j1 the issue diff must be IDENTICAL; at -j>1 only suggestion-only
@@ -26,26 +29,37 @@ PHP_BIN=${PHP_BIN:-php}
 REPO=${PHAN_REPO:-$(cd -- "$SCRIPT_DIR/../.." && pwd)}
 
 if (($# < 2)) || [[ $1 == -h || $1 == --help ]]; then
-    sed -n '2,15p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+    sed -n '2,/^$/p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
     exit 2
 fi
 refA=$1 refB=$2
 shift 2
 [[ ${1-} == -- ]] && shift
 
+# Same normalization as bench.sh: attached short values (-j4, -r2) and --opt=value.
+norm=()
+while (($#)); do
+    case $1 in
+        --) norm+=("$@"); break ;;
+        -[tjrwv]?*) norm+=("${1:0:2}" "${1:2}") ;;
+        --*=*) norm+=("${1%%=*}" "${1#*=}") ;;
+        *) norm+=("$1") ;;
+    esac
+    shift
+done
+set -- "${norm[@]}"
+unset norm
+
 bench_args=()
-K= W=1 target= label= jobs=1
+K= W=1 target= label= jobs=1 self_root=
 while (($#)); do
     case $1 in
         -r|--runs) K=${2?missing value for $1}; shift 2 ;;
-        -r?*) K=${1:2}; shift ;;
         -w|--warmup) W=${2?missing value for $1}; shift 2 ;;
-        -w?*) W=${1:2}; shift ;;
         -t|--target) target=${2?missing value for $1}; bench_args+=("$1" "$2"); shift 2 ;;
-        -t?*) target=${1:2}; bench_args+=("$1"); shift ;;
         --label) label=${2?missing value for $1}; bench_args+=("$1" "$2"); shift 2 ;;
+        --self-root) self_root=${2?missing value for $1}; shift 2 ;;
         -j|--processes) jobs=${2?missing value for $1}; bench_args+=("$1" "$2"); shift 2 ;;
-        -j?*) jobs=${1:2}; bench_args+=("$1"); shift ;;
         --phan|--run-dir|--run-offset|--no-summary) die "$1 is set by ab.sh" ;;
         --) bench_args+=("$@"); break ;;
         *) bench_args+=("$1"); shift ;;
@@ -97,6 +111,7 @@ ensure_worktree() {
 
 wtA=$(ensure_worktree "$shaA") || exit 1
 wtB=$(ensure_worktree "$shaB") || exit 1
+self_root=${self_root:-$wtA}
 
 utc=$(date -u +%Y%m%dT%H%M%SZ)
 ab_dir=$PERF/results/ab/$utc-${shaA:0:10}-vs-${shaB:0:10}${label:+-$label}
@@ -107,6 +122,7 @@ info "results: $ab_dir (rounds=$K warmup=$W)"
 {
     echo "A $shaA $wtA"
     echo "B $shaB $wtB"
+    echo "self-root $self_root"
     printf 'bench args:'; printf ' %q' "${bench_args[@]}"; echo
 } > "$ab_dir/ab.txt"
 
@@ -118,7 +134,7 @@ if ((W > 0)); then
     for side in A B; do
         [[ $side == A ]] && wt=$wtA dir=$dirA || wt=$wtB dir=$dirB
         info "warmup $side"
-        bench --phan "$wt/phan" --run-dir "$dir" --no-summary -r 0 -w "$W" "${bench_args[@]}" ||
+        bench --phan "$wt/phan" --self-root "$self_root" --run-dir "$dir" --no-summary -r 0 -w "$W" "${bench_args[@]}" ||
             die "warmup $side failed (see $dir)"
     done
 fi
@@ -126,16 +142,23 @@ for ((k = 1; k <= K; k++)); do
     for side in A B; do
         [[ $side == A ]] && wt=$wtA dir=$dirA || wt=$wtB dir=$dirB
         info "round $k/$K: $side"
-        bench --phan "$wt/phan" --run-dir "$dir" --run-offset $((k - 1)) --no-summary -r 1 -w 0 "${bench_args[@]}" ||
+        bench --phan "$wt/phan" --self-root "$self_root" --run-dir "$dir" --run-offset $((k - 1)) --no-summary -r 1 -w 0 "${bench_args[@]}" ||
             die "round $k $side failed (see $dir/run-$k)"
     done
 done
 
+summary_status() {
+    "$PHP_BIN" -n -r '$s = json_decode((string)@file_get_contents($argv[1]), true);
+        echo is_array($s) ? ($s["status"] ?? "?") : "missing";' -- "$1/summary.json"
+}
+
 echo "== A ($shaA)"
 "$PHP_BIN" -n "$SCRIPT_DIR/bench_summarize.php" "$dirA"
+rcA=$?
 echo
 echo "== B ($shaB)"
 "$PHP_BIN" -n "$SCRIPT_DIR/bench_summarize.php" "$dirB"
+rcB=$?
 echo
 echo "== B vs A"
 "$PHP_BIN" -n "$SCRIPT_DIR/bench_summarize.php" --compare "$dirA" "$dirB"
@@ -143,6 +166,10 @@ echo
 echo "== issue diff (run-1)"
 "$PHP_BIN" -n "$SCRIPT_DIR/issue_diff.php" "$dirA/run-1/issues.txt" "$dirB/run-1/issues.txt"
 rc=$?
+if ((rcA != 0 || rcB != 0)); then
+    echo "GATE (-j$jobs): FAIL (summary status A=$(summary_status "$dirA") B=$(summary_status "$dirB"); both sides must be OK)"
+    exit 1
+fi
 if ((rc == 0 || (rc == 2 && jobs > 1))); then
     echo "GATE (-j$jobs): PASS (issue_diff exit $rc)"
     exit 0

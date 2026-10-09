@@ -27,6 +27,7 @@ uncapped and `peak_anon_kb` is empty), `taskset` (`--pin`), phpspy.
 | `bench_summarize.php` | `summary.json`, a `results.tsv` row, a one-screen report; `--compare A B` |
 | `ab.sh` | A/B two commits in detached worktrees, interleaved A,B,A,B; gate verdict |
 | `issue_diff.php` | compare two `-m text` issue outputs; classify differences |
+| `issue_lib.php` | issue-output normalization shared by issue_diff.php and bench_summarize.php |
 | `phpspy_top.php` | top-N self/inclusive tables, per-phase shares and profile diffs from phpspy output |
 | `make_subset.php` | deterministic, reference-closed subset of a project's files |
 | `pss_sidecar.sh` | per-second Rss/Pss/Private/Shared of a process and its children |
@@ -46,15 +47,31 @@ to measure without phan_helpers, and add a `--label`). Common Phan arguments:
 --always-exit-successfully-after-analysis`, plus `--phase-timings-json run-k/timings.json`
 when the Phan under test lists that option in `--extended-help` (`--no-timings` disables it).
 
-Targets (`--phan` selects the entry point; its directory is the repo used for git info
-and as the working directory of the self targets; default: this checkout):
+Targets (`--phan` selects the analyzer, default this checkout's `phan`; its directory is
+the repo used for git info):
 
 | target | command | default K |
 |---|---|---|
-| `self` | `<php> <phan> -k .phan/config.php` | 5 |
+| `self` | in `$SELF_ROOT`: `<php> <phan> --project-root-directory $SELF_ROOT -k .phan/config.php` | 5 |
 | `self-quick` | `self` + `--quick` (mirrors a `quick_mode=true` project config) | 5 |
 | `self-noisy` | `self` + `--analyze-all-files` (about 13k issues; the issue-diff corpus) | 5 |
 | `project-subset` | in `$PHAN_PERF_PROJECT_ROOT`: `<php> <phan> --project-root-directory $PHAN_PERF_PROJECT_ROOT -k $SUBSET_DIR/config.frozen.php --file-list $SUBSET_DIR/subset.files` (+ `--load-baseline .phan/baseline.php` with `--baseline`; when `subset.analyze.files` exists, `-k` points at a generated `config.analyze.php`, see below) | 3 |
+
+`--self-root DIR` (env `PHAN_PERF_SELF_ROOT`) sets `$SELF_ROOT`, the phan checkout whose
+source the self targets analyze; it defaults to the `--phan` repo. The corpus must be
+pinned while the analyzer is the variable: a PR that touches `src/` also changes the files
+the self-scan analyzes (a new `src/Phan/Library/PhaseTimer.php` alone moved self-noisy from
+12,965 to 12,973 issues), so a before/after issue diff of each checkout analyzing itself
+fails for every source change. With a pinned root, `.phan/config.php`, `directory_list`,
+`vendor/` and stubs come from `$SELF_ROOT`; plugins listed by name come from the analyzer;
+plugins listed by path (e.g. `.phan/plugins/AddNeverReturnTypePlugin.php`) resolve against
+the project root and therefore come from `$SELF_ROOT`, so changes to those are not measured.
+`exclude_file_list` conditions such as `extension_loaded('phan_helpers')` are evaluated by
+the running PHP, as before. Verified: a branch analyzer with `src/Phan/Library/PhaseTimer.php`
+and its test, run on the v6 corpus, parsed 1913 files and analyzed 657 at -j1 (the v6 tree
+lacks those two files), and its self-noisy -j1 output was IDENTICAL to v6 analyzing itself
+(12,975 issues). `env.json` records `self_root`, `self_root_sha`, `self_root_dirty`. bench.sh
+warns when an A/B run (`--run-dir`) of a self target has no `--self-root`.
 
 `project-subset` benchmarks a fixed sample of a project (see "Preparing a project subset").
 `PHAN_PERF_PROJECT_ROOT` defaults to `$PERF/project-src`, `PHAN_PERF_SUBSET_DIR` to `$PERF/project`,
@@ -168,6 +185,11 @@ Establish noise first: run the same sha twice (`ab.sh <sha> <sha> -- -t self -j1
 tool/perf/ab.sh <shaA> <shaB> -- -t self-noisy -j4 -r 5 [other bench.sh args]
 ```
 
+bench.sh options may be given as `--opt=value` or attached (`-j4`, `-r2`); ab.sh
+normalizes them and consumes `-r`/`-w` itself. Both sides run with
+`--self-root <A's worktree>` (override with `--self-root DIR`), so the self targets compare
+analyzers on one corpus.
+
 For each commit: `git worktree add --detach $PERF/wt/<sha>` if missing, then `vendor/` is
 copied (`cp -a`) from the main checkout when `composer.lock` is identical, else
 `composer install` runs in the worktree. A symlinked `vendor/` is replaced (see the
@@ -175,8 +197,9 @@ autoload note above), and the script checks that `Phan\CLI` resolves inside the 
 W warmups per side (`-w`, default 1), then K rounds (`-r`) of A then B, each
 `bench.sh --phan $PERF/wt/<sha>/phan -r 1 -w 0` into `$PERF/results/ab/.../{A,B}`. Then
 both sides are summarized, `--compare` runs, and `issue_diff.php` compares run-1 of each.
-Exit 0 when the gate passes (IDENTICAL at -j1; at most suggestion-only groups at -j>1),
-else 1. Git use
+Exit 0 when the gate passes (both summaries `OK`; IDENTICAL at -j1; at most
+suggestion-only groups at -j>1), else 1. A `NONDETERMINISTIC` or `FAILED` side fails the
+gate even if run-1 of each side happens to match. Git use
 is limited to `rev-parse`, `worktree list` and `worktree add`.
 
 ## issue_diff.php
@@ -191,8 +214,11 @@ multiset difference is grouped by `file:line IssueType` and each group is classi
 
 - `suggestion-only`: equal after stripping the trailing ` (<suggestion>)` that
   PlainTextPrinter appends (`(Did you mean ...)`, `(Types inferred after analysis: ...)`).
-  The last balanced parenthetical preceded by a space is stripped; a message that itself
-  ends in ` (...)` cannot be told apart, which only matters if nothing else differs.
+  The last balanced parenthetical preceded by a space is stripped once. A line ending in
+  ` (at column N)` (printed before the suggestion when columns are shown) has no
+  suggestion and is kept whole, so a column change is `real`. A message that itself ends
+  in ` (...)` cannot be told apart from a suggestion, which only matters if nothing else
+  differs. The normalization lives in `issue_lib.php`, shared with bench_summarize.php.
 - `union-order-only`: equal after additionally sorting the `|`-separated components of
   union types (at every `<>`/`{}`/`()`/`[]` nesting level). Reported separately, but it
   fails the gate like `real`: `UnionType::__toString` sorts components, so an order change
@@ -216,6 +242,10 @@ worker payloads in arrival order, so whichever duplicate arrives last wins. Obse
 `vendor/netresearch/jsonmapper/src/JsonMapper.php:392 PhanPluginUnknownArrayMethodParamType`),
 more often under load. `issue_diff.php` classifies these as `suggestion-only`, and
 `bench_summarize.php` ignores suggestions in its -j>1 determinism check.
+
+Separately, -j1 and -j4 outputs differ (self-noisy: 12,975 vs 12,965 issues) because
+inferred return types written during analysis are seen by later files in the same
+worker; compare runs only at the same -j.
 
 ## Profiling with phpspy
 
@@ -300,24 +330,50 @@ still parsing everything in `directory_list` (as a CI run does). Steps, with dat
    tool/perf/make_subset.php --root $PHAN_PERF_PROJECT_ROOT --universe $SUBSET_DIR/universe.txt \
        --fixed-prefix vendor/ --fixed-prefix .phan/ --rate 0.12 --salt <name>-v1 \
        --closure hard+soft1 --manifest $SUBSET_DIR/subset.manifest.json \
-       --analyze-list $SUBSET_DIR/subset.analyze.files > $SUBSET_DIR/subset.files
+       --analyze-list $SUBSET_DIR/subset.analyze.files \
+       --unresolved-out $SUBSET_DIR/unresolved.tsv > $SUBSET_DIR/subset.files
    ```
    Seeds are first-party files with `hexdec(substr(sha1(salt . path), 0, 8)) % 1000000 <
-   rate × 1000000`. The closure adds files declaring classes the selection extends,
-   implements or uses as traits (transitively), then one level of soft references (`new`,
-   `::`, `instanceof`, `catch`, parameter/return/property types) and their hard closure.
+   rate × 1000000`. The closure adds files declaring what the selection extends, implements
+   or uses as a trait, plus the first class of `@extends`/`@implements`/`@mixin`/`@use`
+   tags (hard, transitively); then one level of soft references and their hard closure.
+   Soft references: `new X`, `X::m`/`X::C`, `X::class`, `instanceof`, `catch`, parameter/
+   return/property types, PHPDoc type expressions (`@param`, `@return`, `@var`,
+   `@property*`, `@method`, `@throws`, `@template ... of`, generic arguments, and the
+   `phan-`/`psalm-`/`phpstan-` variants), attribute classes, and calls to functions declared
+   outside classes (resolved through `use function`, the namespace, then the global name).
+   `--closure hard+soft1+sig1` follows one more level, but only the declaration-level
+   references (signature types, PHPDoc and attributes outside function bodies) of the files
+   the soft level added: those are the types Phan infers for calls into soft-added code
+   (`PhanUndeclaredClassMethod` / `ClassProperty` on returned objects). On Phan's own
+   source as the project (580 first-party files, 85 seeds) the analyzed subset reported 32
+   issues (23 `PhanUndeclared*`) with the old scanner, 17 (8) with `hard+soft1`, and 1 (0)
+   with `hard+soft1+sig1`.
    Without the closure most references are undeclared and analysis short-circuits.
+   `--convention` is a fallback for referenced classes that no universe file declares
+   (e.g. created by `class_alias`): `underscore:lib` maps `A_B_C` to `lib/A/B/C.php`,
+   `psr4:Acme\Modules\=modules/{1}/src/` maps `Acme\Modules\M\X\Y` to
+   `modules/M/src/X/Y.php` (`{1}` takes the first segment after the prefix; without it,
+   plain PSR-4). The candidate path is matched case-insensitively against the universe.
+   `--unresolved-out` lists referenced names that resolve to nothing, most referenced
+   first, with their reference kinds.
    stdout is the parse selection (seeds + hard + soft level); `--analyze-list` writes seeds
    + hard closure, which bench.sh applies as `include_analysis_file_list`. Files added only
    by the soft level are parsed so references resolve, but not analyzed: their own
    references are not closed, and on Phan's own source analyzing them produced 923 of 946
    `PhanUndeclared*` issues.
-   Files under a `--fixed-prefix` are indexed for name resolution but never listed. The
-   manifest records the universe sha1, a sha1 over every file's content, parameters, seed,
-   closure, output and analyze-list counts and both sha1s; the output is deterministic for the same
-   inputs. Indexing runs at about 16 MB/s of source.
+   Files under a `--fixed-prefix` are indexed for name resolution but never listed: the
+   parse selection (stdout) contains first-party files only, because Phan parses the
+   fixed-prefix files through `directory_list` anyway. The manifest records the universe
+   sha1, a sha1 over every file's content, parameters, seed/closure/output/analyze-list
+   counts with both sha1s, distinct referenced names by resolution (`first_party`, `fixed`,
+   `convention`, `internal`, `unresolved`), the same split per reference kind
+   (`ref_kinds`), and how many files were added through a convention. Output and
+   manifest are deterministic for the same inputs. Indexing runs at about 10 MB/s of
+   source.
 5. Fit check: `bench.sh -t project-subset -j1 -r 1` and `-j4`, with `--mem-max` below your
-   free memory. Accept when nothing is OOM-killed, `peak_anon_kb` stays well under the cap,
+   free memory. On a large project the -j4 cgroup peak was about 2.7-2.9× the -j1 peak,
+   so size `--mem-max` from the -j1 run. Accept when nothing is OOM-killed, `peak_anon_kb` stays well under the cap,
    -j1 wall is 2-4 minutes, and undeclared-symbol issues are a small share
    (`grep -c ' PhanUndeclared' issues.txt` vs `wc -l issues.txt`, aim for under ~10 %);
    otherwise adjust `--rate` (0.08-0.20).

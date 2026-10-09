@@ -21,7 +21,9 @@ declare(strict_types=1);
  * Differences are grouped by "file:line IssueType" and each group is classified:
  *   suggestion-only   equal after stripping the trailing " (<suggestion>)" that
  *                     PlainTextPrinter appends (e.g. "(Did you mean ...)",
- *                     "(Types inferred after analysis: ...)")
+ *                     "(Types inferred after analysis: ...)"); a trailing
+ *                     " (at column N)" is not a suggestion and is kept
+ *                     (see issue_lib.php)
  *   union-order-only  equal after sorting the |-separated components of union
  *                     types (applied on top of the suggestion stripping)
  *   real              anything else (including a different number of issues)
@@ -34,34 +36,19 @@ const CLASS_REAL = 'real';
 const CLASS_SUGGESTION = 'suggestion-only';
 const CLASS_UNION = 'union-order-only';
 
+require_once __DIR__ . '/issue_lib.php';
+
 /**
  * @return list<string>
  */
 function load_issue_lines(string $path): array
 {
-    $fp = @fopen($path, 'rb');
-    if ($fp === false) {
+    $lines = issue_load_lines($path);
+    if ($lines === null) {
         fwrite(STDERR, "issue_diff: cannot open $path\n");
         exit(3);
     }
-    $lines = [];
-    while (($line = fgets($fp)) !== false) {
-        $line = rtrim((string)preg_replace('/\e\[[0-9;?]*[ -\/]*[@-~]/', '', $line));
-        if ($line !== '') {
-            $lines[] = $line;
-        }
-    }
-    fclose($fp);
-    sort($lines, SORT_STRING);
     return $lines;
-}
-
-/**
- * @param list<string> $lines sorted lines
- */
-function lines_sha1(array $lines): string
-{
-    return sha1($lines ? implode("\n", $lines) . "\n" : '');
 }
 
 /**
@@ -73,32 +60,6 @@ function group_key(string $line): array
         return [$m[1] . ' ' . $m[2], $m[2]];
     }
     return ['(unparsed) ' . $line, '(unparsed)'];
-}
-
-/**
- * PlainTextPrinter appends the issue's suggestion as a final " (<suggestion>)"
- * (after the optional " (at column N)"). Strip that last balanced parenthetical.
- * A message that itself ends in " (...)" is indistinguishable from a suggestion;
- * this only matters when two lines differ in nothing else.
- */
-function strip_suggestion(string $line): string
-{
-    $end = strlen($line) - 1;
-    if ($end < 1 || $line[$end] !== ')') {
-        return $line;
-    }
-    $depth = 0;
-    for ($i = $end; $i >= 0; $i--) {
-        $c = $line[$i];
-        if ($c === ')') {
-            $depth++;
-        } elseif ($c === '(') {
-            if (--$depth === 0) {
-                return $i > 0 && $line[$i - 1] === ' ' ? substr($line, 0, $i - 1) : $line;
-            }
-        }
-    }
-    return $line;
 }
 
 /**
@@ -264,8 +225,8 @@ function classify(array $a, array $b): string
     if (count($a) !== count($b)) {
         return CLASS_REAL;
     }
-    $sa = array_map('strip_suggestion', $a);
-    $sb = array_map('strip_suggestion', $b);
+    $sa = array_map('issue_strip_suggestion', $a);
+    $sb = array_map('issue_strip_suggestion', $b);
     if (multisets_equal($sa, $sb)) {
         return CLASS_SUGGESTION;
     }
@@ -300,7 +261,7 @@ function main(array $argv): int
     $a = load_issue_lines($files[0]);
     $b = load_issue_lines($files[1]);
     if ($a === $b) {
-        printf("IDENTICAL %d %s\n", count($a), lines_sha1($a));
+        printf("IDENTICAL %d %s\n", count($a), issue_lines_sha1($a));
         return 0;
     }
 
@@ -355,9 +316,9 @@ function main(array $argv): int
     printf(
         "DIFFERENT a=%d (%s) b=%d (%s) only_a=%d only_b=%d groups=%d\n",
         $na,
-        lines_sha1($a),
+        issue_lines_sha1($a),
         $nb,
-        lines_sha1($b),
+        issue_lines_sha1($b),
         count($onlyA),
         count($onlyB),
         count($groups)

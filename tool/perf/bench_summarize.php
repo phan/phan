@@ -72,57 +72,19 @@ function read_time_json(string $runDir): ?array
     return null;
 }
 
-/**
- * Same as issue_diff.php: strip the trailing " (<suggestion>)" PlainTextPrinter appends.
- */
-function strip_suggestion(string $line): string
-{
-    $end = strlen($line) - 1;
-    if ($end < 1 || $line[$end] !== ')') {
-        return $line;
-    }
-    $depth = 0;
-    for ($i = $end; $i >= 0; $i--) {
-        $c = $line[$i];
-        if ($c === ')') {
-            $depth++;
-        } elseif ($c === '(') {
-            if (--$depth === 0) {
-                return $i > 0 && $line[$i - 1] === ' ' ? substr($line, 0, $i - 1) : $line;
-            }
-        }
-    }
-    return $line;
-}
+require_once __DIR__ . '/issue_lib.php';
 
 /**
- * @param list<string> $lines
- */
-function lines_sha1(array $lines): string
-{
-    sort($lines, SORT_STRING);
-    return sha1($lines ? implode("\n", $lines) . "\n" : '');
-}
-
-/**
- * Same normalization as issue_diff.php.
+ * Same normalization as issue_diff.php (issue_lib.php).
  * @return array{0:int,1:string,2:string} [count, sha1, sha1 with suggestions stripped]
  */
 function issues_digest(string $path): array
 {
-    $fp = @fopen($path, 'rb');
-    if ($fp === false) {
+    $lines = issue_load_lines($path);
+    if ($lines === null) {
         return [0, '', ''];
     }
-    $lines = [];
-    while (($line = fgets($fp)) !== false) {
-        $line = rtrim((string)preg_replace('/\e\[[0-9;?]*[ -\/]*[@-~]/', '', $line));
-        if ($line !== '') {
-            $lines[] = $line;
-        }
-    }
-    fclose($fp);
-    return [count($lines), lines_sha1($lines), lines_sha1(array_map('strip_suggestion', $lines))];
+    return [count($lines), issue_lines_sha1($lines), issue_lines_sha1(array_map('issue_strip_suggestion', $lines))];
 }
 
 /**
@@ -332,7 +294,10 @@ function summarize(string $dir): array
         'j' => $env['j'] ?? null,
         'label' => $env['label'] ?? '',
         'phan_sha' => $env['phan']['sha'] ?? null,
+        'phan_path' => $env['phan']['path'] ?? null,
         'dirty' => $env['phan']['dirty'] ?? null,
+        'self_root' => $env['self_root'] ?? null,
+        'self_root_sha' => $env['self_root_sha'] ?? null,
         'load1' => $env['load1'] ?? null,
         'perf_home' => $env['perf_home'] ?? null,
         'status' => $status,
@@ -416,6 +381,9 @@ function print_summary(array $s): void
         $s['runs_total'],
         $s['status']
     );
+    if (($s['self_root'] ?? null) !== null && $s['self_root'] !== dirname((string)($s['phan_path'] ?? ''))) {
+        printf("corpus %s (%s)\n", $s['self_root'], substr((string)$s['self_root_sha'], 0, 10));
+    }
     printf(
         "issues %s  sha1 %s  load1 %s\n",
         fmt($s['issues']),
