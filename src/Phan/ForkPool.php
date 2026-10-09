@@ -44,8 +44,14 @@ class ForkPool
     /** @var float the maximum memory usage at any time during the run. Excludes finished workers. */
     private $max_total_mem = 0;
 
-    /** @var list<IssueInstance> the combination of issues emitted by all workers */
-    private $issues = [];
+    /**
+     * @var array<int,list<IssueInstance>> the issues emitted by each worker, by worker index.
+     * Workers finish in a timing-dependent order, so the lists are combined in worker order
+     * (not arrival order) to keep the output deterministic: when several workers emit an issue
+     * with the same file, line, type and message (e.g. plugins whose finalizeProcess() runs in
+     * every worker), the issue collector keeps the last one it sees.
+     */
+    private $issues_by_worker = [];
 
     /** @var bool did any of the child processes fail (e.g. crash or send data that couldn't be unserialized) */
     private $did_have_error = false;
@@ -184,7 +190,7 @@ class ForkPool
 
                             $issues = unserialize($payload);
                             if (\is_array($issues) && $issues) {
-                                \array_push($this->issues, ...$issues);
+                                $this->issues_by_worker[$i] = \array_values($issues);
                             }
                             break;
                         case Writer::TYPE_PHASE_TIMINGS:
@@ -293,8 +299,8 @@ class ForkPool
 
     /**
      * Read the results that each child process has serialized on their write streams.
-     * The results are returned in an array, one for each worker. The order of the results
-     * is not maintained.
+     * The results of all workers are returned in a single array, in worker order
+     * (regardless of the order in which the workers finished).
      *
      * @return list<IssueInstance>
      * @suppress PhanAccessMethodInternal
@@ -343,7 +349,8 @@ class ForkPool
         }
         $this->assertAnalysisWorkersExitedNormally();
 
-        return $this->issues;
+        \ksort($this->issues_by_worker);
+        return \array_merge([], ...\array_values($this->issues_by_worker));
     }
 
     /**
