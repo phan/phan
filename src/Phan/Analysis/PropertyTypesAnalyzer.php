@@ -9,6 +9,7 @@ use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\Property;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
@@ -18,6 +19,35 @@ use Phan\Language\UnionType;
  */
 class PropertyTypesAnalyzer
 {
+
+    /**
+     * Repeat a TypeMismatchPropertyDefault check that failed during the parse phase,
+     * now that all classes (and their parents, interfaces and __invoke methods) are known.
+     */
+    private static function checkPendingDefaultType(CodeBase $code_base, Property $property): void
+    {
+        $check = $property->takePendingDefaultTypeCheck();
+        if ($check === null) {
+            return;
+        }
+        [$phpdoc_type, $default_type, $default_representation, $lineno] = $check;
+        if ($phpdoc_type->canCastToUnionType($default_type, $code_base) ||
+            $default_type->canCastToUnionType($phpdoc_type, $code_base) ||
+            $property->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchPropertyDefault)
+        ) {
+            return;
+        }
+        Issue::maybeEmit(
+            $code_base,
+            $property->getContext(),
+            Issue::TypeMismatchPropertyDefault,
+            $lineno,
+            (string)$phpdoc_type,
+            $property->getName(),
+            $default_representation,
+            (string)$default_type
+        );
+    }
 
     /**
      * Check to see if the given class's properties have issues.
@@ -41,6 +71,8 @@ class PropertyTypesAnalyzer
             }
             // @phan-suppress-next-line PhanPluginUseReturnValueKnown this is invoked to emit issues
             $union_type->checkImpossibleCombination($code_base, $property_context);
+
+            self::checkPendingDefaultType($code_base, $property);
 
             // Look at each type in the parameter's Union Type
             foreach ($union_type->withFlattenedArrayShapeOrLiteralTypeInstances()->getTypeSet() as $outer_type) {

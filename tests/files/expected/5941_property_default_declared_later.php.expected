@@ -1,0 +1,5 @@
+%s:13 PhanTypeMismatchDefault Default value for \BazInterface5941 $wrongClass can't be \NoInvoke5941
+%s:13 PhanTypeMismatchDefault Default value for callable $notInvokable can't be \NoInvoke5941
+%s:13 PhanTypeMismatchDefault Default value for callable $suppressed can't be \NoInvoke5941
+%s:16 PhanTypeMismatchPropertyDefault Default value for callable $notInvokable can't be new NoInvoke5941() of type \NoInvoke5941 based on phpdoc types
+%s:17 PhanTypeMismatchPropertyDefault Default value for \BazInterface5941 $wrongClass can't be new NoInvoke5941() of type \NoInvoke5941 based on phpdoc types

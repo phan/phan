@@ -1063,20 +1063,19 @@ class ParseVisitor extends ScopeVisitor
                 }
             }
 
-            // XXX during the parse phase, parent classes may be missing.
+            // During the parse phase, classes referenced by the default value (and their parents, interfaces
+            // and __invoke methods) may not have been parsed yet, so a failed check is repeated by
+            // PropertyTypesAnalyzer once all classes are known (issue #5578).
             if ($default_node !== null &&
                 !$original_union_type->isType(NullType::instance(false)) &&
                 !$variable->getUnionType()->canCastToUnionType($original_union_type, $this->code_base) &&
-                !$original_union_type->canCastToUnionType($variable->getUnionType(), $this->code_base) &&
-                !$property->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchPropertyDefault)
+                !$original_union_type->canCastToUnionType($variable->getUnionType(), $this->code_base)
             ) {
-                $this->emitIssue(
-                    Issue::TypeMismatchPropertyDefault,
-                    $lineno,
-                    (string)$variable->getUnionType(),
-                    $property->getName(),
+                $property->setPendingDefaultTypeCheck(
+                    $variable->getUnionType(),
+                    $original_union_type,
                     ASTReverter::toShortString($default_node),
-                    (string)$original_union_type
+                    $lineno
                 );
             }
 
