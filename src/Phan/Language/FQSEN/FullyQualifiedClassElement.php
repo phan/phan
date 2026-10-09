@@ -78,19 +78,23 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
         // are deduplicated via memoization and persist for the process lifetime.
         $class_id = \spl_object_id($fully_qualified_class_name);
 
+        // Nested caches by element class, class object ID, name (and alternate id), to avoid building a string key on every call.
+        // Alternate ids other than 0 are rare, so they are cached separately to avoid an extra array level per name.
         static $cache = [];
-        // Two-level cache: by class object ID, then by element key
-        if (!isset($cache[$class_id])) {
-            $cache[$class_id] = [];
+        static $alternate_cache = [];
+
+        if ($alternate_id === 0) {
+            return $cache[static::class][$class_id][$name] ??= new static(
+                $fully_qualified_class_name,
+                $name,
+                0
+            );
         }
-
-        $key = $name . ',' . $alternate_id . '|' . static::class;
-
-        return $cache[$class_id][$key] ?? ($cache[$class_id][$key] = new static(
+        return $alternate_cache[static::class][$class_id][$name][$alternate_id] ??= new static(
             $fully_qualified_class_name,
             $name,
             $alternate_id
-        ));
+        );
     }
 
     /**

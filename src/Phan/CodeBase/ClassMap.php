@@ -127,6 +127,14 @@ class ClassMap
     }
 
     /**
+     * Fetches the method with the lowercase name $lowercase_name (including any alternate id suffix), if it exists.
+     */
+    public function getMethodByLowercaseName(string $lowercase_name): ?Method
+    {
+        return $this->method_map[$lowercase_name] ?? null;
+    }
+
+    /**
      * @return array<string,Method>
      */
     public function getMethodMap(): array

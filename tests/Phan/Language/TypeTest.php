@@ -6,6 +6,9 @@ namespace Phan\Tests\Language;
 
 use Phan\Config;
 use Phan\Language\Context;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\Scope\ClassScope;
+use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
@@ -33,6 +36,7 @@ use Phan\Language\Type\NonEmptyMixedType;
 use Phan\Language\Type\NonNullMixedType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ResourceType;
+use Phan\Language\Type\SelfType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TrueType;
@@ -962,5 +966,34 @@ final class TypeTest extends CodeBaseAwareTestBase
         } finally {
             Config::setValue('scalar_implicit_cast', false);
         }
+    }
+
+    public function testIsStaticResolutionNoOp(): void
+    {
+        $context = (new Context())->withScope(
+            new ClassScope(new GlobalScope(), FullyQualifiedClassName::fromFullyQualifiedString('\stdClass'), 0)
+        );
+        foreach (['int', '?string', 'mixed', 'void', '\stdClass', '?\ArrayObject', 'callable(int):int'] as $type_string) {
+            $union_type = UnionType::fromFullyQualifiedPHPDocString($type_string);
+            $this->assertTrue($union_type->isStaticResolutionNoOp(), "expected $type_string to be a static resolution no-op");
+            $this->assertSame($union_type, $union_type->withStaticResolvedInContext($context), "expected resolving static in $type_string to return the same union type");
+            foreach ($union_type->getTypeSet() as $type) {
+                $this->assertTrue($type->isStaticResolutionNoOp(), "expected $type_string to be a static resolution no-op");
+                $this->assertSame($type, $type->withStaticResolvedInContext($context), "expected resolving static in $type_string to return the same type");
+            }
+        }
+        // Types that override withStaticResolvedInContext() or have template parameters are not no-ops.
+        foreach (['static', '?static', 'static[]', 'array<string,int>', 'list<int>', 'array{a:int}', '\stdClass&\Countable', '\ArrayObject<int>'] as $type_string) {
+            $union_type = UnionType::fromFullyQualifiedPHPDocString($type_string);
+            $this->assertFalse($union_type->isStaticResolutionNoOp(), "expected $type_string not to be a static resolution no-op");
+            foreach ($union_type->getTypeSet() as $type) {
+                $this->assertFalse($type->isStaticResolutionNoOp(), "expected $type_string not to be a static resolution no-op");
+            }
+        }
+        $this->assertFalse(SelfType::instance(false)->isStaticResolutionNoOp());
+        $this->assertFalse(SelfType::instance(true)->asPHPDocUnionType()->isStaticResolutionNoOp());
+        $this->assertFalse(UnionType::fromFullyQualifiedPHPDocString('int|static')->isStaticResolutionNoOp());
+        $this->assertFalse(UnionType::fromFullyQualifiedRealString('static')->isStaticResolutionNoOp());
+        $this->assertTrue(UnionType::empty()->isStaticResolutionNoOp());
     }
 }

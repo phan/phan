@@ -1301,9 +1301,34 @@ class UnionType implements Serializable, Stringable
         if (!$context->isInClassScope()) {
             return $this;
         }
+        if ($this->isStaticResolutionNoOp()) {
+            // Same result as mapping every type to itself below, without allocating a closure.
+            return $this;
+        }
         return $this->asMappedUnionType(static function (Type $type) use ($context): Type {
             return $type->withStaticResolvedInContext($context);
         });
+    }
+
+    /**
+     * Returns true if withStaticResolvedInContext() returns $this for every Context,
+     * i.e. if every type in this union type (and its real type set) is a static resolution no-op.
+     *
+     * @see Type::isStaticResolutionNoOp()
+     */
+    public function isStaticResolutionNoOp(): bool
+    {
+        foreach ($this->type_set as $type) {
+            if (!$type->isStaticResolutionNoOp()) {
+                return false;
+            }
+        }
+        foreach ($this->real_type_set as $type) {
+            if (!$type->isStaticResolutionNoOp()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -1326,6 +1351,10 @@ class UnionType implements Serializable, Stringable
     public function withStaticResolvedInFunctionLike(
         FunctionInterface $function
     ): UnionType {
+        if ($this->isStaticResolutionNoOp()) {
+            // withStaticResolvedInContext() would return $this, so skip creating the Context and Scope.
+            return $this;
+        }
         $context = $function->getContext();
         if ($function instanceof Method) {
             // Gets the context of the method *after* inheritance

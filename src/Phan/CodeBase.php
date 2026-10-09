@@ -1260,6 +1260,23 @@ class CodeBase
     }
 
     /**
+     * Equivalent to hasMethodWithFQSEN() followed by getMethodByFQSEN()
+     * for the method named $lowercase_name (with alternate id 0) in the class $fqsen,
+     * without creating the method FQSEN.
+     *
+     * @param string $lowercase_name the lowercase name of the method
+     * @return ?Method the method, or null if the class has no method with that name.
+     */
+    public function getMethodByClassAndLowercaseName(
+        FullyQualifiedClassName $fqsen,
+        string $lowercase_name
+    ): ?Method {
+        return $this->getClassMapByFullyQualifiedClassName(
+            $fqsen
+        )->getMethodByLowercaseName($lowercase_name);
+    }
+
+    /**
      * @return array<string,Method>
      * The set of methods associated with the given class
      */

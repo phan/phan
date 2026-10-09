@@ -132,6 +132,39 @@ final class FQSENTest extends TestBase
         );
     }
 
+    public function testClassElementMakeIsCached(): void
+    {
+        $class_fqsen = FullyQualifiedClassName::make('\\Name\\Space', 'A');
+        $method_fqsen = FullyQualifiedMethodName::make($class_fqsen, 'f');
+        $this->assertSame($method_fqsen, FullyQualifiedMethodName::make($class_fqsen, 'f'));
+        $this->assertSame($method_fqsen, FullyQualifiedMethodName::make($class_fqsen, 'f', 0));
+        $this->assertNotSame($method_fqsen, FullyQualifiedMethodName::make($class_fqsen, 'F'));
+        $alternate_fqsen = FullyQualifiedMethodName::make($class_fqsen, 'f', 2);
+        $this->assertNotSame($method_fqsen, $alternate_fqsen);
+        $this->assertSame($alternate_fqsen, $method_fqsen->withAlternateId(2));
+        $this->assertSame($method_fqsen, $alternate_fqsen->getCanonicalFQSEN());
+        $this->assertSame('\\Name\\Space\\A::f,2', (string)$alternate_fqsen);
+        // Elements of different kinds with the same name are distinct
+        $property_fqsen = FullyQualifiedPropertyName::make($class_fqsen, 'f');
+        $this->assertNotSame($method_fqsen, $property_fqsen);
+        $this->assertInstanceOf(FullyQualifiedPropertyName::class, $property_fqsen);
+        $this->assertInstanceOf(FullyQualifiedClassConstantName::class, FullyQualifiedClassConstantName::make($class_fqsen, 'f'));
+        // Numeric names are distinct from each other
+        $this->assertNotSame(FullyQualifiedPropertyName::make($class_fqsen, '1'), FullyQualifiedPropertyName::make($class_fqsen, '01'));
+        // Magic method names are canonicalized, other names are left unchanged
+        $this->assertSame('__toString', FullyQualifiedMethodName::make($class_fqsen, '__TOSTRING')->getName());
+        $this->assertSame(FullyQualifiedMethodName::make($class_fqsen, '__toString'), FullyQualifiedMethodName::make($class_fqsen, '__tostring'));
+        $this->assertSame('__callStatic', FullyQualifiedMethodName::canonicalName('__CALLSTATIC'));
+        $this->assertSame('__Other', FullyQualifiedMethodName::canonicalName('__Other'));
+        $this->assertSame('ToString', FullyQualifiedMethodName::canonicalName('ToString'));
+        $this->assertSame('_toString', FullyQualifiedMethodName::canonicalName('_toString'));
+        foreach (FullyQualifiedMethodName::CANONICAL_NAMES as $lowercase_name => $canonical_name) {
+            $this->assertStringStartsWith('__', $lowercase_name);
+            $this->assertSame($lowercase_name, \strtolower($canonical_name));
+            $this->assertSame($canonical_name, FullyQualifiedMethodName::canonicalName(\strtoupper($lowercase_name)));
+        }
+    }
+
     public function testFullyQualifiedPropertyName(): void
     {
         $this->assertFQSENEqual(
