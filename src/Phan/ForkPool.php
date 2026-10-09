@@ -245,13 +245,22 @@ class ForkPool
         PhaseTimer::begin('worker_emit');
         Writer::emitIssues($results ?: []);
 
+        $quick_exit = self::getQuickExitMethod();
         if (PhaseTimer::$enabled) {
+            PhaseTimer::note('exit_method', $quick_exit ?? 'exit');
             Writer::emitPhaseTimings(PhaseTimer::finishWorker());
         }
 
         \fclose($write_stream);
 
-        // Children exit after completing their work
+        // Children exit after completing their work.
+        // The parent now has everything it needs from this worker, so skip PHP's shutdown sequence when possible:
+        // destroying the objects of the inherited heap writes to every one of them, which makes the kernel copy
+        // the copy-on-write pages still shared with the parent and the other workers (several GB on large
+        // projects) and takes seconds, during which the parent waits before printing the results.
+        if ($quick_exit !== null) {
+            self::exitQuickly($quick_exit);
+        }
         exit(EXIT_SUCCESS);
     }
 
@@ -351,6 +360,64 @@ class ForkPool
 
         \ksort($this->issues_by_worker);
         return \array_merge([], ...\array_values($this->issues_by_worker));
+    }
+
+    /**
+     * Returns the way an analysis worker can terminate without running PHP's shutdown sequence,
+     * or null if it should use a regular exit().
+     *
+     * Set PHAN_DISABLE_FAST_EXIT=1 to always use exit() (e.g. when debugging workers).
+     * A regular exit is also used when the profiler or a code coverage extension needs the shutdown sequence.
+     *
+     * @return ?string 'ffi' (call _exit(2) through FFI) or 'exec' (replace the process with /bin/true)
+     */
+    private static function getQuickExitMethod(): ?string
+    {
+        if (\getenv('PHAN_DISABLE_FAST_EXIT')
+            || Config::getValue('profiler_enabled')
+            || \extension_loaded('xdebug')
+            || \extension_loaded('pcov')
+        ) {
+            return null;
+        }
+        if (\extension_loaded('ffi') && \in_array(\strtolower((string)\ini_get('ffi.enable')), ['1', 'true', 'on', 'preload'], true)) {
+            return 'ffi';
+        }
+        if (\function_exists('pcntl_exec')) {
+            foreach (['/bin/true', '/usr/bin/true'] as $path) {
+                if (\is_executable($path)) {
+                    return 'exec';
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Terminate this analysis worker with exit status 0 without running PHP's shutdown sequence.
+     * Falls through (returns) if that is not possible, so that the caller can call exit().
+     *
+     * @param string $method a value returned by getQuickExitMethod()
+     */
+    private static function exitQuickly(string $method): void
+    {
+        \fflush(\STDOUT);
+        \fflush(\STDERR);
+        if ($method === 'ffi') {
+            try {
+                $libc = \FFI::cdef('void _exit(int status);');
+                // @phan-suppress-next-line PhanUndeclaredMethod _exit is declared by the C definition above
+                $libc->_exit(EXIT_SUCCESS);
+            } catch (\Throwable) {
+                // fall through to exit()
+            }
+            return;
+        }
+        foreach (['/bin/true', '/usr/bin/true'] as $path) {
+            if (\is_executable($path)) {
+                \pcntl_exec($path);
+            }
+        }
     }
 
     /**
