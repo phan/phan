@@ -87,9 +87,6 @@ final class PhaseTimer
     /** @var ?bool true if /proc/self is available (computed on first use) */
     private static ?bool $has_proc = null;
 
-    /** @var int the page size used to convert /proc/self/statm to bytes */
-    private static int $page_size = 4096;
-
     /**
      * Enable collection if `--dump-phase-timings` or `--phase-timings-json` was passed.
      * This is called at the start of the CLI constructor, before the config file is read.
@@ -189,6 +186,8 @@ final class PhaseTimer
 
     /**
      * Called in a forked analysis worker to discard the measurements inherited from the parent process.
+     *
+     * @suppress PhanUndeclaredFunction, UnusedSuppression memory_reset_peak_usage() was added in PHP 8.2
      */
     public static function beginWorker(int $id, int $task_count): void
     {
@@ -309,12 +308,18 @@ final class PhaseTimer
         $children_usage = self::readRusage(1);
 
         $phases = self::formatPhases(self::$phases);
+        // The interval during which analysis workers run: the children start analyzing while the
+        // parent is still forking the remaining workers (the 'fork' phase), then the parent waits.
         $analyze_wait_s = null;
+        $fork_s = 0.0;
         foreach ($phases as $phase) {
             if ($phase['name'] === 'analyze_wait') {
                 $analyze_wait_s = $phase['wall_s'];
+            } elseif ($phase['name'] === 'fork') {
+                $fork_s = $phase['wall_s'];
             }
         }
+        $parallel_s = $analyze_wait_s !== null ? $analyze_wait_s + $fork_s : null;
 
         $notes = self::$notes;
         $notes['pre_cli_s'] = \round(self::$pre_start_s, 6);
@@ -407,9 +412,9 @@ final class PhaseTimer
                 'sys_s' => $self_usage['sys_s'],
                 'children_user_s' => $children_usage['user_s'],
                 'children_sys_s' => $children_usage['sys_s'],
-                'serial_fraction' => $analyze_wait_s !== null && $wall_s > 0 ? \round(($wall_s - $analyze_wait_s) / $wall_s, 6) : null,
+                'serial_fraction' => $parallel_s !== null && $wall_s > 0 ? \round(($wall_s - $parallel_s) / $wall_s, 6) : null,
                 'imbalance_s' => $worker_count >= 2 ? \round($max_worker_analyze_s - $min_worker_analyze_s, 6) : null,
-                'efficiency' => $worker_count > 0 && $analyze_wait_s ? \round($worker_analyze_cpu_s / ($worker_count * $analyze_wait_s), 6) : null,
+                'efficiency' => $worker_count > 0 && $parallel_s ? \round($worker_analyze_cpu_s / ($worker_count * $parallel_s), 6) : null,
             ],
             'notes' => $notes,
         ];
@@ -686,7 +691,8 @@ final class PhaseTimer
             'nvcsw' => $usage['ru_nvcsw'] ?? 0,
             'nivcsw' => $usage['ru_nivcsw'] ?? 0,
             'rss' => self::readRssBytes(),
-            'maxrss_kb' => $usage['ru_maxrss'] ?? 0,
+            // macOS reports ru_maxrss in bytes, Linux (and the BSDs) in KiB
+            'maxrss_kb' => \PHP_OS_FAMILY === 'Darwin' ? \intdiv((int)($usage['ru_maxrss'] ?? 0), 1024) : ($usage['ru_maxrss'] ?? 0),
             'zend_peak' => \memory_get_peak_usage(true),
         ];
     }
@@ -710,31 +716,24 @@ final class PhaseTimer
     private static function hasProc(): bool
     {
         if (self::$has_proc === null) {
-            self::$has_proc = \PHP_OS_FAMILY === 'Linux' && \is_readable('/proc/self/statm');
-            if (self::$has_proc && \function_exists('posix_sysconf') && \defined('POSIX_SC_PAGESIZE')) {
-                $page_size = \posix_sysconf(\constant('POSIX_SC_PAGESIZE'));
-                if ($page_size > 0) {
-                    self::$page_size = $page_size;
-                }
-            }
+            self::$has_proc = \PHP_OS_FAMILY === 'Linux' && \is_readable('/proc/self/status');
         }
         return self::$has_proc;
     }
 
     /**
-     * Returns the resident set size of this process from /proc/self/statm, or 0 if unavailable
+     * Returns the resident set size of this process (VmRSS from /proc/self/status), or 0 if unavailable
      */
     private static function readRssBytes(): int
     {
         if (!self::hasProc()) {
             return 0;
         }
-        $statm = \file_get_contents('/proc/self/statm');
-        if (!\is_string($statm)) {
+        $status = \file_get_contents('/proc/self/status');
+        if (!\is_string($status) || !\preg_match('/^VmRSS:\s+(\d+) kB$/m', $status, $match)) {
             return 0;
         }
-        $fields = \explode(' ', $statm, 3);
-        return (int)($fields[1] ?? 0) * self::$page_size;
+        return (int)$match[1] * 1024;
     }
 
     /**

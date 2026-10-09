@@ -1430,10 +1430,17 @@ class CLI
         }
     }
 
+    /**
+     * @throws UsageException if an option that is incompatible with daemon mode / the language server was passed
+     */
     private static function ensureServerRunsSingleAnalysisProcess(): void
     {
         if (!self::isDaemonOrLanguageServer()) {
             return;
+        }
+        if (PhaseTimer::$enabled) {
+            // The reports are emitted when the CLI exits, which a daemon or language server does not do after a request.
+            throw new UsageException("--dump-phase-timings and --phase-timings-json are not supported in Daemon mode or as a language server.", 1);
         }
         // If the client has multiple files open at once (and requests analysis of multiple files),
         // then there there would be multiple processes doing analysis.
