@@ -120,8 +120,10 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $clazz = $this->code_base->getClassByFQSEN(
                 $class_fqsen
             );
-        } while ($this->context->getProjectRelativePath()
-                != $clazz->getFileRef()->getProjectRelativePath()
+        } while (($this->context->getFile() !== $clazz->getFileRef()->getFile()
+                // Identical paths have identical project relative paths, so only call realpath() when they differ
+                && $this->context->getProjectRelativePath()
+                != $clazz->getFileRef()->getProjectRelativePath())
             || $node->children['__declId'] != $clazz->getDeclId()
             || $this->context->getLineNumberStart() != $clazz->getFileRef()->getLineNumberStart()
         );
@@ -311,8 +313,10 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // looking at currently in this context.
         $function = null;
         foreach ($canonical_function->alternateGenerator($code_base) as $alternate_function) {
-            if ($alternate_function->getFileRef()->getProjectRelativePath()
-                === $original_context->getProjectRelativePath()
+            $alternate_file_ref = $alternate_function->getFileRef();
+            // Identical paths have identical project relative paths, so only call realpath() when they differ
+            if ($alternate_file_ref->getFile() === $original_context->getFile()
+                || $alternate_file_ref->getProjectRelativePath() === $original_context->getProjectRelativePath()
             ) {
                 $function = $alternate_function;
                 break;

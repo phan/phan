@@ -269,9 +269,8 @@ final class IntersectionType extends Type
      */
     public function __toString(): string
     {
-        return $this->memoize(__METHOD__, function (): string {
-            return implode('&', $this->type_parts);
-        });
+        return $this->getMemoizedForCurrentState(__METHOD__)
+            ?? ($this->memoized_data[__METHOD__] = implode('&', $this->type_parts));
     }
 
     /**
@@ -282,13 +281,16 @@ final class IntersectionType extends Type
      */
     public function toErrorMessageString(): string
     {
-        return $this->memoize(__METHOD__, function (): string {
+        $string = $this->getMemoizedForCurrentState(__METHOD__);
+        if ($string === null) {
             $parts = [];
             foreach ($this->type_parts as $part) {
                 $parts[] = $part->toErrorMessageString();
             }
-            return implode('&', $parts);
-        });
+            $string = implode('&', $parts);
+            $this->memoized_data[__METHOD__] = $string;
+        }
+        return $string;
     }
 
     /**

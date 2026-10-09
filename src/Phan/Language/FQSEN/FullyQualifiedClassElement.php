@@ -252,6 +252,9 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
         return $fqsen_string;
     }
 
+    /** @var ?string caches the value of $this->__toString() */
+    private $as_string = null;
+
     /**
      * @return string
      * A string representation of this fully-qualified
@@ -259,12 +262,10 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
      */
     public function __toString(): string
     {
-        return $this->memoize(__METHOD__, function (): string {
-            return self::toString(
-                $this->fully_qualified_class_name,
-                $this->name,
-                $this->alternate_id
-            );
-        });
+        return $this->as_string ??= self::toString(
+            $this->fully_qualified_class_name,
+            $this->name,
+            $this->alternate_id
+        );
     }
 }

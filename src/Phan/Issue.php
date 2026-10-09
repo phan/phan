@@ -6167,23 +6167,23 @@ class Issue
         }
 
         $issue = self::fromType($issue_type);
-        $normalized_parameters = \array_map(
-            /**
-             * @return mixed
-             */
-            static function (mixed $param): mixed {
-                if (\is_bool($param)) {
-                    return $param ? 'true' : 'false';
-                }
-                return $param;
-            },
-            $parameters
-        );
+        $file = $context->getFile();
+        if (Phan::isExcludedAnalysisFile($file)) {
+            // emitInstance() would discard this issue, so don't bother formatting the message.
+            return;
+        }
+        // Render booleans as 'true'/'false' (modifies the local copy only if there are booleans)
+        foreach ($parameters as $i => $param) {
+            if (\is_bool($param)) {
+                $parameters[$i] = $param ? 'true' : 'false';
+            }
+        }
         $issue_instance = new IssueInstance(
             $issue,
-            $context->getFile(),
+            $file,
             $lineno,
-            $normalized_parameters,
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument the booleans were replaced with strings above
+            $parameters,
             $suggestion,
             $column
         );

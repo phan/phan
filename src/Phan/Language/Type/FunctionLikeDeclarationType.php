@@ -119,7 +119,8 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
      */
     public function __toString(): string
     {
-        return $this->memoize(__FUNCTION__, function (): string {
+        $string = $this->getMemoizedForCurrentState(__FUNCTION__);
+        if ($string === null) {
             $parts = [];
             foreach ($this->params as $value) {
                 $parts[] = $value->__toString();
@@ -129,8 +130,10 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
             if ($return_type->typeCount() >= 2 || str_ends_with($return_type_string, ']')) {
                 $return_type_string = "($return_type_string)";
             }
-            return ($this->is_nullable ? '?' : '') . static::NAME . '(' . \implode(',', $parts) . '):' . $return_type_string;
-        });
+            $string = ($this->is_nullable ? '?' : '') . static::NAME . '(' . \implode(',', $parts) . '):' . $return_type_string;
+            $this->memoized_data[__FUNCTION__] = $string;
+        }
+        return $string;
     }
 
     /**
