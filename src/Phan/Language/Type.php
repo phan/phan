@@ -81,6 +81,7 @@ use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
 use Phan\Library\StringUtil;
 use Phan\Library\Tuple5;
+use ReflectionMethod;
 use Stringable;
 
 use function count;
@@ -3608,6 +3609,27 @@ class Type implements Stringable
             return $this->withStaticResolvedInContextTemplate($context);
         }
         return $this;
+    }
+
+    /**
+     * @var array<string,bool> maps subclasses of Type to whether they inherit Type::withStaticResolvedInContext() unchanged
+     */
+    private static $inherits_static_resolution_in_context = [];
+
+    /**
+     * Returns true if withStaticResolvedInContext() returns $this for every Context.
+     *
+     * This is the case when this has no template parameter types
+     * and its class does not override withStaticResolvedInContext().
+     * (Subclasses that override withStaticResolvedInContext() may override this to return false directly.)
+     */
+    public function isStaticResolutionNoOp(): bool
+    {
+        if ($this->template_parameter_type_list) {
+            return false;
+        }
+        return self::$inherits_static_resolution_in_context[static::class] ??=
+            (new ReflectionMethod(static::class, 'withStaticResolvedInContext'))->getDeclaringClass()->getName() === self::class;
     }
 
     private function withStaticResolvedInContextTemplate(

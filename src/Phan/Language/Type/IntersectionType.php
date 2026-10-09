@@ -657,6 +657,20 @@ final class IntersectionType extends Type
     }
 
     /**
+     * withStaticResolvedInContext() returns $this exactly when every part resolves to itself,
+     * so this is a no-op iff resolving 'static' is a no-op for every part.
+     */
+    public function isStaticResolutionNoOp(): bool
+    {
+        foreach ($this->type_parts as $type) {
+            if (!$type->isStaticResolutionNoOp()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * @return Type
      * Either this or 'static' resolved to the given type.
      */

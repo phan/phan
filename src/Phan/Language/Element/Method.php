@@ -784,6 +784,10 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function withStaticExpandedToDeclaringClass(UnionType $union_type): UnionType
     {
+        if ($union_type->isStaticResolutionNoOp()) {
+            // withStaticResolvedInContext() would return $union_type, so skip creating the Context.
+            return $union_type;
+        }
         $new_union_type = $union_type->withStaticResolvedInContext($this->getDeclaringClassContext());
         if ($new_union_type !== $union_type) {
             $union_type = $union_type->withUnionType($new_union_type);
@@ -856,6 +860,8 @@ class Method extends ClassElement implements FunctionInterface
         );
 
         $defining_fqsen = $this->getDefiningFQSEN();
+        // The class map key of a method with alternate id 0 (same lookup as Clazz->hasMethodWithName($code_base, $this->name, true))
+        $lowercase_name = \strtolower($this->name);
 
         $method_list = [];
         $abstract_method_list = [];
@@ -865,25 +871,31 @@ class Method extends ClassElement implements FunctionInterface
             // TODO: Handle edge cases in traits.
             // A trait may be earlier in $ancestor_class_list than the parent, but the parent may define abstract classes.
             // TODO: What about trait aliasing rules?
-            if ($ancestor_class->hasMethodWithName($code_base, $this->name, true)) {
-                $method = $ancestor_class->getMethodByName(
-                    $code_base,
-                    $this->name
-                );
-                if ($method->getDefiningFQSEN() === $defining_fqsen) {
-                    // Skip it, this method **is** the one which defined this.
+            $ancestor_fqsen = $ancestor_class->getFQSEN();
+            $method = $code_base->getMethodByClassAndLowercaseName($ancestor_fqsen, $lowercase_name);
+            if (!$method) {
+                // Same as Clazz->hasMethodWithName(): hydrate the ancestor if this is the first time, then check again.
+                if (!$ancestor_class->hydrateIndicatingFirstTime($code_base)) {
                     continue;
                 }
-                // We initialize the overridden method's scope to ensure that
-                // analyzers are aware of the full param/return types of the overridden method.
-                $method->ensureScopeInitialized($code_base);
-                if ($method->isAbstract()) {
-                    // TODO: check for trait conflicts, etc.
-                    $abstract_method_list[] = $method;
+                $method = $code_base->getMethodByClassAndLowercaseName($ancestor_fqsen, $lowercase_name);
+                if (!$method) {
                     continue;
                 }
-                $method_list[] = $method;
             }
+            if ($method->getDefiningFQSEN() === $defining_fqsen) {
+                // Skip it, this method **is** the one which defined this.
+                continue;
+            }
+            // We initialize the overridden method's scope to ensure that
+            // analyzers are aware of the full param/return types of the overridden method.
+            $method->ensureScopeInitialized($code_base);
+            if ($method->isAbstract()) {
+                // TODO: check for trait conflicts, etc.
+                $abstract_method_list[] = $method;
+                continue;
+            }
+            $method_list[] = $method;
         }
         // Return abstract methods before concrete methods, in order to best check method compatibility.
         $method_list = \array_merge($abstract_method_list, $method_list);

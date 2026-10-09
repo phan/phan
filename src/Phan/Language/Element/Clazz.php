@@ -1976,11 +1976,17 @@ class Clazz extends AddressableElement
      * @param Option<Type> $type_option
      * A possibly defined type used to define template
      * parameter types when importing the method
+     *
+     * @param ?array<string,UnionType> $template_parameter_type_map
+     * If non-null, the result of `$type_option->get()->getTemplateParameterTypeMap($code_base)`.
+     * If null and that is needed, it is computed and stored here,
+     * so that callers adding several methods with the same $type_option compute it once.
      */
     public function addMethod(
         CodeBase $code_base,
         Method $method,
-        Option $type_option
+        Option $type_option,
+        ?array &$template_parameter_type_map = null
     ): void {
         $method_fqsen = FullyQualifiedMethodName::make(
             $this->fqsen,
@@ -2032,7 +2038,7 @@ class Clazz extends AddressableElement
             // return type and parameter types through it
             if ($type_option->isDefined()) {
                 $method = $method->cloneWithTemplateParameterTypeMap(
-                    $type_option->get()->getTemplateParameterTypeMap($code_base)
+                    $template_parameter_type_map ??= $type_option->get()->getTemplateParameterTypeMap($code_base)
                 );
             } else {
                 $method = clone($method);
@@ -2712,28 +2718,30 @@ class Clazz extends AddressableElement
      */
     public function getAncestorClassListRecursive(CodeBase $code_base): array
     {
-        return $this->memoize(__METHOD__, /** @return list<Clazz> */ function () use ($code_base): array {
-            $result = [];
-            $seen = [];
-            $queue = [$this];
+        // Same as memoize(), without allocating a closure on every call (this is called for every method in getOverriddenMethods())
+        if (\array_key_exists(__METHOD__, $this->memoized_data)) {
+            return $this->memoized_data[__METHOD__];
+        }
+        $result = [];
+        $seen = [];
+        $queue = [$this];
 
-            while ($queue) {
-                $current = \array_shift($queue);
+        while ($queue) {
+            $current = \array_shift($queue);
 
-                // Get immediate ancestors of current class
-                foreach ($current->getAncestorClassList($code_base) as $ancestor) {
-                    $ancestor_fqsen = $ancestor->getFQSEN()->__toString();
-                    if (isset($seen[$ancestor_fqsen])) {
-                        continue;
-                    }
-                    $seen[$ancestor_fqsen] = true;
-                    $result[] = $ancestor;
-                    $queue[] = $ancestor;
+            // Get immediate ancestors of current class
+            foreach ($current->getAncestorClassList($code_base) as $ancestor) {
+                $ancestor_fqsen = $ancestor->getFQSEN()->__toString();
+                if (isset($seen[$ancestor_fqsen])) {
+                    continue;
                 }
+                $seen[$ancestor_fqsen] = true;
+                $result[] = $ancestor;
+                $queue[] = $ancestor;
             }
+        }
 
-            return $result;
-        });
+        return $this->memoized_data[__METHOD__] = $result;
     }
 
     /**
@@ -3439,7 +3447,9 @@ class Clazz extends AddressableElement
             );
         }
 
-        // Copy methods
+        // Copy methods.
+        // The template parameter type map of $type_option is computed when first needed, then reused for the remaining methods.
+        $template_parameter_type_map = null;
         foreach ($class->getMethodMap($code_base) as $method) {
             if (!\is_null($trait_adaptations) && count($trait_adaptations->hidden_methods) > 0) {
                 $method_name_key = \strtolower($method->getName());
@@ -3457,7 +3467,7 @@ class Clazz extends AddressableElement
                 // which would prevent template resolution in addMethod
                 if ($type_option->isDefined()) {
                     $method = $method->cloneWithTemplateParameterTypeMap(
-                        $type_option->get()->getTemplateParameterTypeMap($code_base)
+                        $template_parameter_type_map ??= $type_option->get()->getTemplateParameterTypeMap($code_base)
                     );
                 }
                 $method = $this->adaptInheritedMethodFromTrait($method);
@@ -3465,7 +3475,8 @@ class Clazz extends AddressableElement
             $this->addMethod(
                 $code_base,
                 $method,
-                $is_trait ? None::instance() : $type_option
+                $is_trait ? None::instance() : $type_option,
+                $template_parameter_type_map
             );
         }
 
