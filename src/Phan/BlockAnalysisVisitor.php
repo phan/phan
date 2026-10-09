@@ -288,7 +288,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 // state should not leak out. For other statements, propagate the context so that subsequent
                 // statements can see variables defined earlier.
                 if (!isset(self::CLOSED_SCOPE_KINDS[$child_node->kind])) {
-                    $context = $updated_context;
+                    $context = self::flattenBranchScopeIntoGlobalScope($context, $updated_context);
                 }
             } catch (IssueException $e) {
                 // This is a fallback - Exceptions should be caught at a deeper level if possible
@@ -302,6 +302,31 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $this->parent_node_list
         );
         return $context;
+    }
+
+    /**
+     * If a statement in the global scope (e.g. a loop, if, switch, or try) returned a context
+     * whose scope is a BranchScope on top of the GlobalScope, fold the merged variables back into
+     * the GlobalScope and return a context that uses the GlobalScope directly.
+     *
+     * Without this, every later statement in the file would write to and read from the BranchScope's
+     * shadow copies of the variables, while `global $x` in functions analyzed later would
+     * read from and write to the original GlobalScope variables (e.g. issue #5575).
+     */
+    private static function flattenBranchScopeIntoGlobalScope(Context $old_context, Context $updated_context): Context
+    {
+        $old_scope = $old_context->getScope();
+        if (!$old_scope instanceof GlobalScope) {
+            return $updated_context;
+        }
+        $new_scope = $updated_context->getScope();
+        if ($new_scope instanceof GlobalScope) {
+            return $updated_context;
+        }
+        foreach ($new_scope->getVariableMapExcludingScope($old_scope) as $variable) {
+            $old_scope->addVariable($variable);
+        }
+        return $updated_context->withScope($old_scope);
     }
 
     /**

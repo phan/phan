@@ -1,0 +1,4 @@
+%s:17 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type bool
+%s:30 PhanTypeMismatchArgument Argument 1 ($i) is $y of type string but \takes_int5939() takes int defined at %s:23
+%s:39 PhanDebugAnnotation @phan-debug-var requested for variable $z - it has union type 1
+%s:39 PhanUnusedVariableGlobal Unreferenced definition of variable $z as a global variable
