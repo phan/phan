@@ -32,7 +32,6 @@ use function array_flip;
 use function array_merge;
 use function array_values;
 use function count;
-use function file_exists;
 use function file_put_contents;
 use function fprintf;
 use function fwrite;
@@ -419,8 +418,8 @@ class Phan implements IgnoredFilesFilterInterface
             $code_base->flushDependenciesForFile($file_path);
 
             // If the file is gone, no need to continue
-            $real = realpath($file_path);
-            if ($real === false || !file_exists($real)) {
+            // (realpath() returns false for paths that don't exist)
+            if (realpath($file_path) === false) {
                 CLI::printWarningToStderr("Could not find file '$file_path'\n");
                 continue;
             }
@@ -930,6 +929,21 @@ class Phan implements IgnoredFilesFilterInterface
     }
 
     /**
+     * @var array<string,bool> caches the results of isExcludedAnalysisFile() for the config values below
+     */
+    private static $is_excluded_analysis_file_cache = [];
+
+    /**
+     * @var mixed the value of 'include_analysis_file_list' that $is_excluded_analysis_file_cache was computed for
+     */
+    private static $is_excluded_analysis_file_cache_include_list = [];
+
+    /**
+     * @var mixed the value of '__exclude_analysis_regex' that $is_excluded_analysis_file_cache was computed for
+     */
+    private static $is_excluded_analysis_file_cache_regex = null;
+
+    /**
      * @return bool
      * True if this file is a member of a third party directory as
      * configured via the CLI flag '-3 [paths]'.
@@ -938,12 +952,32 @@ class Phan implements IgnoredFilesFilterInterface
         string $file_path
     ): bool {
         $include_analysis_file_list = Config::getValue('include_analysis_file_list');
+        $exclude_analysis_regex = Config::getValue('__exclude_analysis_regex');
+        if ($include_analysis_file_list !== self::$is_excluded_analysis_file_cache_include_list
+            || $exclude_analysis_regex !== self::$is_excluded_analysis_file_cache_regex) {
+            // The settings changed (e.g. in unit tests or in daemon mode), so discard the cached results.
+            self::$is_excluded_analysis_file_cache = [];
+            self::$is_excluded_analysis_file_cache_include_list = $include_analysis_file_list;
+            self::$is_excluded_analysis_file_cache_regex = $exclude_analysis_regex;
+        }
+        return self::$is_excluded_analysis_file_cache[$file_path]
+            ??= self::computeIsExcludedAnalysisFile($file_path, $include_analysis_file_list, $exclude_analysis_regex);
+    }
+
+    /**
+     * @param mixed $include_analysis_file_list the value of Config::getValue('include_analysis_file_list')
+     * @param mixed $exclude_analysis_regex the value of Config::getValue('__exclude_analysis_regex')
+     */
+    private static function computeIsExcludedAnalysisFile(
+        string $file_path,
+        mixed $include_analysis_file_list,
+        mixed $exclude_analysis_regex
+    ): bool {
         if ($include_analysis_file_list) {
             return !in_array($file_path, $include_analysis_file_list, true);
         }
 
         $file_path = str_replace('\\', '/', $file_path);
-        $exclude_analysis_regex = Config::getValue('__exclude_analysis_regex');
         if ($exclude_analysis_regex) {
             if (preg_match($exclude_analysis_regex, $file_path)) {
                 return true;

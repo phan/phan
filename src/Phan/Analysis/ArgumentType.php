@@ -1178,16 +1178,20 @@ final class ArgumentType
         $alternate_parameter_type = null;  // TODO: Properly merge "possibly undefined" union types - without this, undefined is inferred instead of possibly undefined
 
         // Check ArrayObject and ArrayIterator
-        // @phan-suppress-next-line PhanThrowTypeAbsentForCall
-        $arrayObj = FullyQualifiedClassName::make('', 'ArrayObject');
-        // @phan-suppress-next-line PhanThrowTypeAbsentForCall
-        $arrayIter = FullyQualifiedClassName::make('', 'ArrayIterator');
-        $deprecatedParam = false;
-        if ($method->getFQSEN() === FullyQualifiedMethodName::make($arrayObj, '__construct')
-            || $method->getFQSEN() === FullyQualifiedMethodName::make($arrayIter, '__construct')
-        ) {
-            $deprecatedParam = true;
+        // (The FQSEN factories always return the same instances, so these are only created once)
+        static $array_object_constructor_fqsen = null;
+        static $array_iterator_constructor_fqsen = null;
+        if ($array_object_constructor_fqsen === null) {
+            // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+            $arrayObj = FullyQualifiedClassName::make('', 'ArrayObject');
+            // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+            $arrayIter = FullyQualifiedClassName::make('', 'ArrayIterator');
+            $array_object_constructor_fqsen = FullyQualifiedMethodName::make($arrayObj, '__construct');
+            $array_iterator_constructor_fqsen = FullyQualifiedMethodName::make($arrayIter, '__construct');
         }
+        $method_fqsen = $method->getFQSEN();
+        $deprecatedParam = $method_fqsen === $array_object_constructor_fqsen
+            || $method_fqsen === $array_iterator_constructor_fqsen;
 
         $arg_count_info = null;
         foreach ($method->alternateGenerator($code_base) as $alternate_method) {

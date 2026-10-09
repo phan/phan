@@ -1167,16 +1167,20 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
      */
     public function withErasedUnionTypes(): Type
     {
-        return $this->memoize(__METHOD__, function (): ArrayShapeType {
-            $new_field_types = $this->field_types;
-            foreach ($this->field_types as $offset => $union_type) {
-                $new_field_types[$offset] = $union_type->eraseRealTypeSetRecursively();
-            }
-            if ($new_field_types === $this->field_types) {
-                return $this;
-            }
-            return self::fromFieldTypes($new_field_types, $this->is_nullable);
-        });
+        return $this->getMemoizedForCurrentState(__METHOD__)
+            ?? ($this->memoized_data[__METHOD__] = $this->computeWithErasedUnionTypes());
+    }
+
+    private function computeWithErasedUnionTypes(): ArrayShapeType
+    {
+        $new_field_types = $this->field_types;
+        foreach ($this->field_types as $offset => $union_type) {
+            $new_field_types[$offset] = $union_type->eraseRealTypeSetRecursively();
+        }
+        if ($new_field_types === $this->field_types) {
+            return $this;
+        }
+        return self::fromFieldTypes($new_field_types, $this->is_nullable);
     }
 
     public function asCallableType(CodeBase $code_base): ?Type
