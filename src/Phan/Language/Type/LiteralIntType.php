@@ -132,6 +132,12 @@ final class LiteralIntType extends IntType implements LiteralTypeInterface
     }
 
     /** @override */
+    /** @override */
+    public function getIntBounds(): array
+    {
+        return [$this->value, $this->value, $this->value !== 0];
+    }
+
     public function isAlwaysTruthy(): bool
     {
         return (bool)$this->value && !$this->is_nullable;

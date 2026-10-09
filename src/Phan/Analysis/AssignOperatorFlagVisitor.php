@@ -278,6 +278,10 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
         if ($left->isNonNullIntType()
             && $right->isNonNullIntType()
         ) {
+            $result_type = IntType::computeArithmeticResultType('+', $left, $right);
+            if ($result_type instanceof IntType && \get_class($result_type) !== IntType::class) {
+                return UnionType::of([$result_type], $int_or_float_or_array);
+            }
             return $probably_int_type;
         }
 
@@ -385,7 +389,15 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
             && $right->hasNonNullIntType()
         ) {
             static $int_type = null;
-            return $int_type ?? ($int_type = UnionType::of([IntType::instance(false)], [FloatType::instance(false)]));
+            $int_type = $int_type ?? UnionType::of([IntType::instance(false)], [FloatType::instance(false)]);
+            if ($left->isNonNullIntType() && $right->isNonNullIntType()) {
+                $operator = $node->flags === ast\flags\BINARY_MUL ? '*' : '-';
+                $result_type = IntType::computeArithmeticResultType($operator, $left, $right);
+                if (\get_class($result_type) !== IntType::class) {
+                    return UnionType::of([$result_type], $int_type->getRealTypeSet());
+                }
+            }
+            return $int_type;
         }
         // analyzed in AssignOperatorAnalysisVisitor
         return FloatType::instance(false)->asRealUnionType();
