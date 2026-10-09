@@ -44,6 +44,7 @@ use Phan\Language\Type;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralFloatType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
@@ -1383,6 +1384,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $kind = $var->kind ?? null;
         if ($kind === \ast\AST_VAR) {
             $new_type = $old_type->getTypeAfterIncOrDec();
+            if ($old_type->isNonNullIntType()) {
+                // e.g. incrementing a positive-int results in a positive-int, decrementing a negative-int results in a negative-int.
+                $is_decrement = $node->kind === ast\AST_POST_DEC || $node->kind === ast\AST_PRE_DEC;
+                $new_type = IntType::computeArithmeticResultType(
+                    $is_decrement ? '-' : '+',
+                    $old_type,
+                    LiteralIntType::instanceForValue(1, false)->asPHPDocUnionType()
+                )->asPHPDocUnionType();
+            }
             if ($old_type === $new_type) {
                 return $this->context;
             }

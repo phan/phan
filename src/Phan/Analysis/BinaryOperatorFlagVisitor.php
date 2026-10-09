@@ -438,6 +438,11 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         if ($left->hasTypesCoercingToNonInt() || $right->hasTypesCoercingToNonInt()) {
             $main_type = ($left->hasIntType() && $right->hasIntType()) ? 'int|float' : 'float';
         } else {
+            $operator = self::ARITHMETIC_OPERATOR_FOR_FLAGS[$node->flags] ?? null;
+            if ($operator !== null) {
+                // e.g. positive-int + positive-int is positive-int (the real type set accounts for overflow to float)
+                return UnionType::of([IntType::computeArithmeticResultType($operator, $left, $right)], $real_int_or_float);
+            }
             $main_type = 'int';
         }
         return UnionType::fromFullyQualifiedPHPDocAndRealString(
@@ -445,6 +450,15 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             'int|float'
         );
     }
+
+    /**
+     * Binary operators for which IntType::computeArithmeticResultType can refine the sign of the result.
+     */
+    private const ARITHMETIC_OPERATOR_FOR_FLAGS = [
+        ast\flags\BINARY_ADD => '+',
+        ast\flags\BINARY_SUB => '-',
+        ast\flags\BINARY_MUL => '*',
+    ];
 
     /**
      * @param string $issue_type

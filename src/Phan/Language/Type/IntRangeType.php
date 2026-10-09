@@ -67,6 +67,12 @@ final class IntRangeType extends IntType
         return $this->upper_bound;
     }
 
+    /** @override */
+    public function getIntBounds(): array
+    {
+        return [$this->lower_bound, $this->upper_bound, $this->lower_bound > 0 || $this->upper_bound < 0];
+    }
+
     /**
      * Checks whether a literal value is within this range.
      */

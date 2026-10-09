@@ -1,0 +1,60 @@
+%s:41 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int(real=float|int)
+%s:41 PhanUnusedVariable Unused definition of variable $x
+%s:43 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type positive-int(real=float|int)
+%s:43 PhanUnusedVariable Unused definition of variable $x
+%s:45 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type positive-int(real=float|int)
+%s:45 PhanUnusedVariable Unused definition of variable $x
+%s:47 PhanDebugAnnotation @phan-debug-var requested for variable $p - it has union type positive-int
+%s:47 PhanUnusedVariable Unused definition of variable $p
+%s:50 PhanDebugAnnotation @phan-debug-var requested for variable $p - it has union type int
+%s:50 PhanUnusedVariable Unused definition of variable $p
+%s:52 PhanDebugAnnotation @phan-debug-var requested for variable $y - it has union type negative-int(real=int)
+%s:52 PhanUnusedVariable Unused definition of variable $y
+%s:54 PhanDebugAnnotation @phan-debug-var requested for variable $z - it has union type positive-int(real=float|int)
+%s:54 PhanUnusedVariable Unused definition of variable $z
+%s:58 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type negative-int(real=float|int)
+%s:58 PhanUnusedVariable Unused definition of variable $x
+%s:60 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type negative-int(real=float|int)
+%s:60 PhanUnusedVariable Unused definition of variable $x
+%s:62 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int(real=float|int)
+%s:62 PhanUnusedVariable Unused definition of variable $x
+%s:64 PhanDebugAnnotation @phan-debug-var requested for variable $n - it has union type negative-int
+%s:64 PhanUnusedVariable Unused definition of variable $n
+%s:67 PhanDebugAnnotation @phan-debug-var requested for variable $n - it has union type int
+%s:67 PhanUnusedVariable Unused definition of variable $n
+%s:69 PhanDebugAnnotation @phan-debug-var requested for variable $y - it has union type positive-int(real=int)
+%s:69 PhanUnusedVariable Unused definition of variable $y
+%s:71 PhanDebugAnnotation @phan-debug-var requested for variable $z - it has union type negative-int(real=float|int)
+%s:71 PhanUnusedVariable Unused definition of variable $z
+%s:75 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type positive-int(real=float|int)
+%s:75 PhanUnusedVariable Unused definition of variable $m
+%s:77 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type positive-int(real=float|int)
+%s:77 PhanUnusedVariable Unused definition of variable $m
+%s:79 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type negative-int(real=float|int)
+%s:79 PhanUnusedVariable Unused definition of variable $m
+%s:81 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type non-zero-int(real=float|int)
+%s:81 PhanUnusedVariable Unused definition of variable $m
+%s:83 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type non-zero-int(real=float|int)
+%s:83 PhanUnusedVariable Unused definition of variable $m
+%s:85 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type int(real=float|int)
+%s:85 PhanUnusedVariable Unused definition of variable $m
+%s:87 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type int(real=float|int)
+%s:87 PhanUnusedVariable Unused definition of variable $m
+%s:92 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type positive-int(real=float|int)
+%s:94 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type int(real=float|int)
+%s:94 PhanUnusedVariable Unused definition of variable $c
+%s:97 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type negative-int(real=float|int)
+%s:99 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type positive-int(real=float|int)
+%s:99 PhanUnusedVariable Unused definition of variable $c
+%s:103 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type float(real=float)
+%s:103 PhanUnusedVariable Unused definition of variable $f
+%s:105 PhanDebugAnnotation @phan-debug-var requested for variable $u - it has union type int(real=float|int)
+%s:105 PhanUnusedVariable Unused definition of variable $u
+%s:107 PhanDebugAnnotation @phan-debug-var requested for variable $r - it has union type positive-int(real=float|int)
+%s:107 PhanUnusedVariable Unused definition of variable $r
+%s:109 PhanDebugAnnotation @phan-debug-var requested for variable $r - it has union type negative-int(real=float|int)
+%s:109 PhanUnusedVariable Unused definition of variable $r
+%s:114 PhanDebugAnnotation @phan-debug-var requested for variable $i - it has union type 0|positive-int
+%s:115 PhanDebugAnnotation @phan-debug-var requested for variable $i - it has union type positive-int
+%s:130 PhanTypeMismatchArgument Argument 1 ($p) is (getPositiveInt5940() - 1) of type int but \takesPositive5940() takes positive-int defined at %s:25
+%s:131 PhanTypeMismatchArgument Argument 1 ($n) is (getNegativeInt5940() + 1) of type int but \takesNegative5940() takes negative-int defined at %s:30

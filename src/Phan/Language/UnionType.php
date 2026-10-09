@@ -6010,6 +6010,9 @@ class UnionType implements Serializable, Stringable
             }
             // -INT_MIN is a float.
             return LiteralFloatType::instanceForValue($result, false);
+        }, static function (IntType $type): IntType {
+            // e.g. -positive-int is negative-int
+            return IntType::computeNegatedType($type);
         });
     }
 
@@ -6175,20 +6178,21 @@ class UnionType implements Serializable, Stringable
     /**
      * @param Closure(int|float): ScalarType $operation
      */
-    private function applyNumericOperation(Closure $operation): UnionType
+    private function applyNumericOperation(Closure $operation, ?Closure $int_type_operation = null): UnionType
     {
         return UnionType::of(
-            self::applyNumericOperationToList($this->type_set, $operation),
-            self::applyNumericOperationToList($this->real_type_set, $operation)
+            self::applyNumericOperationToList($this->type_set, $operation, $int_type_operation),
+            self::applyNumericOperationToList($this->real_type_set, $operation, $int_type_operation)
         );
     }
 
     /**
      * @param List<Type> $type_set
      * @param Closure(int|float): ScalarType $operation
+     * @param ?Closure(IntType): IntType $int_type_operation the result for non-literal int types (e.g. positive-int), if known
      * @return list<ScalarType>
      */
-    private static function applyNumericOperationToList(array $type_set, Closure $operation): array
+    private static function applyNumericOperationToList(array $type_set, Closure $operation, ?Closure $int_type_operation = null): array
     {
         $result = [];
         $needs_int_fallback = false;
@@ -6210,7 +6214,11 @@ class UnionType implements Serializable, Stringable
                     continue;
                 }
                 if ($type instanceof IntType) {
-                    $needs_int_fallback = true;
+                    if ($int_type_operation !== null) {
+                        $result[] = $int_type_operation($type);
+                    } else {
+                        $needs_int_fallback = true;
+                    }
                     continue;
                 }
                 if ($type instanceof FloatType) {

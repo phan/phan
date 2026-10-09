@@ -33,6 +33,12 @@ final class PositiveIntType extends IntType
     }
 
     /** @override */
+    public function getIntBounds(): array
+    {
+        return [1, null, true];
+    }
+
+    /** @override */
     protected function canCastToNonNullableType(Type $type, \Phan\CodeBase $code_base): bool
     {
         if ($type instanceof LiteralIntType) {
