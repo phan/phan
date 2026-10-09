@@ -40,3 +40,20 @@ function h5939(): void
     '@phan-debug-var $z';
 }
 h5939();
+
+// Refinements of superglobals must survive compound statements in the global scope,
+// even though they are never stored in the GlobalScope itself.
+if (!is_string($_SERVER['key'])) {
+    exit;
+}
+while (rand() < 5) {
+}
+echo strlen($_SERVER['key']);
+'@phan-debug-var $_SERVER';
+$w = 'after';
+function i5939(): void
+{
+    global $w;
+    takes_int5939($w);
+}
+i5939();

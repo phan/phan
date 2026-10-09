@@ -39,6 +39,7 @@ use Phan\Language\Scope\BranchScope;
 use Phan\Language\Scope\ClassConstantScope;
 use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Scope\PropertyScope;
+use Phan\Language\Scope\TopLevelBranchScope;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\IterableType;
@@ -312,21 +313,34 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * Without this, every later statement in the file would write to and read from the BranchScope's
      * shadow copies of the variables, while `global $x` in functions analyzed later would
      * read from and write to the original GlobalScope variables (e.g. issue #5575).
+     *
+     * GlobalScope::addVariable() deliberately ignores superglobals and configured hardcoded globals,
+     * so branch-local refinements of those are kept in a TopLevelBranchScope layered on the GlobalScope.
      */
     private static function flattenBranchScopeIntoGlobalScope(Context $old_context, Context $updated_context): Context
     {
         $old_scope = $old_context->getScope();
-        if (!$old_scope instanceof GlobalScope) {
+        if ($old_scope instanceof GlobalScope) {
+            $global_scope = $old_scope;
+        } elseif ($old_scope instanceof TopLevelBranchScope) {
+            $global_scope = $old_scope->getParentScope();
+        } else {
             return $updated_context;
         }
         $new_scope = $updated_context->getScope();
         if ($new_scope instanceof GlobalScope) {
             return $updated_context;
         }
-        foreach ($new_scope->getVariableMapExcludingScope($old_scope) as $variable) {
-            $old_scope->addVariable($variable);
+        $retained_scope = null;
+        foreach ($new_scope->getVariableMapExcludingScope($global_scope) as $name => $variable) {
+            if (Variable::isHardcodedGlobalVariableWithName((string)$name)) {
+                $retained_scope ??= new TopLevelBranchScope($global_scope);
+                $retained_scope->addVariable($variable);
+                continue;
+            }
+            $global_scope->addVariable($variable);
         }
-        return $updated_context->withScope($old_scope);
+        return $updated_context->withScope($retained_scope ?? $global_scope);
     }
 
     /**
