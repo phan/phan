@@ -247,7 +247,7 @@ class ForkPool
 
         $quick_exit = self::getQuickExitMethod();
         if (PhaseTimer::$enabled) {
-            PhaseTimer::note('exit_method', $quick_exit ?? 'exit');
+            PhaseTimer::note('exit_method', $quick_exit !== null ? 'exec' : 'exit');
             Writer::emitPhaseTimings(PhaseTimer::finishWorker());
         }
 
@@ -363,13 +363,11 @@ class ForkPool
     }
 
     /**
-     * Returns the way an analysis worker can terminate without running PHP's shutdown sequence,
-     * or null if it should use a regular exit().
+     * Returns the program an analysis worker can exec to terminate with exit status 0 without
+     * running PHP's shutdown sequence, or null if it should use a regular exit().
      *
      * Set PHAN_DISABLE_FAST_EXIT=1 to always use exit() (e.g. when debugging workers).
      * A regular exit is also used when the profiler or a code coverage extension needs the shutdown sequence.
-     *
-     * @return ?string 'ffi' (call _exit(2) through FFI) or 'exec' (replace the process with /bin/true)
      */
     private static function getQuickExitMethod(): ?string
     {
@@ -377,47 +375,29 @@ class ForkPool
             || Config::getValue('profiler_enabled')
             || \extension_loaded('xdebug')
             || \extension_loaded('pcov')
+            || !\function_exists('pcntl_exec')
         ) {
             return null;
         }
-        if (\extension_loaded('ffi') && \in_array(\strtolower((string)\ini_get('ffi.enable')), ['1', 'true', 'on', 'preload'], true)) {
-            return 'ffi';
-        }
-        if (\function_exists('pcntl_exec')) {
-            foreach (['/bin/true', '/usr/bin/true'] as $path) {
-                if (\is_executable($path)) {
-                    return 'exec';
-                }
+        foreach (['/bin/true', '/usr/bin/true'] as $path) {
+            if (\is_executable($path)) {
+                return $path;
             }
         }
         return null;
     }
 
     /**
-     * Terminate this analysis worker with exit status 0 without running PHP's shutdown sequence.
-     * Falls through (returns) if that is not possible, so that the caller can call exit().
+     * Replace this analysis worker's process with $program (which exits with status 0),
+     * so that PHP's shutdown sequence never runs. Returns only if exec failed, so that the caller can call exit().
      *
-     * @param string $method a value returned by getQuickExitMethod()
+     * @param string $program a value returned by getQuickExitMethod()
      */
-    private static function exitQuickly(string $method): void
+    private static function exitQuickly(string $program): void
     {
         \fflush(\STDOUT);
         \fflush(\STDERR);
-        if ($method === 'ffi') {
-            try {
-                $libc = \FFI::cdef('void _exit(int status);');
-                // @phan-suppress-next-line PhanUndeclaredMethod _exit is declared by the C definition above
-                $libc->_exit(EXIT_SUCCESS);
-            } catch (\Throwable) {
-                // fall through to exit()
-            }
-            return;
-        }
-        foreach (['/bin/true', '/usr/bin/true'] as $path) {
-            if (\is_executable($path)) {
-                \pcntl_exec($path);
-            }
-        }
+        \pcntl_exec($program);
     }
 
     /**
