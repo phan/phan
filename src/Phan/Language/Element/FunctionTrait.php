@@ -9,6 +9,7 @@ use ast;
 use ast\Node;
 use Closure;
 use Phan\Analysis\ConditionVisitor;
+use Phan\Analysis\EmitOnlyChecks;
 use Phan\Analysis\FallbackMethodTypesVisitor;
 use Phan\Analysis\NegatedConditionVisitor;
 use Phan\Analysis\ParameterTypesAnalyzer;
@@ -1635,15 +1636,18 @@ trait FunctionTrait
     /**
      * Check this method's return types (phpdoc and real) to make sure they're valid,
      * and infer a return type from the combination of the signature and phpdoc return types.
+     *
+     * @param int $emit_only_checks EmitOnlyChecks::SKIP to only look up the classes of a return type the first time it is seen
+     *                              (for elements declared in files excluded from analysis, see EmitOnlyChecks::shouldLookUpClassesOfType()).
      */
-    public function analyzeReturnTypes(CodeBase $code_base): void
+    public function analyzeReturnTypes(CodeBase $code_base, int $emit_only_checks = EmitOnlyChecks::RUN): void
     {
         if ($this->did_analyze_return_types) {
             return;
         }
         $this->did_analyze_return_types = true;
         try {
-            $this->analyzeReturnTypesInner($code_base);
+            $this->analyzeReturnTypesInner($code_base, $emit_only_checks);
         } catch (RecursionDepthException) {
         }
     }
@@ -1658,7 +1662,7 @@ trait FunctionTrait
      */
     abstract public function getUnionTypeWithUnmodifiedStatic(): UnionType;
 
-    private function analyzeReturnTypesInner(CodeBase $code_base): void
+    private function analyzeReturnTypesInner(CodeBase $code_base, int $emit_only_checks): void
     {
         if ($this->isPHPInternal()) {
             // nothing to do, no known Node
@@ -1670,9 +1674,95 @@ trait FunctionTrait
         $context = $this->getContext();
         // TODO: use method->getPHPDocReturnType() and getRealReturnType() to check compatibility, like analyzeParameterTypesDocblockSignaturesMatch
 
-        // Look at each parameter to make sure their types
-        // are valid
+        if (EmitOnlyChecks::shouldLookUpClassesOfType($emit_only_checks, $this instanceof Method ? 'method return' : 'function return', $return_type)) {
+            $this->checkReturnTypeClassesExist($code_base, $return_type);
+        }
+        // This narrows the return type to the phpdoc return type (and emits issues if they're incompatible)
+        if (Config::getValue('check_docblock_signature_return_type_match') && !$real_return_type->isEmpty() && ($phpdoc_return_type instanceof UnionType) && !$phpdoc_return_type->isEmpty()) {
+            $resolved_real_return_type = $real_return_type->withStaticResolvedInContext($context);
+            foreach ($phpdoc_return_type->getTypeSet() as $phpdoc_type) {
+                $is_exclusively_narrowed = $phpdoc_type->isExclusivelyNarrowedFormOrEquivalentTo(
+                    $resolved_real_return_type,
+                    $context,
+                    $code_base
+                );
+                // Make sure that the commented type is a narrowed
+                // or equivalent form of the syntax-level declared
+                // return type.
+                if (!$is_exclusively_narrowed) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::TypeMismatchDeclaredReturn,
+                        // @phan-suppress-next-line PhanAccessMethodInternal, PhanTypeMismatchArgument TODO: Support inferring this is FunctionInterface
+                        ParameterTypesAnalyzer::guessCommentReturnLineNumber($this) ?? $context->getLineNumberStart(),
+                        $this->getName(),
+                        $phpdoc_type->__toString(),
+                        $real_return_type->__toString()
+                    );
+                }
+                if ($is_exclusively_narrowed && Config::getValue('prefer_narrowed_phpdoc_return_type') && !$phpdoc_return_type->isNeverType()) {
+                    $normalized_phpdoc_return_type = ParameterTypesAnalyzer::normalizeNarrowedParamType($phpdoc_return_type, $real_return_type);
+                    if ($normalized_phpdoc_return_type) {
+                        // TODO: How does this currently work when there are multiple types in the union type that are compatible?
+                        $real_type_set = $real_return_type->getTypeSet();
+                        $new_return_type = $normalized_phpdoc_return_type->withRealTypeSet($real_type_set);
+                        if ($real_type_set) {
+                            $new_return_type = $new_return_type->asNormalizedTypes();
+                        }
+                        $this->setUnionType($new_return_type);
+                    } else {
+                        // This check isn't urgent to fix, and is specific to nullable casting rules,
+                        // so use a different issue type.
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::TypeMismatchDeclaredReturnNullable,
+                            // @phan-suppress-next-line PhanAccessMethodInternal, PhanTypeMismatchArgument TODO: Support inferring this is FunctionInterface
+                            ParameterTypesAnalyzer::guessCommentReturnLineNumber($this) ?? $context->getLineNumberStart(),
+                            $this->getName(),
+                            $phpdoc_type->__toString(),
+                            $real_return_type->__toString()
+                        );
+                    }
+                }
+            }
+        }
+        if ($return_type->isEmpty()) {
+            if ($this->hasReturn()) {
+                if ($this instanceof Method) {
+                    $union_type = $this->getUnionTypeOfMagicIfKnown();
+                    if ($union_type) {
+                        $this->setUnionType($union_type);
+                    }
+                }
+            } else {
+                if ($this instanceof Func || ($this instanceof Method && ($this->isPrivate() || $this->isEffectivelyFinal() || $this->isMagicAndVoid() || $this->getClass($code_base)->isFinal()))) {
+                    $this->setUnionType(VoidType::instance(false)->asPHPDocUnionType());
+                }
+            }
+        }
+        if (EmitOnlyChecks::shouldLookUpClassesOfType($emit_only_checks, 'real return', $real_return_type)) {
+            $this->checkRealReturnTypeIsNotTrait($code_base, $real_return_type);
+        }
+        if ($this->comment) {
+            // Add plugins **after** the phpdoc and real comment types were merged.
+            // Plugins affecting return types (for template in (at)return)
+            $template_type_list = $this->comment->getTemplateTypeList();
+            if ($template_type_list) {
+                $this->addClosureForDependentTemplateType($code_base, $context, $template_type_list);
+            }
+        }
+    }
 
+    /**
+     * Emit issues about the classes in the declared return type of this function-like (before phpdoc narrowing):
+     * undeclared classes, template types of static methods, and classes that are defined more than once.
+     * (Looking up the classes loads internal classes, see EmitOnlyChecks::shouldLookUpClassesOfType())
+     */
+    private function checkReturnTypeClassesExist(CodeBase $code_base, UnionType $return_type): void
+    {
+        $context = $this->getContext();
         // Look at each type in the function's return union type
         foreach ($return_type->withFlattenedArrayShapeOrLiteralTypeInstances()->getTypeSet() as $outer_type) {
             foreach ($outer_type->getReferencedClasses() as $type) {
@@ -1715,70 +1805,13 @@ trait FunctionTrait
                 }
             }
         }
-        if (Config::getValue('check_docblock_signature_return_type_match') && !$real_return_type->isEmpty() && ($phpdoc_return_type instanceof UnionType) && !$phpdoc_return_type->isEmpty()) {
-            $resolved_real_return_type = $real_return_type->withStaticResolvedInContext($context);
-            foreach ($phpdoc_return_type->getTypeSet() as $phpdoc_type) {
-                $is_exclusively_narrowed = $phpdoc_type->isExclusivelyNarrowedFormOrEquivalentTo(
-                    $resolved_real_return_type,
-                    $context,
-                    $code_base
-                );
-                // Make sure that the commented type is a narrowed
-                // or equivalent form of the syntax-level declared
-                // return type.
-                if (!$is_exclusively_narrowed) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::TypeMismatchDeclaredReturn,
-                        // @phan-suppress-next-line PhanAccessMethodInternal, PhanPartialTypeMismatchArgument TODO: Support inferring this is FunctionInterface
-                        ParameterTypesAnalyzer::guessCommentReturnLineNumber($this) ?? $context->getLineNumberStart(),
-                        $this->getName(),
-                        $phpdoc_type->__toString(),
-                        $real_return_type->__toString()
-                    );
-                }
-                if ($is_exclusively_narrowed && Config::getValue('prefer_narrowed_phpdoc_return_type') && !$phpdoc_return_type->isNeverType()) {
-                    $normalized_phpdoc_return_type = ParameterTypesAnalyzer::normalizeNarrowedParamType($phpdoc_return_type, $real_return_type);
-                    if ($normalized_phpdoc_return_type) {
-                        // TODO: How does this currently work when there are multiple types in the union type that are compatible?
-                        $real_type_set = $real_return_type->getTypeSet();
-                        $new_return_type = $normalized_phpdoc_return_type->withRealTypeSet($real_type_set);
-                        if ($real_type_set) {
-                            $new_return_type = $new_return_type->asNormalizedTypes();
-                        }
-                        $this->setUnionType($new_return_type);
-                    } else {
-                        // This check isn't urgent to fix, and is specific to nullable casting rules,
-                        // so use a different issue type.
-                        Issue::maybeEmit(
-                            $code_base,
-                            $context,
-                            Issue::TypeMismatchDeclaredReturnNullable,
-                            // @phan-suppress-next-line PhanAccessMethodInternal, PhanPartialTypeMismatchArgument TODO: Support inferring this is FunctionInterface
-                            ParameterTypesAnalyzer::guessCommentReturnLineNumber($this) ?? $context->getLineNumberStart(),
-                            $this->getName(),
-                            $phpdoc_type->__toString(),
-                            $real_return_type->__toString()
-                        );
-                    }
-                }
-            }
-        }
-        if ($return_type->isEmpty()) {
-            if ($this->hasReturn()) {
-                if ($this instanceof Method) {
-                    $union_type = $this->getUnionTypeOfMagicIfKnown();
-                    if ($union_type) {
-                        $this->setUnionType($union_type);
-                    }
-                }
-            } else {
-                if ($this instanceof Func || ($this instanceof Method && ($this->isPrivate() || $this->isEffectivelyFinal() || $this->isMagicAndVoid() || $this->getClass($code_base)->isFinal()))) {
-                    $this->setUnionType(VoidType::instance(false)->asPHPDocUnionType());
-                }
-            }
-        }
+    }
+
+    /**
+     * Emit an issue if the real return type of this function-like is a trait
+     */
+    private function checkRealReturnTypeIsNotTrait(CodeBase $code_base, UnionType $real_return_type): void
+    {
         foreach ($real_return_type->getUniqueFlattenedTypeSet() as $type) {
             if (!$type->isObjectWithKnownFQSEN()) {
                 continue;
@@ -1792,20 +1825,12 @@ trait FunctionTrait
             if ($class->isTrait()) {
                 Issue::maybeEmit(
                     $code_base,
-                    $context,
+                    $this->getContext(),
                     Issue::TypeInvalidTraitReturn,
                     $this->getFileRef()->getLineNumberStart(),
                     $this->getNameForIssue(),
                     $type_fqsen->__toString()
                 );
-            }
-        }
-        if ($this->comment) {
-            // Add plugins **after** the phpdoc and real comment types were merged.
-            // Plugins affecting return types (for template in (at)return)
-            $template_type_list = $this->comment->getTemplateTypeList();
-            if ($template_type_list) {
-                $this->addClosureForDependentTemplateType($code_base, $context, $template_type_list);
             }
         }
     }
