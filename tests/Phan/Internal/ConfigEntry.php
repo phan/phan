@@ -147,6 +147,7 @@ class ConfigEntry
         'generic_types_enabled' => self::CATEGORY_ANALYSIS,
         'randomize_file_order' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'consistent_hashing_file_order' => self::CATEGORY_FILES,
+        'process_file_assignment' => self::CATEGORY_FILES,
         'print_memory_usage_summary' => self::CATEGORY_HIDDEN_CLI_ONLY,
         'skip_slow_php_options_warning' => self::CATEGORY_OUTPUT,
         'skip_missing_tokenizer_warning' => self::CATEGORY_OUTPUT,

@@ -143,8 +143,8 @@ A utility trait to memoize (cache) the result of instance methods and static met
 
 ### Ordering.php
 
-This determines the order in which files will be analyzed.
-(Affected by `consistent_hashing_file_order` and `randomize_file_order`.
+This determines the order in which files will be analyzed and which analysis process analyzes them.
+(Affected by `process_file_assignment`, `consistent_hashing_file_order` and `randomize_file_order`.
 By default, files are analyzed in the same order as `.phan/config.php`)
 
 ### Phan.php
