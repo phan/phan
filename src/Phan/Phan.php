@@ -419,8 +419,9 @@ class Phan implements IgnoredFilesFilterInterface
             $code_base->flushDependenciesForFile($file_path);
 
             // If the file is gone, no need to continue
-            // (realpath() returns false for paths that don't exist)
-            if (realpath($file_path) === false) {
+            // (realpath() returns false for paths that don't exist.
+            // For a non-empty local path, file_exists() gives the same answer without resolving each component of the path.)
+            if (($file_path === '' || str_contains($file_path, '://')) ? realpath($file_path) === false : !\file_exists($file_path)) {
                 CLI::printWarningToStderr("Could not find file '$file_path'\n");
                 continue;
             }

@@ -36,6 +36,9 @@ class FileCacheEntry
     /** @var ?associative-array<int,string> a 1-based array of lines */
     private $lines;
 
+    /** @var ?associative-array<int,string> a 1-based array of lines without the trailing newline */
+    private $lines_without_newlines;
+
     /**
      * Create a representation of the file contents.
      *
@@ -144,6 +147,24 @@ class FileCacheEntry
         }
         unset($lines[0]);
         $this->lines = $lines;
+        return $lines;
+    }
+
+    /**
+     * Like getLines(), but without the "\n" at the end of each line (which is much faster to compute).
+     * If the contents end with "\n", this has an additional empty last line.
+     *
+     * @return associative-array<int,string> a 1-based array of lines
+     */
+    public function getLinesWithoutNewlines(): array
+    {
+        if (\is_array($this->lines_without_newlines)) {
+            return $this->lines_without_newlines;
+        }
+        $lines = \explode("\n", $this->contents);
+        \array_unshift($lines, '');
+        unset($lines[0]);
+        $this->lines_without_newlines = $lines;
         return $lines;
     }
 
