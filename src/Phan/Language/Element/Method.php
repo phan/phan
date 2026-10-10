@@ -846,9 +846,18 @@ class Method extends ClassElement implements FunctionInterface
     public function getOverriddenMethods(
         CodeBase $code_base
     ): array {
-        if ($this->overridden_methods_cache !== null) {
-            return $this->overridden_methods_cache;
-        }
+        return $this->overridden_methods_cache ??= $this->computeOverriddenMethods($code_base);
+    }
+
+    /**
+     * getOverriddenMethods() without the cache.
+     * (PHAN_VERIFY_SKIPPED_CHECKS=1 also calls this to check that the result did not change)
+     *
+     * @return list<Method>
+     */
+    public function computeOverriddenMethods(
+        CodeBase $code_base
+    ): array {
         // Get the class that defines this method
         $class = $this->getClass($code_base);
 
@@ -898,10 +907,9 @@ class Method extends ClassElement implements FunctionInterface
             $method_list[] = $method;
         }
         // Return abstract methods before concrete methods, in order to best check method compatibility.
-        $method_list = \array_merge($abstract_method_list, $method_list);
         // Give up on throwing exceptions if this method doesn't override anything.
         // Mixins and traits result in too many edge cases: https://github.com/phan/phan/issues/3796
-        return $this->overridden_methods_cache = $method_list;
+        return \array_merge($abstract_method_list, $method_list);
     }
 
     /**

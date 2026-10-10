@@ -74,6 +74,12 @@ trait FunctionTrait
     protected $is_inner_scope_initialized  = false;
 
     /**
+     * @var int the number of times that addParamsToScopeOfFunctionOrMethod() added the parameters of a user-defined element of this class
+     * to its scope (the part of ensureScopeInitialized() that the rest of the analysis reads)
+     */
+    private static $scope_initialization_count = 0;
+
+    /**
      * @var ?int set by (at)phan-mandatory-param comments
      */
     protected $last_mandatory_phpdoc_param_offset  = null;
@@ -788,6 +794,7 @@ trait FunctionTrait
         if ($function->isPHPInternal()) {
             return;
         }
+        ++self::$scope_initialization_count;
         $parameter_offset = 0;
         $function_parameter_list = $function->getParameterList();
         $real_parameter_name_map = [];
@@ -892,15 +899,21 @@ trait FunctionTrait
         // annotation does not occur anywhere in the parsed codebase - in that case it cannot
         // find anything. Parsing is complete before this runs, so the flag is final here.
         if (!$is_mandatory_in_phpdoc && $function instanceof Method && $code_base->sawMandatoryParamAnnotation()) {
-            foreach ($function->getOverriddenMethods($code_base) as $overridden_method) {
-                $overridden_comment = $overridden_method->getComment();
-                if ($overridden_comment && $overridden_comment->hasParameterWithNameOrOffset($parameter_name, $parameter_offset)) {
-                    $overridden_param = $overridden_comment->getParameterWithNameOrOffset($parameter_name, $parameter_offset);
-                    if ($overridden_param->isMandatoryInPHPDoc()) {
-                        $is_mandatory_in_phpdoc = true;
-                        break;
+            if ($function !== EmitOnlyChecks::$method_with_skippable_mandatory_param_walk) {
+                $is_mandatory_in_phpdoc = self::isParameterMandatoryInOverriddenMethod($code_base, $function, $parameter_name, $parameter_offset);
+            } elseif (EmitOnlyChecks::$verify_skipped_ancestor_walks) {
+                // PHAN_VERIFY_SKIPPED_CHECKS=1: run the walk, and verify that it found nothing and had no side effects.
+                $is_mandatory_in_phpdoc = EmitOnlyChecks::verifySkippedAncestorWalk(
+                    $code_base,
+                    $function,
+                    EmitOnlyChecks::MANDATORY_PARAM_WALK,
+                    static function () use ($code_base, $function, $parameter_name, $parameter_offset): bool {
+                        return self::isParameterMandatoryInOverriddenMethod($code_base, $function, $parameter_name, $parameter_offset);
                     }
-                }
+                );
+            } else {
+                // Skipped: no method with this name has a parameter marked (at)phan-mandatory-param (see EmitOnlyChecks::beginAnalyzingMethod())
+                EmitOnlyChecks::$skipped_ancestor_walk_count[EmitOnlyChecks::MANDATORY_PARAM_WALK]++;
             }
         }
 
@@ -1003,6 +1016,28 @@ trait FunctionTrait
             $new_parameter_type = $new_parameter_type->asNormalizedTypes();
         }
         $parameter->setUnionType($new_parameter_type);
+    }
+
+    /**
+     * Returns true if the doc comment of a method that $method overrides marks the parameter $parameter_name
+     * (or the parameter at $parameter_offset) as `@phan-mandatory-param`.
+     */
+    private static function isParameterMandatoryInOverriddenMethod(
+        CodeBase $code_base,
+        Method $method,
+        string $parameter_name,
+        int $parameter_offset
+    ): bool {
+        foreach ($method->getOverriddenMethods($code_base) as $overridden_method) {
+            $overridden_comment = $overridden_method->getComment();
+            if ($overridden_comment && $overridden_comment->hasParameterWithNameOrOffset($parameter_name, $parameter_offset)) {
+                $overridden_param = $overridden_comment->getParameterWithNameOrOffset($parameter_name, $parameter_offset);
+                if ($overridden_param->isMandatoryInPHPDoc()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private static function inferNormalizedTypesOfDefault(UnionType $default_type): UnionType
@@ -1489,6 +1524,15 @@ trait FunctionTrait
     }
 
     /**
+     * @return int the number of times that ensureScopeInitialized() added the parameters of a user-defined element of the class
+     * that uses this trait to its scope (for PHAN_VERIFY_SKIPPED_CHECKS=1)
+     */
+    public static function getScopeInitializationCount(): int
+    {
+        return self::$scope_initialization_count;
+    }
+
+    /**
      * Memoize the result of $fn(), saving the result
      * with key $key.
      *
@@ -1796,7 +1840,7 @@ trait FunctionTrait
                         [$this->getNameForIssue(), (string)$outer_type],
                         IssueFixSuggester::suggestSimilarClass($code_base, $this->getContext(), $type_fqsen, null, 'Did you mean', IssueFixSuggester::CLASS_SUGGEST_CLASSES_AND_TYPES_AND_VOID)
                     );
-                } elseif ($code_base->hasClassWithFQSEN($type_fqsen->withAlternateId(1))) {
+                } elseif ($code_base->mayHaveAlternatesOfClass($type_fqsen) && $code_base->hasClassWithFQSEN($type_fqsen->withAlternateId(1))) {
                     UnionType::emitRedefinedClassReferenceWarning(
                         $code_base,
                         $this->getContext(),

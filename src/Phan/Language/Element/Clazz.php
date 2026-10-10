@@ -160,6 +160,16 @@ class Clazz extends AddressableElement
     private $did_finish_parsing = true;
 
     /**
+     * @var bool true while hydrateOnce() runs (it imports the constants, properties and methods of the ancestors)
+     */
+    private $is_hydrating = false;
+
+    /**
+     * @var int the number of times that classes were hydrated (for PHAN_VERIFY_SKIPPED_CHECKS=1)
+     */
+    private static $hydration_count = 0;
+
+    /**
      * @var ?UnionType for Type->asExpandedTypes()
      *
      * TODO: This won't reverse in daemon mode?
@@ -3396,9 +3406,11 @@ class Clazz extends AddressableElement
         )) {
             return;
         }
-        $next_class_fqsen = $class_fqsen->withAlternateId($class_fqsen->getAlternateId() + 1);
-        if (!$this->isPHPInternal() && $code_base->hasClassWithFQSEN($next_class_fqsen)) {
-            $this->warnAboutAmbiguousInheritance($code_base, $class, $next_class_fqsen);
+        if (!$this->isPHPInternal() && $code_base->mayHaveAlternatesOfClass($class_fqsen)) {
+            $next_class_fqsen = $class_fqsen->withAlternateId($class_fqsen->getAlternateId() + 1);
+            if ($code_base->hasClassWithFQSEN($next_class_fqsen)) {
+                $this->warnAboutAmbiguousInheritance($code_base, $class, $next_class_fqsen);
+            }
         }
 
         if ($attribute_list = $class->getAttributeList()) {
@@ -3964,9 +3976,14 @@ class Clazz extends AddressableElement
 
         foreach ($this->getAncestorFQSENList() as $fqsen) {
             if ($code_base->hasClassWithFQSEN($fqsen)) {
-                $code_base->getClassByFQSENWithoutHydrating(
-                    $fqsen
-                )->hydrate($code_base);
+                $ancestor = $code_base->getClassByFQSENWithoutHydrating($fqsen);
+                $ancestor->hydrate($code_base);
+                if ($ancestor->is_hydrating) {
+                    // The hydration of this ancestor is not finished (an inheritance cycle, or this class is hydrated
+                    // as a side effect of hydrating the ancestor), so the ancestor may add methods to its class map
+                    // after this class imported its methods.
+                    $code_base->recordClassHydratedBeforeAncestor();
+                }
             }
         }
 
@@ -4446,7 +4463,11 @@ class Clazz extends AddressableElement
         }
         $this->is_hydrated = true;
 
+        // (If hydrateOnce() throws, is_hydrating stays true, which only makes CodeBase::sawClassHydratedBeforeAncestor() more likely to be true.)
+        $this->is_hydrating = true;
+        ++self::$hydration_count;
         $this->hydrateOnce($code_base);
+        $this->is_hydrating = false;
     }
 
     /**
@@ -4467,8 +4488,19 @@ class Clazz extends AddressableElement
         }
         $this->is_hydrated = true;
 
+        $this->is_hydrating = true;
+        ++self::$hydration_count;
         $this->hydrateOnce($code_base);
+        $this->is_hydrating = false;
         return true;
+    }
+
+    /**
+     * @return int the number of times that classes were hydrated so far (any class, for PHAN_VERIFY_SKIPPED_CHECKS=1)
+     */
+    public static function getHydrationCount(): int
+    {
+        return self::$hydration_count;
     }
 
     /**

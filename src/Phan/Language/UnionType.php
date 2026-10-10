@@ -3308,7 +3308,7 @@ class UnionType implements Serializable, Stringable
                 );
             }
             $class = $code_base->getClassByFQSEN($class_fqsen);
-            if (!$class->isPHPInternal() && $code_base->hasClassWithFQSEN($class_fqsen->withAlternateId(1))) {
+            if (!$class->isPHPInternal() && $code_base->mayHaveAlternatesOfClass($class_fqsen) && $code_base->hasClassWithFQSEN($class_fqsen->withAlternateId(1))) {
                 self::emitRedefinedClassReferenceWarning($code_base, $context, $class_fqsen);
             }
 

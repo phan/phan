@@ -189,6 +189,33 @@ class CodeBase
     private $saw_mandatory_param_annotation = false;
 
     /**
+     * @var array<string,true>
+     * The class map keys (lowercase method names, with any alternate id suffix) of every method added to this CodeBase
+     * whose doc comment has a parameter marked `@phan-mandatory-param`. Only ever added to.
+     */
+    private $method_keys_with_mandatory_phpdoc_param = [];
+
+    /**
+     * @var array<string,true>
+     * The class map keys of every method added to this CodeBase whose doc comment declares `@throws` types. Only ever added to.
+     */
+    private $method_keys_with_throws = [];
+
+    /**
+     * @var bool
+     * True if a class was hydrated (imported the methods of its ancestors) while the hydration of one of its ancestors
+     * was not finished (an inheritance cycle, or a class hydrated as a side effect of hydrating one of its ancestors).
+     */
+    private $saw_class_hydrated_before_ancestor = false;
+
+    /**
+     * @var array<int,FullyQualifiedClassName>
+     * The FQSENs with alternate id 0 (by object id) of the classes for which a class with the same name and a non-zero
+     * alternate id (a class declared more than once) was added. Only ever added to.
+     */
+    private $class_fqsens_with_alternates = [];
+
+    /**
      * @var UndoTracker|null - undoes the addition of global constants, classes, functions, and methods.
      */
     private $undo_tracker;
@@ -370,6 +397,70 @@ class CodeBase
     public function sawMandatoryParamAnnotation(): bool
     {
         return $this->saw_mandatory_param_annotation;
+    }
+
+    /**
+     * Could a method with the class map key $lowercase_name (the lowercase method name) in any class
+     * have a doc comment with a parameter marked `@phan-mandatory-param`?
+     *
+     * This is true for every method of every class map that has such a doc comment (see addMethod()),
+     * and may also be true for other names (e.g. after the method was removed in daemon mode).
+     */
+    public function mayHaveMethodWithMandatoryPHPDocParam(string $lowercase_name): bool
+    {
+        return isset($this->method_keys_with_mandatory_phpdoc_param[$lowercase_name]);
+    }
+
+    /**
+     * Could a method with the class map key $lowercase_name (the lowercase method name) in any class
+     * have a doc comment that declares `@throws` types? (see mayHaveMethodWithMandatoryPHPDocParam())
+     */
+    public function mayHaveMethodWithThrows(string $lowercase_name): bool
+    {
+        return isset($this->method_keys_with_throws[$lowercase_name]);
+    }
+
+    /**
+     * Record that a class was hydrated while the hydration of one of its ancestors was not finished.
+     * (Its imported methods may then precede methods that this ancestor adds to its own class map afterwards.)
+     */
+    public function recordClassHydratedBeforeAncestor(): void
+    {
+        $this->saw_class_hydrated_before_ancestor = true;
+    }
+
+    /**
+     * Was a class hydrated while the hydration of one of its ancestors was not finished?
+     */
+    public function sawClassHydratedBeforeAncestor(): bool
+    {
+        return $this->saw_class_hydrated_before_ancestor;
+    }
+
+    /**
+     * Could a class with the namespace and name of $fqsen and a non-zero alternate id (a class declared more than once) exist?
+     *
+     * If this is false, hasClassWithFQSEN($fqsen->withAlternateId($i)) is false for every $i >= 1
+     * (and has no side effects), so callers can skip that lookup.
+     */
+    public function mayHaveAlternatesOfClass(FullyQualifiedClassName $fqsen): bool
+    {
+        if ($fqsen->getAlternateId() !== 0) {
+            $fqsen = $fqsen->withAlternateId(0);
+        }
+        return ($this->class_fqsens_with_alternates[\spl_object_id($fqsen)] ?? null) === $fqsen;
+    }
+
+    /**
+     * Record that a class with the FQSEN $fqsen may be added to fqsen_class_map or fqsen_class_map_reflection
+     */
+    private function recordClassFQSEN(FullyQualifiedClassName $fqsen): void
+    {
+        if ($fqsen->getAlternateId() !== 0) {
+            // (FQSENs are unique objects, which are never freed)
+            $canonical_fqsen = $fqsen->withAlternateId(0);
+            $this->class_fqsens_with_alternates[\spl_object_id($canonical_fqsen)] = $canonical_fqsen;
+        }
     }
 
     /**
@@ -842,6 +933,7 @@ class CodeBase
     {
         // Map the FQSEN to the class
         $fqsen = $class->getFQSEN();
+        $this->recordClassFQSEN($fqsen);
         $this->fqsen_class_map->offsetSet($fqsen, $class);
         $this->fqsen_class_map_user_defined->offsetSet($fqsen, $class);
         if ($this->undo_tracker) {
@@ -909,6 +1001,7 @@ class CodeBase
         // Map the FQSEN to the class
         try {
             $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class->getName());
+            // (No recordClassFQSEN(): PHP class names cannot contain the ',' that separates an alternate id, so this is always alternate id 0)
             $this->fqsen_class_map_reflection->offsetSet($class_fqsen, $class);
         } catch (FQSENException) {
             // Fixes uncaught Phan\Exception\InvalidFQSENException for #2222
@@ -1057,6 +1150,7 @@ class CodeBase
                     $clazz->getFileRef()->getLineNumberStart()
                 );
             } else {
+                $this->recordClassFQSEN($alias_fqsen);
                 $this->fqsen_class_map->offsetSet($alias_fqsen, $class);
             }
         }
@@ -1210,6 +1304,25 @@ class CodeBase
         )->addMethod($method);
 
         $this->method_set->offsetSet($method);
+
+        // Record the class map keys of methods whose doc comment has a parameter marked (at)phan-mandatory-param
+        // or declares (at)throws types (the facts that the ancestor walks in FunctionTrait::addParamToScopeOfFunctionOrMethod()
+        // and ThrowsTypesAnalyzer look for). Every method found by looking up a class map was added here,
+        // and the doc comment of a method is not replaced once it is added.
+        $comment = $method->getComment();
+        if ($comment !== null) {
+            $has_mandatory_param = $comment->hasParameterMarkedMandatoryInPHPDoc();
+            $has_throws = !$comment->getThrowsUnionType()->isEmpty();
+            if ($has_mandatory_param || $has_throws) {
+                $key = \strtolower($method->getFQSEN()->getNameWithAlternateId());
+                if ($has_mandatory_param) {
+                    $this->method_keys_with_mandatory_phpdoc_param[$key] = true;
+                }
+                if ($has_throws) {
+                    $this->method_keys_with_throws[$key] = true;
+                }
+            }
+        }
 
         // If we're doing dead code detection(or something else) and this is a
         // method, map the name to the FQSEN so we can do hail-

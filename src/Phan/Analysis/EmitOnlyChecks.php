@@ -7,12 +7,16 @@ namespace Phan\Analysis;
 use Closure;
 use Phan\CLI;
 use Phan\CodeBase;
+use Phan\Exception\CodeBaseException;
 use Phan\Language\Element\AddressableElement;
+use Phan\Language\Element\Clazz;
 use Phan\Language\Element\FunctionInterface;
+use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Type;
 use Phan\Language\Type\IntersectionType;
 use Phan\Language\UnionType;
+use Phan\Library\PhaseTimer;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Phan;
 use Throwable;
@@ -31,13 +35,18 @@ use Throwable;
  * The checks that look up the classes used in parameter and return types still run when
  * a type is seen for the first time, because they load internal classes (see shouldLookUpClassesOfType()).
  *
+ * It also decides whether analyzeFunctions() skips two walks over the methods that an inherited method overrides
+ * which cannot find anything (see beginAnalyzingMethod()).
+ *
  * Environment variables (read once):
  *
  * - `PHAN_ANALYZE_EXCLUDED_METHODS=1` always runs the checks (the previous behavior).
  * - `PHAN_VERIFY_SKIPPED_CHECKS=1` runs the checks for elements declared in excluded files,
  *   and verifies that each group of checks neither emitted an issue that would be reported,
- *   nor modified the element, nor threw. Exits with an error after the method analysis phase
- *   if any group of checks failed this verification.
+ *   nor modified the element, nor threw. It also runs the skipped walks over overridden methods,
+ *   and verifies that they found nothing, hydrated no class, initialized the scope of no user-defined method and did not throw,
+ *   and that the overridden methods they computed are the same at the end of the method analysis phase.
+ *   Exits with an error after the method analysis phase if any of these verifications failed.
  * - `PHAN_DUMP_METHOD_STATE_DIGEST=<path>` writes the state of every user-defined function and method
  *   to `<path>` once the analysis phase is about to start, to compare runs with and without
  *   `PHAN_ANALYZE_EXCLUDED_METHODS=1`.
@@ -68,6 +77,37 @@ final class EmitOnlyChecks
     /** @var array<string,array<int,UnionType>> the union types whose types were all looked up with self::SKIP, by kind of lookup and object id */
     private static $looked_up_union_types = [];
 
+    /** The walk over overridden methods in FunctionTrait::addParamToScopeOfFunctionOrMethod() (inherited `@phan-mandatory-param`) */
+    public const MANDATORY_PARAM_WALK = 'overridden methods walk for (at)phan-mandatory-param';
+    /** The walk over overridden methods in ThrowsTypesAnalyzer::maybeInheritPHPDocThrowsTypes() (inherited `@throws`) */
+    public const THROWS_WALK = 'overridden methods walk for (at)throws';
+
+    /**
+     * @var ?Method the inherited method that Analysis::analyzeFunctions() is processing, if its walk for MANDATORY_PARAM_WALK can be skipped
+     */
+    public static $method_with_skippable_mandatory_param_walk = null;
+
+    /**
+     * @var ?Method the inherited method that Analysis::analyzeFunctions() is processing, if its walk for THROWS_WALK can be skipped
+     */
+    public static $method_with_skippable_throws_walk = null;
+
+    /**
+     * @var bool whether to run and verify the skippable walks (PHAN_VERIFY_SKIPPED_CHECKS=1)
+     */
+    public static $verify_skipped_ancestor_walks = false;
+
+    /**
+     * @var array<string,int> the number of skipped walks (for MANDATORY_PARAM_WALK, one per parameter), by kind of walk
+     */
+    public static $skipped_ancestor_walk_count = [self::MANDATORY_PARAM_WALK => 0, self::THROWS_WALK => 0];
+
+    /** @var array<string,int> the number of methods whose walk could be skipped, by kind of walk */
+    private static $skippable_ancestor_walk_method_count = [self::MANDATORY_PARAM_WALK => 0, self::THROWS_WALK => 0];
+
+    /** @var list<Method> with PHAN_VERIFY_SKIPPED_CHECKS=1, the methods whose walks could be skipped */
+    private static $methods_with_skippable_ancestor_walks = [];
+
     /**
      * @return int self::SKIP (the default), self::RUN (PHAN_ANALYZE_EXCLUDED_METHODS=1) or self::VERIFY (PHAN_VERIFY_SKIPPED_CHECKS=1)
      */
@@ -94,6 +134,162 @@ final class EmitOnlyChecks
     {
         self::$looked_up_types = [];
         self::$looked_up_union_types = [];
+    }
+
+    /**
+     * Called by Analysis::analyzeFunctions() before it processes the (user-defined) method $method.
+     *
+     * For an inherited method (a copy of the method of an ancestor class, trait or interface), this records
+     * whether the walks over the methods it overrides (Method::getOverriddenMethods()) for an inherited
+     * `@phan-mandatory-param` (FunctionTrait::addParamToScopeOfFunctionOrMethod()) and for inherited `@throws`
+     * types (ThrowsTypesAnalyzer) can be skipped while it is processed, because they cannot find anything
+     * and have no side effects:
+     *
+     * - The overridden methods are the methods with the same (lowercase) name in the class maps of the ancestors
+     *   of its class. CodeBase::addMethod() records the names of all methods whose doc comment has a parameter marked
+     *   `@phan-mandatory-param` or declares `@throws` types. If no method with this name has (at)throws types,
+     *   none has inherited (at)throws types either (they are only inherited from overridden methods, which have the same name).
+     * - Inherited methods are created when their class is hydrated, after it hydrated its ancestors. If the hydration of
+     *   an ancestor was not finished at that point (an inheritance cycle, or a class hydrated as a side effect of hydrating
+     *   its ancestor), CodeBase::sawClassHydratedBeforeAncestor() is true and nothing is skipped. Otherwise, the ancestors
+     *   were hydrated, and Phan only adds methods to the class map of a class while parsing, while loading an internal class
+     *   or stub, while hydrating that class, and when it creates a default constructor (`__construct` is never skipped).
+     *   So every overridden method was added to the method set before $method, and Analysis::analyzeFunctions() initialized
+     *   its scope before processing $method, unless it is an internal method: the walk would neither initialize the scope
+     *   of a user-defined method nor hydrate a class. (It can initialize the scope of an internal method, which only sets
+     *   a flag and may add `$this` to a scope that is never read: internal methods have no body to analyze.)
+     * - The walk caches its result in $method. When it is skipped, it is computed when it is first needed, with the same
+     *   result, because the class maps of the ancestors no longer change.
+     *
+     * The walks are only skipped while analyzeFunctions() processes $method: when they run earlier (e.g. when
+     * a method of a subclass that is processed before $method initializes the scope of $method),
+     * some overridden methods may not have been processed yet.
+     */
+    public static function beginAnalyzingMethod(CodeBase $code_base, Method $method): void
+    {
+        if ($method->getDefiningFQSEN() === $method->getFQSEN() || $code_base->sawClassHydratedBeforeAncestor()) {
+            return;
+        }
+        $lowercase_name = \strtolower($method->getName());
+        if ($lowercase_name === '__construct') {
+            return;
+        }
+        $is_skippable = false;
+        if (!$code_base->mayHaveMethodWithMandatoryPHPDocParam($lowercase_name)) {
+            self::$method_with_skippable_mandatory_param_walk = $method;
+            self::$skippable_ancestor_walk_method_count[self::MANDATORY_PARAM_WALK]++;
+            $is_skippable = true;
+        }
+        if (!$code_base->mayHaveMethodWithThrows($lowercase_name)) {
+            self::$method_with_skippable_throws_walk = $method;
+            self::$skippable_ancestor_walk_method_count[self::THROWS_WALK]++;
+            $is_skippable = true;
+        }
+        if ($is_skippable && self::$verify_skipped_ancestor_walks) {
+            self::$methods_with_skippable_ancestor_walks[] = $method;
+        }
+    }
+
+    /**
+     * Called by Analysis::analyzeFunctions() before it processes the methods.
+     *
+     * @param bool $verify whether to run the skippable walks and verify them (PHAN_VERIFY_SKIPPED_CHECKS=1)
+     */
+    public static function beginAnalyzingMethods(bool $verify): void
+    {
+        self::$verify_skipped_ancestor_walks = $verify;
+        self::$skipped_ancestor_walk_count = [self::MANDATORY_PARAM_WALK => 0, self::THROWS_WALK => 0];
+        self::$skippable_ancestor_walk_method_count = [self::MANDATORY_PARAM_WALK => 0, self::THROWS_WALK => 0];
+        self::$methods_with_skippable_ancestor_walks = [];
+    }
+
+    /**
+     * Called by Analysis::analyzeFunctions() after it processed a method.
+     */
+    public static function endAnalyzingMethod(): void
+    {
+        self::$method_with_skippable_mandatory_param_walk = null;
+        self::$method_with_skippable_throws_walk = null;
+    }
+
+    /**
+     * Run $walk, a walk over the overridden methods of $method that is skipped without PHAN_VERIFY_SKIPPED_CHECKS=1,
+     * and record a violation if it found something, hydrated a class, initialized the scope of a user-defined method or threw.
+     *
+     * @param Closure():bool $walk returns true if it found an overridden method with what it looks for
+     * @return bool the result of $walk
+     */
+    public static function verifySkippedAncestorWalk(CodeBase $code_base, Method $method, string $kind, Closure $walk): bool
+    {
+        $label = "skipped $kind";
+        $counts_before = self::getSideEffectCounts($code_base);
+        $start_ns = \hrtime(true);
+        try {
+            $found = $walk();
+        } catch (Throwable $e) {
+            self::recordViolation($method, $label, 'threw ' . \get_class($e) . ': ' . $e->getMessage());
+            throw $e;
+        } finally {
+            $stats = self::$verified_checks[$label] ?? [0, 0];
+            self::$verified_checks[$label] = [$stats[0] + 1, $stats[1] + (\hrtime(true) - $start_ns)];
+        }
+        if ($found) {
+            self::recordViolation($method, $label, 'found an overridden method with what it looks for');
+        }
+        $counts_after = self::getSideEffectCounts($code_base);
+        if ($counts_after !== $counts_before) {
+            self::recordViolation($method, $label, 'had side effects (hydrations, scope initializations, methods): ' . \json_encode($counts_before) . ' -> ' . \json_encode($counts_after));
+        }
+        return $found;
+    }
+
+    /**
+     * With PHAN_VERIFY_SKIPPED_CHECKS=1, verify that the overridden methods of the methods whose walks could be skipped
+     * are the same at the end of the method analysis phase as when the methods were processed (or first needed them).
+     */
+    private static function verifyOverriddenMethodsOfSkippableWalks(CodeBase $code_base): void
+    {
+        $counts_before = self::getSideEffectCounts($code_base);
+        foreach (self::$methods_with_skippable_ancestor_walks as $method) {
+            try {
+                $overridden_methods = $method->getOverriddenMethods($code_base);
+            } catch (CodeBaseException) {
+                $overridden_methods = null;
+            }
+            try {
+                $recomputed_overridden_methods = $method->computeOverriddenMethods($code_base);
+            } catch (CodeBaseException) {
+                $recomputed_overridden_methods = null;
+            }
+            if ($recomputed_overridden_methods !== $overridden_methods) {
+                self::recordViolation($method, 'skippable walks', 'the overridden methods changed after the method was processed');
+            }
+        }
+        $counts_after = self::getSideEffectCounts($code_base);
+        if ($counts_after !== $counts_before) {
+            CLI::printToStderr('PHAN_VERIFY_SKIPPED_CHECKS: recomputing overridden methods had side effects: ' . \json_encode($counts_before) . ' -> ' . \json_encode($counts_after) . "\n");
+            self::$violations[] = 'recomputing overridden methods had side effects';
+        }
+        self::$methods_with_skippable_ancestor_walks = [];
+    }
+
+    /**
+     * @return array{0:int,1:int,2:int} the number of class hydrations, scope initializations of user-defined methods and methods so far
+     */
+    private static function getSideEffectCounts(CodeBase $code_base): array
+    {
+        return [Clazz::getHydrationCount(), Method::getScopeInitializationCount(), \count($code_base->getMethodSet())];
+    }
+
+    /**
+     * Record the number of inherited methods whose walks could be skipped and the number of skipped walks (for --dump-phase-timings)
+     */
+    public static function recordAncestorWalkStats(): void
+    {
+        PhaseTimer::note('inherited_methods_skippable_mandatory_param_walk', self::$skippable_ancestor_walk_method_count[self::MANDATORY_PARAM_WALK]);
+        PhaseTimer::note('inherited_methods_skippable_throws_walk', self::$skippable_ancestor_walk_method_count[self::THROWS_WALK]);
+        PhaseTimer::note('skipped_mandatory_param_walks', self::$skipped_ancestor_walk_count[self::MANDATORY_PARAM_WALK]);
+        PhaseTimer::note('skipped_throws_walks', self::$skipped_ancestor_walk_count[self::THROWS_WALK]);
     }
 
     /**
@@ -199,11 +395,19 @@ final class EmitOnlyChecks
      *
      * @param int $element_count the number of functions and methods declared in files excluded from analysis
      */
-    public static function reportVerificationResults(int $element_count): void
+    public static function reportVerificationResults(CodeBase $code_base, int $element_count): void
     {
         if (self::modeForExcludedFiles() !== self::VERIFY) {
             return;
         }
+        $skippable_method_count = \count(self::$methods_with_skippable_ancestor_walks);
+        self::verifyOverriddenMethodsOfSkippableWalks($code_base);
+        CLI::printToStderr(\sprintf(
+            "PHAN_VERIFY_SKIPPED_CHECKS: verified the overridden methods of %d inherited methods whose walks could be skipped (%d for (at)phan-mandatory-param, %d for (at)throws)\n",
+            $skippable_method_count,
+            self::$skippable_ancestor_walk_method_count[self::MANDATORY_PARAM_WALK],
+            self::$skippable_ancestor_walk_method_count[self::THROWS_WALK]
+        ));
         $violation_count = \count(self::$violations);
         $verified_count = 0;
         foreach (self::$verified_checks as $label => [$count, $ns]) {

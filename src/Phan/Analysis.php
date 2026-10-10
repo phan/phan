@@ -623,6 +623,8 @@ class Analysis
         $collect_timings = PhaseTimer::$enabled;
         // Nanoseconds spent on methods, split by declared vs. inherited and by excluded vs. analyzed file (--dump-phase-timings)
         $method_ns = ['declared' => 0, 'inherited' => 0, 'excluded' => 0, 'analyzed' => 0];
+        // PHAN_VERIFY_SKIPPED_CHECKS=1 also runs and verifies the walks over overridden methods that can be skipped
+        EmitOnlyChecks::beginAnalyzingMethods($excluded_file_checks === EmitOnlyChecks::VERIFY);
         foreach ($method_set as $method) {
             if ($show_progress) {
                 // Method analysis can trigger class hydration which adds
@@ -630,27 +632,36 @@ class Analysis
                 // is needed so that the progress bar is accurate.
                 CLI::progress('method', (++$i) / (count($method_set)), $method);
             }
-            if ($collect_timings) {
-                $start_ns = \hrtime(true);
-                $analyze_function_or_method($method);
-                $elapsed_ns = \hrtime(true) - $start_ns;
-                if (!$method->isPHPInternal()) {
+            if ($method->isPHPInternal()) {
+                continue;
+            }
+            // For an inherited method, this records whether the walks over the methods it overrides
+            // that cannot find anything can be skipped while it is processed.
+            EmitOnlyChecks::beginAnalyzingMethod($code_base, $method);
+            try {
+                if ($collect_timings) {
+                    $start_ns = \hrtime(true);
+                    $analyze_function_or_method($method);
+                    $elapsed_ns = \hrtime(true) - $start_ns;
                     $file = $method->getContext()->getFile();
                     $method_ns[$method->getDefiningFQSEN() !== $method->getFQSEN() ? 'inherited' : 'declared'] += $elapsed_ns;
                     $method_ns[($is_excluded_file[$file] ??= Phan::isExcludedAnalysisFile($file)) ? 'excluded' : 'analyzed'] += $elapsed_ns;
+                } else {
+                    $analyze_function_or_method($method);
                 }
-                continue;
+            } finally {
+                EmitOnlyChecks::endAnalyzingMethod();
             }
-            $analyze_function_or_method($method);
         }
         if ($collect_timings) {
             self::recordMethodSetStats($code_base, $method_ns, $is_excluded_file);
             PhaseTimer::note('functionlikes_checks_run', $checks_count[EmitOnlyChecks::RUN]);
             PhaseTimer::note('functionlikes_checks_skipped', $checks_count[EmitOnlyChecks::SKIP]);
             PhaseTimer::note('functionlikes_checks_verified', $checks_count[EmitOnlyChecks::VERIFY]);
+            EmitOnlyChecks::recordAncestorWalkStats();
         }
         EmitOnlyChecks::resetLookedUpTypes();
-        EmitOnlyChecks::reportVerificationResults($checks_count[EmitOnlyChecks::VERIFY]);
+        EmitOnlyChecks::reportVerificationResults($code_base, $checks_count[EmitOnlyChecks::VERIFY]);
     }
 
     /**
