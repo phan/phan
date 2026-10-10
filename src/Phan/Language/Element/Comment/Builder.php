@@ -1342,9 +1342,24 @@ final class Builder
         }
     }
 
+    /**
+     * @var array{0:string,1:string,2:string}|null [the project root directory, the file of the context, Config::projectPath() of that file]
+     * of the most recent call to guessActualLineLocation(), which is called for every (at)param and (at)return line.
+     */
+    private static $last_project_path = null;
+
     private function guessActualLineLocation(int $i): int
     {
-        $path = Config::projectPath($this->context->getFile());
+        $file = $this->context->getFile();
+        $root = Config::getProjectRootDirectory();
+        $last_project_path = self::$last_project_path;
+        if ($last_project_path !== null && $last_project_path[1] === $file && $last_project_path[0] === $root) {
+            $path = $last_project_path[2];
+        } else {
+            // Config::projectPath() is a pure function of the project root directory and the file
+            $path = Config::projectPath($file);
+            self::$last_project_path = [$root, $file, $path];
+        }
         $entry = FileCache::getEntry($path);
         $declaration_lineno = $this->lineno;
         if (!$entry) {
@@ -1354,7 +1369,9 @@ final class Builder
         $lineno_search = $declaration_lineno - ($this->comment_lines_count - $i - 1);
         // Search up to 10 lines before $lineno_search
         $lineno_stop = \max(1, $lineno_search - 9);
-        $lines_array = $entry->getLines();
+        // The lines of the doc comment contain no "\n", so the checks below have the same result for the lines of getLines(),
+        // which end in "\n", and for these lines, which are much faster to compute.
+        $lines_array = $entry->getLinesWithoutNewlines();
 
         $line = $this->lines[$i];
         $trimmed_line = \trim($line);
@@ -1952,6 +1969,11 @@ final class Builder
 
     private static function reduceMultiline(string $comment): string
     {
+        $comment = \str_replace("\r", '', $comment);
+        // The closure below only changes an annotation if it contains an opening bracket followed by a newline.
+        if (!str_contains($comment, "(\n") && !str_contains($comment, "[\n") && !str_contains($comment, "<\n") && !str_contains($comment, "{\n")) {
+            return $comment;
+        }
         return \implode('@', \array_map(
             static function (string $annotation): string {
                 if (!str_contains($annotation, "\n")
@@ -1995,7 +2017,7 @@ final class Builder
 
                 return $buffer;
             },
-            \explode('@', \str_replace("\r", '', $comment))
+            \explode('@', $comment)
         ));
     }
 }

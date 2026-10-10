@@ -444,6 +444,18 @@ class Analysis
         $kind = $node->kind;
         $context->setLineNumberStart($node->lineno);
 
+        if (isset(ParseVisitor::NO_OP_NODE_KINDS[$kind])) {
+            // ParseVisitor's handler for this kind (most nodes) returns $context and does nothing else,
+            // so skip creating the visitor. This is equivalent to the default case below.
+            $child_context = $context;
+            foreach ($node->children as $child_node) {
+                if (\is_object($child_node)) {
+                    $child_context = self::parseNodeInContext($code_base, $child_context, $child_node);
+                }
+            }
+            return $context;
+        }
+
         // Visit the given node populating the code base
         // with anything we learn and get a new context
         // indicating the state of the world within the

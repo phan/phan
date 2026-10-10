@@ -414,15 +414,18 @@ class ASTSimplifier
         $allowed = min($budget, self::getTrimMaxElementsPerLevel(), $total);
         $indexes = self::selectRepresentativeIndexes($total, $allowed);
 
-        $side_effect_indexes = [];
-        foreach ($children as $index => $child) {
-            if ($child instanceof Node && self::arrayElementHasPossibleSideEffects($child)) {
-                $side_effect_indexes[] = $index;
+        // When every element is kept ($allowed === $total), adding the elements with side effects changes nothing.
+        if ($allowed < $total) {
+            $side_effect_indexes = [];
+            foreach ($children as $index => $child) {
+                if ($child instanceof Node && self::arrayElementHasPossibleSideEffects($child)) {
+                    $side_effect_indexes[] = $index;
+                }
             }
-        }
-        if ($side_effect_indexes) {
-            $indexes = array_values(array_unique(array_merge($indexes, $side_effect_indexes)));
-            sort($indexes, SORT_NUMERIC);
+            if ($side_effect_indexes) {
+                $indexes = array_values(array_unique(array_merge($indexes, $side_effect_indexes)));
+                sort($indexes, SORT_NUMERIC);
+            }
         }
 
         $extra_budget = max(0, $budget - count($indexes));
@@ -625,24 +628,36 @@ class ASTSimplifier
     }
 
     /**
-     * @return array{0:Node,1:bool}
+     * @return array{0:Node,1:bool} the node with the arrays in its descendants trimmed (or $node), and whether any array was trimmed
      */
     private static function trimDescendantArrays(Node $node): array
     {
+        $trimmed = false;
+        $new_node = self::trimDescendantArraysInner($node, $trimmed);
+        return [$new_node, $trimmed];
+    }
+
+    /**
+     * The implementation of trimDescendantArrays(), which is called on most nodes of expressions.
+     * (This avoids creating an array for the result of each recursive call)
+     *
+     * @param bool $trimmed set to true if any array was trimmed (never set to false)
+     */
+    private static function trimDescendantArraysInner(Node $node, bool &$trimmed): Node
+    {
         $children = $node->children;
         $modified = false;
-        $trimmed = false;
         foreach ($children as $key => $child) {
             if (!($child instanceof Node)) {
                 continue;
             }
             if ($child->kind === ast\AST_ARRAY) {
                 [$new_child, , $child_trimmed] = self::trimArrayNode($child, self::getTrimMaxTotalElements());
+                if ($child_trimmed) {
+                    $trimmed = true;
+                }
             } else {
-                [$new_child, $child_trimmed] = self::trimDescendantArrays($child);
-            }
-            if ($child_trimmed) {
-                $trimmed = true;
+                $new_child = self::trimDescendantArraysInner($child, $trimmed);
             }
             if ($new_child !== $child) {
                 if (!$modified) {
@@ -653,11 +668,11 @@ class ASTSimplifier
             }
         }
         if (!$modified) {
-            return [$node, $trimmed];
+            return $node;
         }
         $clone = clone($node);
         $clone->children = $children;
-        return [$clone, $trimmed];
+        return $clone;
     }
 
     /**
