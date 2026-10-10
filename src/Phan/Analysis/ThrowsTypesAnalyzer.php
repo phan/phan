@@ -163,34 +163,62 @@ class ThrowsTypesAnalyzer
         if (!Config::getValue('inherit_phpdoc_types')) {
             return;
         }
+        if ($method === EmitOnlyChecks::$method_with_skippable_throws_walk) {
+            // No method with this name declares (at)throws types, so no method that $method overrides
+            // has (at)throws types, inherited or not (see EmitOnlyChecks::beginAnalyzingMethod()).
+            if (!EmitOnlyChecks::$verify_skipped_ancestor_walks) {
+                EmitOnlyChecks::$skipped_ancestor_walk_count[EmitOnlyChecks::THROWS_WALK]++;
+                return;
+            }
+            // PHAN_VERIFY_SKIPPED_CHECKS=1: run the walk, and verify that it found nothing and had no side effects.
+            EmitOnlyChecks::verifySkippedAncestorWalk($code_base, $method, EmitOnlyChecks::THROWS_WALK, static function () use ($code_base, $method): bool {
+                return self::inheritPHPDocThrowsTypesFromOverriddenMethods($code_base, $method);
+            });
+            return;
+        }
+        self::inheritPHPDocThrowsTypesFromOverriddenMethods($code_base, $method);
+    }
 
+    /**
+     * @return bool true if a method that $method overrides has (at)throws types (declared or inherited)
+     */
+    private static function inheritPHPDocThrowsTypesFromOverriddenMethods(
+        CodeBase $code_base,
+        Method $method
+    ): bool {
         try {
             $overridden_method_list = $method->getOverriddenMethods($code_base);
         } catch (CodeBaseException) {
-            return;
+            return false;
         }
 
+        $found = false;
         foreach ($overridden_method_list as $overridden_method) {
-            self::inheritPHPDocThrowsTypes($method, $overridden_method);
+            if (self::inheritPHPDocThrowsTypes($method, $overridden_method)) {
+                $found = true;
+            }
         }
+        return $found;
     }
 
     /**
      * Inherit phpdoc types for (at)throws of $method from $overridden_method.
      * This is the default behavior, see https://www.phpdoc.org/docs/latest/guides/inheritance.html
+     *
+     * @return bool true if $overridden_method has (at)throws types (declared or inherited)
      */
     private static function inheritPHPDocThrowsTypes(
         Method $method,
         Method $overridden_method
-    ): void {
-        // The method was already from phpdoc.
-        if ($method->isFromPHPDoc()) {
-            return;
-        }
-
+    ): bool {
         $parent_throws_type = $overridden_method->getFullThrowsUnionType();
-        if (!$parent_throws_type->isEmpty()) {
+        if ($parent_throws_type->isEmpty()) {
+            return false;
+        }
+        // Methods from phpdoc (e.g. (at)method) don't inherit them.
+        if (!$method->isFromPHPDoc()) {
             $method->setInheritedThrowsUnionType($parent_throws_type);
         }
+        return true;
     }
 }

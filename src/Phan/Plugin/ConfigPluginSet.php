@@ -770,13 +770,15 @@ final class ConfigPluginSet extends PluginV3 implements
      */
     public static function getCallableParamIndices(FunctionInterface $function): array
     {
+        // This runs for every parameter of every function and method: create the (stateless) type matcher once.
+        static $is_callable_type = null;
         $result = [];
         foreach ($function->getParameterList() as $i => $param) {
             $union_type = $param->getUnionType();
             if ($union_type->isEmpty()) {
                 continue;
             }
-            if ($union_type->hasTypeMatchingCallback(static function (Type $type): bool {
+            if ($union_type->hasTypeMatchingCallback($is_callable_type ??= static function (Type $type): bool {
                 return $type instanceof CallableInterface || $type instanceof ClosureType;
             })) {
                 $result[$i] = true;

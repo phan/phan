@@ -106,6 +106,11 @@ class Comment
     protected $parameter_map = [];
 
     /**
+     * @var ?bool the cached result of hasParameterMarkedMandatoryInPHPDoc()
+     */
+    private $has_parameter_marked_mandatory_in_phpdoc = null;
+
+    /**
      * @var list<TemplateType>
      * A list of template types parameterizing a generic class
      */
@@ -690,6 +695,7 @@ class Comment
      */
     public function &getAndMutateParameters(): Generator
     {
+        $this->has_parameter_marked_mandatory_in_phpdoc = null;
         foreach ($this->parameter_list as &$parameter) {
             yield $parameter;
         }
@@ -769,6 +775,30 @@ class Comment
     public function getSuppressIssueSet(): array
     {
         return $this->suppress_issue_set;
+    }
+
+    /**
+     * Does any parameter of this doc comment (named or not) use `@phan-mandatory-param`?
+     * (i.e. can getParameterWithNameOrOffset() return a parameter for which isMandatoryInPHPDoc() is true)
+     */
+    public function hasParameterMarkedMandatoryInPHPDoc(): bool
+    {
+        return $this->has_parameter_marked_mandatory_in_phpdoc ??= $this->computeHasParameterMarkedMandatoryInPHPDoc();
+    }
+
+    private function computeHasParameterMarkedMandatoryInPHPDoc(): bool
+    {
+        foreach ($this->parameter_map as $parameter) {
+            if ($parameter->isMandatoryInPHPDoc()) {
+                return true;
+            }
+        }
+        foreach ($this->parameter_list as $parameter) {
+            if ($parameter->isMandatoryInPHPDoc()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

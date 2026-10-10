@@ -85,7 +85,7 @@ class ClassConstantTypesAnalyzer
                         $type_fqsen = FullyQualifiedClassName::fromType($type);
 
                         if ($code_base->hasClassWithFQSEN($type_fqsen)) {
-                            if ($code_base->hasClassWithFQSEN($type_fqsen->withAlternateId(1))) {
+                            if ($code_base->mayHaveAlternatesOfClass($type_fqsen) && $code_base->hasClassWithFQSEN($type_fqsen->withAlternateId(1))) {
                                 UnionType::emitRedefinedClassReferenceWarning(
                                     $code_base,
                                     $constant->getContext(),

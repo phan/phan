@@ -162,6 +162,9 @@ final class CallableParamPlugin extends PluginV3 implements
             return null;
         }
 
+        // This runs for every parameter of every function and method: create the (stateless) type matchers once.
+        static $is_callable_type = null;
+        static $is_class_string_type = null;
         $params = [];
         foreach ($parameter_list as $i => $param) {
             $union_type = $param->getUnionType();
@@ -172,14 +175,14 @@ final class CallableParamPlugin extends PluginV3 implements
             $flags = 0;
             // If there's a type such as Closure|string|int, don't automatically assume that any string or array passed in is meant to be a callable.
             // Explicitly require at least one type to be `callable`
-            if ($union_type->hasTypeMatchingCallback(static function (Type $type): bool {
+            if ($union_type->hasTypeMatchingCallback($is_callable_type ??= static function (Type $type): bool {
                 // TODO: More specific closure for CallableDeclarationType
                 // TODO: Use `Type::isCallable`? It might be slower though.
                 return $type instanceof CallableInterface || $type instanceof ClosureType;
             })) {
                 $flags |= self::PARAM_HAS_CALLABLE;
             }
-            if ($union_type->hasTypeMatchingCallback(static function (Type $type): bool {
+            if ($union_type->hasTypeMatchingCallback($is_class_string_type ??= static function (Type $type): bool {
                 return $type instanceof ClassStringType;
             })) {
                 $flags |= self::PARAM_HAS_CLASSSTRING;
