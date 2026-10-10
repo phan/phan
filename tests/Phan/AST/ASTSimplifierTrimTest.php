@@ -25,9 +25,13 @@ final class ASTSimplifierTrimTest extends TestBase
 
     /**
      * @dataProvider trimProvider
+     * @param int $min_php_version_id the minimum PHP_VERSION_ID on which php-ast produces the expected node dump
      */
-    public function testTrim(string $code, string $expected): void
+    public function testTrim(string $code, string $expected, int $min_php_version_id = 0): void
     {
+        if (\PHP_VERSION_ID < $min_php_version_id) {
+            $this->markTestSkipped("php-ast produces a different node dump for this code before PHP version id $min_php_version_id");
+        }
         Config::setValue('ast_trim_max_elements_per_level', 3);
         Config::setValue('ast_trim_max_total_elements', 6);
         $node = \ast\parse_code('<?php ' . $code, Config::AST_VERSION);
@@ -37,7 +41,7 @@ final class ASTSimplifierTrimTest extends TestBase
 
     /**
      * Elements with possible side effects and elements referring to classes are kept, (at)var and (at)return annotations are added.
-     * @return list<array{0:string,1:string}>
+     * @return list<array{0:string,1:string,2?:int}>
      */
     public static function trimProvider(): array
     {
@@ -184,6 +188,8 @@ final class ASTSimplifierTrimTest extends TestBase
                         type => null
                         __declId => 0
                 EOT,
+                // php-ast adds the `type` child of AST_CLASS_CONST_GROUP (typed class constants) on PHP 8.3+ only
+                80300,
             ],
             [
                 'function f() { static $s = [1, 2, 3, 4, 5]; return g(["a" => 1, "b" => h(), "c" => 3, "d" => 4]); }',
