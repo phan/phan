@@ -880,6 +880,7 @@ class Context extends FileRef
         CodeBase $code_base,
         string $issue_name
     ): bool {
+        ++Issue::$emit_attempt_count;
         if ($code_base->hasFileLevelSuppression($this->file, $issue_name)) {
             return true;
         }

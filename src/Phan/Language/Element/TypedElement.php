@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan\Language\Element;
 
 use Phan\CodeBase;
+use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\FileRef;
 use Phan\Language\UnionType;
@@ -272,6 +273,7 @@ abstract class TypedElement implements TypedElementInterface
      */
     public function incrementSuppressIssueCount(string $issue_name): void
     {
+        ++Issue::$emit_attempt_count;
         ++$this->suppress_issue_list[$issue_name];
     }
 

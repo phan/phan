@@ -55,8 +55,47 @@ class ParameterTypesAnalyzer
         FunctionInterface $method,
         int $emit_only_checks = EmitOnlyChecks::RUN
     ): void {
+        if (self::analyzeParameterTypesOfDeclaration($code_base, $method, $emit_only_checks)) {
+            self::analyzeParameterTypesOfOverrides($code_base, $method, $emit_only_checks);
+        }
+    }
+
+    /**
+     * The first part of analyzeParameterTypes(), which only depends on the declaration of $method:
+     * narrows the parameter types to the phpdoc types, and checks the parameters.
+     * (Analysis\CloneReplay may replay this for inherited methods)
+     *
+     * @return bool false if this was aborted by a RecursionDepthException (then analyzeParameterTypes() skips the second part)
+     */
+    public static function analyzeParameterTypesOfDeclaration(
+        CodeBase $code_base,
+        FunctionInterface $method,
+        int $emit_only_checks
+    ): bool {
         try {
-            self::analyzeParameterTypesInner($code_base, $method, $emit_only_checks);
+            if (Config::getValue('check_docblock_signature_param_type_match')) {
+                // This narrows the parameter types to the phpdoc types (and emits issues if they're incompatible)
+                self::analyzeParameterTypesDocblockSignaturesMatch($code_base, $method);
+            }
+
+            self::checkParameters($code_base, $method, $emit_only_checks);
+        } catch (RecursionDepthException) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * The second part of analyzeParameterTypes(): checks the signature of $method against the methods it overrides
+     * (inheriting phpdoc types from them), and checks the return type.
+     */
+    public static function analyzeParameterTypesOfOverrides(
+        CodeBase $code_base,
+        FunctionInterface $method,
+        int $emit_only_checks
+    ): void {
+        try {
+            self::analyzeParameterTypesOfOverridesInner($code_base, $method, $emit_only_checks);
         } catch (RecursionDepthException) {
         }
     }
@@ -76,20 +115,13 @@ class ParameterTypesAnalyzer
     }
 
     /**
-     * @see analyzeParameterTypes
+     * @see analyzeParameterTypesOfOverrides
      */
-    private static function analyzeParameterTypesInner(
+    private static function analyzeParameterTypesOfOverridesInner(
         CodeBase $code_base,
         FunctionInterface $method,
         int $emit_only_checks
     ): void {
-        if (Config::getValue('check_docblock_signature_param_type_match')) {
-            // This narrows the parameter types to the phpdoc types (and emits issues if they're incompatible)
-            self::analyzeParameterTypesDocblockSignaturesMatch($code_base, $method);
-        }
-
-        self::checkParameters($code_base, $method, $emit_only_checks);
-
         if ($method instanceof Method) {
             if ($method->getName() === '__construct') {
                 $class = $method->getClass($code_base);
@@ -119,7 +151,7 @@ class ParameterTypesAnalyzer
      * required parameters after optional ones, default values, and the classes used in the parameter types.
      *
      * With EmitOnlyChecks::SKIP, the classes used in a parameter type are still looked up the first time the type is seen,
-     * because this loads internal classes (see EmitOnlyChecks::shouldLookUpClassesOfType()).
+     * because this loads internal classes (see EmitOnlyChecks::modeForClassLookup()).
      */
     private static function checkParameters(
         CodeBase $code_base,
@@ -138,22 +170,25 @@ class ParameterTypesAnalyzer
         // are valid
         $is_optional_seen = false;
         foreach ($method->getParameterList() as $i => $parameter) {
-            if ($emit_only_checks === EmitOnlyChecks::RUN) {
+            if ($emit_only_checks === EmitOnlyChecks::RUN || EmitOnlyChecks::containsIntersectionType($parameter->getUnionType())) {
+                // The impossible-combination check of an intersection type hydrates the classes it refers to
+                // (see EmitOnlyChecks::containsIntersectionType()), so it is not skipped.
                 self::checkParameterDeclaration($code_base, $method, $i, $parameter, $is_optional_seen);
             } elseif ($emit_only_checks === EmitOnlyChecks::VERIFY) {
                 EmitOnlyChecks::verify($method, 'ParameterTypesAnalyzer::checkParameterDeclaration()', static function () use ($code_base, $method, $i, $parameter, $is_optional_seen): void {
                     self::checkParameterDeclaration($code_base, $method, $i, $parameter, $is_optional_seen);
                 });
-            } elseif (EmitOnlyChecks::containsIntersectionType($parameter->getUnionType())) {
-                // The impossible-combination check of an intersection type hydrates the classes it refers to
-                // (see EmitOnlyChecks::containsIntersectionType()), so it is not skipped.
-                self::checkParameterDeclaration($code_base, $method, $i, $parameter, $is_optional_seen);
             }
             if ($parameter->isOptional()) {
                 $is_optional_seen = true;
             }
-            if (EmitOnlyChecks::shouldLookUpClassesOfType($emit_only_checks, $method instanceof Method ? 'method parameter' : 'function parameter', $parameter->getUnionType())) {
+            $lookup = EmitOnlyChecks::modeForClassLookup($emit_only_checks, $method instanceof Method ? 'method parameter' : 'function parameter', $parameter->getUnionType());
+            if ($lookup === EmitOnlyChecks::RUN) {
                 self::checkParameterTypeClassesExist($code_base, $method, $parameter);
+            } elseif ($lookup === EmitOnlyChecks::VERIFY) {
+                EmitOnlyChecks::verify($method, 'ParameterTypesAnalyzer::checkParameterTypeClassesExist()', static function () use ($code_base, $method, $parameter): void {
+                    self::checkParameterTypeClassesExist($code_base, $method, $parameter);
+                });
             }
         }
         foreach ($method->getRealParameterList() as $parameter) {
@@ -164,8 +199,13 @@ class ParameterTypesAnalyzer
                     self::checkRealParameterDefault($code_base, $method, $parameter);
                 });
             }
-            if (EmitOnlyChecks::shouldLookUpClassesOfType($emit_only_checks, 'real parameter', $parameter->getUnionType())) {
+            $lookup = EmitOnlyChecks::modeForClassLookup($emit_only_checks, 'real parameter', $parameter->getUnionType());
+            if ($lookup === EmitOnlyChecks::RUN) {
                 self::checkRealParameterTypeIsNotTrait($code_base, $method, $parameter);
+            } elseif ($lookup === EmitOnlyChecks::VERIFY) {
+                EmitOnlyChecks::verify($method, 'ParameterTypesAnalyzer::checkRealParameterTypeIsNotTrait()', static function () use ($code_base, $method, $parameter): void {
+                    self::checkRealParameterTypeIsNotTrait($code_base, $method, $parameter);
+                });
             }
         }
     }

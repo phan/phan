@@ -8,6 +8,7 @@ use Closure;
 use Phan\CLI;
 use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
+use Phan\Issue;
 use Phan\Language\Element\AddressableElement;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\FunctionInterface;
@@ -33,10 +34,11 @@ use Throwable;
  * duplicate definitions, plugins), and skips the checks whose only effect is to emit issues
  * about the declaration (all of them located in the excluded file).
  * The checks that look up the classes used in parameter and return types still run when
- * a type is seen for the first time, because they load internal classes (see shouldLookUpClassesOfType()).
+ * a type is seen for the first time, because they load internal classes (see modeForClassLookup()).
  *
  * It also decides whether analyzeFunctions() skips two walks over the methods that an inherited method overrides
  * which cannot find anything (see beginAnalyzingMethod()).
+ * (CloneReplay decides whether analyzeFunctions() replays the declaration analysis of an inherited method.)
  *
  * Environment variables (read once):
  *
@@ -46,10 +48,14 @@ use Throwable;
  *   nor modified the element, nor threw. It also runs the skipped walks over overridden methods,
  *   and verifies that they found nothing, hydrated no class, initialized the scope of no user-defined method and did not throw,
  *   and that the overridden methods they computed are the same at the end of the method analysis phase.
+ *   For the inherited methods whose declaration analysis CloneReplay would replay, it runs that analysis instead,
+ *   and verifies that it checked or emitted no issue, had no side effects other than initializing the scope of the method,
+ *   and produced the state that the replay would have produced.
  *   Exits with an error after the method analysis phase if any of these verifications failed.
+ * - `PHAN_DISABLE_CLONE_REPLAY=1` always runs the declaration analysis of inherited methods (see CloneReplay).
  * - `PHAN_DUMP_METHOD_STATE_DIGEST=<path>` writes the state of every user-defined function and method
  *   to `<path>` once the analysis phase is about to start, to compare runs with and without
- *   `PHAN_ANALYZE_EXCLUDED_METHODS=1`.
+ *   `PHAN_ANALYZE_EXCLUDED_METHODS=1` (or `PHAN_DISABLE_CLONE_REPLAY=1`).
  *
  * This is not part of Phan's plugin API.
  */
@@ -71,10 +77,10 @@ final class EmitOnlyChecks
     /** @var list<string> descriptions of the groups of checks that failed verification */
     private static $violations = [];
 
-    /** @var array<string,array<int,Type>> the types whose classes were looked up with self::SKIP, by kind of lookup and object id */
+    /** @var array<string,array<int,Type>> the types whose classes were looked up with self::SKIP (or self::VERIFY), by kind of lookup and object id */
     private static $looked_up_types = [];
 
-    /** @var array<string,array<int,UnionType>> the union types whose types were all looked up with self::SKIP, by kind of lookup and object id */
+    /** @var array<string,array<int,UnionType>> the union types whose types were all looked up with self::SKIP (or self::VERIFY), by kind of lookup and object id */
     private static $looked_up_union_types = [];
 
     /** The walk over overridden methods in FunctionTrait::addParamToScopeOfFunctionOrMethod() (inherited `@phan-mandatory-param`) */
@@ -223,6 +229,7 @@ final class EmitOnlyChecks
     {
         $label = "skipped $kind";
         $counts_before = self::getSideEffectCounts($code_base);
+        $emit_attempt_count = Issue::$emit_attempt_count;
         $start_ns = \hrtime(true);
         try {
             $found = $walk();
@@ -232,13 +239,15 @@ final class EmitOnlyChecks
         } finally {
             $stats = self::$verified_checks[$label] ?? [0, 0];
             self::$verified_checks[$label] = [$stats[0] + 1, $stats[1] + (\hrtime(true) - $start_ns)];
+            // The walk is skipped without PHAN_VERIFY_SKIPPED_CHECKS=1 (see self::verify())
+            Issue::$emit_attempt_count = $emit_attempt_count;
         }
         if ($found) {
             self::recordViolation($method, $label, 'found an overridden method with what it looks for');
         }
         $counts_after = self::getSideEffectCounts($code_base);
         if ($counts_after !== $counts_before) {
-            self::recordViolation($method, $label, 'had side effects (hydrations, scope initializations, methods): ' . \json_encode($counts_before) . ' -> ' . \json_encode($counts_after));
+            self::recordViolation($method, $label, 'had side effects (hydrations, scope initializations, methods, classes): ' . \json_encode($counts_before) . ' -> ' . \json_encode($counts_after));
         }
         return $found;
     }
@@ -274,11 +283,12 @@ final class EmitOnlyChecks
     }
 
     /**
-     * @return array{0:int,1:int,2:int} the number of class hydrations, scope initializations of user-defined methods and methods so far
+     * @return array{0:int,1:int,2:int,3:int} the number of class hydrations, scope initializations of user-defined methods,
+     * methods and classes (including the internal classes loaded so far) so far
      */
-    private static function getSideEffectCounts(CodeBase $code_base): array
+    public static function getSideEffectCounts(CodeBase $code_base): array
     {
-        return [Clazz::getHydrationCount(), Method::getScopeInitializationCount(), \count($code_base->getMethodSet())];
+        return [Clazz::getHydrationCount(), Method::getScopeInitializationCount(), \count($code_base->getMethodSet()), $code_base->getLoadedClassCount()];
     }
 
     /**
@@ -293,7 +303,9 @@ final class EmitOnlyChecks
     }
 
     /**
-     * Returns whether to look up the classes used in $union_type (for the lookup $kind).
+     * Returns how to run a check that looks up the classes used in $union_type (for the lookup $kind):
+     * self::RUN to run it, self::SKIP to skip it, or self::VERIFY to run it and verify that skipping it changes nothing
+     * (with PHAN_VERIFY_SKIPPED_CHECKS=1, when it would be skipped without it).
      *
      * Some checks look up the classes used in a parameter or return type, and suggest similar class names for
      * undeclared classes. This loads internal classes (and their ancestors when the class is hydrated), and the rest
@@ -303,15 +315,17 @@ final class EmitOnlyChecks
      * So with self::SKIP, these lookups still run, unless every type in $union_type was already looked up for $kind:
      * the classes a union type refers to are the union of the classes its types refer to, and looking up the same class
      * again has no effect. (Most functions and methods use types that were already seen, e.g. inherited methods.)
+     *
+     * @param int $emit_only_checks self::RUN, self::SKIP or self::VERIFY (see modeForExcludedFiles())
      */
-    public static function shouldLookUpClassesOfType(int $emit_only_checks, string $kind, UnionType $union_type): bool
+    public static function modeForClassLookup(int $emit_only_checks, string $kind, UnionType $union_type): int
     {
-        if ($emit_only_checks !== self::SKIP) {
-            return true;
+        if ($emit_only_checks === self::RUN) {
+            return self::RUN;
         }
         $union_type_id = \spl_object_id($union_type);
         if (isset(self::$looked_up_union_types[$kind][$union_type_id])) {
-            return false;
+            return $emit_only_checks;
         }
         // Keep references to $union_type and $type, so that their object ids are not reused for other (union) types.
         self::$looked_up_union_types[$kind][$union_type_id] = $union_type;
@@ -323,7 +337,7 @@ final class EmitOnlyChecks
                 $has_new_type = true;
             }
         }
-        return $has_new_type;
+        return $has_new_type ? self::RUN : $emit_only_checks;
     }
 
     /**
@@ -361,6 +375,7 @@ final class EmitOnlyChecks
         $issue_collector = Phan::getIssueCollector();
         $capturing_collector = new BufferingCollector();
         Phan::setIssueCollector($capturing_collector);
+        $emit_attempt_count = Issue::$emit_attempt_count;
         $start_ns = \hrtime(true);
         try {
             $checks();
@@ -370,6 +385,9 @@ final class EmitOnlyChecks
         } finally {
             $stats = self::$verified_checks[$label] ?? [0, 0];
             self::$verified_checks[$label] = [$stats[0] + 1, $stats[1] + (\hrtime(true) - $start_ns)];
+            // These checks are skipped without PHAN_VERIFY_SKIPPED_CHECKS=1, so CloneReplay must not see the issues they checked
+            // (it would decide differently). Issues they emit that would be reported are violations.
+            Issue::$emit_attempt_count = $emit_attempt_count;
             Phan::setIssueCollector($issue_collector);
             foreach ($capturing_collector->getCollectedIssues() as $issue) {
                 self::recordViolation($element, $label, "emitted an issue that is reported: $issue");
@@ -382,7 +400,10 @@ final class EmitOnlyChecks
         }
     }
 
-    private static function recordViolation(FunctionInterface $element, string $label, string $details): void
+    /**
+     * Record that the verification of $label for $element failed (PHAN_VERIFY_SKIPPED_CHECKS=1)
+     */
+    public static function recordViolation(FunctionInterface $element, string $label, string $details): void
     {
         $message = \sprintf("%s for %s (declared in %s) %s", $label, $element->getFQSEN(), $element->getContext()->getFile(), $details);
         self::$violations[] = $message;

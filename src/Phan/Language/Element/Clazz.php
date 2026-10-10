@@ -2062,6 +2062,8 @@ class Clazz extends AddressableElement
 
             // Make inferred return type for a method affect inherited methods
             $method->ensureClonesReturnType($original_method);
+            // Analysis\CloneReplay may replay the declaration analysis of $original_method for this clone
+            $method->setCloneSource($original_method);
         }
         if ($method->hasYield()) {
             // There's no phpdoc standard for template types of Generators at the moment.

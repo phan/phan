@@ -8,6 +8,7 @@ namespace Phan\Language\Element;
 use ast;
 use ast\Node;
 use Phan\Analysis\Analyzable;
+use Phan\Analysis\CloneReplaySnapshot;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
@@ -72,6 +73,18 @@ class Method extends ClassElement implements FunctionInterface
      * @var ?array<int,Method> cache of overridden methods (abstract before concrete)
      */
     private $overridden_methods_cache = null;
+
+    /**
+     * @var ?Method the method that Clazz::addMethod() cloned to create this inherited method, if it was created that way.
+     *              Used by Analysis\CloneReplay during the method analysis phase - do not use this.
+     */
+    private $clone_source = null;
+
+    /**
+     * The phan flags that the declaration analysis replayed by Analysis\CloneReplay does not read
+     * (IS_OVERRIDE and IS_OVERRIDDEN_BY_ANOTHER are set for each clone, HAS_TEMPLATE_TYPE is overwritten)
+     */
+    private const CLONE_REPLAY_IGNORED_PHAN_FLAGS = Flags::IS_OVERRIDE | Flags::IS_OVERRIDDEN_BY_ANOTHER | Flags::HAS_TEMPLATE_TYPE;
 
     /**
      * @var array<string,UnionType> map of static property names to the union types assigned within this method.
@@ -147,6 +160,8 @@ class Method extends ClassElement implements FunctionInterface
     {
         $this->setInternalScope(clone($this->getInternalScope()));
         $this->overridden_methods_cache = null;
+        // Only Clazz::addMethod() records the method that a clone was created from
+        $this->clone_source = null;
     }
 
     /**
@@ -751,6 +766,182 @@ class Method extends ClassElement implements FunctionInterface
             return;
         }
         $this->defining_method_for_type_fetching = $original_method;
+    }
+
+    /**
+     * Records that Clazz::addMethod() created this inherited method by cloning $source.
+     * @internal
+     */
+    public function setCloneSource(Method $source): void
+    {
+        $this->clone_source = $source;
+    }
+
+    /**
+     * @return ?Method the method that Clazz::addMethod() cloned to create this inherited method, if any
+     * (used by Analysis\CloneReplay)
+     */
+    public function getCloneSource(): ?Method
+    {
+        return $this->clone_source;
+    }
+
+    /**
+     * @return bool true if ensureScopeInitialized() was called (or replayed) for this method
+     */
+    public function isScopeInitialized(): bool
+    {
+        return $this->is_inner_scope_initialized;
+    }
+
+    /**
+     * Returns everything that the declaration analysis of this method reads from it (Analysis\CloneReplay):
+     * the parameters part of ensureScopeInitialized() and ParameterTypesAnalyzer::analyzeParameterTypesOfDeclaration().
+     * Objects are compared by identity: they are either immutable (Comment, UnionType, FutureUnionType, ast\Node),
+     * shared on purpose (Context), or not modified during the method analysis phase (the real parameters).
+     * (The return type is only read by checkForTemplateTypes(), which CloneReplay handles separately.)
+     *
+     * @return list<mixed>
+     */
+    public function getCloneReplayFingerprint(): array
+    {
+        $fingerprint = [
+            $this->comment,
+            $this->getContext(),
+            $this->name,
+            $this->getFlags(),
+            $this->getPhanFlags() & ~self::CLONE_REPLAY_IGNORED_PHAN_FLAGS,
+            $this->last_mandatory_phpdoc_param_offset,
+            $this->conditional_return_type,
+            $this->real_parameter_list,
+        ];
+        foreach ($this->parameter_list as $parameter) {
+            $fingerprint[] = $parameter->getCloneReplayFingerprint();
+        }
+        return $fingerprint;
+    }
+
+    /**
+     * Returns true if getCloneReplayFingerprint() would return $fingerprint (without creating it)
+     *
+     * @param list<mixed> $fingerprint
+     */
+    public function matchesCloneReplayFingerprint(array $fingerprint): bool
+    {
+        $parameter_list = $this->parameter_list;
+        if (\count($fingerprint) !== 8 + \count($parameter_list) ||
+            $fingerprint[0] !== $this->comment ||
+            $fingerprint[1] !== $this->getContext() ||
+            $fingerprint[2] !== $this->name ||
+            $fingerprint[3] !== $this->getFlags() ||
+            $fingerprint[4] !== ($this->getPhanFlags() & ~self::CLONE_REPLAY_IGNORED_PHAN_FLAGS) ||
+            $fingerprint[5] !== $this->last_mandatory_phpdoc_param_offset ||
+            $fingerprint[6] !== $this->conditional_return_type ||
+            $fingerprint[7] !== $this->real_parameter_list) {
+            return false;
+        }
+        foreach ($parameter_list as $i => $parameter) {
+            $parameter_fingerprint = $fingerprint[8 + $i];
+            if (!\is_array($parameter_fingerprint) || !$parameter->matchesCloneReplayFingerprint($parameter_fingerprint)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns everything that the declaration analysis of this method wrote to it (see Analysis\CloneReplay).
+     * This is called right after it, if it found no template type.
+     */
+    public function getCloneReplaySnapshot(CodeBase $code_base): CloneReplaySnapshot
+    {
+        $parameter_states = [];
+        foreach ($this->parameter_list as $parameter) {
+            $parameter_states[] = $parameter->getCloneReplayState();
+        }
+        $return_type = $this->getUnionTypeBeforeStaticResolution();
+        return new CloneReplaySnapshot(
+            $this->phpdoc_parameter_type_map,
+            $this->last_mandatory_phpdoc_param_offset,
+            $parameter_states,
+            $this->addsThisVariableOfGenericClass($code_base),
+            $return_type->isStaticResolutionNoOp() ? $return_type : null
+        );
+    }
+
+    /**
+     * Returns true if ensureScopeInitialized() adds the variable `$this` of a generic class to the scope
+     * (it called getClassByFQSEN() for the same class, so this does not hydrate it)
+     */
+    private function addsThisVariableOfGenericClass(CodeBase $code_base): bool
+    {
+        if ($this->isStatic()) {
+            return false;
+        }
+        $context = $this->getContext();
+        return $context->isInClassScope() && (bool)$code_base->getClassByFQSENWithoutHydrating($context->getClassFQSEN())->getTemplateTypeMap();
+    }
+
+    /**
+     * The union type that getUnionType() resolves `static` in
+     */
+    private function getUnionTypeBeforeStaticResolution(): UnionType
+    {
+        if ($this->defining_method_for_type_fetching) {
+            return $this->defining_method_for_type_fetching->getUnionTypeWithStatic();
+        }
+        return parent::getUnionType();
+    }
+
+    /**
+     * Instead of ensureScopeInitialized() and ParameterTypesAnalyzer::analyzeParameterTypesOfDeclaration(),
+     * make the changes to this method that they would make, given that the method it was cloned from had the same
+     * fingerprint before its declaration analysis and $snapshot after it (see Analysis\CloneReplay).
+     */
+    public function replayDeclarationAnalysis(CodeBase $code_base, CloneReplaySnapshot $snapshot): void
+    {
+        $this->is_inner_scope_initialized = true;
+        if ($snapshot->adds_this_variable) {
+            $this_variable = $this->createThisVariableOfGenericClass($code_base);
+            if ($this_variable) {
+                $this->getInternalScope()->addVariable($this_variable);
+            }
+        }
+        ++self::$scope_initialization_count;
+        $this->applyCloneReplaySnapshot($snapshot);
+        $this->recordHasTemplateType($this->hasTemplateTypeAfterCloneReplay($snapshot));
+    }
+
+    /**
+     * Returns the result of checkForTemplateTypes() for this clone, given that its source had $snapshot.
+     *
+     * checkForTemplateTypes() found no template type in the parameters, the comment and the conditional return type
+     * of the source method, which are the same here. The return type can differ: it may be linked to the
+     * return type of the source method, and `static` resolves to the class of this method.
+     * If the type that getUnionType() resolves `static` in is the one that the source had, and resolving `static`
+     * does not change it, it has no template type either.
+     */
+    public function hasTemplateTypeAfterCloneReplay(CloneReplaySnapshot $snapshot): bool
+    {
+        if ($snapshot->return_type !== null && $snapshot->return_type === $this->getUnionTypeBeforeStaticResolution()) {
+            return false;
+        }
+        return $this->getUnionType()->hasTemplateTypeRecursive();
+    }
+
+    /**
+     * Set the state that the declaration analysis writes (except for the scope and HAS_TEMPLATE_TYPE) to $snapshot.
+     * (Analysis\CloneReplay also calls this after verifying that the declaration analysis produced the same state,
+     * so that the following methods see the same objects as when it is replayed)
+     */
+    public function applyCloneReplaySnapshot(CloneReplaySnapshot $snapshot): void
+    {
+        $this->phpdoc_parameter_type_map = $snapshot->phpdoc_parameter_type_map;
+        $this->last_mandatory_phpdoc_param_offset = $snapshot->last_mandatory_phpdoc_param_offset;
+        $parameter_states = $snapshot->parameter_states;
+        foreach ($this->parameter_list as $i => $parameter) {
+            $parameter->setCloneReplayState($parameter_states[$i]);
+        }
     }
 
     public function setUnionType(UnionType $union_type): void

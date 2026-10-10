@@ -1248,6 +1248,15 @@ class CodeBase
     }
 
     /**
+     * @return int the number of classes, including the internal classes that were loaded so far
+     * (for PHAN_VERIFY_SKIPPED_CHECKS=1, see Analysis\EmitOnlyChecks)
+     */
+    public function getLoadedClassCount(): int
+    {
+        return \count($this->fqsen_class_map);
+    }
+
+    /**
      * @param FullyQualifiedClassName $original
      * The FQSEN of class to get aliases of
      *
