@@ -283,7 +283,9 @@ class Ordering
         }
 
         $weight = [];
-        $total_weight = 0;
+        // Sums of weights are floats: the total size of the analyzed files can exceed PHP_INT_MAX on 32-bit builds,
+        // and a float sum of byte counts is exact far beyond that (up to 2**53).
+        $total_weight = 0.0;
         foreach ($analysis_file_set as $file => $_) {
             $file = (string)$file;
             $file_weight = $this->getFileSize($file);
@@ -293,9 +295,10 @@ class Ordering
             $weight[$file] = $file_weight;
             $total_weight += $file_weight;
         }
-        $cap = \intdiv($total_weight + $process_count - 1, $process_count);
+        // An even share of the total weight per process: groups heavier than this are split.
+        $cap = \ceil($total_weight / $process_count);
 
-        /** @var list<array{0:string,1:int,2:list<string>}> $groups (key, weight, files) */
+        /** @var list<array{0:string,1:float,2:list<string>}> $groups (key, weight, files) */
         $groups = [];
         \ksort($items_for_bucket, \SORT_STRING);
         foreach ($items_for_bucket as $root_fqsen => $items) {
@@ -305,14 +308,14 @@ class Ordering
         }
         foreach ($class_less_file_set as $file => $_) {
             $file = (string)$file;
-            $groups[] = [$file, $weight[$file], [$file]];
+            $groups[] = [$file, (float)$weight[$file], [$file]];
         }
         \usort(
             $groups,
             /**
              * Heaviest first, ties broken by key.
-             * @param array{0:string,1:int,2:list<string>} $a
-             * @param array{0:string,1:int,2:list<string>} $b
+             * @param array{0:string,1:float,2:list<string>} $a
+             * @param array{0:string,1:float,2:list<string>} $b
              */
             static function (array $a, array $b): int {
                 return ($b[1] <=> $a[1]) ?: \strcmp($a[0], $b[0]);
@@ -320,7 +323,7 @@ class Ordering
         );
 
         $hasher = $use_consistent_hashing ? new Consistent($process_count) : null;
-        $loads = \array_fill(0, $process_count, 0);
+        $loads = \array_fill(0, $process_count, 0.0);
         $files_for_process = \array_fill(0, $process_count, []);
         foreach ($groups as [$key, $group_weight, $files]) {
             $process_id = $hasher ? self::chooseProcessWithBoundedLoad($hasher, $key, $group_weight, $loads, $total_weight) : self::getLeastLoadedProcess($loads);
@@ -388,12 +391,12 @@ class Ordering
      * the files of this group, each with the FQSENs of the classes on the path from the bucket's root class to the file's class
      * @param int $level the depth of $key below the bucket's root class
      * @param array<string,int> $weight the weight of each file
-     * @param int $cap groups weighing more than this are split if possible
-     * @return non-empty-list<array{0:string,1:int,2:list<string>}> the groups (key, weight, files)
+     * @param float $cap groups weighing more than this are split if possible
+     * @return non-empty-list<array{0:string,1:float,2:list<string>}> the groups (key, weight, files)
      */
-    private static function splitGroup(string $key, array $items, int $level, array $weight, int $cap): array
+    private static function splitGroup(string $key, array $items, int $level, array $weight, float $cap): array
     {
-        $total = 0;
+        $total = 0.0;
         $own_files = [];
         $items_for_child = [];
         $files = [];
@@ -439,14 +442,14 @@ class Ordering
      * and choose the first process that stays within the tolerance above an even share of $total_weight,
      * or the least loaded process if none does.
      *
-     * @param list<int> $loads the weight assigned to each process so far
+     * @param list<float> $loads the weight assigned to each process so far
      */
-    private static function chooseProcessWithBoundedLoad(Consistent $hasher, string $key, int $weight, array $loads, int $total_weight): int
+    private static function chooseProcessWithBoundedLoad(Consistent $hasher, string $key, float $weight, array $loads, float $total_weight): int
     {
-        $process_count = \count($loads);
+        // Floats, not integers: the products would overflow on 32-bit builds for large projects.
+        $max_load = (1 + self::BOUNDED_LOAD_TOLERANCE_PERCENT / 100) * $total_weight / \count($loads);
         foreach ($hasher->getGroupsInRingOrder($key) as $process_id) {
-            // ($loads[$process_id] + $weight) <= (1 + tolerance) * $total_weight / $process_count, in integer arithmetic
-            if (($loads[$process_id] + $weight) * $process_count * 100 <= (100 + self::BOUNDED_LOAD_TOLERANCE_PERCENT) * $total_weight) {
+            if ($loads[$process_id] + $weight <= $max_load) {
                 return $process_id;
             }
         }
@@ -454,7 +457,7 @@ class Ordering
     }
 
     /**
-     * @param list<int> $loads the weight assigned to each process so far
+     * @param list<float> $loads the weight assigned to each process so far
      * @return int the least loaded process (the lowest index among ties)
      */
     private static function getLeastLoadedProcess(array $loads): int
