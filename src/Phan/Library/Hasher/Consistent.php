@@ -21,9 +21,12 @@ class Consistent implements Hasher
     protected $hash_ring_ids;
     /** @var list<int> - Groups corresponding to hash values in hash_ring_ids */
     protected $hash_ring_groups;
+    /** @var int the total number of groups. */
+    protected $group_count;
 
     public function __construct(int $group_count)
     {
+        $this->group_count = $group_count;
         $map = self::generateMap($group_count);
         $hash_ring_ids = [];
         $hash_ring_groups = [];
@@ -59,6 +62,33 @@ class Consistent implements Hasher
      */
     public function getGroup(string $key): int
     {
+        // Fetch the group corresponding to that hash in the hash ring.
+        return $this->hash_ring_groups[$this->findRingIndex($key)];
+    }
+
+    /**
+     * Returns every group once, in the order in which they are found walking the hash ring
+     * from the position of $key (the first one is getGroup($key)).
+     * Used to assign keys to the first group with spare capacity (consistent hashing with bounded loads).
+     * @return list<int>
+     */
+    public function getGroupsInRingOrder(string $key): array
+    {
+        $ring_size = \count($this->hash_ring_groups);
+        $index = $this->findRingIndex($key);
+        $groups = [];
+        for ($i = 0; $i < $ring_size && \count($groups) < $this->group_count; $i++) {
+            $group = $this->hash_ring_groups[($index + $i) % $ring_size];
+            $groups[$group] = $group;
+        }
+        return \array_values($groups);
+    }
+
+    /**
+     * Do a binary search in the consistent hashing ring to find the index of the first point at or after the hash of $key.
+     */
+    private function findRingIndex(string $key): int
+    {
         $search_hash = self::generateKeyHash($key);
         $begin = 0;
         $end = \count($this->hash_ring_ids) - 1;
@@ -72,9 +102,7 @@ class Consistent implements Hasher
             }
         }
         // Postcondition: $this->hash_ring_ids[$begin] >= $search_hash, and $this->hash_ring_ids[$begin - 1] does not exist or is less than $search_hash.
-
-        // Fetch the group corresponding to that hash in the hash ring.
-        return $this->hash_ring_groups[$begin];
+        return $begin;
     }
 
     /**

@@ -1047,13 +1047,16 @@ class Phan implements IgnoredFilesFilterInterface
             PhaseTimer::note("ordering_worker{$process_id}_files", count($file_list));
             PhaseTimer::note("ordering_worker{$process_id}_bytes", $bytes);
         }
+        PhaseTimer::note('ordering_assignment', Config::getValue('randomize_file_order') ? 'random' : (string)Config::getValue('process_file_assignment'));
         if (Config::getValue('randomize_file_order')) {
             // Ordering does not group files by class hierarchy in this mode,
             // and computing the hierarchy roots of other classes could hydrate them.
             return;
         }
-        // Group files the same way as Ordering::orderForProcessCount(): by the root of the class hierarchy
+        // Group files the same way as the default assignment of Ordering::orderForProcessCount(): by the root of the class hierarchy
         // of the first class declared in each file. Ordering has already resolved these roots.
+        // (With process_file_assignment = 'balanced', the files of one root may be spread over several workers.
+        // The reported worker is the worker of the first file of the root that was seen.)
         $remaining = $file_info;
         $buckets = [];
         foreach ($code_base->getUserDefinedClassMap() as $class) {
