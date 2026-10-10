@@ -12,6 +12,8 @@ use CompileError;
 use InvalidArgumentException;
 use ParseError;
 use Phan\Analysis\AttributeAnalyzer;
+use Phan\Analysis\CloneReplay;
+use Phan\Analysis\CloneReplaySnapshot;
 use Phan\Analysis\DuplicateFunctionAnalyzer;
 use Phan\Analysis\EmitOnlyChecks;
 use Phan\Analysis\ParameterTypesAnalyzer;
@@ -534,7 +536,11 @@ class Analysis
         // The number of user-defined functions and methods for which the emit-only checks were run/skipped or verified
         $checks_count = [EmitOnlyChecks::RUN => 0, EmitOnlyChecks::SKIP => 0, EmitOnlyChecks::VERIFY => 0];
         EmitOnlyChecks::resetLookedUpTypes();
-        $analyze_function_or_method = static function (Func|Method $function_or_method) use (
+        /**
+         * @param ?CloneReplaySnapshot $clone_replay_snapshot for an inherited method,
+         * the results of the declaration analysis of the method it was cloned from, to replay (see CloneReplay)
+         */
+        $analyze_function_or_method = static function (Func|Method $function_or_method, ?CloneReplaySnapshot $clone_replay_snapshot = null) use (
             $code_base,
             $plugin_set,
             $has_function_or_method_plugins,
@@ -546,8 +552,15 @@ class Analysis
             if ($function_or_method->isPHPInternal()) {
                 return;
             }
-            // Phan always has to call this, to add default values to types of parameters.
-            $function_or_method->ensureScopeInitialized($code_base);
+            if ($clone_replay_snapshot !== null && $function_or_method instanceof Method) {
+                // An inherited method whose declaration analysis (the parameters part of ensureScopeInitialized() and
+                // ParameterTypesAnalyzer::analyzeParameterTypesOfDeclaration()) would compute the same as that of the method
+                // it was cloned from, and check no issue: make the same changes to it instead (see CloneReplay).
+                $function_or_method->replayDeclarationAnalysis($code_base, $clone_replay_snapshot);
+            } else {
+                // Phan always has to call this, to add default values to types of parameters.
+                $function_or_method->ensureScopeInitialized($code_base);
+            }
 
             $file = $function_or_method->getContext()->getFile();
             // If there is an array limiting the set of files, skip this file if it's not in the list.
@@ -571,11 +584,28 @@ class Analysis
 
             // This is the most time consuming step.
             // Can probably apply this to other functions, but this was the slowest.
-            ParameterTypesAnalyzer::analyzeParameterTypes(
-                $code_base,
-                $function_or_method,
-                $checks
-            );
+            // (Its first part is replayed with the rest of the declaration analysis, see above)
+            if ($clone_replay_snapshot === null) {
+                $is_declaration_analyzed = ParameterTypesAnalyzer::analyzeParameterTypesOfDeclaration(
+                    $code_base,
+                    $function_or_method,
+                    $checks
+                );
+                if (CloneReplay::$has_pending_method && $function_or_method instanceof Method) {
+                    // Record the results of the declaration analysis of a method that other methods were cloned from
+                    // (or verify those of a clone that could be replayed, for PHAN_VERIFY_SKIPPED_CHECKS=1)
+                    CloneReplay::endDeclarationAnalysis($code_base, $function_or_method, $is_declaration_analyzed);
+                }
+            } else {
+                $is_declaration_analyzed = true;
+            }
+            if ($is_declaration_analyzed) {
+                ParameterTypesAnalyzer::analyzeParameterTypesOfOverrides(
+                    $code_base,
+                    $function_or_method,
+                    $checks
+                );
+            }
 
             // This always runs: it adds references to attribute classes, may create their default constructor,
             // and analyzes the arguments of the attributes.
@@ -637,6 +667,15 @@ class Analysis
         $method_ns = ['declared' => 0, 'inherited' => 0, 'excluded' => 0, 'analyzed' => 0];
         // PHAN_VERIFY_SKIPPED_CHECKS=1 also runs and verifies the walks over overridden methods that can be skipped
         EmitOnlyChecks::beginAnalyzingMethods($excluded_file_checks === EmitOnlyChecks::VERIFY);
+        // Replay the declaration analysis of inherited methods that would compute the same as that of their source
+        // (PHAN_DISABLE_CLONE_REPLAY=1 disables this, PHAN_VERIFY_SKIPPED_CHECKS=1 verifies it instead).
+        // This is disabled when only some files are analyzed (daemon mode), where the source may not be processed.
+        $clone_replay = CloneReplay::beginAnalyzingMethods(
+            $code_base,
+            $file_filter === null && !\getenv('PHAN_DISABLE_CLONE_REPLAY'),
+            $excluded_file_checks === EmitOnlyChecks::VERIFY,
+            $collect_timings
+        );
         foreach ($method_set as $method) {
             if ($show_progress) {
                 // Method analysis can trigger class hydration which adds
@@ -653,16 +692,19 @@ class Analysis
             try {
                 if ($collect_timings) {
                     $start_ns = \hrtime(true);
-                    $analyze_function_or_method($method);
+                    $analyze_function_or_method($method, $clone_replay ? CloneReplay::beginAnalyzingMethod($code_base, $method) : null);
                     $elapsed_ns = \hrtime(true) - $start_ns;
                     $file = $method->getContext()->getFile();
                     $method_ns[$method->getDefiningFQSEN() !== $method->getFQSEN() ? 'inherited' : 'declared'] += $elapsed_ns;
                     $method_ns[($is_excluded_file[$file] ??= Phan::isExcludedAnalysisFile($file)) ? 'excluded' : 'analyzed'] += $elapsed_ns;
                 } else {
-                    $analyze_function_or_method($method);
+                    $analyze_function_or_method($method, $clone_replay ? CloneReplay::beginAnalyzingMethod($code_base, $method) : null);
                 }
             } finally {
                 EmitOnlyChecks::endAnalyzingMethod();
+                if (CloneReplay::$has_pending_method) {
+                    CloneReplay::endAnalyzingMethod();
+                }
             }
         }
         if ($collect_timings) {
@@ -672,6 +714,7 @@ class Analysis
             PhaseTimer::note('functionlikes_checks_verified', $checks_count[EmitOnlyChecks::VERIFY]);
             EmitOnlyChecks::recordAncestorWalkStats();
         }
+        CloneReplay::endAnalyzingMethods($code_base);
         EmitOnlyChecks::resetLookedUpTypes();
         EmitOnlyChecks::reportVerificationResults($code_base, $checks_count[EmitOnlyChecks::VERIFY]);
     }

@@ -1007,4 +1007,74 @@ class Parameter extends Variable
     {
         return $this->should_warn_if_provided;
     }
+
+    /**
+     * Returns the state of this parameter that the declaration analysis of its method reads (see Method::getCloneReplayFingerprint())
+     *
+     * @return list<mixed>
+     * @internal
+     */
+    public function getCloneReplayFingerprint(): array
+    {
+        return [
+            static::class,
+            $this->getName(),
+            $this->getFlags(),
+            $this->type,
+            $this->getPhanFlags(),
+            $this->default_value,
+            $this->default_value_type,
+            $this->default_value_literal_type,
+            $this->default_value_future_type,
+        ];
+    }
+
+    /**
+     * Returns true if getCloneReplayFingerprint() would return $fingerprint (without creating it)
+     *
+     * @param array<mixed> $fingerprint
+     * @internal
+     */
+    public function matchesCloneReplayFingerprint(array $fingerprint): bool
+    {
+        return \count($fingerprint) === 9 &&
+            $fingerprint[3] === $this->type &&
+            $fingerprint[4] === $this->getPhanFlags() &&
+            $fingerprint[0] === static::class &&
+            $fingerprint[1] === $this->getName() &&
+            $fingerprint[2] === $this->getFlags() &&
+            $fingerprint[5] === $this->default_value &&
+            $fingerprint[6] === $this->default_value_type &&
+            $fingerprint[7] === $this->default_value_literal_type &&
+            $fingerprint[8] === $this->default_value_future_type;
+    }
+
+    /**
+     * Returns the state of this parameter that the declaration analysis of its method writes (see Method::getCloneReplaySnapshot())
+     *
+     * @return array{0:UnionType,1:int,2:?UnionType,3:?UnionType,4:?FutureUnionType}
+     * @internal
+     */
+    public function getCloneReplayState(): array
+    {
+        return [
+            $this->type,
+            $this->getPhanFlags(),
+            $this->default_value_type,
+            $this->default_value_literal_type,
+            $this->default_value_future_type,
+        ];
+    }
+
+    /**
+     * Restores a state returned by getCloneReplayState()
+     *
+     * @param array{0:UnionType,1:int,2:?UnionType,3:?UnionType,4:?FutureUnionType} $state
+     * @internal
+     */
+    public function setCloneReplayState(array $state): void
+    {
+        [$this->type, $phan_flags, $this->default_value_type, $this->default_value_literal_type, $this->default_value_future_type] = $state;
+        $this->setPhanFlags($phan_flags);
+    }
 }

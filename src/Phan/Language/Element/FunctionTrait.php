@@ -1480,36 +1480,9 @@ trait FunctionTrait
         // Add $this variable for non-static methods in generic classes
         // This must run for ALL methods, not just those with docblocks
         if ($this instanceof Method && !$this->isStatic()) {
-            $context = $this->getContext();
-            if ($context->isInClassScope()) {
-                $class_fqsen = $context->getClassFQSEN();
-                $class = $code_base->getClassByFQSEN($class_fqsen);
-                $template_type_map = $class->getTemplateTypeMap();
-
-                if ($template_type_map) {
-                    // Create template parameter type list for the class type
-                    $template_parameter_type_list = [];
-                    foreach ($template_type_map as $template_type) {
-                        $template_parameter_type_list[] = $template_type->asPHPDocUnionType();
-                    }
-
-                    // Create static type with template parameters (e.g., static<T>)
-                    // This preserves late-static binding while maintaining template parameter info
-                    $static_type = \Phan\Language\Type\StaticType::instanceWithTemplateTypeList(
-                        false,  // not nullable
-                        $template_parameter_type_list
-                    );
-                    $this_type = $static_type->asRealUnionType();
-
-                    // Add the $this variable to the method's scope
-                    $this_variable = new Variable(
-                        $context,
-                        'this',
-                        $this_type,
-                        0  // flags
-                    );
-                    $this->getInternalScope()->addVariable($this_variable);
-                }
+            $this_variable = $this->createThisVariableOfGenericClass($code_base);
+            if ($this_variable) {
+                $this->getInternalScope()->addVariable($this_variable);
             }
         }
 
@@ -1521,6 +1494,45 @@ trait FunctionTrait
             }
             self::addParamsToScopeOfFunctionOrMethod($this->getContext(), $code_base, $this, $comment);
         }
+    }
+
+    /**
+     * If this non-static method is declared in a generic class, create the variable `$this` (of type `static<T...>`)
+     * to add to its scope. (Part of ensureScopeInitialized())
+     */
+    private function createThisVariableOfGenericClass(CodeBase $code_base): ?Variable
+    {
+        $context = $this->getContext();
+        if (!$context->isInClassScope()) {
+            return null;
+        }
+        $class_fqsen = $context->getClassFQSEN();
+        $class = $code_base->getClassByFQSEN($class_fqsen);
+        $template_type_map = $class->getTemplateTypeMap();
+        if (!$template_type_map) {
+            return null;
+        }
+        // Create template parameter type list for the class type
+        $template_parameter_type_list = [];
+        foreach ($template_type_map as $template_type) {
+            $template_parameter_type_list[] = $template_type->asPHPDocUnionType();
+        }
+
+        // Create static type with template parameters (e.g., static<T>)
+        // This preserves late-static binding while maintaining template parameter info
+        $static_type = \Phan\Language\Type\StaticType::instanceWithTemplateTypeList(
+            false,  // not nullable
+            $template_parameter_type_list
+        );
+        $this_type = $static_type->asRealUnionType();
+
+        // The $this variable to add to the method's scope
+        return new Variable(
+            $context,
+            'this',
+            $this_type,
+            0  // flags
+        );
     }
 
     /**
@@ -1682,7 +1694,7 @@ trait FunctionTrait
      * and infer a return type from the combination of the signature and phpdoc return types.
      *
      * @param int $emit_only_checks EmitOnlyChecks::SKIP to only look up the classes of a return type the first time it is seen
-     *                              (for elements declared in files excluded from analysis, see EmitOnlyChecks::shouldLookUpClassesOfType()).
+     *                              (for elements declared in files excluded from analysis, see EmitOnlyChecks::modeForClassLookup()).
      */
     public function analyzeReturnTypes(CodeBase $code_base, int $emit_only_checks = EmitOnlyChecks::RUN): void
     {
@@ -1718,8 +1730,14 @@ trait FunctionTrait
         $context = $this->getContext();
         // TODO: use method->getPHPDocReturnType() and getRealReturnType() to check compatibility, like analyzeParameterTypesDocblockSignaturesMatch
 
-        if (EmitOnlyChecks::shouldLookUpClassesOfType($emit_only_checks, $this instanceof Method ? 'method return' : 'function return', $return_type)) {
+        $lookup = EmitOnlyChecks::modeForClassLookup($emit_only_checks, $this instanceof Method ? 'method return' : 'function return', $return_type);
+        if ($lookup === EmitOnlyChecks::RUN) {
             $this->checkReturnTypeClassesExist($code_base, $return_type);
+        } elseif ($lookup === EmitOnlyChecks::VERIFY) {
+            // @phan-suppress-next-line PhanTypeMismatchArgument TODO: Support inferring this is FunctionInterface
+            EmitOnlyChecks::verify($this, 'FunctionTrait::checkReturnTypeClassesExist()', function () use ($code_base, $return_type): void {
+                $this->checkReturnTypeClassesExist($code_base, $return_type);
+            });
         }
         // This narrows the return type to the phpdoc return type (and emits issues if they're incompatible)
         if (Config::getValue('check_docblock_signature_return_type_match') && !$real_return_type->isEmpty() && ($phpdoc_return_type instanceof UnionType) && !$phpdoc_return_type->isEmpty()) {
@@ -1786,8 +1804,14 @@ trait FunctionTrait
                 }
             }
         }
-        if (EmitOnlyChecks::shouldLookUpClassesOfType($emit_only_checks, 'real return', $real_return_type)) {
+        $lookup = EmitOnlyChecks::modeForClassLookup($emit_only_checks, 'real return', $real_return_type);
+        if ($lookup === EmitOnlyChecks::RUN) {
             $this->checkRealReturnTypeIsNotTrait($code_base, $real_return_type);
+        } elseif ($lookup === EmitOnlyChecks::VERIFY) {
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument TODO: Support inferring this is FunctionInterface
+            EmitOnlyChecks::verify($this, 'FunctionTrait::checkRealReturnTypeIsNotTrait()', function () use ($code_base, $real_return_type): void {
+                $this->checkRealReturnTypeIsNotTrait($code_base, $real_return_type);
+            });
         }
         if ($this->comment) {
             // Add plugins **after** the phpdoc and real comment types were merged.
@@ -1802,7 +1826,7 @@ trait FunctionTrait
     /**
      * Emit issues about the classes in the declared return type of this function-like (before phpdoc narrowing):
      * undeclared classes, template types of static methods, and classes that are defined more than once.
-     * (Looking up the classes loads internal classes, see EmitOnlyChecks::shouldLookUpClassesOfType())
+     * (Looking up the classes loads internal classes, see EmitOnlyChecks::modeForClassLookup())
      */
     private function checkReturnTypeClassesExist(CodeBase $code_base, UnionType $return_type): void
     {

@@ -6045,12 +6045,20 @@ class Issue
     public const TRACE_VERBOSE = 'verbose';
 
     /**
+     * @var int the number of times an issue was checked for suppression or emitted, or a suppression count was incremented
+     * (Context::hasSuppressIssue(), TypedElement::incrementSuppressIssueCount()).
+     * Analysis\CloneReplay compares it before and after a group of checks to see whether they could have had an observable effect.
+     */
+    public static $emit_attempt_count = 0;
+
+    /**
      * @param IssueInstance $issue_instance
      * An issue instance to emit
      */
     public static function emitInstance(
         IssueInstance $issue_instance
     ): void {
+        ++self::$emit_attempt_count;
         if (Phan::isExcludedAnalysisFile($issue_instance->getFile())) {
             return;
         }
@@ -6202,6 +6210,7 @@ class Issue
         array $parameters,
         ?Suggestion $suggestion = null
     ): bool {
+        ++self::$emit_attempt_count;
         if (Config::getValue('disable_suppression')) {
             return false;
         }
