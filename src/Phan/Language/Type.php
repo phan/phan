@@ -1554,10 +1554,11 @@ class Type implements Stringable
 
         // Map the names of the types to actual types in the
         // template parameter type list
-        $template_parameter_type_list =
+        // (Most types have no template parameters, so skip creating the closure for those)
+        $template_parameter_type_list = $template_parameter_type_name_list ?
             \array_map(static function (string $type_name) use ($code_base, $context, $source): UnionType {
                 return UnionType::fromStringInContext($type_name, $context, $source, $code_base);
-            }, $template_parameter_type_name_list);
+            }, $template_parameter_type_name_list) : [];
 
         // @var bool
         // True if this type name if of the form 'C[]'
