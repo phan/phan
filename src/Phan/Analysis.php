@@ -13,6 +13,7 @@ use InvalidArgumentException;
 use ParseError;
 use Phan\Analysis\AttributeAnalyzer;
 use Phan\Analysis\DuplicateFunctionAnalyzer;
+use Phan\Analysis\EmitOnlyChecks;
 use Phan\Analysis\ParameterTypesAnalyzer;
 use Phan\Analysis\ReferenceCountsAnalyzer;
 use Phan\Analysis\ThrowsTypesAnalyzer;
@@ -30,7 +31,6 @@ use Phan\Language\Element\Clazz;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Comment;
 use Phan\Language\Element\Func;
-use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -513,11 +513,23 @@ class Analysis
         $plugin_set = ConfigPluginSet::instance();
         $has_function_or_method_plugins = $plugin_set->hasAnalyzeFunctionPlugins() || $plugin_set->hasAnalyzeMethodPlugins();
         $show_progress = CLI::shouldShowProgress();
-        $analyze_function_or_method = static function (FunctionInterface $function_or_method) use (
+        // Issues in files excluded from analysis are discarded, so by default,
+        // the checks that only emit issues about a function or method declared in such a file are skipped.
+        // (PHAN_ANALYZE_EXCLUDED_METHODS=1 runs them, PHAN_VERIFY_SKIPPED_CHECKS=1 verifies that skipping them changes nothing)
+        $excluded_file_checks = EmitOnlyChecks::modeForExcludedFiles();
+        /** @var array<string,bool> $is_excluded_file cache of Phan::isExcludedAnalysisFile() */
+        $is_excluded_file = [];
+        // The number of user-defined functions and methods for which the emit-only checks were run/skipped or verified
+        $checks_count = [EmitOnlyChecks::RUN => 0, EmitOnlyChecks::SKIP => 0, EmitOnlyChecks::VERIFY => 0];
+        EmitOnlyChecks::resetLookedUpTypes();
+        $analyze_function_or_method = static function (Func|Method $function_or_method) use (
             $code_base,
             $plugin_set,
             $has_function_or_method_plugins,
-            $file_filter
+            $file_filter,
+            $excluded_file_checks,
+            &$is_excluded_file,
+            &$checks_count
         ): void {
             if ($function_or_method->isPHPInternal()) {
                 return;
@@ -525,11 +537,21 @@ class Analysis
             // Phan always has to call this, to add default values to types of parameters.
             $function_or_method->ensureScopeInitialized($code_base);
 
+            $file = $function_or_method->getContext()->getFile();
             // If there is an array limiting the set of files, skip this file if it's not in the list.
-            if (\is_array($file_filter) && !isset($file_filter[$function_or_method->getContext()->getFile()])) {
+            if (\is_array($file_filter) && !isset($file_filter[$file])) {
                 return;
             }
+            // The steps below that modify $function_or_method (or other state read by the analysis) always run.
+            // The checks that only emit issues about $function_or_method are skipped
+            // if it is declared in a file excluded from analysis (Issue::emitInstance() discards those issues).
+            $checks = EmitOnlyChecks::RUN;
+            if ($excluded_file_checks !== EmitOnlyChecks::RUN && ($is_excluded_file[$file] ??= Phan::isExcludedAnalysisFile($file))) {
+                $checks = $excluded_file_checks;
+            }
+            $checks_count[$checks]++;
 
+            // This emits issues at the location of the original definition, which may be in a file that is analyzed.
             DuplicateFunctionAnalyzer::analyzeDuplicateFunction(
                 $code_base,
                 $function_or_method
@@ -539,9 +561,12 @@ class Analysis
             // Can probably apply this to other functions, but this was the slowest.
             ParameterTypesAnalyzer::analyzeParameterTypes(
                 $code_base,
-                $function_or_method
+                $function_or_method,
+                $checks
             );
 
+            // This always runs: it adds references to attribute classes, may create their default constructor,
+            // and analyzes the arguments of the attributes.
             AttributeAnalyzer::analyzeAttributesOfFunctionInterface(
                 $code_base,
                 $function_or_method
@@ -549,8 +574,9 @@ class Analysis
 
             // Infer more accurate return types
             // For daemon mode/the language server, we also call this whenever we use the return type of a function/method.
-            $function_or_method->analyzeReturnTypes($code_base);
+            $function_or_method->analyzeReturnTypes($code_base, $checks);
 
+            // This always runs: it inherits (at)throws types, and its checks look up the classes used in them.
             ThrowsTypesAnalyzer::analyzeThrowsTypes(
                 $code_base,
                 $function_or_method
@@ -559,6 +585,7 @@ class Analysis
             // XXX: Add a way to run plugins on all functions/methods, this was limited for speed.
             // Assumes that the given plugins will emit an issue in the same file as the function/method,
             // which isn't necessarily the case.
+            // (Plugins always run, even for elements declared in excluded files: they may record state.)
             // 0.06
             if ($has_function_or_method_plugins) {
                 if ($function_or_method instanceof Func) {
@@ -566,7 +593,7 @@ class Analysis
                         $code_base,
                         $function_or_method
                     );
-                } elseif ($function_or_method instanceof Method) {
+                } else {
                     $plugin_set->analyzeMethod(
                         $code_base,
                         $function_or_method
@@ -596,8 +623,6 @@ class Analysis
         $collect_timings = PhaseTimer::$enabled;
         // Nanoseconds spent on methods, split by declared vs. inherited and by excluded vs. analyzed file (--dump-phase-timings)
         $method_ns = ['declared' => 0, 'inherited' => 0, 'excluded' => 0, 'analyzed' => 0];
-        /** @var array<string,bool> $is_excluded_file */
-        $is_excluded_file = [];
         foreach ($method_set as $method) {
             if ($show_progress) {
                 // Method analysis can trigger class hydration which adds
@@ -620,7 +645,12 @@ class Analysis
         }
         if ($collect_timings) {
             self::recordMethodSetStats($code_base, $method_ns, $is_excluded_file);
+            PhaseTimer::note('functionlikes_checks_run', $checks_count[EmitOnlyChecks::RUN]);
+            PhaseTimer::note('functionlikes_checks_skipped', $checks_count[EmitOnlyChecks::SKIP]);
+            PhaseTimer::note('functionlikes_checks_verified', $checks_count[EmitOnlyChecks::VERIFY]);
         }
+        EmitOnlyChecks::resetLookedUpTypes();
+        EmitOnlyChecks::reportVerificationResults($checks_count[EmitOnlyChecks::VERIFY]);
     }
 
     /**

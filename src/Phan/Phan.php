@@ -9,6 +9,7 @@ use Closure;
 use Exception;
 use InvalidArgumentException;
 use Phan\Analysis\ConvergenceWorklist;
+use Phan\Analysis\EmitOnlyChecks;
 use Phan\AST\TolerantASTConverter\Shim;
 use Phan\Daemon\Request;
 use Phan\Language\Element\FunctionInterface;
@@ -668,6 +669,8 @@ class Phan implements IgnoredFilesFilterInterface
 
             PhaseTimer::begin('before_analyze_phase');
             ConfigPluginSet::instance()->beforeAnalyzePhase($code_base);
+            // PHAN_DUMP_METHOD_STATE_DIGEST=<path> (debugging aid for skipping the emit-only checks of excluded files)
+            EmitOnlyChecks::maybeDumpStateDigest($code_base);
 
             PhaseTimer::begin('ordering');
 
