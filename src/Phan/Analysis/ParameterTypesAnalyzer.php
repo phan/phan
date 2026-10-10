@@ -108,6 +108,9 @@ class ParameterTypesAnalyzer
             EmitOnlyChecks::verify($method, 'ParameterTypesAnalyzer::checkReturnTypeCombination()', static function () use ($code_base, $method): void {
                 self::checkReturnTypeCombination($code_base, $method);
             });
+        } elseif (EmitOnlyChecks::containsIntersectionType($method->getUnionType())) {
+            // The impossible-combination check of an intersection type hydrates the classes it refers to, so it is not skipped.
+            self::checkReturnTypeCombination($code_base, $method);
         }
     }
 
@@ -141,6 +144,10 @@ class ParameterTypesAnalyzer
                 EmitOnlyChecks::verify($method, 'ParameterTypesAnalyzer::checkParameterDeclaration()', static function () use ($code_base, $method, $i, $parameter, $is_optional_seen): void {
                     self::checkParameterDeclaration($code_base, $method, $i, $parameter, $is_optional_seen);
                 });
+            } elseif (EmitOnlyChecks::containsIntersectionType($parameter->getUnionType())) {
+                // The impossible-combination check of an intersection type hydrates the classes it refers to
+                // (see EmitOnlyChecks::containsIntersectionType()), so it is not skipped.
+                self::checkParameterDeclaration($code_base, $method, $i, $parameter, $is_optional_seen);
             }
             if ($parameter->isOptional()) {
                 $is_optional_seen = true;
@@ -456,7 +463,7 @@ class ParameterTypesAnalyzer
                     $processed_class_override = true;
                 }
             }
-            self::analyzeOverrideSignatureForOverriddenMethod($code_base, $method, $class, $overridden_method, $emit_only_checks);
+            self::analyzeOverrideSignatureForOverriddenMethod($code_base, $method, $class, $overridden_method);
         }
     }
 
@@ -598,8 +605,7 @@ class ParameterTypesAnalyzer
         CodeBase $code_base,
         Method $method,
         Clazz $class,
-        Method $overridden_method,
-        int $emit_only_checks
+        Method $overridden_method
     ): void {
         if ($overridden_method->isFinal()) {
             // Even if it is a constructor, verify that a method doesn't override a final method.
@@ -656,17 +662,10 @@ class ParameterTypesAnalyzer
         // (Whether it does depends on the compatibility checks it makes, so it also runs for EmitOnlyChecks::SKIP)
         self::analyzeOverrideRealSignature($code_base, $method, $class, $overridden_method_mapped, $o_class);
 
-        if ($emit_only_checks === EmitOnlyChecks::RUN) {
-            self::checkOverrideSignatureCompatibility($code_base, $method, $class, $overridden_method, $overridden_method_mapped, $o_class);
-        } elseif ($emit_only_checks === EmitOnlyChecks::VERIFY) {
-            EmitOnlyChecks::verify(
-                $method,
-                'ParameterTypesAnalyzer::checkOverrideSignatureCompatibility()',
-                static function () use ($code_base, $method, $class, $overridden_method, $overridden_method_mapped, $o_class): void {
-                    self::checkOverrideSignatureCompatibility($code_base, $method, $class, $overridden_method, $overridden_method_mapped, $o_class);
-                }
-            );
-        }
+        // This only emits issues, but its casting checks expand the phpdoc types of both methods, which hydrates
+        // the classes they refer to (loading the methods those classes inherit before Analysis::loadMethodPlugins() runs),
+        // so it also runs for EmitOnlyChecks::SKIP.
+        self::checkOverrideSignatureCompatibility($code_base, $method, $class, $overridden_method, $overridden_method_mapped, $o_class);
     }
 
     /**

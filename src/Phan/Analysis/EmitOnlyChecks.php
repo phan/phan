@@ -11,6 +11,7 @@ use Phan\Language\Element\AddressableElement;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Type;
+use Phan\Language\Type\IntersectionType;
 use Phan\Language\UnionType;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Phan;
@@ -127,6 +128,26 @@ final class EmitOnlyChecks
             }
         }
         return $has_new_type;
+    }
+
+    /**
+     * Returns true if $union_type contains an intersection type anywhere (including in generic parameters).
+     *
+     * The checks for impossible type combinations (Type::checkImpossibleCombination()) only do work for
+     * intersection types, and that work expands the types and hydrates the referenced classes (loading the
+     * methods they inherit before Analysis::loadMethodPlugins() runs), so with self::SKIP those checks still
+     * run for types that contain an intersection type.
+     */
+    public static function containsIntersectionType(UnionType $union_type): bool
+    {
+        foreach ($union_type->getTypeSet() as $type) {
+            foreach ($type->getTypesRecursively() as $part) {
+                if ($part instanceof IntersectionType) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
