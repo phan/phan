@@ -185,6 +185,7 @@ class CLI
         'no-search-parents',
         'output:',
         'output-mode:',
+        'console-output',
         'parent-constructor-required:',
         'phase-timings-json:',
         'plugin:',
@@ -985,6 +986,7 @@ class CLI
                 case 'C':
                 case 'color':
                 case 'no-color':
+                case 'console-output':
                 case 'analyze-all-files':
                     // Handled before processing the CLI flag `--help`
                     break;
@@ -1080,7 +1082,15 @@ class CLI
 
         self::checkAllArgsUsed($opts, $argv);
 
+
         Phan::setPrinter($printer);
+
+        if (
+            isset($opts['console-output'])
+            && !($this->output instanceof ConsoleOutput)
+        ) {
+            Phan::addPrinter($factory->getPrinter('text', new ConsoleOutput()));
+        }
         Phan::setIssueCollector($collector);
 
         $no_config_mode = array_key_exists('n', $opts) || array_key_exists('no-config-file', $opts);
@@ -1733,6 +1743,9 @@ EOT;
 
  -o, --output <filename>
   Output filename
+
+ --console-output
+  Output text to console in addition of output set by -o.
 
 $init_help
  -C, --color, --no-color
