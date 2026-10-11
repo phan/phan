@@ -27,6 +27,7 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
+use Phan\Language\Scope\BranchScope;
 use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Library\StringUtil;
@@ -507,8 +508,17 @@ class Context extends FileRef
     public function withScopeVariable(
         Variable $variable
     ): Context {
+        $scope = $this->scope;
+        if ($scope instanceof GlobalScope) {
+            // GlobalScope::withVariable() adds the variable to the global scope itself, which every statement of the file
+            // (and every function using `global`) shares. The condition visitors use this method to narrow a variable
+            // within one branch, e.g. the condition of a ternary used as an argument (ArgumentType) or in a return expression,
+            // so narrow in a BranchScope on top of the global scope instead (BlockAnalysisVisitor already does this for
+            // statements, and folds the result back into the global scope after the statement).
+            $scope = new BranchScope($scope);
+        }
         return $this->withScope(
-            $this->scope->withVariable($variable)
+            $scope->withVariable($variable)
         );
     }
 
