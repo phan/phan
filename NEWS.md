@@ -1,12 +1,12 @@
 ## Phan NEWS
 
-Phan 6.0.9-dev
+Oct 11 2026, Phan 6.0.9
 --------------
 
-Bug fixes:
-- Fix false positives on `class-string<I>` for an interface `I`, a 6.0.8 regression of [#5558](https://github.com/phan/phan/issues/5558): don't report static methods, static properties or class constants that `I` doesn't declare (e.g. an enum's `cases()`) as undeclared, and don't check the arguments of `new $class()` when the represented class declares no constructor
-- Fix `PhanTypeMismatchArgumentInternalProbablyReal` for `ReflectionProperty::setValue(null, $value)`, `ReflectionProperty::getValue(null)` and `ReflectionMethod::getClosure(null)` (static members): the signature map required `object` where PHP accepts `?object`. 6.0.8 started reporting it because the alternate signatures of a function are now only considered when they accept the number of arguments passed ([#5568](https://github.com/phan/phan/pull/5568))
-- Fix a false positive in the global scope: narrowing a variable in the condition of a ternary used as a call argument (e.g. `sprintf('%s', $flag ? 'a' : 'b'); takesBool($flag);`) or in a `return` expression changed the variable's type for the rest of the file (`PhanTypeMismatchArgumentNullable` with a falsey type such as `?''|?'0'|?0|?0.0|?array{}|?false`). The condition visitors narrowed directly in the shared `GlobalScope` when the context had no branch scope; `Context::withScopeVariable()` now narrows in a `BranchScope` on top of the global scope. In 6.0.8 this also affected files where the call followed a compound statement in the global scope ([#5593](https://github.com/phan/phan/pull/5593))
+Bug fixes (regressions in 6.0.8):
+- Fix false positives on `class-string<I>` for an interface `I`: static methods, static properties and class constants that `I` doesn't declare (e.g. an enum's `cases()`) are no longer reported as undeclared, and the arguments of `new $class()` are only checked when the represented class declares a constructor or is final ([#5558](https://github.com/phan/phan/issues/5558), [#5595](https://github.com/phan/phan/pull/5595))
+- Fix `PhanTypeMismatchArgumentInternalProbablyReal` for `ReflectionProperty::setValue(null, $value)`, `ReflectionProperty::getValue(null)` and `ReflectionMethod::getClosure(null)`: these parameters accept `?object`, as in PHP ([#5568](https://github.com/phan/phan/pull/5568), [#5594](https://github.com/phan/phan/pull/5594))
+- Fix a false positive in the global scope (`PhanTypeMismatchArgumentNullable` with a falsey type such as `?''|?'0'|?0|?0.0|?array{}|?false`) when the condition of a ternary used as a call argument or in a `return` expression narrowed a variable: the condition visitors no longer modify the shared global scope ([#5593](https://github.com/phan/phan/pull/5593))
 
 Oct 10 2026, Phan 6.0.8
 --------------
