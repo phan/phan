@@ -118,6 +118,7 @@ class NoArgConstructor5943 {
 class InheritsConstructor5943 extends NoArgConstructor5943 {}
 class NoConstructor5943 {}
 abstract class AbstractNoConstructor5943 {}
+final class FinalNoConstructor5943 {}
 interface DeclaresConstructor5943 {
     public function __construct(int $x);
 }
@@ -128,9 +129,10 @@ interface DeclaresConstructor5943 {
  * @param class-string<NoConstructor5943> $c
  * @param class-string<AbstractNoConstructor5943> $d
  * @param class-string<DeclaresConstructor5943> $e
+ * @param class-string<FinalNoConstructor5943> $f
  * @return list<object>
  */
-function testConstructors5943(string $a, string $b, string $c, string $d, string $e): array {
+function testConstructors5943(string $a, string $b, string $c, string $d, string $e, string $f): array {
     // Still checked: the represented class declares (or inherits) a constructor.
     $x = new $a(1);
     $y = new $b(1);
@@ -138,11 +140,13 @@ function testConstructors5943(string $a, string $b, string $c, string $d, string
     // Not checked: a subclass may declare any constructor.
     $u = new $c(1);
     $v = new $d(1);
+    // Still checked: a final class has no subclasses, so the string can only name it.
+    $t = new $f(1);
     // A literal class name is unchanged.
     $w = new NoConstructor5943(1);
     '@phan-debug-var $x';
     '@phan-debug-var $u';
-    return [$x, $y, $z, $u, $v, $w];
+    return [$x, $y, $z, $u, $v, $t, $w];
 }
 
 class Lacks5943 {}

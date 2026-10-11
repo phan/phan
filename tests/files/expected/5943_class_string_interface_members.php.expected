@@ -14,12 +14,13 @@
 %s:107 PhanUndeclaredConstantOfClass Reference to undeclared class constant \Concrete5943::UNDECLARED (Did you mean \Concrete5943::DECLARED or \Concrete5943::$declared or \Concrete5943::declared())
 %s:108 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int(real=int)
 %s:110 PhanDebugAnnotation @phan-debug-var requested for variable $y - it has union type 1
-%s:135 PhanParamTooMany Call with 1 arg(s) to \NoArgConstructor5943::__construct() which only takes 0 arg(s) defined at %s:116
-%s:136 PhanParamTooMany Call with 1 arg(s) to \InheritsConstructor5943::__construct() which only takes 0 arg(s) defined at %s:116
-%s:137 PhanParamTooFew Call with 0 arg(s) to \DeclaresConstructor5943::__construct(int $x) which requires 1 arg(s) defined at %s:122
-%s:142 PhanDebugAnnotation @phan-debug-var requested for variable $u - it has union type \NoConstructor5943(real=object)
-%s:142 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \NoArgConstructor5943(real=object)
-%s:142 PhanParamTooMany Call with 1 arg(s) to \NoConstructor5943::__construct() which only takes 0 arg(s) defined at %s:119
-%s:158 PhanUndeclaredStaticMethod Static call to undeclared method \Lacks5943::undeclared
-%s:159 PhanUndeclaredStaticMethod Static call to undeclared method \Iface5943::undeclared
-%s:161 PhanUndeclaredStaticMethod Static call to undeclared method \Concrete5943::undeclared (Did you mean expr::declared())
+%s:137 PhanParamTooMany Call with 1 arg(s) to \NoArgConstructor5943::__construct() which only takes 0 arg(s) defined at %s:116
+%s:138 PhanParamTooMany Call with 1 arg(s) to \InheritsConstructor5943::__construct() which only takes 0 arg(s) defined at %s:116
+%s:139 PhanParamTooFew Call with 0 arg(s) to \DeclaresConstructor5943::__construct(int $x) which requires 1 arg(s) defined at %s:123
+%s:144 PhanParamTooMany Call with 1 arg(s) to \FinalNoConstructor5943::__construct() which only takes 0 arg(s) defined at %s:121
+%s:146 PhanDebugAnnotation @phan-debug-var requested for variable $u - it has union type \NoConstructor5943(real=object)
+%s:146 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \NoArgConstructor5943(real=object)
+%s:146 PhanParamTooMany Call with 1 arg(s) to \NoConstructor5943::__construct() which only takes 0 arg(s) defined at %s:119
+%s:162 PhanUndeclaredStaticMethod Static call to undeclared method \Lacks5943::undeclared
+%s:163 PhanUndeclaredStaticMethod Static call to undeclared method \Iface5943::undeclared
+%s:165 PhanUndeclaredStaticMethod Static call to undeclared method \Concrete5943::undeclared (Did you mean expr::declared())

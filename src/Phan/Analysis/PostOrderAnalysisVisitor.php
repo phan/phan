@@ -2792,7 +2792,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      *
      * The string names some class that is T or extends/implements T, which can declare any
      * constructor - e.g. T is an interface, or a class whose subclasses add one. When T does
-     * declare a constructor, the arguments are still checked against it.
+     * declare a constructor, or cannot be extended (a final class), the arguments are still
+     * checked against it.
      *
      * @param Node $node a node of type AST_NEW
      */
@@ -2809,11 +2810,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {
             return false;
         }
+        $class = $this->code_base->getClassByFQSEN($class_fqsen);
+        if ($class->isFinal()) {
+            // The string can only name this class, whose placeholder constructor takes no arguments.
+            return false;
+        }
         return (new ContextNode(
             $this->code_base,
             $this->context,
             $class_node
-        ))->isClassOnlyNamedByClassString($this->code_base->getClassByFQSEN($class_fqsen));
+        ))->isClassOnlyNamedByClassString($class);
     }
 
     /**
