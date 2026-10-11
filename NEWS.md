@@ -3,6 +3,9 @@
 Phan 6.0.9-dev
 --------------
 
+Bug fixes:
+- Fix `PhanTypeMismatchArgumentInternalProbablyReal` for `ReflectionProperty::setValue(null, $value)`, `ReflectionProperty::getValue(null)` and `ReflectionMethod::getClosure(null)` (static members): the signature map required `object` where PHP accepts `?object`. 6.0.8 started reporting it because the alternate signatures of a function are now only considered when they accept the number of arguments passed ([#5568](https://github.com/phan/phan/pull/5568))
+
 Oct 10 2026, Phan 6.0.8
 --------------
 
