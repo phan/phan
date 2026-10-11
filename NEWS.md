@@ -3,6 +3,9 @@
 Phan 6.0.9-dev
 --------------
 
+Bug fixes:
+- Fix false positives on `class-string<I>` for an interface `I`, a 6.0.8 regression of [#5558](https://github.com/phan/phan/issues/5558): don't report static methods, static properties or class constants that `I` doesn't declare (e.g. an enum's `cases()`) as undeclared, and don't check the arguments of `new $class()` when the represented class declares no constructor
+
 Oct 10 2026, Phan 6.0.8
 --------------
 

@@ -696,6 +696,54 @@ class ContextNode
     }
 
     /**
+     * Returns true if getClassList() resolves this class node (e.g. the class part of
+     * `$class::method()`, `$class::$prop`, `$class::CONST` or `new $class()`) to $class only
+     * through a `class-string<T>` alternative of its union type, and not also through an object
+     * type such as `T|class-string<T>`.
+     *
+     * Such a string names *some* class that is T or extends/implements T, so what T itself
+     * declares is not necessarily all that the runtime class declares.
+     */
+    public function isClassOnlyNamedByClassString(Clazz $class): bool
+    {
+        [$union_type, $class_list_without_class_strings] = $this->getClassListInner(true);
+        if (\in_array($class, $class_list_without_class_strings, true)) {
+            return false;
+        }
+        foreach ($union_type->getTypeSet() as $type) {
+            if (!($type instanceof ClassStringType)) {
+                continue;
+            }
+            try {
+                foreach ($type->getClassUnionTypeResolvingBounds()->asClassList($this->code_base, $this->context) as $represented_class) {
+                    if ($represented_class === $class) {
+                        return true;
+                    }
+                }
+            } catch (CodeBaseException | IssueException) {
+                // getClassList() already reported this.
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns true if a static method, static property or class constant that $class lacks must
+     * not be reported as undeclared, because this class node names $class only through a
+     * `class-string<I>` where I is an interface (see isClassOnlyNamedByClassString()).
+     *
+     * The string names some class implementing I, which may declare members that I doesn't,
+     * e.g. an enum's `cases()` and `from()`, or a static property (an interface can't declare
+     * properties at all). Members that I does declare are still resolved through I and validated
+     * as usual. A `class-string<C>` for a class C is still treated as declaring only what C
+     * declares, the same way an object of type C is.
+     */
+    public function isInterfaceWithUnknownStaticMembers(Clazz $class): bool
+    {
+        return $class->isInterface() && $this->isClassOnlyNamedByClassString($class);
+    }
+
+    /**
      * Check if the given AST_PROP/AST_NULLSAFE_PROP node accesses a dynamic
      * property on a plain (unshaped) stdClass receiver.
      *
@@ -930,15 +978,16 @@ class ContextNode
             throw new AssertionError('$node must be a node');
         }
 
+        $class_node_context = new ContextNode(
+            $this->code_base,
+            $this->context,
+            $node->children['expr']
+                ?? $node->children['class']
+        );
         try {
             // Fetch the list of valid classes, and warn about any undefined classes.
             // (We have more specific issue types such as PhanNonClassMethodCall below, don't emit PhanTypeExpected*)
-            $class_list = (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $node->children['expr']
-                    ?? $node->children['class']
-            ))->getClassList(
+            $class_list = $class_node_context->getClassList(
                 false,
                 $is_static || $is_new_expression ? self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME : self::CLASS_LIST_ACCEPT_OBJECT,
                 null,
@@ -1043,7 +1092,7 @@ class ContextNode
             } elseif ($is_static && $class->allowsCallingUndeclaredStaticMethod($this->code_base)) {
                 $last_call_method = $class->getCallStaticMethod($this->code_base);
                 $call_methods[] = $last_call_method;
-            } else {
+            } elseif (!$class_node_context->isInterfaceWithUnknownStaticMembers($class)) {
                 $class_without_method = $class->getFQSEN();
             }
         }
@@ -1077,7 +1126,21 @@ class ContextNode
             return $methods;
         }
 
-        $first_class = $class_list[0];
+        // Report the method as undeclared on the first class known to lack it - not on an
+        // interface named only by a `class-string<I>`, whose implementing class may declare it.
+        $first_class = null;
+        foreach ($class_list as $class) {
+            if (!$class_node_context->isInterfaceWithUnknownStaticMembers($class)) {
+                $first_class = $class;
+                break;
+            }
+        }
+        if (!$first_class) {
+            throw new NodeException(
+                $node,
+                "Can't determine if the class implementing the interface declares $method_name"
+            );
+        }
 
         // Figure out an FQSEN for the method we couldn't find
         $method_fqsen = FullyQualifiedMethodName::make(
@@ -1696,15 +1759,16 @@ class ContextNode
 
         $class_fqsen = null;
 
+        $class_node_context = new ContextNode(
+            $this->code_base,
+            $this->context,
+            $node->children['expr'] ??
+                $node->children['class']
+        );
         try {
             $expected_type_categories = $is_static ? self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME : self::CLASS_LIST_ACCEPT_OBJECT;
             $expected_issue = $is_static ? Issue::TypeExpectedObjectStaticPropAccess : Issue::TypeExpectedObjectPropAccess;
-            $class_list = (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $node->children['expr'] ??
-                    $node->children['class']
-            ))->getClassList(false, $expected_type_categories, $expected_issue);
+            $class_list = $class_node_context->getClassList(false, $expected_type_categories, $expected_issue);
         } catch (CodeBaseException $exception) {
             $exception_fqsen = $exception->getFQSEN();
             if ($exception_fqsen instanceof FullyQualifiedClassName) {
@@ -1780,7 +1844,8 @@ class ContextNode
                     );
                 }
 
-                if (!($class->isInterface() && $expr_is_this && $expr_has_static_type)) {
+                if (!($class->isInterface() && $expr_is_this && $expr_has_static_type)
+                    && !$class_node_context->isInterfaceWithUnknownStaticMembers($class)) {
                     $class_without_property = $class;
                 }
                 continue;
@@ -1897,6 +1962,17 @@ class ContextNode
             }
             if ($properties) {
                 return $properties;
+            }
+        } else {
+            // Report the static property as undeclared on the last class known to lack it - not
+            // on an interface named only by a `class-string<I>`, whose implementing class may
+            // declare it. If there is no such class, whether the property exists is unknown.
+            $class_fqsen = null;
+            foreach ($class_list as $candidate_class) {
+                if (!$class_node_context->isInterfaceWithUnknownStaticMembers($candidate_class)) {
+                    $class = $candidate_class;
+                    $class_fqsen = $candidate_class->getFQSEN();
+                }
             }
         }
 
@@ -2367,12 +2443,13 @@ class ContextNode
 
         $class_fqsen = null;
 
+        $class_node_context = new ContextNode(
+            $this->code_base,
+            $this->context,
+            $node->children['class']
+        );
         try {
-            $class_list = (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $node->children['class']
-            ))->getClassList(false, self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
+            $class_list = $class_node_context->getClassList(false, self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
         } catch (CodeBaseException $exception) {
             $exception_fqsen = $exception->getFQSEN();
             if ($constant_name === 'class') {
@@ -2397,14 +2474,17 @@ class ContextNode
 
         $constants = [];
         foreach ($class_list as $class) {
-            // Remember the last analyzed class for the next issue message
-            $class_fqsen = $class->getFQSEN();
-
             // Check to see if the class has the constant
             if (!$class->hasConstantWithName(
                 $this->code_base,
                 $constant_name
             )) {
+                // Remember the last class lacking the constant for the next issue message - but
+                // not an interface named only by a `class-string<I>`, whose implementing class
+                // may declare it.
+                if (!$class_node_context->isInterfaceWithUnknownStaticMembers($class)) {
+                    $class_fqsen = $class->getFQSEN();
+                }
                 continue;
             }
 

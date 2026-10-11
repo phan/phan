@@ -2753,10 +2753,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 false
             );
 
-            $this->analyzeCallToFunctionLike(
-                $method,
-                $node
-            );
+            if (!$this->isConstructorOfClassStringUnknown($method, $node)) {
+                $this->analyzeCallToFunctionLike(
+                    $method,
+                    $node
+                );
+            }
 
             foreach ($class_list as $class) {
                 if ($class->isEnum() || $class->isAbstract() || $class->isInterface() || $class->isTrait()) {
@@ -2781,6 +2783,37 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         return $this->context;
+    }
+
+    /**
+     * Returns true if the arguments of `new $class(...)` must not be checked against $constructor,
+     * because $class is a `class-string<T>` and T declares no constructor (neither itself nor
+     * through a parent class), so $constructor is the placeholder Phan creates for T.
+     *
+     * The string names some class that is T or extends/implements T, which can declare any
+     * constructor - e.g. T is an interface, or a class whose subclasses add one. When T does
+     * declare a constructor, the arguments are still checked against it.
+     *
+     * @param Node $node a node of type AST_NEW
+     */
+    private function isConstructorOfClassStringUnknown(Method $constructor, Node $node): bool
+    {
+        if (!$constructor->isFakeConstructor()) {
+            return false;
+        }
+        $class_node = $node->children['class'];
+        if (!$class_node instanceof Node || $class_node->kind === ast\AST_NAME) {
+            return false;
+        }
+        $class_fqsen = $constructor->getClassFQSEN();
+        if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {
+            return false;
+        }
+        return (new ContextNode(
+            $this->code_base,
+            $this->context,
+            $class_node
+        ))->isClassOnlyNamedByClassString($this->code_base->getClassByFQSEN($class_fqsen));
     }
 
     /**

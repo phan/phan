@@ -11,3 +11,7 @@ src/322_class_string_strict_method_checking.php:52 PhanUnreferencedClass Possibl
 src/322_class_string_strict_method_checking.php:62 PhanTemplateTypeNotUsedInFunctionReturn Template type T not used in return value of function/method test_class_string_intersection_bound_322()
 src/322_class_string_strict_method_checking.php:62 PhanUnreferencedFunction Possibly zero references to function \test_class_string_intersection_bound_322()
 src/322_class_string_strict_method_checking.php:63 PhanAbstractStaticMethodCall Potentially calling an abstract static method \HasShared322::sharedIface() in $class::sharedIface()
+src/322_class_string_strict_method_checking.php:74 PhanUnreferencedFunction Possibly zero references to function \test_object_alternative_with_interface_class_string_322()
+src/322_class_string_strict_method_checking.php:75 PhanPossiblyUndeclaredMethod Call to possibly undeclared method sharedIface on type \LacksMethod322|\HasShared322 (\LacksMethod322 does not declare the method)
+src/322_class_string_strict_method_checking.php:82 PhanUnreferencedFunction Possibly zero references to function \test_interface_class_string_alternative_322()
+src/322_class_string_strict_method_checking.php:90 PhanUnreferencedFunction Possibly zero references to function \test_interface_class_string_inner_union_322()

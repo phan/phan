@@ -2286,12 +2286,13 @@ class AssignmentVisitor extends AnalysisVisitor
             }
         }
 
+        $class_node_context = new ContextNode(
+            $this->code_base,
+            $this->context,
+            $class_node
+        );
         try {
-            $class_list = (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $class_node
-            ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME, Issue::TypeExpectedObjectStaticPropAccess);
+            $class_list = $class_node_context->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME, Issue::TypeExpectedObjectStaticPropAccess);
         } catch (\Exception) {
             // If we can't figure out what kind of a class
             // this is, don't worry about it
@@ -2332,17 +2333,22 @@ class AssignmentVisitor extends AnalysisVisitor
             }
         }
 
-        if (\count($class_list) > 0) {
+        foreach ($class_list as $clazz) {
+            // Don't report the property as undeclared on an interface named only by a
+            // `class-string<I>`, whose implementing class may declare it.
+            if ($class_node_context->isInterfaceWithUnknownStaticMembers($clazz)) {
+                continue;
+            }
             $this->emitIssue(
                 Issue::UndeclaredStaticProperty,
                 $node->lineno ?? 0,
                 $property_name,
-                (string)$class_list[0]->getFQSEN()
+                (string)$clazz->getFQSEN()
             );
-        } else {
-            // If we hit this part, we couldn't figure out
-            // the class, so we ignore the issue
+            break;
         }
+        // If we hit this part without emitting, we couldn't figure out
+        // the class (or whether it declares the property), so we ignore the issue
 
         return $this->context;
     }
