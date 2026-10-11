@@ -5,6 +5,7 @@ Phan 6.0.9-dev
 
 Bug fixes:
 - Fix false positives on `class-string<I>` for an interface `I`, a 6.0.8 regression of [#5558](https://github.com/phan/phan/issues/5558): don't report static methods, static properties or class constants that `I` doesn't declare (e.g. an enum's `cases()`) as undeclared, and don't check the arguments of `new $class()` when the represented class declares no constructor
+- Fix a false positive in the global scope: narrowing a variable in the condition of a ternary used as a call argument (e.g. `sprintf('%s', $flag ? 'a' : 'b'); takesBool($flag);`) or in a `return` expression changed the variable's type for the rest of the file (`PhanTypeMismatchArgumentNullable` with a falsey type such as `?''|?'0'|?0|?0.0|?array{}|?false`). The condition visitors narrowed directly in the shared `GlobalScope` when the context had no branch scope; `Context::withScopeVariable()` now narrows in a `BranchScope` on top of the global scope. In 6.0.8 this also affected files where the call followed a compound statement in the global scope ([#5593](https://github.com/phan/phan/pull/5593))
 
 Oct 10 2026, Phan 6.0.8
 --------------

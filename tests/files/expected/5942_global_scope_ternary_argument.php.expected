@@ -1,0 +1,3 @@
+%s:15 PhanDebugAnnotation @phan-debug-var requested for variable $flag - it has union type bool(real=bool)
+%s:20 PhanDebugAnnotation @phan-debug-var requested for variable $other - it has union type bool(real=bool)
+%s:25 PhanDebugAnnotation @phan-debug-var requested for variable $maybe - it has union type 'str'|null(real='str'|null)
