@@ -158,3 +158,85 @@ function merge_does_not_modify_other_branch5947(bool $c): void {
     }
     echo $x;
 }
+
+// An exception that the catch clauses of the inner try statement don't catch reaches the outer catch block.
+function nested_not_caught_by_inner5947(bool $flag): ?User5947 {
+    $user = null;
+    try {
+        try {
+            if ($flag) {
+                $user = make_user5947();
+                throw new RuntimeException('not caught by the inner try statement');
+            }
+        } catch (InvalidArgumentException) {
+            return null;
+        }
+        return $user;
+    } catch (RuntimeException) {
+        '@phan-debug-var $user';
+        return $user;
+    }
+}
+
+// An exception that the inner try statement catches reaches the outer catch block only through the end state of the inner catch block.
+function nested_caught_by_inner5947(bool $flag): string {
+    $state = 'start';
+    try {
+        try {
+            if ($flag) {
+                $state = 'thrown';
+                throw new InvalidArgumentException('caught by the inner try statement');
+            }
+        } catch (InvalidArgumentException) {
+            '@phan-debug-var $state';
+            $state = 'handled';
+        }
+    } catch (Exception) {
+        '@phan-debug-var $state';
+    }
+    return $state;
+}
+
+// A catch clause for a parent class or one of several classes definitely catches the exception.
+function nested_caught_by_parent_class5947(bool $flag, bool $other): string {
+    $state = 'start';
+    try {
+        try {
+            if ($flag) {
+                $state = 'runtime';
+                throw new RuntimeException('caught by catch (Exception)');
+            }
+        } catch (Exception) {
+            $state = 'handled';
+        }
+        try {
+            if ($other) {
+                $state = 'length';
+                throw new LengthException('caught by catch (UnexpectedValueException|LogicException)');
+            }
+        } catch (UnexpectedValueException|LogicException) {
+            $state = 'handled again';
+        }
+    } catch (Throwable) {
+        '@phan-debug-var $state';
+    }
+    return $state;
+}
+
+// A thrown value of an unknown type may not be caught by the inner try statement.
+function nested_unknown_thrown_type5947(bool $flag, $e): string {
+    $state = 'start';
+    try {
+        try {
+            if ($flag) {
+                $state = 'thrown';
+                throw $e;
+            }
+        } catch (InvalidArgumentException) {
+            return 'handled';
+        }
+    } catch (Exception) {
+        '@phan-debug-var $state';
+    }
+    return $state;
+}

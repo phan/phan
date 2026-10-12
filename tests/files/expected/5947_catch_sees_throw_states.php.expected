@@ -20,3 +20,13 @@
 %s:148 PhanUnusedVariable Unused definition of variable $x
 %s:152 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type 'a'|1(real='a'|1)
 %s:156 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type 1(real=1)
+%s:168 PhanUnusedVariable Unused definition of variable $user
+%s:175 PhanDebugAnnotation @phan-debug-var requested for variable $user - it has union type ?\User5947(real=?\User5947)
+%s:187 PhanUnusedVariable Unused definition of variable $state
+%s:190 PhanDebugAnnotation @phan-debug-var requested for variable $state - it has union type 'start'|'thrown'(real='start'|'thrown')
+%s:194 PhanDebugAnnotation @phan-debug-var requested for variable $state - it has union type 'handled'|'start'(real='handled'|'start')
+%s:206 PhanUnusedVariable Unused definition of variable $state
+%s:214 PhanUnusedVariable Unused definition of variable $state
+%s:220 PhanDebugAnnotation @phan-debug-var requested for variable $state - it has union type 'handled again'|'handled'|'start'(real='handled again'|'handled'|'start')
+%s:232 PhanUnusedVariable Unused definition of variable $state
+%s:238 PhanDebugAnnotation @phan-debug-var requested for variable $state - it has union type 'start'|'thrown'(real='start'|'thrown')
