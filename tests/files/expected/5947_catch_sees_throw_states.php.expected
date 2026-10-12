@@ -1,0 +1,22 @@
+%s:24 PhanDebugAnnotation @phan-debug-var requested for variable $user - it has union type ?\User5947(real=?\User5947)
+%s:38 PhanDebugAnnotation @phan-debug-var requested for variable $message - it has union type 'flag was set'=(real='flag was set'=)
+%s:40 PhanPossiblyUndeclaredVariable Variable $message is possibly undeclared
+%s:51 PhanUnusedVariable Unused definition of variable $state
+%s:54 PhanDebugAnnotation @phan-debug-var requested for variable $state - it has union type 'inner'|'start'(real='inner'|'start')
+%s:57 PhanUnusedVariable Unused definition of variable $state
+%s:62 PhanDebugAnnotation @phan-debug-var requested for variable $state - it has union type 'done'|'rethrown'|'start'(real='done'|'rethrown'|'start')
+%s:82 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type ?'end'(real=?'end')
+%s:92 PhanUnusedVariable Unused definition of variable $v
+%s:96 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type 'after'|'before'=(real='after'|'before'=)
+%s:96 PhanDebugAnnotation @phan-debug-var requested for variable $w - it has union type string=(real=string=)
+%s:98 PhanPossiblyUndeclaredVariable Variable $v is possibly undeclared
+%s:107 PhanUnusedVariable Unused definition of variable $status
+%s:111 PhanDebugAnnotation @phan-debug-var requested for variable $status - it has union type 'failed'|'initial'|'ok'(real='failed'|'initial'|'ok')
+%s:113 PhanDebugAnnotation @phan-debug-var requested for variable $status - it has union type 'failed'|'initial'|'ok'(real='failed'|'initial'|'ok')
+%s:126 PhanUnusedVariable Unused definition of variable $step
+%s:130 PhanDebugAnnotation @phan-debug-var requested for variable $step - it has union type 0|2(real=0|2)
+%s:135 PhanDebugAnnotation @phan-debug-var requested for variable $step - it has union type 0|1|3(real=0|1|3)
+%s:146 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type 'a'|1(real='a'|1)
+%s:148 PhanUnusedVariable Unused definition of variable $x
+%s:152 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type 'a'|1(real='a'|1)
+%s:156 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type 1(real=1)

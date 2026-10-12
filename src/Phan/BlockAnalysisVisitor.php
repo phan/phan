@@ -35,6 +35,7 @@ use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
+use Phan\Language\Scope;
 use Phan\Language\Scope\BranchScope;
 use Phan\Language\Scope\ClassConstantScope;
 use Phan\Language\Scope\GlobalScope;
@@ -81,6 +82,17 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * The parent of the current node
      */
     private $parent_node_list = [];
+
+    /**
+     * One frame for each try statement with catch clauses whose `try` block is being analyzed (innermost last).
+     * Each frame holds the scope in which the try statement was analyzed (the parent of the try block's scope)
+     * and snapshots of the variables at the `throw` statements and expressions analyzed so far within that try block
+     * (excluding closures, functions, and classes declared in it).
+     * Those snapshots are merged into the context used to analyze the catch blocks.
+     *
+     * @var list<array{0:Scope,1:list<Scope>}>
+     */
+    private $try_throw_frames = [];
 
     /** @var WeakMap<Node,bool>|null */
     private static $skip_method_nodes = null;
@@ -2859,6 +2871,49 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * Analyzes a `throw` statement or a `throw` expression (e.g. `$x ?? throw new Exception()`).
+     *
+     * The variables after analyzing the thrown expression are recorded for the catch blocks
+     * of the innermost try statement with catch clauses whose try block contains this `throw`
+     * (see visitTry()).
+     *
+     * @param Node $node a node of kind ast\AST_THROW
+     */
+    public function visitThrow(Node $node): Context
+    {
+        $context = $this->visit($node);
+        if ($this->try_throw_frames) {
+            $this->recordThrowScopeForCatchBlocks($context->getScope());
+        }
+        return $context;
+    }
+
+    /**
+     * Records a snapshot of the variables at a `throw` for the catch blocks of the innermost try block being analyzed.
+     *
+     * The snapshot is needed because the scope may still be modified in place after a `throw` expression
+     * (e.g. `$x = $y ?? throw new Exception(); $z = $x;`).
+     */
+    private function recordThrowScopeForCatchBlocks(Scope $throw_scope): void
+    {
+        $frame_index = \count($this->try_throw_frames) - 1;
+        $try_parent_scope = $this->try_throw_frames[$frame_index][0];
+        // The scopes within the try block are branch scopes on top of the scope of the try statement.
+        // Reaching a closure, function, or class scope first means that this `throw` is in a closure, arrow function,
+        // function, method, or class declared within the try block, and can't be caught by the try statement.
+        for ($scope = $throw_scope; $scope !== $try_parent_scope; $scope = $scope->getParentScope()) {
+            if (!$scope instanceof BranchScope) {
+                return;
+            }
+        }
+        $snapshot_scope = new BranchScope($try_parent_scope);
+        foreach ($throw_scope->getVariableMapExcludingScope($try_parent_scope) as $variable) {
+            $snapshot_scope->addVariable($variable);
+        }
+        $this->try_throw_frames[$frame_index][1][] = $snapshot_scope;
+    }
+
+    /**
      * TODO: Diagram similar to visit() for this and other visitors handling branches?
      *
      * @param Node $node
@@ -2892,9 +2947,28 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $try_node->lineno
         );
 
+        $catch_nodes = $node->children['catches']->children ?? [];
+
         // Step into each try node and get an
         // updated context for the node
-        $try_context = $this->analyzeAndGetUpdatedContext($try_context, $node, $try_node);
+        if ($catch_nodes) {
+            // Record the variables at `throw` statements and expressions within the try block (see visitThrow()).
+            // A try statement without catch clauses doesn't push a frame,
+            // so that the `throw`s within it are recorded for the catch blocks of the enclosing try statement.
+            // A `throw` is only recorded for the innermost try statement with catch clauses;
+            // the end states of its catch blocks (including any `throw` within them) flow into the enclosing try block as usual.
+            $frame_index = \count($this->try_throw_frames);
+            $this->try_throw_frames[] = [$original_context_for_try->getScope(), []];
+            try {
+                $try_context = $this->analyzeAndGetUpdatedContext($try_context, $node, $try_node);
+                $throw_scope_list = $this->try_throw_frames[$frame_index][1];
+            } finally {
+                \array_pop($this->try_throw_frames);
+            }
+        } else {
+            $try_context = $this->analyzeAndGetUpdatedContext($try_context, $node, $try_node);
+            $throw_scope_list = [];
+        }
 
         // Analyze the catch blocks and finally blocks with a mix of the types
         // from the try block and the catch blocks.
@@ -2908,21 +2982,26 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             [$try_context],
             $this->code_base
         ))->mergeTryContext($node);
+
+        // The catch blocks see the state before the try block, the state at the end of the try block,
+        // and the state at each `throw` within the try block.
+        // (The latter includes assignments made in branches of the try block that end in a `throw`,
+        // which the state at the end of the try block lacks.)
+        // The finally block and the statements after the try statement do not see the states at the `throw`s directly.
         $catch_base_context = (new ContextMergeVisitor(
             $original_context_for_try,
             [$try_context],
             $this->code_base
-        ))->combineScopeList([
+        ))->combineScopeList(\array_merge([
             $original_context_for_try->getScope(),
             $try_context->getScope(),
-        ]);
+        ], $throw_scope_list));
 
         // We collect all child context so that the
         // PostOrderAnalysisVisitor can optionally operate on
         // them
         $catch_context_list = [$try_context];
 
-        $catch_nodes = $node->children['catches']->children ?? [];
         $all_catches_skip_remaining = true;
 
         foreach ($catch_nodes as $catch_node) {
