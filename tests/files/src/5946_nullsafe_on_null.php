@@ -1,0 +1,53 @@
+<?php
+// Regression test: `$x?->method()` and `$x?->prop` short-circuit to null when $x is null,
+// so a receiver that is known to be null must not be reported as a non-class method call or
+// a non-object property access. (A receiver of another non-object type is still reported.)
+class User5946 {
+    public int $id = 1;
+    public function id(): int {
+        return $this->id;
+    }
+}
+function make5946(): User5946 {
+    return new User5946();
+}
+function catch5946(?string $x): int {
+    $user = null;
+    try {
+        if (isset($x)) {
+            $user = make5946();
+            if (!$user->id()) {
+                throw new RuntimeException('x');
+            }
+            return 2;
+        } else {
+            throw new RuntimeException('y');
+        }
+    } catch (Exception $e) {
+        // Phan does not see the assignment in the branch that threw, so $user is null here.
+        '@phan-debug-var $user';
+        return (int)$user?->id();
+    }
+}
+function null_receiver5946(): void {
+    $u = null;
+    $a = $u?->id();
+    '@phan-debug-var $a';
+    $b = $u?->id;
+    '@phan-debug-var $b';
+    var_export([$a, $b]);
+}
+function nullable_receiver5946(?User5946 $u): void {
+    $a = $u?->id();
+    '@phan-debug-var $a';
+    $b = $u?->id;
+    '@phan-debug-var $b';
+    var_export([$a, $b]);
+}
+function other_receiver5946(): void {
+    $s = 'str';
+    var_export($s?->id());
+    $i = rand() ? 1 : null;
+    var_export($i?->id());
+    var_export($s?->id);
+}

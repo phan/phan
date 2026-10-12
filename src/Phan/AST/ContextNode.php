@@ -1028,6 +1028,16 @@ class ContextNode
                 );
             }
 
+            if ($node->kind === ast\AST_NULLSAFE_METHOD_CALL && $union_type->isNull() && !$union_type->isPossiblyUndefined()) {
+                // `$x?->method()` short-circuits to null when $x is null, so the method is never called.
+                // (e.g. a variable that was only assigned null before the try block of the enclosing catch block)
+                // A possibly undefined variable is still reported: the nullsafe operator checks for null, not for undefined.
+                throw new NodeException(
+                    $node,
+                    "Nullsafe call of $method_name on null never calls the method"
+                );
+            }
+
             if ($union_type->isDefinitelyUndefined()
                 || (!$union_type->isEmpty()
                     && $union_type->isNativeType()
@@ -1765,6 +1775,17 @@ class ContextNode
             $node->children['expr'] ??
                 $node->children['class']
         );
+        if ($node->kind === ast\AST_NULLSAFE_PROP) {
+            $expr_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr']);
+            if ($expr_type->isNull() && !$expr_type->isPossiblyUndefined()) {
+                // `$x?->prop` short-circuits to null when $x is null, so the property is never accessed.
+                // A possibly undefined variable is still reported: the nullsafe operator checks for null, not for undefined.
+                throw new NodeException(
+                    $node,
+                    "Nullsafe access of $property_name on null never accesses the property"
+                );
+            }
+        }
         try {
             $expected_type_categories = $is_static ? self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME : self::CLASS_LIST_ACCEPT_OBJECT;
             $expected_issue = $is_static ? Issue::TypeExpectedObjectStaticPropAccess : Issue::TypeExpectedObjectPropAccess;
