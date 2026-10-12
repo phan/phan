@@ -5,6 +5,7 @@ Phan 6.0.10-dev
 
 Bug fixes:
 - Fix `/** @var int */ public mixed $value;` being inferred as `?int` instead of `int` (a 6.0.8 regression of [#5560](https://github.com/phan/phan/pull/5560) that reported `PhanTypeMismatchArgumentNullable` when the property was passed to an `int` parameter): only an explicitly nullable native type such as `?Box` keeps its nullability when the `@var` type replaces it; `mixed` says nothing about the property, so the `@var` type is used as for an untyped property
+- Fix false positives `PhanNonClassMethodCall` and `PhanTypeExpectedObjectPropAccessButGotNull` for `$x?->method()` and `$x?->prop` when `$x` is known to be `null` (e.g. in a `catch` block for a variable that was assigned in the branch of the `try` block that threw): the nullsafe operator short-circuits to `null`, so the method is never called and the property never accessed. Receivers of other non-object types are still reported
 
 Oct 11 2026, Phan 6.0.9
 --------------
