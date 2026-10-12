@@ -1150,7 +1150,10 @@ class ParseVisitor extends ScopeVisitor
                         // Don't let dropping this type silently drop nullability that the
                         // doc-comment type doesn't otherwise account for,
                         // e.g. `/** @var Box<A> */ private ?Box $b = null;` should stay nullable.
-                        if ($type->isNullable() && !$doc_contains_nullable) {
+                        // Only an explicitly nullable native type (`?Box`) counts: `mixed` includes null
+                        // but says nothing about the property, so `/** @var int */ public mixed $x;`
+                        // is `int`, like `/** @var int */ public $x;`, not `?int`.
+                        if ($type->isNullableLabeled() && !$doc_contains_nullable) {
                             $lost_nullable = true;
                         }
                     } else {
