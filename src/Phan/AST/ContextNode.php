@@ -17,6 +17,7 @@ use Phan\Exception\EmptyFQSENException;
 use Phan\Exception\FQSENException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
+use Phan\Exception\NullsafeShortCircuitException;
 use Phan\Exception\RecursionDepthException;
 use Phan\Exception\UnanalyzableException;
 use Phan\Exception\UnanalyzableMagicPropertyException;
@@ -1090,7 +1091,7 @@ class ContextNode
                 // (e.g. a variable that was only assigned null before the try block of the enclosing catch block)
                 // The same goes for the rest of a chain of dereferences such as `$x?->method()->other()` or `$x?->method()::other()`.
                 // A possibly undefined variable is still reported: the nullsafe operator checks for null, not for undefined.
-                throw new NodeException(
+                throw new NullsafeShortCircuitException(
                     $node,
                     "Nullsafe call of $method_name on null never calls the method"
                 );
@@ -1839,7 +1840,7 @@ class ContextNode
             // `$x?->prop` short-circuits to null when $x is null, so the property is never accessed.
             // The same goes for the rest of a chain of dereferences such as `$x?->method()->prop` or `$x?->method()::$prop`.
             // A possibly undefined variable is still reported: the nullsafe operator checks for null, not for undefined.
-            throw new NodeException(
+            throw new NullsafeShortCircuitException(
                 $node,
                 "Nullsafe access of $property_name on null never accesses the property"
             );

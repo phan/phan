@@ -1,0 +1,16 @@
+src/323_nullsafe_null_receiver_references.php:5 PhanUnreferencedClass Possibly zero references to class \Receiver323
+src/323_nullsafe_null_receiver_references.php:6 PhanUnreferencedPublicProperty Possibly zero references to public property \Receiver323->prop323
+src/323_nullsafe_null_receiver_references.php:7 PhanUnreferencedPublicProperty Possibly zero references to public property \Receiver323::$static_prop323
+src/323_nullsafe_null_receiver_references.php:8 PhanUnreferencedPublicMethod Possibly zero references to public method \Receiver323::method323()
+src/323_nullsafe_null_receiver_references.php:11 PhanUnreferencedPublicMethod Possibly zero references to public method \Receiver323::static_method323()
+src/323_nullsafe_null_receiver_references.php:14 PhanUnreferencedPublicMethod Possibly zero references to public method \Receiver323::next323()
+src/323_nullsafe_null_receiver_references.php:20 PhanPluginConstantVariableNull Variable $n is probably constant with a value of null
+src/323_nullsafe_null_receiver_references.php:20 PhanPluginUnknownObjectMethodCall Phan could not infer any class/interface types for the object of the method call $n?->method323() - inferred a type of null
+src/323_nullsafe_null_receiver_references.php:21 PhanPluginConstantVariableNull Variable $n is probably constant with a value of null
+src/323_nullsafe_null_receiver_references.php:22 PhanPluginConstantVariableNull Variable $n is probably constant with a value of null
+src/323_nullsafe_null_receiver_references.php:22 PhanPluginUnknownObjectMethodCall Phan could not infer any class/interface types for the object of the method call $n?->next323() - inferred a type of null
+src/323_nullsafe_null_receiver_references.php:22 PhanPluginUnknownObjectMethodCall Phan could not infer any class/interface types for the object of the method call $n?->next323()->method323() - inferred a type of null
+src/323_nullsafe_null_receiver_references.php:23 PhanPluginConstantVariableNull Variable $n is probably constant with a value of null
+src/323_nullsafe_null_receiver_references.php:23 PhanPluginUnknownObjectMethodCall Phan could not infer any class/interface types for the object of the method call $n?->next323() - inferred a type of null
+src/323_nullsafe_null_receiver_references.php:24 PhanPluginConstantVariableNull Variable $n is probably constant with a value of null
+src/323_nullsafe_null_receiver_references.php:24 PhanPluginUnknownObjectMethodCall Phan could not infer any class/interface types for the object of the method call $n?->next323() - inferred a type of null
