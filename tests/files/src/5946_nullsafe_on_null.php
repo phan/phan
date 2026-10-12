@@ -78,7 +78,7 @@ class Chain5946 {
     }
 }
 // PHP short-circuits the whole chain of dereferences after a nullsafe access on null,
-// including static accesses.
+// including static method calls, static property accesses and array offsets.
 function chain5946(Chain5946 $c): void {
     $n = null;
     var_export($n?->next()->next());
@@ -86,10 +86,11 @@ function chain5946(Chain5946 $c): void {
     var_export($n?->next()->next->next()->next);
     var_export($n?->next()::create());
     var_export($n?->next()::$count);
-    var_export($n?->next()::LIMIT);
     var_export($n?->next()::create()->next);
     var_export($n?->next()[0]);
     var_export($n?->next()->next[0]->next);
+    // Not short-circuited: a class constant access is not part of the chain (this throws an Error at runtime).
+    var_export($n?->next()::LIMIT);
     // Not short-circuited: the receiver of the nullsafe access is not null, its result is.
     var_export($c?->nothing()->next());
     var_export($c?->nothing()->next);

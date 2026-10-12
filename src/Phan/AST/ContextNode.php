@@ -761,10 +761,10 @@ class ContextNode
     }
 
     /**
-     * Returns true if $node is a chain of dereferences (method calls, property, constant and element accesses,
-     * instance or static) that PHP short-circuits as a whole because it contains a nullsafe access whose receiver
-     * is definitely null, e.g. `$x?->method()` in `$x?->method()->other()` or `$x?->method()::other()`
-     * when $x is null: `other()` is never called.
+     * Returns true if $node is a chain of dereferences (method calls, property and element accesses, instance or static)
+     * that PHP short-circuits as a whole because it contains a nullsafe access whose receiver is definitely null,
+     * e.g. `$x?->method()` in `$x?->method()->other()` or `$x?->method()::other()` when $x is null: `other()` is never called.
+     * (Class constant accesses and `::class` are not part of the chain: `$x?->method()::CONSTANT` throws an Error.)
      *
      * (Only called when the type of $node is definitely null, which is rare)
      *
@@ -790,7 +790,6 @@ class ContextNode
                     break;
                 case ast\AST_STATIC_CALL:
                 case ast\AST_STATIC_PROP:
-                case ast\AST_CLASS_CONST:
                     $node = $node->children['class'];
                     break;
                 default:
@@ -2528,14 +2527,6 @@ class ContextNode
             $this->context,
             $node->children['class']
         );
-        if ($this->isShortCircuitedNullsafeChain($node->children['class'])
-            && self::isDefinitelyNull(UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['class']))) {
-            // e.g. `$x?->method()::CONSTANT` when $x is null: PHP short-circuits the whole chain to null.
-            throw new NodeException(
-                $node,
-                "Nullsafe chain on null never accesses the constant $constant_name"
-            );
-        }
         try {
             $class_list = $class_node_context->getClassList(false, self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
         } catch (CodeBaseException $exception) {
