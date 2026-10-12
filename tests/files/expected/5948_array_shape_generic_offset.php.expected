@@ -1,0 +1,22 @@
+%s:13 PhanDebugAnnotation @phan-debug-var requested for variable $tax - it has union type (empty union type)
+%s:13 PhanUnusedVariable Unused definition of variable $tax
+%s:20 PhanDebugAnnotation @phan-debug-var requested for variable $tax - it has union type int
+%s:20 PhanUnusedVariable Unused definition of variable $tax
+%s:22 PhanTypeMismatchArgument Argument 1 ($m) is $g[$k]['tax'] of type int but \fmt5948() takes \Money5948 defined at %s:7
+%s:26 PhanDebugAnnotation @phan-debug-var requested for variable $tax - it has union type int
+%s:26 PhanUnusedVariable Unused definition of variable $tax
+%s:31 PhanDebugAnnotation @phan-debug-var requested for variable $tax - it has union type int
+%s:31 PhanUnusedVariable Unused definition of variable $tax
+%s:33 PhanDebugAnnotation @phan-debug-var requested for variable $other - it has union type int|string
+%s:33 PhanUnusedVariable Unused definition of variable $other
+%s:38 PhanDebugAnnotation @phan-debug-var requested for variable $tax - it has union type int
+%s:38 PhanUnusedVariable Unused definition of variable $tax
+%s:43 PhanDebugAnnotation @phan-debug-var requested for variable $tax - it has union type int|null
+%s:43 PhanUnusedVariable Unused definition of variable $tax
+%s:48 PhanDebugAnnotation @phan-debug-var requested for variable $tax - it has union type int
+%s:48 PhanUnusedVariable Unused definition of variable $tax
+%s:50 PhanTypeMismatchArgument Argument 1 ($m) is $x['tax'] of type int but \fmt5948() takes \Money5948 defined at %s:7
+%s:54 PhanDebugAnnotation @phan-debug-var requested for variable $tax - it has union type int
+%s:54 PhanUnusedVariable Unused definition of variable $tax
+%s:56 PhanDebugAnnotation @phan-debug-var requested for variable $first - it has union type int|string
+%s:56 PhanUnusedVariable Unused definition of variable $first
