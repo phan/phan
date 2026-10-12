@@ -761,6 +761,40 @@ class ContextNode
     }
 
     /**
+     * Returns true if $node is a chain of dereferences (method calls, property and element accesses)
+     * that PHP short-circuits as a whole because it contains a nullsafe access whose receiver is definitely null,
+     * e.g. `$x?->method()` in `$x?->method()->other()` when $x is null: `other()` is never called.
+     *
+     * (Only called when the type of $node is definitely null, which is rare)
+     *
+     * @param Node|string|int|float|null $node the receiver of a dereference
+     */
+    private function isShortCircuitedNullsafeChain(mixed $node): bool
+    {
+        while ($node instanceof Node) {
+            switch ($node->kind) {
+                case ast\AST_NULLSAFE_METHOD_CALL:
+                case ast\AST_NULLSAFE_PROP:
+                    $expr = $node->children['expr'];
+                    if (self::isDefinitelyNull(UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $expr))) {
+                        return true;
+                    }
+                    $node = $expr;
+                    break;
+                case ast\AST_METHOD_CALL:
+                case ast\AST_PROP:
+                case ast\AST_DIM:
+                case ast\AST_CALL:
+                    $node = $node->children['expr'];
+                    break;
+                default:
+                    return false;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Check if the given AST_PROP/AST_NULLSAFE_PROP node accesses a dynamic
      * property on a plain (unshaped) stdClass receiver.
      *
@@ -1045,9 +1079,11 @@ class ContextNode
                 );
             }
 
-            if ($node->kind === ast\AST_NULLSAFE_METHOD_CALL && self::isDefinitelyNull($union_type)) {
+            if (($node->kind === ast\AST_NULLSAFE_METHOD_CALL || $this->isShortCircuitedNullsafeChain($node->children['expr'] ?? null))
+                && self::isDefinitelyNull($union_type)) {
                 // `$x?->method()` short-circuits to null when $x is null, so the method is never called.
                 // (e.g. a variable that was only assigned null before the try block of the enclosing catch block)
+                // The same goes for the rest of a chain of dereferences such as `$x?->method()->other()`.
                 // A possibly undefined variable is still reported: the nullsafe operator checks for null, not for undefined.
                 throw new NodeException(
                     $node,
@@ -1792,9 +1828,11 @@ class ContextNode
             $node->children['expr'] ??
                 $node->children['class']
         );
-        if ($node->kind === ast\AST_NULLSAFE_PROP
+        if (!$is_static
+            && ($node->kind === ast\AST_NULLSAFE_PROP || $this->isShortCircuitedNullsafeChain($node->children['expr'] ?? null))
             && self::isDefinitelyNull(UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr']))) {
             // `$x?->prop` short-circuits to null when $x is null, so the property is never accessed.
+            // The same goes for the rest of a chain of dereferences such as `$x?->method()->prop`.
             // A possibly undefined variable is still reported: the nullsafe operator checks for null, not for undefined.
             throw new NodeException(
                 $node,
