@@ -15,3 +15,9 @@
 %s:96 PhanTypeExpectedObjectPropAccessButGotNull Expected an object instance when accessing an instance property, but saw an expression $c?->nothing() with type null
 %s:97 PhanNonClassMethodCall Call to method create on non-class type null
 %s:98 PhanTypeArraySuspiciousNull Suspicious array access to $c?->nothing() of type null
+%s:103 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type null(real=null)
+%s:105 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type null(real=null)
+%s:107 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type null(real=null)
+%s:109 PhanDebugAnnotation @phan-debug-var requested for variable $e - it has union type null(real=null)
+%s:112 PhanTypeMismatchReturnReal Returning $n?->next()->next() of type null but chain_value5946() is declared to return int
+%s:120 PhanTypeMismatchReturnReal Returning $n?->id of type null but doc_null5946() is declared to return int

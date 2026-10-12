@@ -97,3 +97,25 @@ function chain5946(Chain5946 $c): void {
     var_export($c?->nothing()::create());
     var_export($c?->nothing()[0]);
 }
+// The value of a short-circuited chain is null, so it is still checked where it is used.
+function chain_value5946(): int {
+    $n = null;
+    $a = $n?->next()->next();
+    '@phan-debug-var $a';
+    $b = $n?->next()->next;
+    '@phan-debug-var $b';
+    $d = $n?->next()::$count;
+    '@phan-debug-var $d';
+    $e = $n?->next()[0];
+    '@phan-debug-var $e';
+    var_export([$a, $b, $d, $e]);
+    return $n?->next()->next();
+}
+/**
+ * A receiver that is only known to be null from phpdoc (an empty real type) is definitely null too.
+ * @param null $n
+ */
+function doc_null5946($n): int {
+    var_export($n?->id());
+    return $n?->id;
+}

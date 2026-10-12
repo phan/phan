@@ -3134,13 +3134,19 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitNullsafeProp(Node $node): UnionType
     {
-        $expr_type = UnionTypeVisitor::unionTypeFromNode(
+        $full_expr_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
             $node->children['expr'],
             $this->should_catch_issue_exception
-        )->getRealUnionType();
+        );
+        $expr_type = $full_expr_type->getRealUnionType();
         $result = $this->analyzeProp($node, false);
+        if (ContextNode::isDefinitelyNull($full_expr_type)) {
+            // The property is never accessed (and ContextNode::getProperty() does not report it),
+            // including when the receiver is only known to be null from phpdoc (an empty real type).
+            return NullType::instance(false)->asRealUnionType();
+        }
         if ($expr_type->isEmpty()) {
             return $result->nullableClone();
         }
@@ -3360,6 +3366,12 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         if ($stdclass_shape_union !== null && !$stdclass_shape_union->isEmpty()) {
             return $stdclass_shape_union;
+        }
+        $receiver_node = $expr_node ?? $node->children['class'] ?? null;
+        if ($receiver_node instanceof Node && (new ContextNode($this->code_base, $this->context, $node))->isShortCircuitedNullsafeChain($receiver_node)) {
+            // e.g. `->prop` in `$x?->method()->prop` when $x is null: PHP short-circuits the whole chain to null
+            // (and ContextNode::getProperty() does not report it).
+            return NullType::instance(false)->asRealUnionType();
         }
 
         return UnionType::empty();
@@ -3921,7 +3933,18 @@ class UnionTypeVisitor extends AnalysisVisitor
             );
         }
 
-        return $combined_union_type ?? UnionType::empty();
+        // ($combined_union_type is undefined if the lookup threw before the loop)
+        $result = $combined_union_type ?? null;
+        if ($result === null) {
+            $class_node = $node->children['class'] ?? $node->children['expr'];
+            if ($class_node instanceof Node && (new ContextNode($this->code_base, $this->context, $node))->isShortCircuitedNullsafeChain($class_node)) {
+                // e.g. `->other()` in `$x?->method()->other()` when $x is null: PHP short-circuits the whole chain to null
+                // (and ContextNode::getMethod() does not report it).
+                return NullType::instance(false)->asRealUnionType();
+            }
+            return UnionType::empty();
+        }
+        return $result;
     }
 
     /**
