@@ -240,3 +240,85 @@ function nested_unknown_thrown_type5947(bool $flag, $e): string {
     }
     return $state;
 }
+
+class A5947 {
+    public function a(): void {}
+}
+class B5947 {
+    public function b(): void {}
+}
+class C5947 {
+    public function c(): void {}
+}
+
+// Each catch block sees only the states at the throws whose exceptions it may catch,
+// excluding those definitely caught by an earlier catch clause.
+function per_catch_clause5947(bool $flag): void {
+    $x = new A5947();
+    try {
+        if ($flag) {
+            $x = new B5947();
+            throw new RuntimeException('runtime');
+        }
+        throw new InvalidArgumentException('invalid');
+    } catch (InvalidArgumentException) {
+        '@phan-debug-var $x';
+        $x->a();
+    } catch (RuntimeException) {
+        '@phan-debug-var $x';
+        var_dump($x);
+    } catch (Exception) {
+        '@phan-debug-var $x';
+        var_dump($x);
+    }
+}
+
+// A catch clause for a parent class sees the states at the throws of each subclass.
+function catch_all_clause5947(bool $flag): void {
+    $x = new A5947();
+    try {
+        if ($flag) {
+            $x = new B5947();
+            throw new RuntimeException('runtime');
+        }
+        $x = new C5947();
+        throw new InvalidArgumentException('invalid');
+    } catch (Exception) {
+        '@phan-debug-var $x';
+        var_dump($x);
+    }
+}
+
+// A thrown value of an unknown type may be caught by every catch clause.
+function unknown_type_reaches_every_clause5947(bool $flag, $e): void {
+    $x = new A5947();
+    try {
+        if ($flag) {
+            $x = new B5947();
+            throw $e;
+        }
+    } catch (InvalidArgumentException) {
+        '@phan-debug-var $x';
+        var_dump($x);
+    } catch (RuntimeException) {
+        '@phan-debug-var $x';
+        var_dump($x);
+    }
+}
+
+// A thrown value of type Exception may be a RuntimeException, and is not definitely caught by catch (RuntimeException).
+function parent_type_reaches_subclass_clause5947(bool $flag, Exception $e): void {
+    $x = new A5947();
+    try {
+        if ($flag) {
+            $x = new B5947();
+            throw $e;
+        }
+    } catch (RuntimeException) {
+        '@phan-debug-var $x';
+        var_dump($x);
+    } catch (Exception) {
+        '@phan-debug-var $x';
+        var_dump($x);
+    }
+}

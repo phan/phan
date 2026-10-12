@@ -89,13 +89,14 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * Each frame holds:
      *
      * - scope: the scope in which the try statement was analyzed (the parent of the try block's scope)
-     * - throw_scopes: snapshots of the variables at the `throw` statements and expressions analyzed so far
-     *   within that try block that may reach its catch blocks (excluding closures, functions, and classes declared in it).
-     *   Those snapshots are merged into the context used to analyze the catch blocks.
+     * - throws: snapshots of the variables at the `throw` statements and expressions analyzed so far
+     *   within that try block that may reach its catch blocks (excluding closures, functions, and classes declared in it),
+     *   with the type of the thrown expression.
+     *   Each snapshot is merged into the context used to analyze the catch blocks that may catch the thrown exception.
      * - node: the try statement
-     * - caught_types: the classes of its catch clauses (computed when first needed)
+     * - caught_types: the classes of each of its catch clauses (computed when first needed)
      *
-     * @var list<array{scope:Scope,throw_scopes:list<Scope>,node:Node,caught_types:?list<Type>}>
+     * @var list<array{scope:Scope,throws:list<array{0:Scope,1:UnionType}>,node:Node,caught_types:?list<list<Type>>}>
      */
     private $try_throw_frames = [];
 
@@ -2924,12 +2925,16 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             foreach ($throw_scope->getVariableMapExcludingScope($try_parent_scope) as $variable) {
                 $snapshot_scope->addVariable($variable);
             }
-            $this->try_throw_frames[$frame_index]['throw_scopes'][] = $snapshot_scope;
+            $thrown_union_type ??= $this->getThrownUnionType($context, $node);
+            $this->try_throw_frames[$frame_index]['throws'][] = [$snapshot_scope, $thrown_union_type];
             if ($frame_index === 0) {
                 return;
             }
-            $thrown_union_type ??= $this->getThrownUnionType($context, $node);
-            if ($this->isDefinitelyCaughtByTryFrame($thrown_union_type, $frame_index, $context)) {
+            $caught_types = [];
+            foreach ($this->getCaughtTypesOfTryFrame($frame_index, $context) as $catch_clause_types) {
+                \array_push($caught_types, ...$catch_clause_types);
+            }
+            if ($this->isDefinitelyCaughtByTypes($thrown_union_type, $caught_types)) {
                 return;
             }
         }
@@ -2949,30 +2954,51 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * Returns true if the catch clauses of the try statement of the frame at $frame_index definitely catch an exception
-     * of type $thrown_union_type (i.e. every type is a known class that is a subtype of a caught class).
+     * Returns the classes of each catch clause of the try statement of the frame at $frame_index (computed when first needed).
+     * @return list<list<Type>>
      */
-    private function isDefinitelyCaughtByTryFrame(UnionType $thrown_union_type, int $frame_index, Context $context): bool
+    private function getCaughtTypesOfTryFrame(int $frame_index, Context $context): array
     {
-        if ($thrown_union_type->isEmpty()) {
-            return false;
-        }
         $caught_types = $this->try_throw_frames[$frame_index]['caught_types'];
         if ($caught_types === null) {
-            $caught_types = [];
-            foreach ($this->try_throw_frames[$frame_index]['node']->children['catches']->children as $catch_node) {
-                if (!$catch_node instanceof Node) {
-                    continue;
-                }
+            $caught_types = $this->getCaughtTypesOfCatchClauses($this->try_throw_frames[$frame_index]['node'], $context);
+            $this->try_throw_frames[$frame_index]['caught_types'] = $caught_types;
+        }
+        return $caught_types;
+    }
+
+    /**
+     * Returns the classes of each catch clause of a try statement (e.g. `catch (A|B $e)` has two).
+     * The list is empty for a catch clause with classes that can't be resolved.
+     * @param Node $node a node of kind ast\AST_TRY
+     * @return list<list<Type>>
+     */
+    private function getCaughtTypesOfCatchClauses(Node $node, Context $context): array
+    {
+        $caught_types = [];
+        foreach ($node->children['catches']->children as $catch_node) {
+            $catch_clause_types = [];
+            if ($catch_node instanceof Node) {
                 try {
-                    foreach (UnionTypeVisitor::unionTypeFromClassNode($this->code_base, $context, $catch_node->children['class'])->getTypeSet() as $type) {
-                        $caught_types[] = $type;
-                    }
+                    $catch_clause_types = UnionTypeVisitor::unionTypeFromClassNode($this->code_base, $context, $catch_node->children['class'])->getTypeSet();
                 } catch (IssueException | FQSENException) {
                     // e.g. `catch (self $e)` outside of a class. Reported elsewhere.
                 }
             }
-            $this->try_throw_frames[$frame_index]['caught_types'] = $caught_types;
+            $caught_types[] = $catch_clause_types;
+        }
+        return $caught_types;
+    }
+
+    /**
+     * Returns true if an exception of type $thrown_union_type is definitely caught by a catch clause for $caught_types
+     * (i.e. every thrown type is a known class that is a subtype of one of $caught_types).
+     * @param list<Type> $caught_types
+     */
+    private function isDefinitelyCaughtByTypes(UnionType $thrown_union_type, array $caught_types): bool
+    {
+        if ($thrown_union_type->isEmpty() || !$caught_types) {
+            return false;
         }
         $code_base = $this->code_base;
         foreach ($thrown_union_type->getTypeSet() as $type) {
@@ -2981,6 +3007,27 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             }
         }
         return true;
+    }
+
+    /**
+     * Returns true if an exception of type $thrown_union_type may be caught by a catch clause for $caught_types:
+     * the thrown type is unknown, the catch clause's classes are unknown,
+     * or the thrown type (or a subclass of it) can be an instance of one of $caught_types.
+     * (e.g. a thrown value of type `Exception` may be a `RuntimeException`)
+     * @param list<Type> $caught_types
+     */
+    private function isPossiblyCaughtByTypes(UnionType $thrown_union_type, array $caught_types): bool
+    {
+        if (!$caught_types) {
+            return true;
+        }
+        foreach ($caught_types as $caught_type) {
+            // This is true for an empty $thrown_union_type.
+            if ($thrown_union_type->canPossiblyCastToClass($this->code_base, $caught_type)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -3030,19 +3077,24 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $frame_index = \count($this->try_throw_frames);
             $this->try_throw_frames[] = [
                 'scope' => $original_context_for_try->getScope(),
-                'throw_scopes' => [],
+                'throws' => [],
                 'node' => $node,
                 'caught_types' => null,
             ];
             try {
                 $try_context = $this->analyzeAndGetUpdatedContext($try_context, $node, $try_node);
-                $throw_scope_list = $this->try_throw_frames[$frame_index]['throw_scopes'];
+                $throw_list = $this->try_throw_frames[$frame_index]['throws'];
+                $caught_types = $this->try_throw_frames[$frame_index]['caught_types'];
             } finally {
                 \array_pop($this->try_throw_frames);
             }
+            if ($throw_list) {
+                $caught_types ??= $this->getCaughtTypesOfCatchClauses($node, $original_context_for_try);
+            }
         } else {
             $try_context = $this->analyzeAndGetUpdatedContext($try_context, $node, $try_node);
-            $throw_scope_list = [];
+            $throw_list = [];
+            $caught_types = [];
         }
 
         // Analyze the catch blocks and finally blocks with a mix of the types
@@ -3058,19 +3110,18 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $this->code_base
         ))->mergeTryContext($node);
 
-        // The catch blocks see the state before the try block, the state at the end of the try block,
-        // and the state at each `throw` within the try block.
-        // (The latter includes assignments made in branches of the try block that end in a `throw`,
+        // The catch blocks see the state before the try block and the state at the end of the try block.
+        // Each catch block also sees the state at each `throw` within the try block whose exception it may catch,
+        // unless an earlier catch clause definitely catches that exception.
+        // (These include assignments made in branches of the try block that end in a `throw`,
         // which the state at the end of the try block lacks.)
         // The finally block and the statements after the try statement do not see the states at the `throw`s directly.
-        $catch_base_context = (new ContextMergeVisitor(
-            $original_context_for_try,
-            [$try_context],
-            $this->code_base
-        ))->combineScopeList(\array_merge([
+        $catch_base_scope_list = [
             $original_context_for_try->getScope(),
             $try_context->getScope(),
-        ], $throw_scope_list));
+        ];
+        // The merged contexts for the catch blocks, by the indices of the states at the `throw`s that they include
+        $catch_base_contexts = [];
 
         // We collect all child context so that the
         // PostOrderAnalysisVisitor can optionally operate on
@@ -3079,10 +3130,34 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         $all_catches_skip_remaining = true;
 
-        foreach ($catch_nodes as $catch_node) {
+        foreach ($catch_nodes as $i => $catch_node) {
             // Note: ContextMergeVisitor expects to get each individual catch
             if (!$catch_node instanceof Node) {
                 throw new AssertionError("Expected catch_node to be a Node");
+            }
+
+            $included_throw_indices = [];
+            $included_throw_scopes = [];
+            $catch_clause_types = $caught_types[$i] ?? [];
+            foreach ($throw_list as $j => [$throw_scope, $thrown_union_type]) {
+                if ($this->isPossiblyCaughtByTypes($thrown_union_type, $catch_clause_types)) {
+                    $included_throw_indices[] = $j;
+                    $included_throw_scopes[] = $throw_scope;
+                    if ($this->isDefinitelyCaughtByTypes($thrown_union_type, $catch_clause_types)) {
+                        // Later catch clauses can't catch this exception.
+                        unset($throw_list[$j]);
+                    }
+                }
+            }
+            $catch_base_key = \implode(',', $included_throw_indices);
+            $catch_base_context = $catch_base_contexts[$catch_base_key] ?? null;
+            if (!$catch_base_context) {
+                $catch_base_context = (new ContextMergeVisitor(
+                    $original_context_for_try,
+                    [$try_context],
+                    $this->code_base
+                ))->combineScopeList(\array_merge($catch_base_scope_list, $included_throw_scopes));
+                $catch_base_contexts[$catch_base_key] = $catch_base_context;
             }
 
             // The conditions need to communicate to the outer
