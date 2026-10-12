@@ -24,7 +24,7 @@ function catch5946(?string $x): int {
             throw new RuntimeException('y');
         }
     } catch (Exception $e) {
-        // Phan does not see the assignment in the branch that threw, so $user is null here.
+        // The catch block sees the assignment in the branch that threw, so $user is ?User5946 here (null before).
         '@phan-debug-var $user';
         return (int)$user?->id();
     }

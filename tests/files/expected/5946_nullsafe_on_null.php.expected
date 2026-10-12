@@ -1,4 +1,4 @@
-%s:26 PhanDebugAnnotation @phan-debug-var requested for variable $user - it has union type null(real=null)
+%s:26 PhanDebugAnnotation @phan-debug-var requested for variable $user - it has union type ?\User5946(real=?\User5946)
 %s:26 PhanUnusedVariableCaughtException Unused definition of variable $e as a caught exception
 %s:34 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type null(real=null)
 %s:36 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type null(real=null)

@@ -232,7 +232,11 @@ class ContextMergeVisitor extends KindVisitorImplementation
                         $new_union_type = $new_union_type->nonNullableClone();
                     }
                 }
+                // Clone the variable: the shallow clone of the scope shares Variable instances with the scope before the try statement
+                // (and its parent scopes), which other branches may still use (e.g. the `else` of an `if` containing this try statement).
+                $merged_variable = clone($merged_variable);
                 $merged_variable->setUnionType($new_union_type);
+                $merged_try_scope->addVariable($merged_variable);
             }
         }
 
