@@ -25,6 +25,7 @@ use Phan\Exception\EmptyFQSENException;
 use Phan\Exception\FQSENException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
+use Phan\Exception\NullsafeShortCircuitException;
 use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
@@ -3085,6 +3086,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->context,
                 $exception->getIssueInstance()
             );
+        } catch (NullsafeShortCircuitException) {
+            // The call is part of a chain that PHP short-circuits to null: it never happens, so it references no method.
+            return $this->context;
         } catch (Exception) {
             // If we can't figure out the class for this method
             // call, cry YOLO and mark every method with that
@@ -3367,6 +3371,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->context,
                 $exception->getIssueInstance()
             );
+        } catch (NullsafeShortCircuitException) {
+            // The call is part of a chain that PHP short-circuits to null: it never happens, so it references no method.
+            return null;
         } catch (Exception $e) {
             if ($e instanceof FQSENException) {
                 Issue::maybeEmit(
@@ -3670,6 +3677,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->context,
                 $exception->getIssueInstance()
             );
+            return $this->context;
+        } catch (NullsafeShortCircuitException) {
+            // The call is part of a chain that PHP short-circuits to null: it never happens, so it references no method.
             return $this->context;
         } catch (NodeException) {
             // If we can't figure out the class for this method
