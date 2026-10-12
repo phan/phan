@@ -20,3 +20,8 @@
 %s:54 PhanUnusedVariable Unused definition of variable $tax
 %s:56 PhanDebugAnnotation @phan-debug-var requested for variable $first - it has union type int|string
 %s:56 PhanUnusedVariable Unused definition of variable $first
+%s:64 PhanTemplateTypeNotUsedInFunctionReturn Template type T not used in return value of function/method shape_or_template5948()
+%s:65 PhanDebugAnnotation @phan-debug-var requested for variable $tax - it has union type int|null
+%s:65 PhanUnusedVariable Unused definition of variable $tax
+%s:70 PhanDebugAnnotation @phan-debug-var requested for variable $tax - it has union type int|null
+%s:70 PhanUnusedVariable Unused definition of variable $tax
