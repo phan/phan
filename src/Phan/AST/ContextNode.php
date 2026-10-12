@@ -761,9 +761,10 @@ class ContextNode
     }
 
     /**
-     * Returns true if $node is a chain of dereferences (method calls, property and element accesses)
-     * that PHP short-circuits as a whole because it contains a nullsafe access whose receiver is definitely null,
-     * e.g. `$x?->method()` in `$x?->method()->other()` when $x is null: `other()` is never called.
+     * Returns true if $node is a chain of dereferences (method calls, property, constant and element accesses,
+     * instance or static) that PHP short-circuits as a whole because it contains a nullsafe access whose receiver
+     * is definitely null, e.g. `$x?->method()` in `$x?->method()->other()` or `$x?->method()::other()`
+     * when $x is null: `other()` is never called.
      *
      * (Only called when the type of $node is definitely null, which is rare)
      *
@@ -786,6 +787,11 @@ class ContextNode
                 case ast\AST_DIM:
                 case ast\AST_CALL:
                     $node = $node->children['expr'];
+                    break;
+                case ast\AST_STATIC_CALL:
+                case ast\AST_STATIC_PROP:
+                case ast\AST_CLASS_CONST:
+                    $node = $node->children['class'];
                     break;
                 default:
                     return false;
@@ -1079,11 +1085,11 @@ class ContextNode
                 );
             }
 
-            if (($node->kind === ast\AST_NULLSAFE_METHOD_CALL || $this->isShortCircuitedNullsafeChain($node->children['expr'] ?? null))
+            if (($node->kind === ast\AST_NULLSAFE_METHOD_CALL || $this->isShortCircuitedNullsafeChain($node->children['expr'] ?? $node->children['class'] ?? null))
                 && self::isDefinitelyNull($union_type)) {
                 // `$x?->method()` short-circuits to null when $x is null, so the method is never called.
                 // (e.g. a variable that was only assigned null before the try block of the enclosing catch block)
-                // The same goes for the rest of a chain of dereferences such as `$x?->method()->other()`.
+                // The same goes for the rest of a chain of dereferences such as `$x?->method()->other()` or `$x?->method()::other()`.
                 // A possibly undefined variable is still reported: the nullsafe operator checks for null, not for undefined.
                 throw new NodeException(
                     $node,
@@ -1828,11 +1834,11 @@ class ContextNode
             $node->children['expr'] ??
                 $node->children['class']
         );
-        if (!$is_static
-            && ($node->kind === ast\AST_NULLSAFE_PROP || $this->isShortCircuitedNullsafeChain($node->children['expr'] ?? null))
-            && self::isDefinitelyNull(UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr']))) {
+        $receiver_node = $node->children['expr'] ?? $node->children['class'];
+        if (($node->kind === ast\AST_NULLSAFE_PROP || $this->isShortCircuitedNullsafeChain($receiver_node))
+            && self::isDefinitelyNull(UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $receiver_node))) {
             // `$x?->prop` short-circuits to null when $x is null, so the property is never accessed.
-            // The same goes for the rest of a chain of dereferences such as `$x?->method()->prop`.
+            // The same goes for the rest of a chain of dereferences such as `$x?->method()->prop` or `$x?->method()::$prop`.
             // A possibly undefined variable is still reported: the nullsafe operator checks for null, not for undefined.
             throw new NodeException(
                 $node,
@@ -2522,6 +2528,14 @@ class ContextNode
             $this->context,
             $node->children['class']
         );
+        if ($this->isShortCircuitedNullsafeChain($node->children['class'])
+            && self::isDefinitelyNull(UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['class']))) {
+            // e.g. `$x?->method()::CONSTANT` when $x is null: PHP short-circuits the whole chain to null.
+            throw new NodeException(
+                $node,
+                "Nullsafe chain on null never accesses the constant $constant_name"
+            );
+        }
         try {
             $class_list = $class_node_context->getClassList(false, self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
         } catch (CodeBaseException $exception) {
