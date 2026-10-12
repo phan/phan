@@ -7,3 +7,6 @@
 %s:49 PhanNonClassMethodCall Call to method id on non-class type 'str'
 %s:51 PhanNonClassMethodCall Call to method id on non-class type 1|null
 %s:52 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression $s with type string
+%s:59 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type null(real=?0)
+%s:61 PhanNonClassMethodCall Call to method id on non-class type null
+%s:62 PhanTypeExpectedObjectPropAccessButGotNull Expected an object instance when accessing an instance property, but saw an expression $x with type null

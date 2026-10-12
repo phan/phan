@@ -744,6 +744,23 @@ class ContextNode
     }
 
     /**
+     * Returns true if the receiver of a nullsafe access (`$x?->method()`, `$x?->prop`) with the type $union_type
+     * is definitely null, so that the access short-circuits to null without calling the method or accessing the property.
+     *
+     * This requires the real type to be null (or unknown) as well: after `if (!$x)`, a `?non-zero-int` is
+     * `null` in phpdoc but `?0` for real, and `0?->method()` throws. A possibly undefined variable is not
+     * definitely null either: the nullsafe operator checks for null, not for undefined.
+     */
+    public static function isDefinitelyNull(UnionType $union_type): bool
+    {
+        if (!$union_type->isNull() || $union_type->isPossiblyUndefined()) {
+            return false;
+        }
+        $real_union_type = $union_type->getRealUnionType();
+        return $real_union_type->isEmpty() || $real_union_type->isNull();
+    }
+
+    /**
      * Check if the given AST_PROP/AST_NULLSAFE_PROP node accesses a dynamic
      * property on a plain (unshaped) stdClass receiver.
      *
@@ -1028,7 +1045,7 @@ class ContextNode
                 );
             }
 
-            if ($node->kind === ast\AST_NULLSAFE_METHOD_CALL && $union_type->isNull() && !$union_type->isPossiblyUndefined()) {
+            if ($node->kind === ast\AST_NULLSAFE_METHOD_CALL && self::isDefinitelyNull($union_type)) {
                 // `$x?->method()` short-circuits to null when $x is null, so the method is never called.
                 // (e.g. a variable that was only assigned null before the try block of the enclosing catch block)
                 // A possibly undefined variable is still reported: the nullsafe operator checks for null, not for undefined.
@@ -1775,16 +1792,14 @@ class ContextNode
             $node->children['expr'] ??
                 $node->children['class']
         );
-        if ($node->kind === ast\AST_NULLSAFE_PROP) {
-            $expr_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr']);
-            if ($expr_type->isNull() && !$expr_type->isPossiblyUndefined()) {
-                // `$x?->prop` short-circuits to null when $x is null, so the property is never accessed.
-                // A possibly undefined variable is still reported: the nullsafe operator checks for null, not for undefined.
-                throw new NodeException(
-                    $node,
-                    "Nullsafe access of $property_name on null never accesses the property"
-                );
-            }
+        if ($node->kind === ast\AST_NULLSAFE_PROP
+            && self::isDefinitelyNull(UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr']))) {
+            // `$x?->prop` short-circuits to null when $x is null, so the property is never accessed.
+            // A possibly undefined variable is still reported: the nullsafe operator checks for null, not for undefined.
+            throw new NodeException(
+                $node,
+                "Nullsafe access of $property_name on null never accesses the property"
+            );
         }
         try {
             $expected_type_categories = $is_static ? self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME : self::CLASS_LIST_ACCEPT_OBJECT;

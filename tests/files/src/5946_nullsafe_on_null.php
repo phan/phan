@@ -51,3 +51,14 @@ function other_receiver5946(): void {
     var_export($i?->id());
     var_export($s?->id);
 }
+/**
+ * The real type still matters: after `if (!$x)`, $x is null in phpdoc but may be 0 for real, and 0?->id() throws.
+ * @param ?non-zero-int $x
+ */
+function falsey_receiver5946(?int $x): void {
+    if (!$x) {
+        '@phan-debug-var $x';
+        var_export($x?->id());
+        var_export($x?->id);
+    }
+}

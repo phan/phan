@@ -3562,7 +3562,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $this->should_catch_issue_exception
         );
         $result = $this->visitMethodCall($node);
-        if ($expr_type->isNull() && !$expr_type->isPossiblyUndefined()) {
+        if (ContextNode::isDefinitelyNull($expr_type)) {
             // The method is never called (and ContextNode::getMethod() does not report it)
             return NullType::instance(false)->asRealUnionType();
         }
