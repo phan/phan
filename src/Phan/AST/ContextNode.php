@@ -785,13 +785,13 @@ class ContextNode
                 case ast\AST_METHOD_CALL:
                 case ast\AST_PROP:
                 case ast\AST_DIM:
-                case ast\AST_CALL:
                     $node = $node->children['expr'];
                     break;
                 case ast\AST_STATIC_CALL:
                 case ast\AST_STATIC_PROP:
                     $node = $node->children['class'];
                     break;
+                // Not part of the chain: invoking the result as a callable (`$x?->method()()`) and `::CONSTANT` throw.
                 default:
                     return false;
             }
