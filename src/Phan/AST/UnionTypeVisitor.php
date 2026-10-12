@@ -1875,6 +1875,11 @@ class UnionTypeVisitor extends AnalysisVisitor
         if ($union_type->isEmpty()) {
             return UnionType::empty();
         }
+        if (ContextNode::isDefinitelyNull($union_type)
+            && (new ContextNode($code_base, $context, $node))->isShortCircuitedNullsafeChain($node->children['expr'])) {
+            // e.g. `$x?->method()[0]` when $x is null: PHP short-circuits the whole chain to null without accessing an offset.
+            return NullType::instance(false)->asRealUnionType();
+        }
 
         // If none of the types we found were arrays with elements,
         // then check for ArrayAccess

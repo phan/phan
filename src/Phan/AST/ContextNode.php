@@ -770,7 +770,7 @@ class ContextNode
      *
      * @param Node|string|int|float|null $node the receiver of a dereference
      */
-    private function isShortCircuitedNullsafeChain(mixed $node): bool
+    public function isShortCircuitedNullsafeChain(mixed $node): bool
     {
         while ($node instanceof Node) {
             switch ($node->kind) {

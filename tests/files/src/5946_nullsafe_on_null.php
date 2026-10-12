@@ -88,8 +88,11 @@ function chain5946(Chain5946 $c): void {
     var_export($n?->next()::$count);
     var_export($n?->next()::LIMIT);
     var_export($n?->next()::create()->next);
+    var_export($n?->next()[0]);
+    var_export($n?->next()->next[0]->next);
     // Not short-circuited: the receiver of the nullsafe access is not null, its result is.
     var_export($c?->nothing()->next());
     var_export($c?->nothing()->next);
     var_export($c?->nothing()::create());
+    var_export($c?->nothing()[0]);
 }
