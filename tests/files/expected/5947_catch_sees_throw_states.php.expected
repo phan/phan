@@ -15,7 +15,7 @@
 %s:113 PhanDebugAnnotation @phan-debug-var requested for variable $status - it has union type 'failed'|'initial'|'ok'(real='failed'|'initial'|'ok')
 %s:126 PhanUnusedVariable Unused definition of variable $step
 %s:130 PhanDebugAnnotation @phan-debug-var requested for variable $step - it has union type 0|2(real=0|2)
-%s:135 PhanDebugAnnotation @phan-debug-var requested for variable $step - it has union type 0|1|3(real=0|1|3)
+%s:135 PhanDebugAnnotation @phan-debug-var requested for variable $step - it has union type 0|3(real=0|3)
 %s:146 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type 'a'|1(real='a'|1)
 %s:148 PhanUnusedVariable Unused definition of variable $x
 %s:152 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type 'a'|1(real='a'|1)
@@ -42,3 +42,11 @@
 %s:314 PhanUnusedVariable Unused definition of variable $x
 %s:317 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \A5947|\B5947(real=\A5947|\B5947)
 %s:320 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \A5947|\B5947(real=\A5947|\B5947)
+%s:333 PhanUnusedVariable Unused definition of variable $x
+%s:339 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \A5947(real=\A5947)
+%s:351 PhanUnusedVariable Unused definition of variable $x
+%s:359 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \A5947(real=\A5947)
+%s:373 PhanUnusedVariable Unused definition of variable $x
+%s:379 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \A5947(real=\A5947)
+%s:391 PhanUnusedVariable Unused definition of variable $x
+%s:397 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \A5947|\B5947(real=\A5947|\B5947)

@@ -116,8 +116,8 @@ function finally_after_catch5947(bool $flag): void {
     }
 }
 
-// A throw within a try block without catch clauses is seen by the catch blocks of the enclosing try statement.
-// (The finally block itself does not see the state at the throw.)
+// A throw within a try block with a finally block is not recorded for the enclosing catch blocks, which see that path only
+// through the state at the end of the inner try statement. (The finally block itself does not see the state at the throw.)
 function try_finally_inside_try_catch5947(bool $flag): void {
     $step = 0;
     try {
@@ -318,6 +318,83 @@ function parent_type_reaches_subclass_clause5947(bool $flag, Exception $e): void
         '@phan-debug-var $x';
         var_dump($x);
     } catch (Exception) {
+        '@phan-debug-var $x';
+        var_dump($x);
+    }
+}
+
+// The finally block of the inner try statement runs before the outer catch block,
+// so the outer catch block doesn't see the state at a throw before the finally block.
+function finally_runs_before_outer_catch5947(bool $flag): void {
+    $x = new A5947();
+    try {
+        try {
+            if ($flag) {
+                $x = new B5947();
+                throw new RuntimeException('x');
+            }
+        } finally {
+            $x = new A5947();
+        }
+    } catch (RuntimeException) {
+        '@phan-debug-var $x';
+        $x->a();
+    }
+}
+
+// The same applies when the catch clauses of the inner try statement don't catch the exception.
+function finally_runs_after_uncaught_exception5947(bool $flag): void {
+    $x = new A5947();
+    try {
+        try {
+            if ($flag) {
+                $x = new B5947();
+                throw new RuntimeException('x');
+            }
+        } catch (InvalidArgumentException) {
+            return;
+        } finally {
+            $x = new A5947();
+        }
+    } catch (RuntimeException) {
+        '@phan-debug-var $x';
+        $x->a();
+    }
+}
+
+// ... and to a throw in the catch block of the inner try statement.
+function finally_runs_after_throw_in_catch5947(bool $flag): void {
+    $x = new A5947();
+    try {
+        try {
+            throw new InvalidArgumentException('inner');
+        } catch (InvalidArgumentException) {
+            if ($flag) {
+                $x = new B5947();
+                throw new RuntimeException('from the catch block');
+            }
+        } finally {
+            $x = new A5947();
+        }
+    } catch (RuntimeException) {
+        '@phan-debug-var $x';
+        $x->a();
+    }
+}
+
+// Without a finally block, the outer catch block sees the state at the throw that the inner catch clauses don't catch.
+function no_finally_forwards_uncaught_exception5947(bool $flag): void {
+    $x = new A5947();
+    try {
+        try {
+            if ($flag) {
+                $x = new B5947();
+                throw new RuntimeException('x');
+            }
+        } catch (InvalidArgumentException) {
+            return;
+        }
+    } catch (RuntimeException) {
         '@phan-debug-var $x';
         var_dump($x);
     }
