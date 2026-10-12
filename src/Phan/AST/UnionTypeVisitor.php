@@ -2577,7 +2577,15 @@ class UnionTypeVisitor extends AnalysisVisitor
                 }
             }
         }
-        if (!$resulting_element_type->containsNullableOrUndefined() && $union_type->containsNullableOrUndefined()) {
+        if (!$resulting_element_type->containsNullableOrUndefined()
+            && ($union_type->isPossiblyUndefined() || $union_type->hasTypeMatchingCallback(static function (Type $type): bool {
+                // A plain `mixed` says nothing about the array: e.g. `$g[$k]['tax'] = $v;` on an `array $g` with an unknown key $k
+                // makes $g `array|non-empty-array<string,array{tax:int}>`, and `$g[$k]` is `array{tax:int}|mixed`; the shape decides
+                // the type of `$g[$k]['tax']` (int), the `mixed` alternative must not add null to it.
+                // Every other nullable type (`null`, `?array{...}`, `?mixed`, an unbounded template type T, ...) may make the array null.
+                return $type->isNullable() && !($type instanceof MixedType && !$type->isNullableLabeled());
+            }))) {
+            // The array itself may be null (or undefined), so the offset read may evaluate to null.
             // Here, this uses Foo|null instead of ?Foo to only warn when strict types are used.
             $resulting_element_type = $resulting_element_type->withType(NullType::instance(false));
         }
