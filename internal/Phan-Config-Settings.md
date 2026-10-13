@@ -133,9 +133,10 @@ This can only be set in the config file (there is no CLI flag).
 - `'balanced'`: files are grouped by the topmost ancestor class (of their first class) whose file is analyzed,
   so subclasses of an unanalyzed vendor class are not grouped together because of that class.
   Files without classes are groups of their own.
-  Files are weighted by size. A group weighing more than half an even share (total size / process count)
+  Files are weighted by size. A group weighing more than an even share (total size / process count)
   is split into the subtrees of its root class's child classes, recursively;
-  the root class's file joins the heaviest part. Groups are assigned heaviest first
+  the root class's file joins the heaviest part. The same is tried with half and a quarter of a share,
+  and the partition whose assignment has the lowest predicted maximum load is used. Groups are assigned heaviest first
   to the least loaded process, or, if [`consistent_hashing_file_order`](#consistent_hashing_file_order) is true, to the first process
   on the consistent hash ring whose load stays within 15% of an even share.
   Each process analyzes its files in the same relative order as with `'hierarchy'`

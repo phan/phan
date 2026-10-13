@@ -25,16 +25,16 @@ class Ordering
     private const BOUNDED_LOAD_TOLERANCE_PERCENT = 15;
 
     /**
-     * With `process_file_assignment` set to `'balanced'`, a group of files weighing more than this fraction
-     * of an even share of the total weight is split into the subtrees of its root class's child classes.
+     * With `process_file_assignment` set to `'balanced'`, the fractions of an even share of the total weight above which
+     * a group of files (a class hierarchy) is split into the subtrees of its root class's child classes, from coarse to fine.
      *
-     * 1.0 would only split groups that cannot fit on one process at all, and the heaviest-first assignment
-     * can then end up to a whole share apart: on a large project whose test hierarchy weighed 0.7 shares,
-     * that group was placed first and its process ended ~25 % heavier than the others.
-     * 0.5 keeps the heaviest indivisible group small enough for the assignment to end within a few percent
-     * of even, while smaller hierarchies still stay together on one process.
+     * The assignment is computed for each of them and the one with the lowest predicted maximum load is used.
+     * Splitting only groups that cannot fit on one process at all (1.0) can leave the heaviest-first assignment
+     * a whole share apart: on a large project whose test hierarchy weighed 0.7 shares, that group was placed first
+     * and its process ended ~25 % heavier than the others. Finer splitting is not guaranteed to help either
+     * (greedy scheduling is not monotone in the granularity of its items), hence the comparison.
      */
-    private const SPLIT_SHARE_FRACTION = 0.5;
+    private const SPLIT_SHARE_FRACTIONS = [1.0, 0.5, 0.25];
 
     /**
      * @var CodeBase
@@ -206,9 +206,10 @@ class Ordering
      * Implements `process_file_assignment` = `'balanced'` for more than one process.
      *
      * Files are grouped by the topmost ancestor (of the first class declared in the file) whose file is analyzed,
-     * and weighted by their size. Groups weighing more than half an even share are split into the subtrees of the
-     * child classes of their root class (recursively). Groups are assigned heaviest first, either to the least loaded process
-     * or (with `consistent_hashing_file_order`) with consistent hashing with bounded loads.
+     * and weighted by their size. Groups weighing more than an even share are split into the subtrees of the child
+     * classes of their root class (recursively); the same is tried with half and a quarter of a share, and the partition
+     * whose assignment has the lowest predicted maximum load is used. Groups are assigned heaviest first, either to the
+     * least loaded process or (with `consistent_hashing_file_order`) with consistent hashing with bounded loads.
      * Each process analyzes its files in the order that the default assignment would use with a single process.
      *
      * The result only depends on the file list, the class hierarchy, the file sizes and the process count.
@@ -307,43 +308,48 @@ class Ordering
             $weight[$file] = $file_weight;
             $total_weight += $file_weight;
         }
-        // Groups heavier than this fraction of an even share of the total weight per process are split.
-        $cap = \ceil(self::SPLIT_SHARE_FRACTION * $total_weight / $process_count);
-
-        /** @var list<array{0:string,1:float,2:list<string>}> $groups (key, weight, files) */
-        $groups = [];
         \ksort($items_for_bucket, \SORT_STRING);
-        foreach ($items_for_bucket as $root_fqsen => $items) {
-            foreach (self::splitGroup((string)$root_fqsen, $items, 0, $weight, $cap) as $group) {
-                $groups[] = $group;
+        $max_bucket_weight = 0.0;
+        foreach ($items_for_bucket as $items) {
+            $bucket_weight = 0.0;
+            foreach ($items as [$file]) {
+                $bucket_weight += $weight[$file];
             }
+            $max_bucket_weight = \max($max_bucket_weight, $bucket_weight);
         }
+        /** @var list<array{0:string,1:float,2:list<string>}> $class_less_groups (key, weight, files) */
+        $class_less_groups = [];
         foreach ($class_less_file_set as $file => $_) {
             $file = (string)$file;
-            $groups[] = [$file, (float)$weight[$file], [$file]];
+            $class_less_groups[] = [$file, (float)$weight[$file], [$file]];
         }
-        \usort(
-            $groups,
-            /**
-             * Heaviest first, ties broken by key.
-             * @param array{0:string,1:float,2:list<string>} $a
-             * @param array{0:string,1:float,2:list<string>} $b
-             */
-            static function (array $a, array $b): int {
-                return ($b[1] <=> $a[1]) ?: \strcmp($a[0], $b[0]);
-            }
-        );
-
         $hasher = $use_consistent_hashing ? new Consistent($process_count) : null;
-        $loads = \array_fill(0, $process_count, 0.0);
-        $files_for_process = \array_fill(0, $process_count, []);
-        foreach ($groups as [$key, $group_weight, $files]) {
-            $process_id = $hasher ? self::chooseProcessWithBoundedLoad($hasher, $key, $group_weight, $loads, $total_weight) : self::getLeastLoadedProcess($loads);
-            $loads[$process_id] += $group_weight;
-            foreach ($files as $file) {
-                $files_for_process[$process_id][] = $file;
+
+        // Try the split thresholds from coarse to fine and keep the assignment with the lowest predicted maximum load.
+        // Finer splitting gives the heaviest-first assignment more room, but does not always improve it,
+        // so a finer partition is only used when it does, and hierarchies otherwise stay together on one process.
+        $best_files_for_process = [];
+        $best_max_load = \INF;
+        foreach (self::SPLIT_SHARE_FRACTIONS as $i => $fraction) {
+            // Groups heavier than this are split.
+            $cap = \ceil($fraction * $total_weight / $process_count);
+            if ($i > 0 && $cap >= $max_bucket_weight) {
+                // Nothing would be split: the same partition as the previous threshold.
+                continue;
+            }
+            $groups = $class_less_groups;
+            foreach ($items_for_bucket as $root_fqsen => $items) {
+                foreach (self::splitGroup((string)$root_fqsen, $items, 0, $weight, $cap) as $group) {
+                    $groups[] = $group;
+                }
+            }
+            [$files_for_process, $max_load] = self::assignGroups($groups, $process_count, $hasher, $total_weight);
+            if ($max_load < $best_max_load) {
+                $best_max_load = $max_load;
+                $best_files_for_process = $files_for_process;
             }
         }
+        $files_for_process = $best_files_for_process;
 
         $processor_file_list_map = [];
         foreach ($files_for_process as $process_id => $files) {
@@ -447,6 +453,37 @@ class Ordering
             $groups[$heaviest] = [$heaviest_key, $heaviest_weight, $heaviest_files];
         }
         return $groups;
+    }
+
+    /**
+     * Assigns groups of files to processes, heaviest first (ties broken by key), each to the least loaded process
+     * or (with consistent hashing) to a process on the hash ring whose load stays bounded.
+     *
+     * @param list<array{0:string,1:float,2:list<string>}> $groups (key, weight, files), in any order
+     * @return array{0:array<int,list<string>>,1:float} the files of each process (in assignment order) and the heaviest load
+     */
+    private static function assignGroups(array $groups, int $process_count, ?Consistent $hasher, float $total_weight): array
+    {
+        \usort(
+            $groups,
+            /**
+             * @param array{0:string,1:float,2:list<string>} $a
+             * @param array{0:string,1:float,2:list<string>} $b
+             */
+            static function (array $a, array $b): int {
+                return ($b[1] <=> $a[1]) ?: \strcmp($a[0], $b[0]);
+            }
+        );
+        $loads = \array_fill(0, $process_count, 0.0);
+        $files_for_process = \array_fill(0, $process_count, []);
+        foreach ($groups as [$key, $group_weight, $files]) {
+            $process_id = $hasher ? self::chooseProcessWithBoundedLoad($hasher, $key, $group_weight, $loads, $total_weight) : self::getLeastLoadedProcess($loads);
+            $loads[$process_id] += $group_weight;
+            foreach ($files as $file) {
+                $files_for_process[$process_id][] = $file;
+            }
+        }
+        return [$files_for_process, \max($loads)];
     }
 
     /**

@@ -143,18 +143,17 @@ final class OrderingTest extends TestBase
     }
 
     /**
-     * An analyzed base class with 10 subclasses of the given weight, plus 20 classless files making the total weight 40000
-     * (so an even share of 4 processes is 10000 and half a share 5000).
+     * An analyzed base class (weight 1000) with 10 subclasses of the given weight, plus one classless file per entry of $other_weights.
+     * @param list<int> $other_weights
      * @return array<string,array{0:string,1:int}>
      */
-    private static function singleHierarchyFiles(int $subclass_weight): array
+    private static function singleHierarchyFiles(int $subclass_weight, array $other_weights): array
     {
         $files = ['src/Base.php' => ['abstract class Base {}', 1000]];
         for ($i = 0; $i < 10; $i++) {
             $files["src/Sub{$i}.php"] = ["class Sub{$i} extends Base {}", $subclass_weight];
         }
-        $other_weight = \intdiv(40000 - 1000 - 10 * $subclass_weight, 20);
-        for ($i = 0; $i < 20; $i++) {
+        foreach ($other_weights as $i => $other_weight) {
             $files["src/other{$i}.php"] = ["function other{$i}() {}", $other_weight];
         }
         return $files;
@@ -392,9 +391,9 @@ final class OrderingTest extends TestBase
                 2 => ['src/A1.php', 'src/A11.php', 'src/Mid.php', 'src/T2.php', 'src/T3.php', 'src/MidChild.php', 'src/empty.php'],
             ]],
             [true, [
-                0 => ['src/A1.php', 'src/A11.php', 'src/I.php', 'src/T1.php', 'src/T3.php', 'src/Missing.php', 'src/script.php'],
+                0 => ['src/I.php', 'src/T1.php', 'src/T3.php', 'src/T4.php', 'src/Missing.php', 'src/script.php'],
                 1 => ['src/BHelperChild.php', 'src/Mid.php', 'src/T2.php', 'src/MidChild.php', 'src/functions.php'],
-                2 => ['src/A.php', 'src/A2.php', 'src/B.php', 'src/B1.php', 'src/T4.php', 'src/empty.php'],
+                2 => ['src/A.php', 'src/A1.php', 'src/A2.php', 'src/A11.php', 'src/B.php', 'src/B1.php', 'src/empty.php'],
             ]],
         ];
     }
@@ -507,19 +506,25 @@ final class OrderingTest extends TestBase
 
     /**
      * A hierarchy weighing between half an even share and a whole share would fit on one process, but placing it
-     * there (first, being the heaviest group) leaves that process well above the others, so it is split.
+     * there (first, being the heaviest group) leaves that process well above the others when the remaining groups are
+     * not small, so it is split.
      * @dataProvider consistentHashingProvider
      */
     public function testBalancedAssignmentSplitsGroupAboveHalfAShare(bool $consistent_hashing): void
     {
         Config::setValue('consistent_hashing_file_order', $consistent_hashing);
         Config::setValue('process_file_assignment', 'balanced');
-        // 1000 + 10 * 600 = 7000 of 40000: 0.7 of an even share of 4 processes.
-        $files = self::singleHierarchyFiles(600);
+        // 1000 + 10 * 600 = 7000 of 40000: 0.7 of an even share of 4 processes. Unsplit, the heaviest-first assignment
+        // of these groups ends with loads of 9800 / 9600 / 9700 / 10900.
+        $files = self::singleHierarchyFiles(600, [4800, 4000, 3700, 3500, 3200, 3000, 2800, 2500, 2200, 1800, 1500]);
         $balanced = self::order($files, 4);
         $this->assertIsPartition(self::nonVendorFiles($files), $balanced);
         $this->assertLoadsWithinTolerance(4, self::loads($files, $balanced));
-        $this->assertGreaterThan(1, self::processCountWithFilesMatching('@^src/Sub\d+\.php$@D', $balanced));
+        if (!$consistent_hashing) {
+            $this->assertGreaterThan(1, self::processCountWithFilesMatching('@^src/Sub\\d+\\.php$@D', $balanced));
+        }
+        // (With consistent hashing, the bounded-load assignment of the unsplit groups already stays within its 15 % bound
+        // and no finer partition lowers the heaviest load, so the hierarchy is kept together.)
         $parent_file_of = [];
         for ($i = 0; $i < 10; $i++) {
             $parent_file_of["src/Sub{$i}.php"] = 'src/Base.php';
@@ -530,21 +535,43 @@ final class OrderingTest extends TestBase
     }
 
     /**
-     * A hierarchy weighing less than half an even share stays on one process: splitting it would not improve the balance.
+     * A hierarchy is not split when that cannot lower the heaviest load: here the unsplit assignment is already even.
      * @dataProvider consistentHashingProvider
      */
-    public function testBalancedAssignmentKeepsGroupBelowHalfAShareTogether(bool $consistent_hashing): void
+    public function testBalancedAssignmentKeepsGroupTogetherWhenSplittingCannotHelp(bool $consistent_hashing): void
     {
         Config::setValue('consistent_hashing_file_order', $consistent_hashing);
         Config::setValue('process_file_assignment', 'balanced');
-        // 1000 + 10 * 300 = 4000 of 40000: 0.4 of an even share of 4 processes.
-        $files = self::singleHierarchyFiles(300);
+        // 1000 + 10 * 300 = 4000, and the other groups fill 4 processes of 10000 exactly along with it.
+        $files = self::singleHierarchyFiles(300, [10000, 10000, 10000, 6000]);
         $balanced = self::order($files, 4);
         $this->assertIsPartition(self::nonVendorFiles($files), $balanced);
-        $this->assertLoadsWithinTolerance(4, self::loads($files, $balanced));
-        $this->assertSame(1, self::processCountWithFilesMatching('@^src/(Base|Sub\d+)\.php$@D', $balanced));
+        $this->assertSame([10000, 10000, 10000, 10000], self::loads($files, $balanced));
+        $this->assertSame(1, self::processCountWithFilesMatching('@^src/(Base|Sub\\d+)\\.php$@D', $balanced));
     }
 
+    /**
+     * Finer splitting does not always help a heaviest-first assignment, so the coarser partition is kept when it is better:
+     * unsplit, this hierarchy of 5400 and the groups of 4200, 3600 and 2400 fill 2 processes of 7800 exactly, while
+     * splitting it into 3100 and 2300 (the root's file joins the heavier child) would give 8900 / 6700.
+     */
+    public function testBalancedAssignmentKeepsCoarserPartitionWhenFinerIsWorse(): void
+    {
+        Config::setValue('consistent_hashing_file_order', false);
+        Config::setValue('process_file_assignment', 'balanced');
+        $files = [
+            'src/Root.php' => ['abstract class Root {}', 500],
+            'src/ChildA.php' => ['class ChildA extends Root {}', 2300],
+            'src/ChildB.php' => ['class ChildB extends Root {}', 2600],
+            'src/g1.php' => ['function g1() {}', 4200],
+            'src/g2.php' => ['function g2() {}', 3600],
+            'src/g3.php' => ['function g3() {}', 2400],
+        ];
+        $balanced = self::order($files, 2);
+        $this->assertIsPartition(self::nonVendorFiles($files), $balanced);
+        $this->assertSame([7800, 7800], self::loads($files, $balanced));
+        $this->assertSame(1, self::processCountWithFilesMatching('@^src/(Root|Child[AB])\\.php$@D', $balanced));
+    }
     /**
      * @dataProvider consistentHashingProvider
      */
