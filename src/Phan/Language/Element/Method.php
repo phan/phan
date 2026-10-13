@@ -81,6 +81,13 @@ class Method extends ClassElement implements FunctionInterface
     private $clone_source = null;
 
     /**
+     * @var bool whether this is a clone whose parameter or return types were specialized by template substitution
+     * (cloneWithTemplateParameterTypeMap()), e.g. the copy of `Base<T>::run(T $x)` in a class extending `Base<callable>`.
+     * Kept by further clones of such a clone.
+     */
+    private $is_template_specialized = false;
+
+    /**
      * The phan flags that the declaration analysis replayed by Analysis\CloneReplay does not read
      * (IS_OVERRIDE and IS_OVERRIDDEN_BY_ANOTHER are set for each clone, HAS_TEMPLATE_TYPE is overwritten)
      */
@@ -778,6 +785,15 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
+     * Whether this is a clone whose parameter or return types were specialized by template substitution
+     * (see cloneWithTemplateParameterTypeMap()), so that its parameters are not those of the method it was copied from.
+     */
+    public function isTemplateSpecialized(): bool
+    {
+        return $this->is_template_specialized;
+    }
+
+    /**
      * @return ?Method the method that Clazz::addMethod() cloned to create this inherited method, if any
      * (used by Analysis\CloneReplay)
      */
@@ -1370,6 +1386,7 @@ class Method extends ClassElement implements FunctionInterface
         if (!$has_template_types) {
             return $method;
         }
+        $method->is_template_specialized = true;
 
         // Map the method's return type
         if ($method->getUnionType()->hasTemplateTypeRecursive()) {

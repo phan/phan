@@ -10,6 +10,9 @@ use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\Library\FileCache;
+use Phan\Output\Collector\BufferingCollector;
+use Phan\Phan;
 
 /**
  * Tests that CodeBase::getMethodsInheritedFrom() (used to attach plugin closures to the inherited copies of a method)
@@ -39,8 +42,23 @@ class GrandChild5950 extends Child5950 {
 class Mixed5950 {}
 class Unrelated5950 { public function inherited() {} }
 class UsesTrait5950 { use T5950; }
+class Alias5950 { use T5950 { aliased as viaParent; } }
+class AliasChild5950 extends Alias5950 {}
+/** @template T */
+class TBase5950 {
+    /** @param T $x */
+    public function run($x) {}
+    public function plain(int $i) {}
+}
+/** @extends TBase5950<callable> */
+class TChild5950 extends TBase5950 {}
+class TPlain5950 extends TBase5950 {}
 PHP;
         $code_base = new CodeBase([], [], [], [], []);
+        Phan::setIssueCollector(new BufferingCollector());
+        // Issues emitted while importing the ancestors (e.g. about the template types) look the file up for suppressions.
+        FileCache::addEntry('5950.php', $code);
+        FileCache::addEntry(Config::projectPath('5950.php'), $code);
         Analysis::parseNodeInContext(
             $code_base,
             (new Context())->withFile('5950.php'),
@@ -80,6 +98,14 @@ PHP;
         ));
     }
 
+    /**
+     * @throws \Phan\Exception\FQSENException|\InvalidArgumentException for an invalid $fqsen_string
+     */
+    private static function method(CodeBase $code_base, string $fqsen_string): Method
+    {
+        return $code_base->getMethodByFQSEN(FullyQualifiedMethodName::fromFullyQualifiedString($fqsen_string));
+    }
+
     public function testMatchesGroupingByDefiningFQSEN(): void
     {
         $code_base = self::makeCodeBase();
@@ -113,9 +139,36 @@ PHP;
         $this->assertSame(['\Child5950::overridden', '\GrandChild5950::overridden'], self::inheritedFrom($code_base, $index, '\Child5950::overridden'));
         // A trait method, including the copy with another name.
         $this->assertSame(
-            ['\Base5950::aliased', '\Child5950::aliased', '\GrandChild5950::aliased', '\GrandChild5950::renamed', '\Mixed5950::aliased', '\T5950::aliased', '\UsesTrait5950::aliased'],
+            [
+                '\Alias5950::aliased', '\Alias5950::viaParent', '\AliasChild5950::aliased', '\AliasChild5950::viaParent',
+                '\Base5950::aliased', '\Child5950::aliased', '\GrandChild5950::aliased', '\GrandChild5950::renamed',
+                '\Mixed5950::aliased', '\T5950::aliased', '\UsesTrait5950::aliased',
+            ],
             self::inheritedFrom($code_base, $index, '\T5950::aliased')
         );
         $this->assertSame([], self::inheritedFrom($code_base, $index, '\Unrelated5950::missing'));
+        // An alias given in a parent class is inherited under that name by its subclasses (which use no trait themselves).
+        $this->assertContains('\AliasChild5950::viaParent', self::inheritedFrom($code_base, $index, '\T5950::aliased'));
+    }
+
+    /**
+     * @throws \Phan\Exception\FQSENException|\InvalidArgumentException never, the FQSENs are literals
+     */
+    public function testInheritedCopyWithSameSignature(): void
+    {
+        $code_base = self::makeCodeBase();
+        // A declared method is not a copy.
+        $this->assertFalse($code_base->isInheritedCopyWithSameSignature(self::method($code_base, '\Base5950::inherited')));
+        // A plain inherited copy shares the parameters and comment of the method it was inherited from.
+        $this->assertTrue($code_base->isInheritedCopyWithSameSignature(self::method($code_base, '\Child5950::inherited')));
+        $this->assertTrue($code_base->isInheritedCopyWithSameSignature(self::method($code_base, '\GrandChild5950::inherited')));
+        // A method of a templated base class without template types in its own signature is copied unchanged.
+        $this->assertTrue($code_base->isInheritedCopyWithSameSignature(self::method($code_base, '\TChild5950::plain')));
+        // A copy whose parameter types were specialized by template substitution has parameters of its own:
+        // `TChild5950::run()` accepts a callable while `TBase5950::run()` accepts `T`
+        // (and `TPlain5950::run()` accepts mixed, the template type's default without template arguments).
+        $this->assertFalse($code_base->isInheritedCopyWithSameSignature(self::method($code_base, '\TChild5950::run')));
+        $this->assertStringContainsString('callable', (string)self::method($code_base, '\TChild5950::run')->getParameterList()[0]->getUnionType());
+        $this->assertFalse($code_base->isInheritedCopyWithSameSignature(self::method($code_base, '\TPlain5950::run')));
     }
 }

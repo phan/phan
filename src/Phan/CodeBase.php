@@ -1459,7 +1459,7 @@ class CodeBase
     public function getDirectChildClassIndex(): array
     {
         $index = [];
-        foreach ($this->getUserDefinedClassMap() as $class) {
+        foreach ($this->fqsen_class_map_user_defined as $class) {
             $fqsen = $class->getFQSEN();
             if ($class->hasParentType()) {
                 $index[$class->getParentClassFQSEN()->__toString()][] = $fqsen;
@@ -1495,41 +1495,65 @@ class CodeBase
     public function getMethodsInheritedFrom(FullyQualifiedMethodName $fqsen, array $child_class_index): array
     {
         $fqsen_string = $fqsen->__toString();
-        $name = $fqsen->getName();
         $result = [];
-        $visited = [];
-        $queue = [$fqsen->getFullyQualifiedClassName()];
-        while ($queue) {
-            $class_fqsen = \array_pop($queue);
+        // The names a copy of the method can have in each class: the method's name, plus the aliases given to it with
+        // `use T { m as n; }` in a class on the way down, which that class's subclasses inherit under the alias.
+        /** @var array<string,array<string,true>> $names_seen the names already checked for each visited class */
+        $names_seen = [];
+        // Classes to visit, with the names to check there (two stacks, popped together).
+        $class_queue = [$fqsen->getFullyQualifiedClassName()];
+        $names_queue = [[$fqsen->getName() => true]];
+        while ($class_queue) {
+            $class_fqsen = \array_pop($class_queue);
+            $names = \array_pop($names_queue);
             $class_fqsen_string = $class_fqsen->__toString();
-            if (isset($visited[$class_fqsen_string])) {
+            $new_names = \array_diff_key($names, $names_seen[$class_fqsen_string] ?? []);
+            if (!$new_names) {
                 continue;
             }
-            $visited[$class_fqsen_string] = true;
+            $names_seen[$class_fqsen_string] = ($names_seen[$class_fqsen_string] ?? []) + $new_names;
             if ($this->hasClassWithFQSEN($class_fqsen)) {
                 $class = $this->getClassByFQSEN($class_fqsen);
                 if ($class->getTraitFQSENList() || $class->getMixinTypes()) {
-                    // A method of a trait may have been given another name (`use T { m as n; }`), so check every method.
+                    // A method of a trait may have been given another name here (`use T { m as n; }`), so check every method.
                     foreach ($class->getMethodMap($this) as $method) {
                         if (self::isMethodDefinedBy($method, $fqsen_string)) {
                             $result[] = $method;
+                            $names[$method->getFQSEN()->getName()] = true;
                         }
                     }
                 } else {
-                    $method_fqsen = FullyQualifiedMethodName::make($class_fqsen, $name);
-                    if ($this->hasMethodWithFQSEN($method_fqsen)) {
-                        $method = $this->getMethodByFQSEN($method_fqsen);
-                        if (self::isMethodDefinedBy($method, $fqsen_string)) {
-                            $result[] = $method;
+                    foreach ($new_names as $name => $_) {
+                        $method_fqsen = FullyQualifiedMethodName::make($class_fqsen, (string)$name);
+                        if ($this->hasMethodWithFQSEN($method_fqsen)) {
+                            $method = $this->getMethodByFQSEN($method_fqsen);
+                            if (self::isMethodDefinedBy($method, $fqsen_string)) {
+                                $result[] = $method;
+                            }
                         }
                     }
                 }
             }
             foreach ($child_class_index[$class_fqsen_string] ?? [] as $child_fqsen) {
-                $queue[] = $child_fqsen;
+                $class_queue[] = $child_fqsen;
+                $names_queue[] = $names;
             }
         }
         return $result;
+    }
+
+    /**
+     * Whether $method is a copy of a method of another class (its defining FQSEN names that method, and Clazz::addMethod()
+     * recorded the method it was cloned from) that still has the parameter list and comment of that method, so that
+     * anything computed from them for the defining method (e.g. the parameters that accept callables) holds for the copy.
+     * Copies whose types were specialized by template substitution (`@extends Base<callable>`, see
+     * Method::cloneWithTemplateParameterTypeMap()) have parameters and a comment of their own and are not such copies.
+     */
+    public function isInheritedCopyWithSameSignature(Method $method): bool
+    {
+        return $method->getCloneSource() !== null
+            && !$method->isTemplateSpecialized()
+            && $method->getDefiningFQSEN() !== $method->getFQSEN();
     }
 
     private static function isMethodDefinedBy(Method $method, string $fqsen_string): bool

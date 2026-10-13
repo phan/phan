@@ -881,18 +881,23 @@ class Analysis
                     $function->addFunctionCallAnalyzer($closure, $plugin_set);
                 }
             }
-            // The inherited copies of a method have the parameters of the method they were inherited from (and are ~90 % of
-            // the methods of a large project with deep hierarchies), so build the analyzer once per defining method.
-            // The analyzer only depends on which parameters are callable and on $plugin_closures, so the copies can share it.
-            // FQSEN objects are memoized for the lifetime of the process, so their object ids are stable keys.
+            // The analyzer only depends on which parameters are callable and on $plugin_closures, so an inherited copy of a
+            // method that still has its parameter list (~90 % of the methods of a large project with deep hierarchies) can share
+            // the analyzer built for the method it was inherited from; one whose parameter types were specialized by template
+            // substitution gets its own. FQSEN objects are memoized for the lifetime of the process, so their ids are stable keys.
             /** @var array<int,?\Closure> $closures_by_defining_fqsen */
             $closures_by_defining_fqsen = [];
             foreach ($code_base->getMethodSet() as $method) {
                 $key = \spl_object_id($method->getDefiningFQSEN());
-                if (!\array_key_exists($key, $closures_by_defining_fqsen)) {
-                    $closures_by_defining_fqsen[$key] = ConfigPluginSet::buildCallableArgumentAnalyzer($method, $plugin_closures);
+                if ($code_base->isInheritedCopyWithSameSignature($method)) {
+                    if (!\array_key_exists($key, $closures_by_defining_fqsen)) {
+                        $closures_by_defining_fqsen[$key] = ConfigPluginSet::buildCallableArgumentAnalyzer($method, $plugin_closures);
+                    }
+                    $closure = $closures_by_defining_fqsen[$key];
+                } else {
+                    $closure = ConfigPluginSet::buildCallableArgumentAnalyzer($method, $plugin_closures);
+                    $closures_by_defining_fqsen[$key] = $closure;
                 }
-                $closure = $closures_by_defining_fqsen[$key];
                 if ($closure !== null) {
                     $method->addFunctionCallAnalyzer($closure, $plugin_set);
                 }
