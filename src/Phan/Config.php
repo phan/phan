@@ -854,7 +854,7 @@ class Config
         // - `'balanced'`: files are grouped by the topmost ancestor class (of their first class) whose file is analyzed,
         //   so subclasses of an unanalyzed vendor class are not grouped together because of that class.
         //   Files without classes are groups of their own.
-        //   Files are weighted by size. A group weighing more than an even share (total size / process count)
+        //   Files are weighted by size. A group weighing more than half an even share (total size / process count)
         //   is split into the subtrees of its root class's child classes, recursively;
         //   the root class's file joins the heaviest part. Groups are assigned heaviest first
         //   to the least loaded process, or, if `consistent_hashing_file_order` is true, to the first process

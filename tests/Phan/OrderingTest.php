@@ -143,6 +143,39 @@ final class OrderingTest extends TestBase
     }
 
     /**
+     * An analyzed base class with 10 subclasses of the given weight, plus 20 classless files making the total weight 40000
+     * (so an even share of 4 processes is 10000 and half a share 5000).
+     * @return array<string,array{0:string,1:int}>
+     */
+    private static function singleHierarchyFiles(int $subclass_weight): array
+    {
+        $files = ['src/Base.php' => ['abstract class Base {}', 1000]];
+        for ($i = 0; $i < 10; $i++) {
+            $files["src/Sub{$i}.php"] = ["class Sub{$i} extends Base {}", $subclass_weight];
+        }
+        $other_weight = \intdiv(40000 - 1000 - 10 * $subclass_weight, 20);
+        for ($i = 0; $i < 20; $i++) {
+            $files["src/other{$i}.php"] = ["function other{$i}() {}", $other_weight];
+        }
+        return $files;
+    }
+
+    /**
+     * @param array<int,list<string>> $process_file_list_map
+     * @return int the number of processes assigned at least one file matching $pattern
+     */
+    private static function processCountWithFilesMatching(string $pattern, array $process_file_list_map): int
+    {
+        $count = 0;
+        foreach ($process_file_list_map as $file_list) {
+            if (\preg_grep($pattern, $file_list)) {
+                $count++;
+            }
+        }
+        return $count;
+    }
+
+    /**
      * @param array<string,array{0:string,1:int}> $files
      */
     private static function makeCodeBase(array $files): CodeBase
@@ -354,14 +387,14 @@ final class OrderingTest extends TestBase
     {
         return [
             [false, [
-                0 => ['src/A.php', 'src/A1.php', 'src/A2.php', 'src/A11.php', 'src/T1.php'],
-                1 => ['src/B.php', 'src/B1.php', 'src/BHelperChild.php', 'src/I.php', 'src/Missing.php', 'src/functions.php', 'src/empty.php'],
-                2 => ['src/Mid.php', 'src/T2.php', 'src/T3.php', 'src/T4.php', 'src/MidChild.php', 'src/script.php'],
+                0 => ['src/A.php', 'src/A2.php', 'src/B.php', 'src/B1.php', 'src/BHelperChild.php', 'src/I.php', 'src/Missing.php', 'src/script.php'],
+                1 => ['src/T1.php', 'src/T4.php', 'src/functions.php'],
+                2 => ['src/A1.php', 'src/A11.php', 'src/Mid.php', 'src/T2.php', 'src/T3.php', 'src/MidChild.php', 'src/empty.php'],
             ]],
             [true, [
-                0 => ['src/I.php', 'src/T1.php', 'src/T3.php', 'src/T4.php', 'src/Missing.php', 'src/script.php'],
+                0 => ['src/A1.php', 'src/A11.php', 'src/I.php', 'src/T1.php', 'src/T3.php', 'src/Missing.php', 'src/script.php'],
                 1 => ['src/BHelperChild.php', 'src/Mid.php', 'src/T2.php', 'src/MidChild.php', 'src/functions.php'],
-                2 => ['src/A.php', 'src/A1.php', 'src/A2.php', 'src/A11.php', 'src/B.php', 'src/B1.php', 'src/empty.php'],
+                2 => ['src/A.php', 'src/A2.php', 'src/B.php', 'src/B1.php', 'src/T4.php', 'src/empty.php'],
             ]],
         ];
     }
@@ -447,13 +480,19 @@ final class OrderingTest extends TestBase
         }
         $this->assertAncestorsFirst($parent_file_of, $balanced);
 
-        // TestBaseCase (more than an even share) is split by subtree. ApiCase's subtree is the heaviest part,
-        // so the files of its ancestors WebCase and TestBaseCase are analyzed first on the same process.
+        // TestBaseCase (more than half an even share) is split by subtree, recursively. The file of an abstract
+        // ancestor joins the heaviest part of its subtree, so it is analyzed on the same process as that part and
+        // before it: here TestBaseCase and WebCase end up with ApiCase, and TestBaseCase is the first file of that process.
+        $found_api_case = false;
         foreach ($balanced as $file_list) {
             if (in_array('tests/ApiCase.php', $file_list, true)) {
-                $this->assertSame(['tests/TestBaseCase.php', 'tests/WebCase.php', 'tests/ApiCase.php'], \array_slice($file_list, 0, 3));
+                $found_api_case = true;
+                $position = \array_flip($file_list);
+                $this->assertSame(0, $position['tests/TestBaseCase.php'] ?? null, \implode(' ', $file_list));
+                $this->assertLessThan($position['tests/ApiCase.php'], $position['tests/WebCase.php'] ?? \PHP_INT_MAX, \implode(' ', $file_list));
             }
         }
+        $this->assertTrue($found_api_case);
         // DbCase's subtree is larger than an even share, so its tests are spread over several processes.
         $processes_with_db_tests = 0;
         foreach ($balanced as $file_list) {
@@ -464,6 +503,46 @@ final class OrderingTest extends TestBase
         $this->assertGreaterThan(1, $processes_with_db_tests);
         // Deterministic
         $this->assertSame($balanced, self::order($files, 4));
+    }
+
+    /**
+     * A hierarchy weighing between half an even share and a whole share would fit on one process, but placing it
+     * there (first, being the heaviest group) leaves that process well above the others, so it is split.
+     * @dataProvider consistentHashingProvider
+     */
+    public function testBalancedAssignmentSplitsGroupAboveHalfAShare(bool $consistent_hashing): void
+    {
+        Config::setValue('consistent_hashing_file_order', $consistent_hashing);
+        Config::setValue('process_file_assignment', 'balanced');
+        // 1000 + 10 * 600 = 7000 of 40000: 0.7 of an even share of 4 processes.
+        $files = self::singleHierarchyFiles(600);
+        $balanced = self::order($files, 4);
+        $this->assertIsPartition(self::nonVendorFiles($files), $balanced);
+        $this->assertLoadsWithinTolerance(4, self::loads($files, $balanced));
+        $this->assertGreaterThan(1, self::processCountWithFilesMatching('@^src/Sub\d+\.php$@D', $balanced));
+        $parent_file_of = [];
+        for ($i = 0; $i < 10; $i++) {
+            $parent_file_of["src/Sub{$i}.php"] = 'src/Base.php';
+        }
+        $this->assertAncestorsFirst($parent_file_of, $balanced);
+        // Deterministic
+        $this->assertSame($balanced, self::order($files, 4));
+    }
+
+    /**
+     * A hierarchy weighing less than half an even share stays on one process: splitting it would not improve the balance.
+     * @dataProvider consistentHashingProvider
+     */
+    public function testBalancedAssignmentKeepsGroupBelowHalfAShareTogether(bool $consistent_hashing): void
+    {
+        Config::setValue('consistent_hashing_file_order', $consistent_hashing);
+        Config::setValue('process_file_assignment', 'balanced');
+        // 1000 + 10 * 300 = 4000 of 40000: 0.4 of an even share of 4 processes.
+        $files = self::singleHierarchyFiles(300);
+        $balanced = self::order($files, 4);
+        $this->assertIsPartition(self::nonVendorFiles($files), $balanced);
+        $this->assertLoadsWithinTolerance(4, self::loads($files, $balanced));
+        $this->assertSame(1, self::processCountWithFilesMatching('@^src/(Base|Sub\d+)\.php$@D', $balanced));
     }
 
     /**

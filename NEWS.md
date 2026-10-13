@@ -3,6 +3,9 @@
 Phan 6.0.11-dev
 --------------
 
+Performance improvements:
+- Split groups of files weighing more than half an even share, instead of a whole share, in the `'balanced'` `process_file_assignment`: a large class hierarchy that is under a share but placed first no longer leaves one analysis process noticeably heavier than the others (on a large codebase with `--processes 4`, the heaviest worker went from ~25 % above the mean to a few percent)
+
 Oct 12 2026, Phan 6.0.10
 --------------
 

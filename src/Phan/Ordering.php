@@ -25,6 +25,18 @@ class Ordering
     private const BOUNDED_LOAD_TOLERANCE_PERCENT = 15;
 
     /**
+     * With `process_file_assignment` set to `'balanced'`, a group of files weighing more than this fraction
+     * of an even share of the total weight is split into the subtrees of its root class's child classes.
+     *
+     * 1.0 would only split groups that cannot fit on one process at all, and the heaviest-first assignment
+     * can then end up to a whole share apart: on a large project whose test hierarchy weighed 0.7 shares,
+     * that group was placed first and its process ended ~25 % heavier than the others.
+     * 0.5 keeps the heaviest indivisible group small enough for the assignment to end within a few percent
+     * of even, while smaller hierarchies still stay together on one process.
+     */
+    private const SPLIT_SHARE_FRACTION = 0.5;
+
+    /**
      * @var CodeBase
      * The entire code base. Used to choose a file analysis ordering.
      */
@@ -194,8 +206,8 @@ class Ordering
      * Implements `process_file_assignment` = `'balanced'` for more than one process.
      *
      * Files are grouped by the topmost ancestor (of the first class declared in the file) whose file is analyzed,
-     * and weighted by their size. Groups weighing more than an even share are split into the subtrees of the child
-     * classes of their root class (recursively). Groups are assigned heaviest first, either to the least loaded process
+     * and weighted by their size. Groups weighing more than half an even share are split into the subtrees of the
+     * child classes of their root class (recursively). Groups are assigned heaviest first, either to the least loaded process
      * or (with `consistent_hashing_file_order`) with consistent hashing with bounded loads.
      * Each process analyzes its files in the order that the default assignment would use with a single process.
      *
@@ -295,8 +307,8 @@ class Ordering
             $weight[$file] = $file_weight;
             $total_weight += $file_weight;
         }
-        // An even share of the total weight per process: groups heavier than this are split.
-        $cap = \ceil($total_weight / $process_count);
+        // Groups heavier than this fraction of an even share of the total weight per process are split.
+        $cap = \ceil(self::SPLIT_SHARE_FRACTION * $total_weight / $process_count);
 
         /** @var list<array{0:string,1:float,2:list<string>}> $groups (key, weight, files) */
         $groups = [];
