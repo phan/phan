@@ -1452,6 +1452,93 @@ class CodeBase
     }
 
     /**
+     * @return array<string,list<FullyQualifiedClassName>>
+     * For each class, interface or trait (by FQSEN string; internal ones such as `\ArrayObject` can be keys),
+     * the user-defined classes that directly extend, implement, use or `@mixin` it.
+     */
+    public function getDirectChildClassIndex(): array
+    {
+        $index = [];
+        foreach ($this->getUserDefinedClassMap() as $class) {
+            $fqsen = $class->getFQSEN();
+            if ($class->hasParentType()) {
+                $index[$class->getParentClassFQSEN()->__toString()][] = $fqsen;
+            }
+            foreach ($class->getInterfaceFQSENList() as $interface_fqsen) {
+                $index[$interface_fqsen->__toString()][] = $fqsen;
+            }
+            foreach ($class->getTraitFQSENList() as $trait_fqsen) {
+                $index[$trait_fqsen->__toString()][] = $fqsen;
+            }
+            foreach ($class->getMixinTypes() as $mixin_type) {
+                try {
+                    $index[FullyQualifiedClassName::fromType($mixin_type)->__toString()][] = $fqsen;
+                } catch (\Exception) {
+                    // An invalid @mixin type; Clazz::importMixin() reports it.
+                }
+            }
+        }
+        return $index;
+    }
+
+    /**
+     * Returns the methods whose defining FQSEN or real defining FQSEN is $fqsen: the method itself, if it exists,
+     * and the copies of it that the classes extending, implementing, using or mixing in its class inherited
+     * (recursively) without overriding it.
+     *
+     * This is what getMethodsMapGroupedByDefiningFQSEN()->offsetGet($fqsen) contains, found by walking the descendants
+     * of the method's class instead of the whole method set, which large projects dominate with inherited copies.
+     *
+     * @param array<string,list<FullyQualifiedClassName>> $child_class_index the result of getDirectChildClassIndex()
+     * @return list<Method>
+     */
+    public function getMethodsInheritedFrom(FullyQualifiedMethodName $fqsen, array $child_class_index): array
+    {
+        $fqsen_string = $fqsen->__toString();
+        $name = $fqsen->getName();
+        $result = [];
+        $visited = [];
+        $queue = [$fqsen->getFullyQualifiedClassName()];
+        while ($queue) {
+            $class_fqsen = \array_pop($queue);
+            $class_fqsen_string = $class_fqsen->__toString();
+            if (isset($visited[$class_fqsen_string])) {
+                continue;
+            }
+            $visited[$class_fqsen_string] = true;
+            if ($this->hasClassWithFQSEN($class_fqsen)) {
+                $class = $this->getClassByFQSEN($class_fqsen);
+                if ($class->getTraitFQSENList() || $class->getMixinTypes()) {
+                    // A method of a trait may have been given another name (`use T { m as n; }`), so check every method.
+                    foreach ($class->getMethodMap($this) as $method) {
+                        if (self::isMethodDefinedBy($method, $fqsen_string)) {
+                            $result[] = $method;
+                        }
+                    }
+                } else {
+                    $method_fqsen = FullyQualifiedMethodName::make($class_fqsen, $name);
+                    if ($this->hasMethodWithFQSEN($method_fqsen)) {
+                        $method = $this->getMethodByFQSEN($method_fqsen);
+                        if (self::isMethodDefinedBy($method, $fqsen_string)) {
+                            $result[] = $method;
+                        }
+                    }
+                }
+            }
+            foreach ($child_class_index[$class_fqsen_string] ?? [] as $child_fqsen) {
+                $queue[] = $child_fqsen;
+            }
+        }
+        return $result;
+    }
+
+    private static function isMethodDefinedBy(Method $method, string $fqsen_string): bool
+    {
+        return $method->getDefiningFQSEN()->__toString() === $fqsen_string
+            || $method->getRealDefiningFQSEN()->__toString() === $fqsen_string;
+    }
+
+    /**
      * @return Map<FullyQualifiedMethodName,ArrayObject<Method>>
      */
     public function getMethodsMapGroupedByDefiningFQSEN(): Map

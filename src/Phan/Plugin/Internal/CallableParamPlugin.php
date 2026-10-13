@@ -235,6 +235,12 @@ final class CallableParamPlugin extends PluginV3 implements
             $add_misc_closures($function);
         }
         foreach ($code_base->getMethodSet() as $function) {
+            // The inherited copies of a method have its parameters and comment, and Analysis::loadMethodPlugins() attaches
+            // the closure generated for the method they were inherited from to them (CodeBase::getMethodsInheritedFrom()).
+            // They are ~90 % of the methods of a large project with deep hierarchies, so skip them here.
+            if ($function->getDefiningFQSEN() !== $function->getFQSEN()) {
+                continue;
+            }
             $add_misc_closures($function);
         }
 

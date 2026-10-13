@@ -583,9 +583,6 @@ class Phan implements IgnoredFilesFilterInterface
         foreach ($method_set as $method) {  // iterate, ignoring $fqsen
             $preload_function_state($method);
         }
-        // Calling getMethodsMapGroupedByDefiningFQSEN takes around 11 milliseconds for Phan self-analysis
-        // Preload this - it's high latency to generate the map in a forked analysis worker process.
-        $code_base->getMethodsMapGroupedByDefiningFQSEN();
     }
 
     private static function checkForOptionsConflictingWithServerModes(): void
