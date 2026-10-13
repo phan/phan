@@ -93,6 +93,20 @@ class Client5949 {
         '@phan-debug-var $response';
         new Results5949($response);
     }
+    /**
+     * Known limitation: the dead-branch marker is attached to the variable the impossible condition narrowed ($s),
+     * so an unknown value assigned to another variable in the dead branch still counts as a possible value of it.
+     * That is the conservative direction (a less specific type, never a new issue), and only matters for a dead
+     * branch that assigns an unknown value and falls through; one that throws or returns is not merged at all.
+     */
+    public function unknownAssignedInDeadBranch(string $s): void {
+        $y = 1;
+        if (!is_string($s)) {
+            $y = $this->untyped;
+        }
+        '@phan-debug-var $y';
+        var_export($y);
+    }
     /** Both branches unknown: stays unknown, no `mixed` is added. */
     public function bothUnknown(bool $c, $q): void {
         $response = $this->untyped;

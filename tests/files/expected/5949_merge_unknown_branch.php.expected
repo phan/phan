@@ -19,5 +19,7 @@
 %s:90 PhanDebugAnnotation @phan-debug-var requested for variable $response - it has union type ?'known'(real=?'known')
 %s:94 PhanNoopNew Unused result of new object creation expression in new Results5949($response) (this may be called for the side effects of the non-empty constructor or destructor)
 %s:94 PhanTypeMismatchArgumentProbablyReal Argument 1 ($json) is $response of type ?string but \Results5949::__construct() takes string[][][] (no real type) defined at %s:7 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
-%s:99 PhanDebugAnnotation @phan-debug-var requested for variable $response - it has union type (empty union type)
-%s:103 PhanNoopNew Unused result of new object creation expression in new Results5949($response) (this may be called for the side effects of the non-empty constructor or destructor)
+%s:104 PhanDebugAnnotation @phan-debug-var requested for variable $y - it has union type 1|mixed
+%s:104 PhanRedundantCondition Redundant attempt to cast $s of type string to string
+%s:113 PhanDebugAnnotation @phan-debug-var requested for variable $response - it has union type (empty union type)
+%s:117 PhanNoopNew Unused result of new object creation expression in new Results5949($response) (this may be called for the side effects of the non-empty constructor or destructor)
