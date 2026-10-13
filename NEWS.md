@@ -3,6 +3,9 @@
 Phan 6.0.11-dev
 --------------
 
+Bug fixes:
+- Keep the type of a variable unknown when it is unknown on some branches and known on others: `$x = null; if ($c) { $x = unknown(); }` (or the same with `try`/`catch`, `switch`, a loop, ...) used to make `$x` exactly `null` because the unknown branch contributed nothing to the merged type, so `PhanTypeMismatchArgument` (and related issues) were reported with certainty for a value that may be anything. The merged type is now `mixed` (resp. `T|mixed`), as the ternary operator already inferred in the same situation. This also makes the issues reported by `--processes N` runs less dependent on which process analyzed the callee, since a callee's inferred return type is only known to the process that analyzed its file
+
 Oct 12 2026, Phan 6.0.10
 --------------
 

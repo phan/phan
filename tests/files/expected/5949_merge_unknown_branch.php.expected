@@ -1,0 +1,23 @@
+%s:17 PhanDebugAnnotation @phan-debug-var requested for variable $response - it has union type mixed
+%s:21 PhanNoopNew Unused result of new object creation expression in new Results5949($response) (this may be called for the side effects of the non-empty constructor or destructor)
+%s:24 PhanDebugAnnotation @phan-debug-var requested for variable $response - it has union type int|mixed
+%s:30 PhanNoopNew Unused result of new object creation expression in new Results5949($response) (this may be called for the side effects of the non-empty constructor or destructor)
+%s:34 PhanDebugAnnotation @phan-debug-var requested for variable $response - it has union type mixed
+%s:36 PhanUnusedVariableCaughtException Unused definition of variable $e as a caught exception
+%s:40 PhanNoopNew Unused result of new object creation expression in new Results5949($response) (this may be called for the side effects of the non-empty constructor or destructor)
+%s:44 PhanDebugAnnotation @phan-debug-var requested for variable $response - it has union type mixed|null
+%s:46 PhanUnusedVariableCaughtException Unused definition of variable $e as a caught exception
+%s:50 PhanNoopNew Unused result of new object creation expression in new Results5949($response) (this may be called for the side effects of the non-empty constructor or destructor)
+%s:54 PhanDebugAnnotation @phan-debug-var requested for variable $response - it has union type mixed
+%s:58 PhanNoopNew Unused result of new object creation expression in new Results5949($response) (this may be called for the side effects of the non-empty constructor or destructor)
+%s:62 PhanDebugAnnotation @phan-debug-var requested for variable $response - it has union type ?'two'|mixed
+%s:71 PhanNoopNew Unused result of new object creation expression in new Results5949($response) (this may be called for the side effects of the non-empty constructor or destructor)
+%s:75 PhanDebugAnnotation @phan-debug-var requested for variable $response - it has union type mixed
+%s:79 PhanNoopNew Unused result of new object creation expression in new Results5949($response) (this may be called for the side effects of the non-empty constructor or destructor)
+%s:83 PhanDebugAnnotation @phan-debug-var requested for variable $response - it has union type mixed|null
+%s:85 PhanNoopNew Unused result of new object creation expression in new Results5949($response) (this may be called for the side effects of the non-empty constructor or destructor)
+%s:90 PhanDebugAnnotation @phan-debug-var requested for variable $response - it has union type ?'known'(real=?'known')
+%s:94 PhanNoopNew Unused result of new object creation expression in new Results5949($response) (this may be called for the side effects of the non-empty constructor or destructor)
+%s:94 PhanTypeMismatchArgumentProbablyReal Argument 1 ($json) is $response of type ?string but \Results5949::__construct() takes string[][][] (no real type) defined at %s:7 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:99 PhanDebugAnnotation @phan-debug-var requested for variable $response - it has union type (empty union type)
+%s:103 PhanNoopNew Unused result of new object creation expression in new Results5949($response) (this may be called for the side effects of the non-empty constructor or destructor)

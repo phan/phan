@@ -1,4 +1,6 @@
+%s:5 PhanImpossibleValueComparisonInLoop Impossible comparison of $i of type int (value: 2)|int (value: 3) to 3 of type int (value: 3) with operator '>' in a loop (the comparison is always false, likely a false positive)
 %s:6 PhanContinueOrBreakTooManyLevels Cannot 'continue' 2 levels.
+%s:7 PhanRedundantValueComparisonInLoop Redundant comparison of $i of type int (value: 2)|int (value: 3) to 0 of type int (value: 0) with operator '>' in a loop (the comparison is always true, likely a false positive)
 %s:12 PhanContinueOrBreakTooManyLevels Cannot 'break' 3 levels.
 %s:14 PhanContinueTargetingSwitch "continue" targeting switch is equivalent to "break". Did you mean to use "continue 2"?
 %s:16 PhanContinueOrBreakTooManyLevels Cannot 'continue' 4 levels.
