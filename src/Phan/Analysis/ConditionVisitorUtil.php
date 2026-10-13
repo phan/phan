@@ -1294,12 +1294,6 @@ trait ConditionVisitorUtil
                     // @phan-suppress-next-line PhanAccessMethodInternal
                     return $type->canSatisfyComparison($expr_value, $flags);
                 });
-                if ($union_type->isEmpty() && !$variable->getUnionType()->isEmpty()) {
-                    // No type of the variable can satisfy the comparison (e.g. `$array <= 1`): the branch is impossible.
-                    // Keep the variable's type rather than narrowing it to nothing, which is indistinguishable from an
-                    // unknown type and would add `mixed` to the type when the branches are merged.
-                    return $context;
-                }
                 if ($union_type->containsNullable()) {
                     // @phan-suppress-next-line PhanAccessMethodInternal
                     if (!Type::performComparison(null, $expr_value, $flags)) {

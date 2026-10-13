@@ -367,10 +367,12 @@ class ContextMergeVisitor extends KindVisitorImplementation
      * Whether the type of a variable on a branch is unknown: an empty union type
      * (the variable exists on that branch, but nothing is known about its value).
      * A definitely undefined variable is not an unknown type: it does not exist on that branch at all.
+     * Neither is a variable narrowed to no possible type by an impossible condition (UnionType::impossible()):
+     * that branch is dead and contributes nothing.
      */
     private static function isUnknownType(UnionType $union_type): bool
     {
-        return $union_type->isEmpty() && !$union_type->isDefinitelyUndefined();
+        return $union_type->isEmpty() && !$union_type->isDefinitelyUndefined() && $union_type !== UnionType::impossible();
     }
 
     /**
