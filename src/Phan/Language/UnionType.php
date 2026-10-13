@@ -307,12 +307,31 @@ class UnionType implements Serializable, Stringable
     }
 
     /**
+     * @var EmptyUnionType an empty union type that marks a variable narrowed to no possible type by an impossible condition
+     * (see Context::withScopeVariable()). It behaves like UnionType::empty() everywhere; only ContextMergeVisitor
+     * tells the two apart, so that a dead branch contributes nothing to the merged type of a variable
+     * while a branch where the type is unknown contributes `mixed`.
+     */
+    private static $impossible_instance;
+
+    /**
+     * The empty union type of a variable narrowed by an impossible condition (e.g. `!is_string($s)` on a string).
+     * Distinguishable from UnionType::empty() by identity only.
+     * @return EmptyUnionType (Real return type omitted for performance)
+     */
+    public static function impossible(): EmptyUnionType
+    {
+        return self::$impossible_instance;
+    }
+
+    /**
      * @internal
      */
     public static function init(): void
     {
         if (\is_null(self::$empty_instance)) {
             self::$empty_instance = EmptyUnionType::instance();
+            self::$impossible_instance = new EmptyUnionType();
         }
     }
 

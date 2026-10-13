@@ -509,6 +509,18 @@ class Context extends FileRef
         Variable $variable
     ): Context {
         $scope = $this->scope;
+        $new_type = $variable->getUnionType();
+        if ($new_type->isEmpty() && !$new_type->isDefinitelyUndefined() && $new_type !== UnionType::impossible()) {
+            // The condition visitors narrow a variable with this method. When no type of the variable can satisfy the
+            // condition (e.g. `!is_string($s)` on a string, `$array <= 1`, `!in_array($x, [...], true)` removing every
+            // literal), the branch is impossible. Mark that with a distinct empty type: an empty type is otherwise
+            // indistinguishable from an unknown one (e.g. an assignment with no inferable type), and ContextMergeVisitor
+            // must let a dead branch contribute nothing to the merged type while an unknown branch contributes `mixed`.
+            $previous = $scope->getVariableByNameOrNull($variable->getName());
+            if ($previous && !$previous->getUnionType()->isEmpty()) {
+                $variable->setUnionType(UnionType::impossible());
+            }
+        }
         if ($scope instanceof GlobalScope) {
             // GlobalScope::withVariable() adds the variable to the global scope itself, which every statement of the file
             // (and every function using `global`) shares. The condition visitors use this method to narrow a variable
