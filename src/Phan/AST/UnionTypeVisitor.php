@@ -4222,6 +4222,11 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $result = $result->withType($fqsen->asType());
             } elseif (\get_class($sub_type) === Type::class || $sub_type instanceof ClosureType || $sub_type instanceof StaticType) {
                 $result = $result->withType($sub_type);
+            } elseif ($sub_type instanceof ObjectType) {
+                // `new $obj()` creates an instance of the class of $obj (see #1926). With a plain
+                // `object` (e.g. a value narrowed by method_exists()) that class is unknown, but
+                // the expression is valid and creates an object.
+                $result = $result->withType($sub_type->withIsNullable(false));
             } else {
                 if ($sub_type instanceof StringType) {
                     if ($sub_type instanceof ClassStringType) {
