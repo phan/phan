@@ -93,6 +93,11 @@ trait FunctionTrait
     abstract public function setPhanFlags(int $phan_flags): void;
 
     /**
+     * Records a change of the state owned by this element (TypedElement::bumpStateVersion())
+     */
+    abstract protected function bumpStateVersion(): void;
+
+    /**
      * @return string
      * The (not fully-qualified) name of this element.
      */
@@ -297,6 +302,7 @@ trait FunctionTrait
      */
     public function setNumberOfOptionalParameters(int $number): void
     {
+        $this->bumpStateVersion();
         $this->number_of_optional_parameters = $number;
     }
 
@@ -347,6 +353,7 @@ trait FunctionTrait
      */
     public function setNumberOfRequiredParameters(int $number): void
     {
+        $this->bumpStateVersion();
         $this->number_of_required_parameters = $number;
     }
 
@@ -519,7 +526,13 @@ trait FunctionTrait
      */
     public function needsRecursiveAnalysis(): bool
     {
-        return $this->needs_recursive_analysis ?? ($this->needs_recursive_analysis = $this->computeNeedsRecursiveAnalysis());
+        return $this->needs_recursive_analysis ?? $this->fillNeedsRecursiveAnalysis();
+    }
+
+    private function fillNeedsRecursiveAnalysis(): bool
+    {
+        $this->bumpStateVersion();
+        return $this->needs_recursive_analysis = $this->computeNeedsRecursiveAnalysis();
     }
 
     private function computeNeedsRecursiveAnalysis(): bool
@@ -601,6 +614,7 @@ trait FunctionTrait
      */
     public function setParameterList(array $parameter_list): void
     {
+        $this->bumpStateVersion();
         $this->parameter_list = $parameter_list;
         if (\is_null($this->parameter_list_hash)) {
             $this->initParameterListInfo();
@@ -670,6 +684,7 @@ trait FunctionTrait
      */
     public function setRealParameterList(array $parameter_list): void
     {
+        $this->bumpStateVersion();
         $this->real_parameter_list = \array_map(static function (Parameter $param): Parameter {
             return clone($param);
         }, $parameter_list);
@@ -681,10 +696,24 @@ trait FunctionTrait
     }
 
     /**
+     * Returns the real parameters of this function-like without cloning them (unlike getRealParameterList()).
+     * The caller must not modify them.
+     *
+     * @return list<Parameter>
+     * @internal
+     */
+    public function getRealParameterListWithoutCloning(): array
+    {
+        return $this->real_parameter_list;
+    }
+
+    /**
      * @internal - moves real parameter defaults to the inferred phpdoc parameters
      */
     public function inheritRealParameterDefaults(): void
     {
+        // The parameters record their own changes; this records that this method's parameters changed.
+        $this->bumpStateVersion();
         foreach ($this->real_parameter_list as $i => $real_parameter) {
             $parameter = $this->parameter_list[$i] ?? null;
             if (!$parameter || $parameter->isVariadic() || $real_parameter->isVariadic()) {
@@ -728,6 +757,7 @@ trait FunctionTrait
     public function setRealReturnType(UnionType $union_type): void
     {
         // TODO: was `self` properly resolved already? What about in subclasses?
+        $this->bumpStateVersion();
         $this->real_return_type = $union_type;
     }
 
@@ -753,6 +783,7 @@ trait FunctionTrait
      */
     public function appendParameter(Parameter $parameter): void
     {
+        $this->bumpStateVersion();
         $this->parameter_list[] = $parameter;
     }
 
@@ -764,6 +795,7 @@ trait FunctionTrait
      */
     public function clearParameterList(): void
     {
+        $this->bumpStateVersion();
         $this->parameter_list = [];
         $this->parameter_list_hash = null;
     }
@@ -1068,6 +1100,7 @@ trait FunctionTrait
      */
     public function setPHPDocParameterTypeMap(array $parameter_map): void
     {
+        $this->bumpStateVersion();
         $this->phpdoc_parameter_type_map = $parameter_map;
     }
 
@@ -1079,6 +1112,7 @@ trait FunctionTrait
      */
     public function recordOutputReferenceParamName(string $parameter_name): void
     {
+        $this->bumpStateVersion();
         $this->phpdoc_output_references[] = $parameter_name;
     }
 
@@ -1103,6 +1137,7 @@ trait FunctionTrait
      */
     public function setPHPDocReturnType(?UnionType $type): void
     {
+        $this->bumpStateVersion();
         $this->phpdoc_return_type = $type;
     }
 
@@ -1170,6 +1205,7 @@ trait FunctionTrait
         }
         // Record the fact that it has already been analyzed,
         // along with the depth of recursion so far.
+        $this->bumpStateVersion();
         $this->checked_parameter_list_hashes[$hash] = $new_recursion_depth_for_hash;
         return $this->analyze($context, $code_base);
     }
@@ -1227,6 +1263,7 @@ trait FunctionTrait
 
     public function setDependentReturnTypeClosure(Closure $closure): void
     {
+        $this->bumpStateVersion();
         $this->return_type_callback = $closure;
     }
 
@@ -1243,6 +1280,7 @@ trait FunctionTrait
      */
     public function setConditionalReturnType(?ConditionalReturnType $conditional): void
     {
+        $this->bumpStateVersion();
         $this->conditional_return_type = $conditional;
     }
 
@@ -1417,6 +1455,7 @@ trait FunctionTrait
     public function setFunctionCallAnalyzer(Closure $closure): void
     {
         $closure_id = spl_object_id($closure);
+        $this->bumpStateVersion();
         $this->function_call_analyzer_callback_set = [
             $closure_id => true
         ];
@@ -1433,6 +1472,7 @@ trait FunctionTrait
         if (isset($this->function_call_analyzer_callback_set[$closure_id])) {
             return;
         }
+        $this->bumpStateVersion();
         $this->function_call_analyzer_callback_set[$closure_id] = true;
         $old_closure = $this->function_call_analyzer_callback;
         if ($old_closure) {
@@ -1451,6 +1491,7 @@ trait FunctionTrait
 
     public function setComment(Comment $comment): void
     {
+        $this->bumpStateVersion();
         $this->comment = $comment;
     }
 
@@ -1476,6 +1517,7 @@ trait FunctionTrait
             return;
         }
         $this->is_inner_scope_initialized = true;
+        $this->bumpStateVersion();
 
         // Add $this variable for non-static methods in generic classes
         // This must run for ALL methods, not just those with docblocks
@@ -1618,7 +1660,13 @@ trait FunctionTrait
      */
     public function asFunctionLikeDeclarationType(): FunctionLikeDeclarationType
     {
-        return $this->as_closure_declaration_type ?? ($this->as_closure_declaration_type = $this->createFunctionLikeDeclarationType());
+        return $this->as_closure_declaration_type ?? $this->fillFunctionLikeDeclarationType();
+    }
+
+    private function fillFunctionLikeDeclarationType(): FunctionLikeDeclarationType
+    {
+        $this->bumpStateVersion();
+        return $this->as_closure_declaration_type = $this->createFunctionLikeDeclarationType();
     }
 
     /**
@@ -1681,7 +1729,13 @@ trait FunctionTrait
      */
     public function getReturnTypeAsGeneratorTemplateType(): Type
     {
-        return $this->as_generator_template_type ?? ($this->as_generator_template_type = $this->getUnionType()->asGeneratorTemplateType());
+        return $this->as_generator_template_type ?? $this->fillReturnTypeAsGeneratorTemplateType();
+    }
+
+    private function fillReturnTypeAsGeneratorTemplateType(): Type
+    {
+        $this->bumpStateVersion();
+        return $this->as_generator_template_type = $this->getUnionType()->asGeneratorTemplateType();
     }
 
     /**
@@ -1702,6 +1756,7 @@ trait FunctionTrait
             return;
         }
         $this->did_analyze_return_types = true;
+        $this->bumpStateVersion();
         try {
             $this->analyzeReturnTypesInner($code_base, $emit_only_checks);
         } catch (RecursionDepthException) {
@@ -2595,7 +2650,13 @@ trait FunctionTrait
      */
     public function getOriginalReturnType(): UnionType
     {
-        return $this->original_return_type ?? ($this->original_return_type = $this->getUnionType());
+        return $this->original_return_type ?? $this->fillOriginalReturnType();
+    }
+
+    private function fillOriginalReturnType(): UnionType
+    {
+        $this->bumpStateVersion();
+        return $this->original_return_type = $this->getUnionType();
     }
 
     /**
@@ -2605,6 +2666,7 @@ trait FunctionTrait
      */
     public function setOriginalReturnType(): void
     {
+        $this->bumpStateVersion();
         $this->original_return_type = $this->getUnionType();
     }
 
@@ -2613,6 +2675,7 @@ trait FunctionTrait
         if (isset($this->last_mandatory_phpdoc_param_offset) && $parameter_offset <= $this->last_mandatory_phpdoc_param_offset) {
             return;
         }
+        $this->bumpStateVersion();
         $this->last_mandatory_phpdoc_param_offset = $parameter_offset;
     }
 

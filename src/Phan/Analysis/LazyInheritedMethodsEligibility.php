@@ -38,6 +38,17 @@ final class LazyInheritedMethodsEligibility
     private static $template_roots = [];
 
     /**
+     * @var array<int,list<int>> for each root in $template_roots, the state versions recorded at its first
+     * would-be lazy import, or at the last one where they had changed (see getStateVersionsOfRoot())
+     */
+    private static $template_root_versions = [];
+
+    /**
+     * @var array<int,true> the roots in $template_roots whose state versions changed at least once
+     */
+    private static $mutated_roots = [];
+
+    /**
      * @var bool whether the class phase is running (from the start of hydration until the end of Analysis::analyzeClasses()):
      * lazy copies are only created then.
      */
@@ -204,10 +215,42 @@ final class LazyInheritedMethodsEligibility
             self::increment('eligible_relaxed_link');
         }
         $id = \spl_object_id($entry);
+        $versions = self::getStateVersionsOfRoot($entry);
         if (!isset(self::$template_roots[$id])) {
             self::$template_roots[$id] = $entry;
+            self::$template_root_versions[$id] = $versions;
             self::increment('templates');
+            return;
         }
+        if (self::$template_root_versions[$id] !== $versions) {
+            // A lazy copy created from a remembered clone of the root would have to remember a new clone here.
+            self::$template_root_versions[$id] = $versions;
+            self::increment('template_recaptures');
+            if (!isset(self::$mutated_roots[$id])) {
+                self::$mutated_roots[$id] = true;
+                self::increment('roots_mutated');
+            }
+        }
+    }
+
+    /**
+     * Returns the state versions of $root, its internal scope (plus the sum of the versions of the variables in it)
+     * and its parameters: if any of them changes, the state that a copy of $root would be cloned from has changed.
+     *
+     * @return list<int>
+     */
+    private static function getStateVersionsOfRoot(Method $root): array
+    {
+        $scope = $root->getInternalScope();
+        $variable_versions = 0;
+        foreach ($scope->getVariableMap() as $variable) {
+            $variable_versions += $variable->getStateVersion();
+        }
+        $versions = [$root->getStateVersion(), $scope->getStateVersion(), $variable_versions];
+        foreach ($root->getParameterList() as $parameter) {
+            $versions[] = $parameter->getStateVersion();
+        }
+        return $versions;
     }
 
     private static function increment(string $name): void
@@ -234,5 +277,7 @@ final class LazyInheritedMethodsEligibility
         self::$counts = [];
         self::$template_roots = [];
         self::$is_counting_enabled = null;
+        self::$template_root_versions = [];
+        self::$mutated_roots = [];
     }
 }

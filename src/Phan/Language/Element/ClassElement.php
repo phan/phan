@@ -113,6 +113,7 @@ abstract class ClassElement extends AddressableElement
     public function setDefiningFQSEN(
         FullyQualifiedClassElement $defining_fqsen
     ): void {
+        $this->bumpStateVersion();
         $this->defining_fqsen = $defining_fqsen;
     }
 

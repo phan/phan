@@ -148,6 +148,11 @@ class CodeBase
     private $method_set;
 
     /**
+     * @var int the number of calls to addMethod() so far: the rank of the last method added (see nextEagerOrdinal())
+     */
+    private $eager_ordinal = 0;
+
+    /**
      * @var Map<FullyQualifiedClassName,ClassMap>
      * A map from FullyQualifiedClassName to a ClassMap,
      * an object that holds properties, methods and class
@@ -1307,6 +1312,8 @@ class CodeBase
      */
     public function addMethod(Method $method): void
     {
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        $method->setEagerOrdinal($this->nextEagerOrdinal());
         // Add the method to the map
         $this->getClassMapByFQSEN(
             $method->getFQSEN()
@@ -1486,6 +1493,18 @@ class CodeBase
     public function getMethodSet(): Set
     {
         return $this->method_set;
+    }
+
+    /**
+     * Returns the next rank in the order in which methods are added to this code base
+     * (addMethod() records it on the method, see Method::getEagerOrdinal()).
+     * A later change that creates inherited method copies lazily uses it to process those copies
+     * in the order in which they would have been added.
+     * @internal
+     */
+    public function nextEagerOrdinal(): int
+    {
+        return ++$this->eager_ordinal;
     }
 
     /**

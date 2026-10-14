@@ -11,7 +11,9 @@ use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Method;
+use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\UnionType;
 use Phan\Library\FileCache;
 use Phan\Library\None;
 use Phan\Library\PhaseTimer;
@@ -217,5 +219,41 @@ PHP;
         ], $counts);
         // Interface imports are not counted, and the copies are created as before.
         $this->assertNotNull($code_base->getMethodEntryByClassAndLowercaseName(FullyQualifiedClassName::fromFullyQualifiedString('\SChild5951'), 'untyped'));
+    }
+
+    /**
+     * @throws \Phan\Exception\FQSENException never, the names are literals
+     */
+    public function testCountsOfTemplateRecaptures(): void
+    {
+        $code_base = self::makeCodeBase();
+        PhaseTimer::$enabled = true;
+        $class = self::getClass($code_base, '\SChild5951');
+        $parent = self::getClass($code_base, '\VBase5951');
+        $root = self::getEntry($code_base, '\VBase5951', 'typed');
+        $count = static function () use ($code_base, $class, $parent, $root): void {
+            LazyInheritedMethodsEligibility::countParentImportEntry($code_base, $class, $parent, null, 'typed', $root);
+        };
+        $count();
+        $count();  // @phan-suppress-current-line PhanPluginDuplicateAdjacentStatement unchanged: not a recapture
+        $counts = LazyInheritedMethodsEligibility::getCounts();
+        $this->assertSame(2, $counts['lazy_would_be_eligible']);
+        $this->assertSame(1, $counts['lazy_would_be_templates']);
+        $this->assertArrayNotHasKey('lazy_would_be_template_recaptures', $counts);
+
+        // A change of the root's owned state since the last would-be lazy import is a recapture.
+        $root->setHasReturn(!$root->hasReturn());
+        $count();
+        $count();  // @phan-suppress-current-line PhanPluginDuplicateAdjacentStatement unchanged since the last one
+        // So is a change of a variable in its scope.
+        $variable = new Variable(new Context(), 'v', UnionType::empty(), 0);
+        $root->getInternalScope()->addVariable($variable);
+        $count();
+        $variable->setUnionType(UnionType::empty());
+        $count();
+        $counts = LazyInheritedMethodsEligibility::getCounts();
+        $this->assertSame(1, $counts['lazy_would_be_templates']);
+        $this->assertSame(3, $counts['lazy_would_be_template_recaptures']);
+        $this->assertSame(1, $counts['lazy_would_be_roots_mutated']);
     }
 }

@@ -151,6 +151,7 @@ final class GlobalScope extends Scope
             // TODO: Add a warning for incompatible assignments in callers.
             return;
         }
+        $this->bumpStateVersion();
 
         // Track this file's contribution for incremental analysis
         $current_file = self::$current_analyzing_file;

@@ -19,10 +19,16 @@ trait ClosedScopeElement
     private $internal_scope;
 
     /**
+     * Records a change of the state owned by this element (TypedElement::bumpStateVersion())
+     */
+    abstract protected function bumpStateVersion(): void;
+
+    /**
      * Sets the internal scope of this closed scope element.
      */
     public function setInternalScope(ClosedScope $internal_scope): void
     {
+        $this->bumpStateVersion();
         $this->internal_scope = $internal_scope;
     }
 

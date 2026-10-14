@@ -61,6 +61,7 @@ class Method extends ClassElement implements FunctionInterface
 
     /**
      * @var Set<FullyQualifiedMethodName> FQSENs of methods potentially overriding this one.
+     * (This Set is shared with clones, so adding to it does not change the state version.)
      */
     private $method_overrides;
 
@@ -71,6 +72,7 @@ class Method extends ClassElement implements FunctionInterface
 
     /**
      * @var ?array<int,Method> cache of overridden methods (abstract before concrete)
+     * (Filling it does not change the state version: clones reset it.)
      */
     private $overridden_methods_cache = null;
 
@@ -79,6 +81,14 @@ class Method extends ClassElement implements FunctionInterface
      *              Used by Analysis\CloneReplay during the method analysis phase - do not use this.
      */
     private $clone_source = null;
+
+    /**
+     * @var int the rank of this method in the order in which methods were added to the code base
+     * (set by CodeBase::addMethod(), 0 if it was not added). Clones keep it until they are added themselves.
+     * A later change that creates inherited method copies lazily uses it to process those copies in the order
+     * in which they would have been added.
+     */
+    private $eager_ordinal = 0;
 
     /**
      * @var bool whether this is a clone whose parameter or return types were specialized by template substitution
@@ -165,7 +175,8 @@ class Method extends ClassElement implements FunctionInterface
 
     public function __clone()
     {
-        $this->setInternalScope(clone($this->getInternalScope()));
+        // (Not setInternalScope(): a clone starts with the state version of the method it was cloned from.)
+        $this->internal_scope = clone($this->internal_scope);
         $this->overridden_methods_cache = null;
         // Only Clazz::addMethod() records the method that a clone was created from
         $this->clone_source = null;
@@ -758,7 +769,11 @@ class Method extends ClassElement implements FunctionInterface
     public function ensureClonesReturnType(Method $original_method): void
     {
         if (!$this->defining_method_for_type_fetching) {
-            $this->defining_method_for_type_fetching = $original_method->getReturnTypeLinkTargetForClone();
+            $link_target = $original_method->getReturnTypeLinkTargetForClone();
+            if ($link_target) {
+                $this->bumpStateVersion();
+                $this->defining_method_for_type_fetching = $link_target;
+            }
         }
     }
 
@@ -804,7 +819,28 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function setCloneSource(Method $source): void
     {
+        // This does not change the state version: Clazz::addMethod() sets this on every copy, and clones reset it.
         $this->clone_source = $source;
+    }
+
+    /**
+     * Records the rank of this method in the order in which methods were added to the code base.
+     * This does not change the state version: CodeBase::addMethod() sets it on every method it adds.
+     * @internal
+     */
+    public function setEagerOrdinal(int $eager_ordinal): void
+    {
+        $this->eager_ordinal = $eager_ordinal;
+    }
+
+    /**
+     * Returns the rank of this method in the order in which methods were added to the code base
+     * (CodeBase::nextEagerOrdinal()), or 0 if it was not added.
+     * @internal
+     */
+    public function getEagerOrdinal(): int
+    {
+        return $this->eager_ordinal;
     }
 
     /**
@@ -940,6 +976,7 @@ class Method extends ClassElement implements FunctionInterface
     public function replayDeclarationAnalysis(CodeBase $code_base, CloneReplaySnapshot $snapshot): void
     {
         $this->is_inner_scope_initialized = true;
+        $this->bumpStateVersion();
         if ($snapshot->adds_this_variable) {
             $this_variable = $this->createThisVariableOfGenericClass($code_base);
             if ($this_variable) {
@@ -975,6 +1012,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function applyCloneReplaySnapshot(CloneReplaySnapshot $snapshot): void
     {
+        $this->bumpStateVersion();
         $this->phpdoc_parameter_type_map = $snapshot->phpdoc_parameter_type_map;
         $this->last_mandatory_phpdoc_param_offset = $snapshot->last_mandatory_phpdoc_param_offset;
         $parameter_states = $snapshot->parameter_states;
@@ -1525,6 +1563,7 @@ class Method extends ClassElement implements FunctionInterface
                 // Don't track methods calling themselves
                 return;
             }
+            $this->bumpStateVersion();
             $this->reference_list[$file_ref->__toString()] = $file_ref;
         }
     }
@@ -1543,6 +1582,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function setInheritedThrowsUnionType(UnionType $type): void
     {
+        $this->bumpStateVersion();
         $this->inherited_throws_union_type = $type;
     }
 
@@ -1554,6 +1594,7 @@ class Method extends ClassElement implements FunctionInterface
         if ($union_type->isEmpty()) {
             return;
         }
+        $this->bumpStateVersion();
         $class_key = $class_fqsen->__toString();
         if (!isset($this->static_property_set_types[$class_key])) {
             $this->static_property_set_types[$class_key] = [

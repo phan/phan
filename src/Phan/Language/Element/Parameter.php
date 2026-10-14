@@ -140,6 +140,7 @@ class Parameter extends Variable
      */
     public function setDefaultValueType(UnionType $type): void
     {
+        $this->bumpStateVersion();
         $this->default_value_type = $type;
         $this->default_value_literal_type = $type;
     }
@@ -150,6 +151,7 @@ class Parameter extends Variable
      */
     public function setDefaultValueFutureType(FutureUnionType $type): void
     {
+        $this->bumpStateVersion();
         $this->default_value_future_type = $type;
     }
 
@@ -159,6 +161,7 @@ class Parameter extends Variable
      */
     public function setDefaultValueRepresentation(?string $representation): void
     {
+        $this->bumpStateVersion();
         $this->default_value_representation = $representation;
     }
 
@@ -171,6 +174,8 @@ class Parameter extends Variable
     {
         $future_type = $this->default_value_future_type;
         if ($future_type !== null) {
+            // Resolving the future type fills the default value types.
+            $this->bumpStateVersion();
             // Only attempt to resolve the future type once.
             try {
                 $this->default_value_literal_type = $future_type->get();
@@ -200,6 +205,8 @@ class Parameter extends Variable
     {
         $future_type = $this->default_value_future_type;
         if ($future_type !== null) {
+            // Resolving the future type fills the default value types.
+            $this->bumpStateVersion();
             // Only attempt to resolve the future type once.
             try {
                 $this->default_value_literal_type = $future_type->get();
@@ -226,6 +233,7 @@ class Parameter extends Variable
      */
     public function setDefaultValue(mixed $value): void
     {
+        $this->bumpStateVersion();
         $this->default_value = $value;
     }
 
@@ -983,6 +991,7 @@ class Parameter extends Variable
      */
     public function copyDefaultValueFrom(Parameter $other): void
     {
+        $this->bumpStateVersion();
         $this->default_value = $other->default_value;
         $this->default_value_type = $other->default_value_type;
         $this->default_value_literal_type = $other->default_value_literal_type;
@@ -997,6 +1006,7 @@ class Parameter extends Variable
      */
     public function setShouldWarnIfProvided(bool $should_warn_if_provided): void
     {
+        $this->bumpStateVersion();
         $this->should_warn_if_provided = $this->hasDefaultValue() && $should_warn_if_provided;
     }
 
@@ -1074,6 +1084,7 @@ class Parameter extends Variable
      */
     public function setCloneReplayState(array $state): void
     {
+        $this->bumpStateVersion();
         [$this->type, $phan_flags, $this->default_value_type, $this->default_value_literal_type, $this->default_value_future_type] = $state;
         $this->setPhanFlags($phan_flags);
     }
