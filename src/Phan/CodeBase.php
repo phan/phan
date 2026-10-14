@@ -798,12 +798,20 @@ class CodeBase
      */
     public function __clone()
     {
-        if ($this->lazy_inherited !== null) {
-            // The lazy entries of the class maps refer to the class maps of the original, which are copied below:
-            // create every copy first (in the original's maps and method set, which this clone still shares).
+        $lazy = $this->lazy_inherited;
+        if ($lazy !== null) {
+            // The lazy entries of the class maps refer to the class maps of the original, which are copied below,
+            // and copies created after the method loop are only listed in the registry, which the clone does not keep.
+            // So create every remaining copy first (in the class maps, which this clone still shares) and merge all of
+            // them into the method set of the code base owning the registry, in eager order (as getMethodSet() does).
+            // Then the original and the clone both have the complete method set.
             // (Only daemon mode and the language server clone code bases, and lazy_inherited_methods is disabled there.)
+            // @phan-suppress-next-line PhanAccessPropertyInternal
+            $owner = $lazy->code_base;
             // @phan-suppress-next-line PhanAccessMethodInternal
-            $this->lazy_inherited->materializeAll('clone');
+            $this->method_set = $lazy->getMethodSetInEagerOrder($owner->method_set, 'clone', static function (Set $sorted_set) use ($owner): void {
+                $owner->method_set = $sorted_set;
+            });
             $this->lazy_inherited = null;
         }
         $this->fqsen_class_map =

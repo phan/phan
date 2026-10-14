@@ -616,6 +616,42 @@ PHP;
     }
 
     /**
+     * Cloning a code base after the method phase (as daemon mode does for restore points) adds the remaining lazy
+     * copies and those created after the method loop to the method set: the clone, which has no registry,
+     * and the original both have the eager method set, in eager order.
+     *
+     * @throws \Phan\Exception\FQSENException|\InvalidArgumentException never, the names are literals
+     */
+    public function testCloneAfterMethodPhaseHasEveryMethod(): void
+    {
+        $run_method_phase = static function (bool $lazy): CodeBase {
+            $code_base = self::makeCodeBase($lazy);
+            Analysis::analyzeClasses($code_base);
+            $code_base->getLazyInherited()?->closeCreationWindow();
+            Analysis::analyzeFunctions($code_base);
+            return $code_base;
+        };
+        $expected = self::fqsens($run_method_phase(false)->getMethodSet());
+        $code_base = $run_method_phase(true);
+        $registry = self::registry($code_base);
+        // A copy created after the method loop is only listed in the registry until the public method set is used
+        $late = self::method($code_base, '\SOther6002::b');
+        $this->assertSame(1, $registry->getCounts()['lazy_materialized_late_lookup'] ?? 0);
+        $this->assertNotContains('\SOther6002::b', self::fqsens($code_base->getMethodSetWithoutLazyEntries()));
+        $this->assertGreaterThan(0, $registry->getLazyEntryCount());
+
+        $clone = clone($code_base);
+        $this->assertNull($clone->getLazyInherited());
+        $this->assertSame($expected, self::fqsens($clone->getMethodSet()));
+        $this->assertSame(0, $registry->getLazyEntryCount());
+        // The original keeps its registry and has the same, complete method set
+        $this->assertSame($registry, $code_base->getLazyInherited());
+        $this->assertSame($expected, self::fqsens($code_base->getMethodSetWithoutLazyEntries()));
+        $this->assertSame($expected, self::fqsens($code_base->getMethodSet()));
+        $this->assertSame($late, self::method($code_base, '\SOther6002::b'));
+    }
+
+    /**
      * Run the class and method phases on the fixtures like Phan does before the analysis phase.
      *
      * @return array{0:list<string>,1:string,2:array<string,int|float>,3:string} the issues, the method state digest
