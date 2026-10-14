@@ -53,9 +53,22 @@ class TBase5950 {
 /** @extends TBase5950<callable> */
 class TChild5950 extends TBase5950 {}
 class TPlain5950 extends TBase5950 {}
+class_alias(Base5950::class, 'Aliased5950');
+class ViaAlias5950 extends Aliased5950 {}
+/** @template T */
+trait GT5950 {
+    /** @param T $x */
+    public function gt($x) {}
+}
+/** @use GT5950<callable> */
+class GUser5950 {
+    use GT5950;
+}
+class GChild5950 extends GUser5950 {}
 PHP;
         $code_base = new CodeBase([], [], [], [], []);
         Phan::setIssueCollector(new BufferingCollector());
+        Config::setValue('enable_class_alias_support', true);
         // Issues emitted while importing the ancestors (e.g. about the template types) look the file up for suppressions.
         FileCache::addEntry('5950.php', $code);
         FileCache::addEntry(Config::projectPath('5950.php'), $code);
@@ -64,6 +77,7 @@ PHP;
             (new Context())->withFile('5950.php'),
             \ast\parse_code($code, Config::AST_VERSION)
         );
+        $code_base->resolveClassAliases();
         // Create the inherited copies of methods, as the class analysis phase does.
         foreach ($code_base->getUserDefinedClassMap() as $class) {
             $class->importAncestorClasses($code_base);
@@ -130,19 +144,20 @@ PHP;
         $code_base = self::makeCodeBase();
         $index = $code_base->getDirectChildClassIndex();
         // The method itself and the copies in the subclasses that do not override it; not the unrelated method of the same name.
+        // (ViaAlias5950 extends Base5950 through a class alias.)
         $this->assertSame(
-            ['\Base5950::inherited', '\Child5950::inherited', '\GrandChild5950::inherited', '\Mixed5950::inherited'],
+            ['\Base5950::inherited', '\Child5950::inherited', '\GrandChild5950::inherited', '\Mixed5950::inherited', '\ViaAlias5950::inherited'],
             self::inheritedFrom($code_base, $index, '\Base5950::inherited')
         );
         // The override in Child5950 is a different method, inherited by GrandChild5950.
-        $this->assertSame(['\Base5950::overridden', '\Mixed5950::overridden'], self::inheritedFrom($code_base, $index, '\Base5950::overridden'));
+        $this->assertSame(['\Base5950::overridden', '\Mixed5950::overridden', '\ViaAlias5950::overridden'], self::inheritedFrom($code_base, $index, '\Base5950::overridden'));
         $this->assertSame(['\Child5950::overridden', '\GrandChild5950::overridden'], self::inheritedFrom($code_base, $index, '\Child5950::overridden'));
         // A trait method, including the copy with another name.
         $this->assertSame(
             [
                 '\Alias5950::aliased', '\Alias5950::viaParent', '\AliasChild5950::aliased', '\AliasChild5950::viaParent',
                 '\Base5950::aliased', '\Child5950::aliased', '\GrandChild5950::aliased', '\GrandChild5950::renamed',
-                '\Mixed5950::aliased', '\T5950::aliased', '\UsesTrait5950::aliased',
+                '\Mixed5950::aliased', '\T5950::aliased', '\UsesTrait5950::aliased', '\ViaAlias5950::aliased',
             ],
             self::inheritedFrom($code_base, $index, '\T5950::aliased')
         );
@@ -170,5 +185,9 @@ PHP;
         $this->assertFalse($code_base->isInheritedCopyWithSameSignature(self::method($code_base, '\TChild5950::run')));
         $this->assertStringContainsString('callable', (string)self::method($code_base, '\TChild5950::run')->getParameterList()[0]->getUnionType());
         $this->assertFalse($code_base->isInheritedCopyWithSameSignature(self::method($code_base, '\TPlain5950::run')));
+        // A trait method specialized with `@use GT5950<callable>` stays specialized when adapted into the using class,
+        // so the copy a subclass inherits from that class is not an unspecialized copy either.
+        $this->assertStringContainsString('callable', (string)self::method($code_base, '\GUser5950::gt')->getParameterList()[0]->getUnionType());
+        $this->assertFalse($code_base->isInheritedCopyWithSameSignature(self::method($code_base, '\GChild5950::gt')));
     }
 }

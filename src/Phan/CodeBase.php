@@ -1462,23 +1462,36 @@ class CodeBase
         foreach ($this->fqsen_class_map_user_defined as $class) {
             $fqsen = $class->getFQSEN();
             if ($class->hasParentType()) {
-                $index[$class->getParentClassFQSEN()->__toString()][] = $fqsen;
+                $index[$this->canonicalClassFQSENString($class->getParentClassFQSEN())][] = $fqsen;
             }
             foreach ($class->getInterfaceFQSENList() as $interface_fqsen) {
-                $index[$interface_fqsen->__toString()][] = $fqsen;
+                $index[$this->canonicalClassFQSENString($interface_fqsen)][] = $fqsen;
             }
             foreach ($class->getTraitFQSENList() as $trait_fqsen) {
-                $index[$trait_fqsen->__toString()][] = $fqsen;
+                $index[$this->canonicalClassFQSENString($trait_fqsen)][] = $fqsen;
             }
             foreach ($class->getMixinTypes() as $mixin_type) {
                 try {
-                    $index[FullyQualifiedClassName::fromType($mixin_type)->__toString()][] = $fqsen;
+                    $index[$this->canonicalClassFQSENString(FullyQualifiedClassName::fromType($mixin_type))][] = $fqsen;
                 } catch (\Exception) {
                     // An invalid @mixin type; Clazz::importMixin() reports it.
                 }
             }
         }
         return $index;
+    }
+
+    /**
+     * The FQSEN string of the class that $fqsen names once class aliases are resolved (`class_alias()` maps the alias FQSEN
+     * to the original class), or $fqsen itself if it names no class in the code base (yet).
+     * Does not load internal classes: an alias of an internal class is not resolved.
+     */
+    private function canonicalClassFQSENString(FullyQualifiedClassName $fqsen): string
+    {
+        if ($this->fqsen_class_map->offsetExists($fqsen)) {
+            return $this->fqsen_class_map->offsetGet($fqsen)->getFQSEN()->__toString();
+        }
+        return $fqsen->__toString();
     }
 
     /**
@@ -1506,14 +1519,18 @@ class CodeBase
         while ($class_queue) {
             $class_fqsen = \array_pop($class_queue);
             $names = \array_pop($names_queue);
+            $class = $this->hasClassWithFQSEN($class_fqsen) ? $this->getClassByFQSEN($class_fqsen) : null;
+            // A class alias names the original class: visit it (and look its subclasses up) under its own FQSEN.
+            if ($class) {
+                $class_fqsen = $class->getFQSEN();
+            }
             $class_fqsen_string = $class_fqsen->__toString();
             $new_names = \array_diff_key($names, $names_seen[$class_fqsen_string] ?? []);
             if (!$new_names) {
                 continue;
             }
             $names_seen[$class_fqsen_string] = ($names_seen[$class_fqsen_string] ?? []) + $new_names;
-            if ($this->hasClassWithFQSEN($class_fqsen)) {
-                $class = $this->getClassByFQSEN($class_fqsen);
+            if ($class) {
                 if ($class->getTraitFQSENList() || $class->getMixinTypes()) {
                     // A method of a trait may have been given another name here (`use T { m as n; }`), so check every method.
                     foreach ($class->getMethodMap($this) as $method) {

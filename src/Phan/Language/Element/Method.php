@@ -481,6 +481,8 @@ class Method extends ClassElement implements FunctionInterface
             $this->getParameterList()
         );
         $method->setPhanFlags($this->getPhanFlags() & ~(Flags::IS_OVERRIDE | Flags::IS_OVERRIDDEN_BY_ANOTHER));
+        // A trait method specialized with `@use T<...>` keeps its parameters of its own when adapted into the using class.
+        $method->is_template_specialized = $this->is_template_specialized;
         switch ($new_visibility_flags) {
             case ast\flags\MODIFIER_PUBLIC:
             case ast\flags\MODIFIER_PROTECTED:
