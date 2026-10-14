@@ -21,6 +21,14 @@ use Phan\Language\UnionType;
 abstract class TypedElement implements TypedElementInterface
 {
     /**
+     * @var ?list<TypedElement> if non-null, incrementSuppressIssueCount() appends the element to this list
+     * (set by LazyInheritedMethods with PHAN_LAZY_INHERIT_VERIFY=1, to check that the declaration analysis of a copy
+     * of an inherited method created out of order changes no suppression count of an element in an analyzed file)
+     * @internal
+     */
+    public static $suppression_count_recorder = null;
+
+    /**
      * @var string
      * The name of the typed structural element
      * @readonly
@@ -334,6 +342,9 @@ abstract class TypedElement implements TypedElementInterface
     {
         ++Issue::$emit_attempt_count;
         ++$this->suppress_issue_list[$issue_name];
+        if (self::$suppression_count_recorder !== null) {
+            self::$suppression_count_recorder[] = $this;
+        }
     }
 
     /**

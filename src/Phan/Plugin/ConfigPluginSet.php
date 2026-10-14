@@ -62,6 +62,7 @@ use Phan\PluginV3\AnalyzeFunctionCallCapability;
 use Phan\PluginV3\AnalyzeFunctionCapability;
 use Phan\PluginV3\AnalyzeLiteralStatementCapability;
 use Phan\PluginV3\AnalyzeMethodCapability;
+use Phan\PluginV3\AnalyzeMethodSkipsInheritedCopiesCapability;
 use Phan\PluginV3\AnalyzePropertyCapability;
 use Phan\PluginV3\AutomaticFixCapability;
 use Phan\PluginV3\BeforeAnalyzeCapability;
@@ -734,6 +735,24 @@ final class ConfigPluginSet extends PluginV3 implements
     public function getAnalyzeFunctionCallPluginSet(): array
     {
         return $this->analyze_function_call_plugin_set ?? [];
+    }
+
+    /**
+     * Returns the class names of the loaded plugins implementing AnalyzeMethodCapability that do not implement
+     * AnalyzeMethodSkipsInheritedCopiesCapability (lazy_inherited_methods is disabled if there are any).
+     *
+     * @return list<string>
+     * @internal
+     */
+    public function getAnalyzeMethodPluginClassesWithoutLazyMarker(): array
+    {
+        $result = [];
+        foreach ($this->analyze_method_plugin_set ?? [] as $plugin) {
+            if (!$plugin instanceof AnalyzeMethodSkipsInheritedCopiesCapability) {
+                $result[] = \get_class($plugin);
+            }
+        }
+        return $result;
     }
 
     /**

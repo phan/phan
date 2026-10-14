@@ -90,10 +90,20 @@ final class LazyInheritedMethodsEligibility
      */
     public static function getReasonForImport(CodeBase $code_base, Clazz $class, Clazz $parent): ?string
     {
-        // Step 1 also checks that lazy inheritance is enabled; no option exists yet, so it is treated as enabled.
+        // Step 1 also checks that lazy inheritance is enabled (the counting treats it as enabled).
         if (!self::$is_creation_window_open) {
             return 'window';
         }
+        return self::getReasonForImportInWindow($code_base, $class, $parent);
+    }
+
+    /**
+     * getReasonForImport() without the check of the creation window (steps 2-5 of the per-import part).
+     *
+     * @return ?string null if the methods of this import may be lazy, otherwise the reason why none is
+     */
+    public static function getReasonForImportInWindow(CodeBase $code_base, Clazz $class, Clazz $parent): ?string
+    {
         if (!$class->isClass()) {
             return 'not_class';
         }
@@ -149,8 +159,18 @@ final class LazyInheritedMethodsEligibility
             // A declared method, (at)method, or a copy from an interface, a trait or a trait alias.
             return 'multi_provider';
         }
-        // Every entry is a Method for now, so the entry is the root of the copy.
-        $root = $entry;
+        // (When counting, every entry is a Method, so the entry is the root of the copy.)
+        return self::getReasonForRoot($code_base, $entry);
+    }
+
+    /**
+     * The part of the per-entry eligibility that depends on the root of the copy: the method that the copy
+     * is cloned from (steps 10 and 11).
+     *
+     * @return ?string null if the copy may be lazy, otherwise the reason why not
+     */
+    public static function getReasonForRoot(CodeBase $code_base, Method $root): ?string
+    {
         if (!$root->isPHPInternal() && !Phan::isExcludedAnalysisFile($root->getContext()->getFile())) {
             return 'project_root';
         }
@@ -239,7 +259,7 @@ final class LazyInheritedMethodsEligibility
      *
      * @return list<int>
      */
-    private static function getStateVersionsOfRoot(Method $root): array
+    public static function getStateVersionsOfRoot(Method $root): array
     {
         $scope = $root->getInternalScope();
         $variable_versions = 0;

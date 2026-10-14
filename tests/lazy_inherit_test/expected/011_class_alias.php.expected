@@ -1,0 +1,2 @@
+src/011_class_alias.php:9 PhanTypeMismatchArgument Argument 1 ($s) is $c->realMethod() of type int but \expect_string_011() takes string defined at src/011_class_alias.php:5
+src/011_class_alias.php:10 PhanTypeMismatchArgument Argument 1 ($s) is $d->realMethod() of type int but \expect_string_011() takes string defined at src/011_class_alias.php:5

@@ -571,12 +571,26 @@ class Analysis
             $excluded_file_checks === EmitOnlyChecks::VERIFY,
             $collect_timings
         );
+        // With lazy_inherited_methods, copies of inherited methods created in the class phase or in this loop
+        // are processed in the order in which they would have been added (see LazyInheritedMethods).
+        $lazy = $code_base->getLazyInherited();
+        if ($lazy !== null) {
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $lazy->beginMethodLoop($analyzer, $clone_replay);
+        }
+        // @phan-suppress-next-line PhanAccessPropertyInternal
+        MethodDeclarationAnalyzer::$current = $analyzer;
         foreach ($method_set as $method) {
             if ($show_progress) {
                 // Method analysis can trigger class hydration which adds
                 // inherited methods to the end of the set. This recalculation
                 // is needed so that the progress bar is accurate.
                 CLI::progress('method', (++$i) / (count($method_set)), $method);
+            }
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            if ($lazy !== null && $lazy->beginLoopMethod($method)) {
+                // Already processed (a lazily created copy that comes before a method processed earlier)
+                continue;
             }
             if ($method->isPHPInternal()) {
                 continue;
@@ -603,6 +617,12 @@ class Analysis
                 }
             }
         }
+        if ($lazy !== null) {
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $lazy->endMethodLoop();
+        }
+        // @phan-suppress-next-line PhanAccessPropertyInternal
+        MethodDeclarationAnalyzer::$current = null;
         if ($collect_timings) {
             // @phan-suppress-next-line PhanAccessPropertyInternal
             self::recordMethodSetStats($code_base, $method_ns, $analyzer->is_excluded_file);
@@ -679,6 +699,12 @@ class Analysis
                 $return_type_override_fqsen_strings[$fqsen->__toString()] = true;
             }
         }
+        // With lazy_inherited_methods, the closures attached to methods whose copies are still lazy are recorded,
+        // and those copies get them when they are created (see LazyInheritedMethods::replayOps()).
+        $lazy = $code_base->getLazyInherited();
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        $lazy?->beginLoadMethodPlugins($return_type_override_fqsen_strings);
+        $passed_lazy_entry = false;
 
         // A plugin closure for a method also applies to the copies of that method inherited by the descendants of its class.
         // Those are found by walking the descendants (CodeBase::getMethodsInheritedFrom()) rather than by grouping the whole
@@ -704,7 +730,7 @@ class Analysis
                             // 1) The FQSEN that's actually in the code base is allowed to differ from what the plugin used as an array key.
                             //      Thus, we use $fqsen->__toString() rather than $fqsen_string.
                             // 2) The parent method is included in this list, i.e. the parent method is its own defining method.
-                            foreach ($code_base->getMethodsInheritedFrom($fqsen, $child_class_index) as $child_method) {
+                            foreach ($code_base->getMethodsInheritedFrom($fqsen, $child_class_index, $passed_lazy_entry) as $child_method) {
                                 if ($child_method->getFQSEN() !== $fqsen &&
                                     isset($return_type_override_fqsen_strings[$child_method->getFQSEN()->__toString()])
                                 ) {
@@ -713,6 +739,10 @@ class Analysis
                                     continue;
                                 }
                                 $child_method->setDependentReturnTypeClosure($closure);
+                            }
+                            if ($passed_lazy_entry && $lazy !== null) {
+                                // @phan-suppress-next-line PhanAccessMethodInternal
+                                $lazy->recordOp($fqsen, 'return_type', $closure, null);
                             }
                         }
                     }
@@ -752,8 +782,12 @@ class Analysis
                             $child_class_index ??= $code_base->getDirectChildClassIndex();
                             $fqsen = FullyQualifiedMethodName::fromFullyQualifiedString($fqsen_string);
 
-                            foreach ($code_base->getMethodsInheritedFrom($fqsen, $child_class_index) as $child_method) {
+                            foreach ($code_base->getMethodsInheritedFrom($fqsen, $child_class_index, $passed_lazy_entry) as $child_method) {
                                 $child_method->addFunctionCallAnalyzer($closure, $plugin);
+                            }
+                            if ($passed_lazy_entry && $lazy !== null) {
+                                // @phan-suppress-next-line PhanAccessMethodInternal
+                                $lazy->recordOp($fqsen, 'call', $closure, $plugin);
                             }
                         }
                     } else {
@@ -791,7 +825,11 @@ class Analysis
             foreach ($code_base->getMethodSetWithoutLazyEntries() as $method) {
                 self::attachCallableArgumentAnalyzer($code_base, $method, $plugin_closures, $closures_by_defining_fqsen, $plugin_set);
             }
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $lazy?->setCallableArgumentState($plugin_closures, $closures_by_defining_fqsen, $plugin_set);
         }
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        $lazy?->endLoadMethodPlugins();
     }
 
     /**
@@ -801,8 +839,9 @@ class Analysis
      * @param list<\Closure> $plugin_closures the closures of the AnalyzeCallableArgumentCapability plugins
      * @param array<int,?\Closure> &$closures_by_defining_fqsen the analyzers shared by the unspecialized copies
      * of a method, by spl_object_id() of their defining FQSEN
+     * @internal (also used for the copies of inherited methods that Analysis\LazyInheritedMethods creates later)
      */
-    private static function attachCallableArgumentAnalyzer(
+    public static function attachCallableArgumentAnalyzer(
         CodeBase $code_base,
         Method $method,
         array $plugin_closures,

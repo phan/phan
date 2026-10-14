@@ -116,7 +116,7 @@ PHP;
             FullyQualifiedClassName::fromFullyQualifiedString($class_name),
             $lowercase_name
         );
-        if (!$method) {
+        if (!$method instanceof Method) {
             throw new \AssertionError("no method $class_name::$lowercase_name");
         }
         return $method;

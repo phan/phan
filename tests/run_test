@@ -56,6 +56,11 @@ case "$TEST_SUITE" in
 		./test.sh
 		exit $?
 		;;
+	__FakeLazyInheritTest)
+		cd tests/lazy_inherit_test
+		./test.sh
+		exit $?
+		;;
 	__FakeRealTypesTest)
 		cd tests/real_types_test
 		./test.sh

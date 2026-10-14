@@ -11,6 +11,7 @@ use Phan\Language\Type\NeverType;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCapability;
 use Phan\PluginV3\AnalyzeMethodCapability;
+use Phan\PluginV3\AnalyzeMethodSkipsInheritedCopiesCapability;
 
 /**
  * This plugin checks if a function or method will not return (and has no overrides).
@@ -41,7 +42,8 @@ use Phan\PluginV3\AnalyzeMethodCapability;
  */
 final class NeverReturnPlugin extends PluginV3 implements
     AnalyzeFunctionCapability,
-    AnalyzeMethodCapability
+    AnalyzeMethodCapability,
+    AnalyzeMethodSkipsInheritedCopiesCapability
 {
 
     /**

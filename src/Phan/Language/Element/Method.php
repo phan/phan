@@ -11,6 +11,7 @@ use Phan\Analysis\Analyzable;
 use Phan\Analysis\CloneReplaySnapshot;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
+use Phan\CodeBase\InheritedMethodLink;
 use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Context;
@@ -824,6 +825,20 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
+     * Sets the method whose return type this copy uses, as ensureClonesReturnType() would have when the copy was cloned
+     * from the method that $link_target was computed for (getReturnTypeLinkOfClone()). Used for copies of inherited methods
+     * created lazily (Analysis\LazyInheritedMethods), which take that decision when the copy would have been created.
+     * @internal
+     */
+    public function setReturnTypeLinkForLazyCopy(?Method $link_target): void
+    {
+        if ($link_target && !$this->defining_method_for_type_fetching) {
+            $this->bumpStateVersion();
+            $this->defining_method_for_type_fetching = $link_target;
+        }
+    }
+
+    /**
      * Records the rank of this method in the order in which methods were added to the code base.
      * This does not change the state version: CodeBase::addMethod() sets it on every method it adds.
      * @internal
@@ -859,6 +874,26 @@ class Method extends ClassElement implements FunctionInterface
     public function getCloneSource(): ?Method
     {
         return $this->clone_source;
+    }
+
+    /**
+     * @return ?Method the method whose return type this inherited method uses (see ensureClonesReturnType()), if any
+     * (for PHAN_DUMP_METHOD_STATE_DIGEST_EXTENDED=1)
+     * @internal
+     */
+    public function getReturnTypeLink(): ?Method
+    {
+        return $this->defining_method_for_type_fetching;
+    }
+
+    /**
+     * @return ?UnionType the (at)throws types that this method inherits (see setInheritedThrowsUnionType()), if set
+     * (for PHAN_DUMP_METHOD_STATE_DIGEST_EXTENDED=1)
+     * @internal
+     */
+    public function getInheritedThrowsUnionType(): ?UnionType
+    {
+        return $this->inherited_throws_union_type;
     }
 
     /**
@@ -1161,6 +1196,16 @@ class Method extends ClassElement implements FunctionInterface
                 if (!$method) {
                     continue;
                 }
+            }
+            if ($method instanceof InheritedMethodLink) {
+                // A copy of an inherited method that was not created yet (see LazyInheritedMethods):
+                // skip it without creating it if it is a copy of the same method, otherwise create it.
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                if ($method->registry->templateOf($method, $lowercase_name)->getDefiningFQSEN() === $defining_fqsen) {
+                    continue;
+                }
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                $method = $method->registry->materialize($method->class_map, $lowercase_name, $method, 'override_walk');
             }
             if ($method->getDefiningFQSEN() === $defining_fqsen) {
                 // Skip it, this method **is** the one which defined this.

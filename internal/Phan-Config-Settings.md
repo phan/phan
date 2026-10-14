@@ -553,6 +553,20 @@ NOTE: This step will only be performed if [`analyze_signature_compatibility`](#a
 
 (Default: `true`)
 
+## lazy_inherited_methods
+
+Set this to true to create the copies of inherited methods only when they are needed.
+Classes inherit the methods of their parent classes as copies; a class extending a large base class
+from a file excluded from analysis (e.g. a test framework) holds a copy of every method of that class.
+With this option, such copies are created when a method is first looked up in that class,
+which reduces memory and time on projects with many such classes. The output is unchanged.
+
+This is disabled automatically in daemon mode and the language server, with dead code detection
+or reference tracking, with --analyze-twice or --analyze-until-convergence, and when a plugin
+implementing AnalyzeMethodCapability does not implement AnalyzeMethodSkipsInheritedCopiesCapability.
+
+(Default: `false`)
+
 ## max_literal_string_type_length
 
 If a literal string type exceeds this length,

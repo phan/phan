@@ -14,6 +14,7 @@ use Phan\Language\ElementContext;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCapability;
 use Phan\PluginV3\AnalyzeMethodCapability;
+use Phan\PluginV3\AnalyzeMethodSkipsInheritedCopiesCapability;
 use Phan\PluginV3\FinalizeProcessCapability;
 
 /**
@@ -47,6 +48,7 @@ use Phan\PluginV3\FinalizeProcessCapability;
 final class PossiblyStaticMethodPlugin extends PluginV3 implements
     AnalyzeFunctionCapability,
     AnalyzeMethodCapability,
+    AnalyzeMethodSkipsInheritedCopiesCapability,
     FinalizeProcessCapability
 {
 

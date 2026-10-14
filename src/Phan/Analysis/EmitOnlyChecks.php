@@ -20,6 +20,7 @@ use Phan\Language\UnionType;
 use Phan\Library\PhaseTimer;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Phan;
+use Phan\Plugin\ConfigPluginSet;
 use Throwable;
 
 /**
@@ -289,7 +290,21 @@ final class EmitOnlyChecks
     public static function getSideEffectCounts(CodeBase $code_base): array
     {
         // @phan-suppress-next-line PhanAccessMethodInternal
-        return [Clazz::getHydrationCount(), Method::getScopeInitializationCount(), \count($code_base->getMethodSetWithoutLazyEntries()), $code_base->getLoadedClassCount()];
+        $method_count = \count($code_base->getMethodSetWithoutLazyEntries());
+        $lazy = $code_base->getLazyInherited();
+        if ($lazy === null) {
+            return [Clazz::getHydrationCount(), Method::getScopeInitializationCount(), $method_count, $code_base->getLoadedClassCount()];
+        }
+        // Exclude the side effects that only happen with lazily created copies of inherited methods
+        // (adding them to the method set and analyzing them in the middle of another method or later),
+        // which would have happened before or not at all (see LazyInheritedMethods::$nested_effects).
+        [$hydrations, $scope_initializations, $methods, $classes] = $lazy->nested_effects;
+        return [
+            Clazz::getHydrationCount() - $hydrations,
+            Method::getScopeInitializationCount() - $scope_initializations,
+            $method_count - $methods,
+            $code_base->getLoadedClassCount() - $classes,
+        ];
     }
 
     /**
@@ -402,13 +417,13 @@ final class EmitOnlyChecks
     }
 
     /**
-     * Record that the verification of $label for $element failed (PHAN_VERIFY_SKIPPED_CHECKS=1)
+     * Record that the verification of $label for $element failed (PHAN_VERIFY_SKIPPED_CHECKS=1, or $prefix)
      */
-    public static function recordViolation(FunctionInterface $element, string $label, string $details): void
+    public static function recordViolation(FunctionInterface $element, string $label, string $details, string $prefix = 'PHAN_VERIFY_SKIPPED_CHECKS'): void
     {
         $message = \sprintf("%s for %s (declared in %s) %s", $label, $element->getFQSEN(), $element->getContext()->getFile(), $details);
         self::$violations[] = $message;
-        CLI::printToStderr("PHAN_VERIFY_SKIPPED_CHECKS: $message\n");
+        CLI::printToStderr("$prefix: $message\n");
     }
 
     /**
@@ -455,6 +470,9 @@ final class EmitOnlyChecks
      * The suppression counts are only included for elements declared in analyzed files:
      * those of elements declared in excluded files change when the checks are skipped,
      * but issues about them (including PhanUnusedSuppression) are never reported.
+     *
+     * With PHAN_DUMP_METHOD_STATE_DIGEST_EXTENDED=1 (implied by PHAN_LAZY_INHERIT_VERIFY=1), this writes the extended digest
+     * (see getExtendedStateDigestLines()), which does not depend on the order in which methods were created.
      */
     public static function maybeDumpStateDigest(CodeBase $code_base): void
     {
@@ -462,6 +480,18 @@ final class EmitOnlyChecks
         if (!\is_string($path) || $path === '') {
             return;
         }
+        $extended = \getenv('PHAN_DUMP_METHOD_STATE_DIGEST_EXTENDED') === '1' || \getenv('PHAN_LAZY_INHERIT_VERIFY') === '1';
+        $lines = $extended ? self::getExtendedStateDigestLines($code_base) : self::getStateDigestLines($code_base);
+        if (\file_put_contents($path, \implode("\n", $lines) . "\n") === false) {
+            CLI::printWarningToStderr("Failed to write PHAN_DUMP_METHOD_STATE_DIGEST to $path\n");
+        }
+    }
+
+    /**
+     * @return list<string> the lines of the default digest of PHAN_DUMP_METHOD_STATE_DIGEST
+     */
+    private static function getStateDigestLines(CodeBase $code_base): array
+    {
         $lines = [];
         foreach ($code_base->getFunctionMap() as $function) {
             if (!$function->isPHPInternal()) {
@@ -486,9 +516,141 @@ final class EmitOnlyChecks
             }
         }
         \array_push($lines, ...$internal_method_lines);
-        if (\file_put_contents($path, \implode("\n", $lines) . "\n") === false) {
-            CLI::printWarningToStderr("Failed to write PHAN_DUMP_METHOD_STATE_DIGEST to $path\n");
+        return $lines;
+    }
+
+    /**
+     * Returns the lines of the extended digest (PHAN_DUMP_METHOD_STATE_DIGEST_EXTENDED=1), used to compare the state of
+     * the methods with and without lazy_inherited_methods (with PHAN_LAZY_INHERIT_VERIFY=1, which creates every copy
+     * before this is called):
+     * - the functions, as in the default digest;
+     * - the methods of user-defined classes (including the copies that LazyInheritedMethods created after the method loop,
+     *   which are not in the method set), sorted by FQSEN, then by Method::getEagerOrdinal() (the same in both modes).
+     *   Methods with the same FQSEN as the previous line (orphans: methods replaced in their slot but kept in the method set)
+     *   get "dup=<n>". Each line has the fields of the default digest, then link= (the FQSEN of the method whose return type
+     *   this one uses), clone_source_root= (the method reached by following Method::getCloneSource() until one that is its
+     *   own definition: eager copies point to the copy of the parent, lazy ones to the root), scope_init=, did_return_types=,
+     *   return_cb= (a return type override closure), call_plugins= (the sorted short class names of the plugins whose
+     *   function call analyzers it has, "closure" for those added without a plugin), inherited_throws=;
+     * - one line per user-defined class with suppression counts, as in the default digest;
+     * - one line per user-defined class with its class map keys, in map order (lazy entries included);
+     * - the methods of internal classes in method set order (the order in which the internal classes were loaded).
+     * Object ids are never printed.
+     *
+     * @return list<string>
+     */
+    private static function getExtendedStateDigestLines(CodeBase $code_base): array
+    {
+        $lines = [];
+        foreach ($code_base->getFunctionMap() as $function) {
+            if (!$function->isPHPInternal()) {
+                $lines[] = self::getElementState($function) . self::getSuppressionState($function);
+            }
         }
+        $user_class_map = $code_base->getUserDefinedClassMap();
+        $owner_names = self::getFunctionCallAnalyzerOwnerNames();
+        $internal_method_lines = [];
+        /** @var list<array{0:string,1:int,2:string}> [FQSEN, eager ordinal, line] */
+        $method_entries = [];
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        $methods = \iterator_to_array($code_base->getMethodSetWithoutLazyEntries(), false);
+        foreach ($code_base->getLazyInherited()?->getLateMaterializedMethods() ?? [] as $method) {
+            $methods[] = $method;
+        }
+        foreach ($methods as $method) {
+            if (!$user_class_map->offsetExists($method->getClassFQSEN())) {
+                $internal_method_lines[] = 'internal ' . $method->getFQSEN();
+                continue;
+            }
+            $method_entries[] = [
+                (string)$method->getFQSEN(),
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                $method->getEagerOrdinal(),
+                self::getElementState($method) . "\t" . self::getExtendedMethodState($method, $owner_names) . self::getSuppressionState($method),
+            ];
+        }
+        \usort($method_entries, /**
+         * @param array{0:string,1:int,2:string} $a
+         * @param array{0:string,1:int,2:string} $b
+         */ static function (array $a, array $b): int {
+            return \strcmp($a[0], $b[0]) ?: $a[1] <=> $b[1];
+        });
+        $previous_fqsen = null;
+        $duplicate_rank = 0;
+        foreach ($method_entries as [$fqsen, , $line]) {
+            if ($fqsen === $previous_fqsen) {
+                $duplicate_rank++;
+                $line .= "\tdup=$duplicate_rank";
+            } else {
+                $duplicate_rank = 0;
+                $previous_fqsen = $fqsen;
+            }
+            $lines[] = $line;
+        }
+        $class_map_lines = [];
+        foreach ($user_class_map as $class) {
+            $suppression_state = self::getSuppressionState($class);
+            if ($suppression_state !== '') {
+                $lines[] = 'class ' . $class->getFQSEN() . $suppression_state;
+            }
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $class_map_lines[] = 'classmap ' . $class->getFQSEN() . ': ' . \implode(',', $code_base->getClassMapForLazyInheritance($class->getFQSEN())->getMethodNames());
+        }
+        \array_push($lines, ...$class_map_lines);
+        \array_push($lines, ...$internal_method_lines);
+        return $lines;
+    }
+
+    /**
+     * @return array<int,string> the short class names of the plugins that can add function call analyzers, by spl_object_id()
+     */
+    private static function getFunctionCallAnalyzerOwnerNames(): array
+    {
+        $plugin_set = ConfigPluginSet::instance();
+        $names = [];
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        foreach ([...$plugin_set->getAnalyzeFunctionCallPluginSet(), ...$plugin_set->getAnalyzeCallableArgumentPluginSet()] as $plugin) {
+            $names[\spl_object_id($plugin)] = \substr((string)\strrchr('\\' . \get_class($plugin), '\\'), 1);
+        }
+        return $names;
+    }
+
+    /**
+     * Returns the fields of the extended digest for $method (see getExtendedStateDigestLines()).
+     *
+     * @param array<int,string> $owner_names from getFunctionCallAnalyzerOwnerNames()
+     */
+    private static function getExtendedMethodState(Method $method, array $owner_names): string
+    {
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        $link = $method->getReturnTypeLink();
+        $clone_source_root = $method->getCloneSource();
+        for ($i = 0; $clone_source_root !== null && $clone_source_root->getFQSEN() !== $clone_source_root->getDefiningFQSEN() && $i < 1000; $i++) {
+            $next = $clone_source_root->getCloneSource();
+            if ($next === null) {
+                break;
+            }
+            $clone_source_root = $next;
+        }
+        $call_plugins = [];
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        foreach ($method->getFunctionCallAnalyzerOwnerIds() as $id) {
+            $call_plugins[] = $owner_names[$id] ?? 'closure';
+        }
+        \sort($call_plugins);
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        $inherited_throws = $method->getInheritedThrowsUnionType();
+        return \implode("\t", [
+            'link=' . ($link !== null ? (string)$link->getFQSEN() : '-'),
+            'clone_source_root=' . ($clone_source_root !== null ? (string)$clone_source_root->getFQSEN() : '-'),
+            'scope_init=' . ($method->isScopeInitialized() ? '1' : '0'),
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            'did_return_types=' . ($method->didAnalyzeReturnTypes() ? '1' : '0'),
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            'return_cb=' . ($method->hasReturnTypeCallback() ? '1' : '0'),
+            'call_plugins=' . ($call_plugins ? \implode(',', $call_plugins) : '-'),
+            'inherited_throws=' . ($inherited_throws !== null ? (string)$inherited_throws : '-'),
+        ]);
     }
 
     /**

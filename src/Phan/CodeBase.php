@@ -9,7 +9,9 @@ use AssertionError;
 use Closure;
 use Exception;
 use InvalidArgumentException;
+use Phan\Analysis\LazyInheritedMethods;
 use Phan\CodeBase\ClassMap;
+use Phan\CodeBase\InheritedMethodLink;
 use Phan\CodeBase\UndoTracker;
 use Phan\Exception\FQSENException;
 use Phan\Language\Context;
@@ -151,6 +153,40 @@ class CodeBase
      * @var int the number of calls to addMethod() so far: the rank of the last method added (see nextEagerOrdinal())
      */
     private $eager_ordinal = 0;
+
+    /**
+     * @var int monotonic sequence number for the imports that create lazy entries of inherited methods
+     * and for the changes of class map slots that those entries resolve through (see nextLazySeq()).
+     * This is shared by all code bases: those created by shallowClone() share class maps (e.g. of internal classes),
+     * whose slot history must stay ordered with the imports of every code base using them.
+     */
+    private static $lazy_seq = 0;
+
+    /**
+     * @var ?LazyInheritedMethods the registry of the lazily created copies of inherited methods
+     * (lazy_inherited_methods), or null if that is disabled. Hot paths check `$code_base->lazy_inherited !== null`.
+     * This is not part of Phan's plugin API.
+     */
+    private $lazy_inherited = null;
+
+    /**
+     * Returns the registry of the lazily created copies of inherited methods (lazy_inherited_methods),
+     * or null if that is disabled. Hot paths check `$code_base->getLazyInherited() !== null`.
+     * This is not part of Phan's plugin API.
+     */
+    public function getLazyInherited(): ?LazyInheritedMethods
+    {
+        return $this->lazy_inherited;
+    }
+
+    /**
+     * Sets the registry of the lazily created copies of inherited methods (LazyInheritedMethods::activate()).
+     * This is not part of Phan's plugin API.
+     */
+    public function setLazyInherited(?LazyInheritedMethods $lazy_inherited): void
+    {
+        $this->lazy_inherited = $lazy_inherited;
+    }
 
     /**
      * @var Map<FullyQualifiedClassName,ClassMap>
@@ -762,6 +798,14 @@ class CodeBase
      */
     public function __clone()
     {
+        if ($this->lazy_inherited !== null) {
+            // The lazy entries of the class maps refer to the class maps of the original, which are copied below:
+            // create every copy first (in the original's maps and method set, which this clone still shares).
+            // (Only daemon mode and the language server clone code bases, and lazy_inherited_methods is disabled there.)
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $this->lazy_inherited->materializeAll('clone');
+            $this->lazy_inherited = null;
+        }
         $this->fqsen_class_map =
             $this->fqsen_class_map->deepCopyValues();
 
@@ -927,6 +971,9 @@ class CodeBase
             clone($this->class_fqsen_class_map_map);
         $code_base->method_set =
             clone($this->method_set);
+        // The class maps are shared, so are their lazy entries: a copy created through either code base is added to the
+        // method set of the code base that owns the registry.
+        $code_base->lazy_inherited = $this->lazy_inherited;
         return $code_base;
     }
 
@@ -1420,8 +1467,8 @@ class CodeBase
     /**
      * Returns the entry of the method named $lowercase_name (with alternate id 0) in the class $fqsen, if any.
      *
-     * Every entry is a Method today. A later change adds lazy entries for inherited methods
-     * (created on the first lookup by name); this accessor never creates those copies.
+     * An entry is a Method, or an InheritedMethodLink for an inherited method whose copy is created on the first lookup
+     * by name (lazy_inherited_methods, see Analysis\LazyInheritedMethods); this accessor never creates those copies.
      *
      * @param string $lowercase_name the lowercase name of the method
      * @internal
@@ -1429,7 +1476,7 @@ class CodeBase
     public function getMethodEntryByClassAndLowercaseName(
         FullyQualifiedClassName $fqsen,
         string $lowercase_name
-    ): ?Method {
+    ): Method|InheritedMethodLink|null {
         // @phan-suppress-next-line PhanAccessMethodInternal
         return $this->getClassMapByFullyQualifiedClassName(
             $fqsen
@@ -1439,10 +1486,10 @@ class CodeBase
     /**
      * Returns the entries of the methods of the class $fqsen, by lowercase name (including any alternate id suffix).
      *
-     * Every entry is a Method today. A later change adds lazy entries for inherited methods
-     * (created on the first lookup by name); this accessor never creates those copies.
+     * An entry is a Method, or an InheritedMethodLink for an inherited method whose copy is created on the first lookup
+     * by name (lazy_inherited_methods, see Analysis\LazyInheritedMethods); this accessor never creates those copies.
      *
-     * @return array<string,Method>
+     * @return array<string,Method|InheritedMethodLink>
      * @internal
      */
     public function getMethodEntryMapByFullyQualifiedClassName(
@@ -1478,7 +1525,7 @@ class CodeBase
      */
     private function getFunctionAndMethodSet(): Set
     {
-        $set = clone($this->method_set);
+        $set = clone($this->getMethodSetForPublicApi('export'));
         foreach ($this->fqsen_func_map as $value) {
             // @phan-suppress-next-line PhanPartialTypeMismatchArgumentInternal deliberately adding different class instances to an existing set
             $set->offsetSet($value);
@@ -1492,7 +1539,57 @@ class CodeBase
      */
     public function getMethodSet(): Set
     {
-        return $this->method_set;
+        return $this->getMethodSetForPublicApi('method_set');
+    }
+
+    /**
+     * The set of all methods for the public APIs that return or iterate over all methods.
+     *
+     * With lazy_inherited_methods, this first creates the copies of all lazily inherited methods
+     * (in the order in which they would have been added), and returns the methods in the order in which
+     * they were (or would have been) added to the code base, as without that option.
+     *
+     * @param string $caller the API (for the counter lazy_materialize_all_<caller>)
+     * @return Set<Method>
+     */
+    private function getMethodSetForPublicApi(string $caller): Set
+    {
+        $lazy = $this->lazy_inherited;
+        if ($lazy === null) {
+            return $this->method_set;
+        }
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        return $lazy->getMethodSetInEagerOrder($this->method_set, $caller, function (Set $sorted_set): void {
+            $this->method_set = $sorted_set;
+        });
+    }
+
+    /**
+     * Adds a copy of an inherited method that was created lazily to the set of methods
+     * (CodeBase::addMethod() without the other bookkeeping: the copy already has its slot and its rank)
+     * @internal
+     */
+    public function addMethodToMethodSet(Method $method): void
+    {
+        $this->method_set->offsetSet($method);
+    }
+
+    /**
+     * Returns the next sequence number for the lazy entries of inherited methods (see LazyInheritedMethods).
+     * @internal
+     */
+    public function nextLazySeq(): int
+    {
+        return ++self::$lazy_seq;
+    }
+
+    /**
+     * Returns the class map of the class $fqsen (created if it does not exist yet), for LazyInheritedMethods.
+     * @internal
+     */
+    public function getClassMapForLazyInheritance(FullyQualifiedClassName $fqsen): ClassMap
+    {
+        return $this->getClassMapByFullyQualifiedClassName($fqsen);
     }
 
     /**
@@ -1523,13 +1620,14 @@ class CodeBase
     }
 
     /**
-     * Returns the number of lazy entries of inherited methods in all class maps (always 0 until lazy entries are added).
+     * Returns the number of lazy entries of inherited methods in all class maps (0 unless lazy_inherited_methods is enabled).
      *
      * @internal
      */
     public function getLazyEntryCount(): int
     {
-        return 0;
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        return $this->lazy_inherited?->getLazyEntryCount() ?? 0;
     }
 
     /**
@@ -1583,11 +1681,17 @@ class CodeBase
      * This is what getMethodsMapGroupedByDefiningFQSEN()->offsetGet($fqsen) contains, found by walking the descendants
      * of the method's class instead of the whole method set, which large projects dominate with inherited copies.
      *
+     * With lazy_inherited_methods, copies that were not created yet are not returned: $passed_lazy_entry is set to true
+     * if there are any (they get the plugin closures attached to the returned methods when they are created,
+     * see Analysis\LazyInheritedMethods::replayOps()).
+     *
      * @param array<string,list<FullyQualifiedClassName>> $child_class_index the result of getDirectChildClassIndex()
+     * @param bool $passed_lazy_entry set to true if a copy of the method was not created yet
      * @return list<Method>
      */
-    public function getMethodsInheritedFrom(FullyQualifiedMethodName $fqsen, array $child_class_index): array
+    public function getMethodsInheritedFrom(FullyQualifiedMethodName $fqsen, array $child_class_index, bool &$passed_lazy_entry = false): array
     {
+        $passed_lazy_entry = false;
         $fqsen_string = $fqsen->__toString();
         $result = [];
         // The names a copy of the method can have in each class: the method's name, plus the aliases given to it with
@@ -1614,15 +1718,37 @@ class CodeBase
             if ($class) {
                 if ($class->getTraitFQSENList() || $class->getMixinTypes()) {
                     // A method of a trait may have been given another name here (`use T { m as n; }`), so check every method.
-                    foreach ($this->getMethodEntryMapByFullyQualifiedClassName($class_fqsen) as $method) {
+                    // (A lazily inherited copy keeps the name of the method it was cloned from, so only the names being
+                    // checked can match one: resolving every lazy entry of the class would cost too much here.)
+                    $lowercase_names = \array_change_key_case($names);
+                    foreach ($this->getMethodEntryMapByFullyQualifiedClassName($class_fqsen) as $lowercase_name => $method) {
+                        if ($method instanceof InheritedMethodLink) {
+                            if (isset($lowercase_names[$lowercase_name])) {
+                                // @phan-suppress-next-line PhanAccessMethodInternal
+                                if (self::isMethodDefinedBy($method->registry->templateOf($method, (string)$lowercase_name), $fqsen_string)) {
+                                    $passed_lazy_entry = true;
+                                }
+                            }
+                            continue;
+                        }
                         if (self::isMethodDefinedBy($method, $fqsen_string)) {
                             $result[] = $method;
-                            $names[$method->getFQSEN()->getName()] = true;
+                            $name = $method->getFQSEN()->getName();
+                            $names[$name] = true;
+                            $lowercase_names[\strtolower($name)] = true;
                         }
                     }
                 } else {
                     foreach ($new_names as $name => $_) {
-                        $method = $this->getMethodEntryByClassAndLowercaseName($class_fqsen, \strtolower((string)$name));
+                        $lowercase_name = \strtolower((string)$name);
+                        $method = $this->getMethodEntryByClassAndLowercaseName($class_fqsen, $lowercase_name);
+                        if ($method instanceof InheritedMethodLink) {
+                            // @phan-suppress-next-line PhanAccessMethodInternal
+                            if (self::isMethodDefinedBy($method->registry->templateOf($method, $lowercase_name), $fqsen_string)) {
+                                $passed_lazy_entry = true;
+                            }
+                            continue;
+                        }
                         if ($method && self::isMethodDefinedBy($method, $fqsen_string)) {
                             $result[] = $method;
                         }
@@ -1664,7 +1790,7 @@ class CodeBase
     {
         $methods_by_defining_fqsen = new Map();
         '@phan-var Map<FullyQualifiedMethodName,ArrayObject<Method>> $methods_by_defining_fqsen';
-        foreach ($this->method_set as $method) {
+        foreach ($this->getMethodSetForPublicApi('grouped') as $method) {
             $defining_fqsen = $method->getDefiningFQSEN();
             $real_defining_fqsen = $method->getRealDefiningFQSEN();
             // Older php versions have issues with ?? on SplObjectStorage

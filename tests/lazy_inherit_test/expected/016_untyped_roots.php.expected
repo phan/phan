@@ -1,0 +1,3 @@
+src/016_untyped_roots.php:14 PhanParamTooMany Call with 1 arg(s) to \C016Plain::untyped() which only takes 0 arg(s) defined at external/016.php:5
+src/016_untyped_roots.php:15 PhanParamTooFew Call with 0 arg(s) to \C016PlainChild::untypedArg($x) which requires 1 arg(s) defined at external/016.php:6
+src/016_untyped_roots.php:18 PhanTypeMismatchArgument Argument 1 ($i) is $t->identity('s') of type string but \expect_int_016() takes int defined at src/016_untyped_roots.php:10

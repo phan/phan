@@ -1463,6 +1463,36 @@ trait FunctionTrait
     }
 
     /**
+     * @return list<int> the spl_object_id() of the plugins (or of the closures added without a plugin) whose function call
+     * analyzers this has, in the order they were added (for PHAN_DUMP_METHOD_STATE_DIGEST_EXTENDED=1)
+     * @internal
+     */
+    public function getFunctionCallAnalyzerOwnerIds(): array
+    {
+        return \array_keys($this->function_call_analyzer_callback_set);
+    }
+
+    /**
+     * @return bool true if a plugin's return type override closure was set (see setDependentReturnTypeClosure())
+     * (for PHAN_DUMP_METHOD_STATE_DIGEST_EXTENDED=1)
+     * @internal
+     */
+    public function hasReturnTypeCallback(): bool
+    {
+        return $this->return_type_callback !== null;
+    }
+
+    /**
+     * @return bool true if analyzeReturnTypes() ran for this function or method
+     * (for PHAN_DUMP_METHOD_STATE_DIGEST_EXTENDED=1)
+     * @internal
+     */
+    public function didAnalyzeReturnTypes(): bool
+    {
+        return $this->did_analyze_return_types;
+    }
+
+    /**
      * Make additional analysis logic of this function/method use $closure in addition to any other closures.
      * @param ?PluginV3 $plugin @phan-mandatory-param
      */

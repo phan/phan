@@ -1,0 +1,5 @@
+src/014_guard.php:6 MutateRootPluginMethod Analyzed the declaration of \G014First::reportedByMutateRootPlugin
+src/014_guard.php:13 PhanTypeMismatchArgumentProbablyReal Argument 1 ($level) is 'x' of type string but \G014First::configure() takes int (no real type) defined at external/014.php:4 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+src/014_guard.php:14 PhanTypeMismatchArgumentProbablyReal Argument 1 ($level) is 'x' of type string but \G014Second::configure() takes int (no real type) defined at external/014.php:4 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+src/014_guard.php:15 PhanTypeMismatchArgumentProbablyReal Argument 1 ($level) is [] of type array{} but \G014Third::configure() takes int (no real type) defined at external/014.php:4 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+src/014_guard.php:16 PhanTypeMismatchArgumentReal Argument 1 ($x) is 'y' of type string but \G014Second::other() takes int defined at external/014.php:5

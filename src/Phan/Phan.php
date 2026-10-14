@@ -10,9 +10,11 @@ use Exception;
 use InvalidArgumentException;
 use Phan\Analysis\ConvergenceWorklist;
 use Phan\Analysis\EmitOnlyChecks;
+use Phan\Analysis\LazyInheritedMethods;
 use Phan\Analysis\LazyInheritedMethodsEligibility;
 use Phan\AST\TolerantASTConverter\Shim;
 use Phan\Daemon\Request;
+use Phan\ForkPool\Writer;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Type;
 use Phan\LanguageServer\LanguageServer;
@@ -629,6 +631,15 @@ class Phan implements IgnoredFilesFilterInterface
             // actually need. When running as multiple processes this
             // lets us only need to do hydrate a subset of classes.
             PhaseTimer::begin('class_aliases');
+            // TODO: consider filtering if Config::getValue('include_analysis_file_list') is set
+            // most of what needs considering is that Analysis::analyzeClasses() and Analysis:analyzeFunctions() have side effects
+            // these side effects don't matter in daemon mode, but they do matter with this other form of incremental analysis
+            // other parts of these analysis steps could be skipped, which would reduce the overall execution time
+            $path_filter = isset($request) ? array_flip($analyze_file_path_list) : null;
+            // Decide whether the copies of inherited methods are created lazily (lazy_inherited_methods):
+            // lazy entries can be created from here until the end of Analysis::analyzeClasses()
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            LazyInheritedMethods::activate($code_base, $request, $path_filter, $incremental_manifest !== null);
             $code_base->setShouldHydrateRequestedElements(true);
             // Inherited method copies could be created lazily from here until the end of Analysis::analyzeClasses()
             // @phan-suppress-next-line PhanAccessMethodInternal
@@ -638,11 +649,6 @@ class Phan implements IgnoredFilesFilterInterface
             // This object (if non-null) removes the temporary plugins added to implement "Go To Definition", etc.
             $raii = ConfigPluginSet::instance()->addTemporaryAnalysisPlugin($code_base, $request);
 
-            // TODO: consider filtering if Config::getValue('include_analysis_file_list') is set
-            // most of what needs considering is that Analysis::analyzeClasses() and Analysis:analyzeFunctions() have side effects
-            // these side effects don't matter in daemon mode, but they do matter with this other form of incremental analysis
-            // other parts of these analysis steps could be skipped, which would reduce the overall execution time
-            $path_filter = isset($request) ? array_flip($analyze_file_path_list) : null;
 
             // Tie class aliases together with the source class
             if (Config::getValue('enable_class_alias_support')) {
@@ -656,6 +662,8 @@ class Phan implements IgnoredFilesFilterInterface
             Analysis::analyzeClasses($code_base, $path_filter);
             // @phan-suppress-next-line PhanAccessMethodInternal
             LazyInheritedMethodsEligibility::setCreationWindowOpen(false);
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $code_base->getLazyInherited()?->closeCreationWindow();
 
             // Take a pass over all functions verifying
             // various states now that we have the whole
@@ -767,7 +775,23 @@ class Phan implements IgnoredFilesFilterInterface
                     static function () use ($code_base): array {
                         // This closure is run once, after running analysis_worker on each input.
                         // If there are any plugins defining finalizeProcess(), run those.
+                        $lazy = $code_base->getLazyInherited();
+                        // @phan-suppress-next-line PhanAccessMethodInternal
+                        $lazy?->beginFinalize();
                         ConfigPluginSet::instance()->finalizeProcess($code_base);
+                        if ($lazy !== null) {
+                            // @phan-suppress-next-line PhanAccessMethodInternal
+                            $lazy->endAnalysisPhase();
+                            // @phan-suppress-next-line PhanAccessMethodInternal
+                            $lazy->recordNotes();
+                            // @phan-suppress-next-line PhanAccessPropertyInternal
+                            if ($lazy->verify) {
+                                // Violations of PHAN_LAZY_INHERIT_VERIFY=1 are printed when found; the parent prints the summary
+                                // and exits with an error if any process found one.
+                                // @phan-suppress-next-line PhanAccessMethodInternal, PhanAccessClassConstantInternal
+                                Writer::emitCounts([LazyInheritedMethods::NOTE_PREFIX . 'verify_violations' => $lazy->getViolationCount()]);
+                            }
+                        }
 
                         // Return the collected issues to be serialized.
                         return self::getIssueCollector()->getCollectedIssues();
@@ -779,6 +803,8 @@ class Phan implements IgnoredFilesFilterInterface
                 $issues = $pool->wait();
                 PhaseTimer::begin('collect_results');
                 self::collectSerializedResults($issues);
+                // @phan-suppress-next-line PhanAccessMethodInternal, PhanAccessClassConstantInternal
+                $code_base->getLazyInherited()?->addWorkerViolations($pool->getWorkerCount(LazyInheritedMethods::NOTE_PREFIX . 'verify_violations'));
                 $did_fork_pool_have_error = $pool->didHaveError();
             } else {
                 // Get the task data from the 0th processor
@@ -802,8 +828,14 @@ class Phan implements IgnoredFilesFilterInterface
 
                 // If there are any plugins defining finalizeProcess(), run those.
                 PhaseTimer::begin('finalize');
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                $code_base->getLazyInherited()?->beginFinalize();
                 ConfigPluginSet::instance()->finalizeProcess($code_base);
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                $code_base->getLazyInherited()?->endAnalysisPhase();
             }
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $code_base->getLazyInherited()?->recordNotes();
 
             // Get a count of the number of issues that were found
             PhaseTimer::begin('display');
@@ -831,6 +863,12 @@ class Phan implements IgnoredFilesFilterInterface
 
             // Collect all issues, blocking
             self::display();
+
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            if ($code_base->getLazyInherited()?->reportVerifyResults()) {
+                // PHAN_LAZY_INHERIT_VERIFY=1 found violations
+                exit(EXIT_FAILURE);
+            }
 
             // === INCREMENTAL ANALYSIS: Integration Point 3b - Save manifest ===
             if ($incremental_manifest !== null) {

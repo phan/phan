@@ -1,0 +1,4 @@
+src/001_interface_then_parent.php:13 PhanTypeMismatchArgument Argument 1 ($i) is $c->name() of type string but \expect_int_001() takes int defined at src/001_interface_then_parent.php:9
+src/001_interface_then_parent.php:14 PhanTypeMismatchArgument Argument 1 ($i) is $i->name() of type string but \expect_int_001() takes int defined at src/001_interface_then_parent.php:9
+src/001_interface_then_parent.php:16 PhanUndeclaredMethod Call to undeclared method \C001::sizes (Did you mean expr->size())
+src/001_interface_then_parent.php:30 UnusedSuppression Element \test001_unused_suppression suppresses issue PhanTypeMismatchArgument but does not use it

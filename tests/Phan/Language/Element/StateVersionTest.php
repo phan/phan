@@ -178,6 +178,7 @@ final class StateVersionTest extends CodeBaseAwareTestBase
             'setIsFromPHPDoc' => static fn(Method $m) => $m->setIsFromPHPDoc(true),
             'ensureClonesReturnType' => static fn(Method $m) => $m->ensureClonesReturnType(self::makeMethod('original')),
             'setInheritedThrowsUnionType' => static fn(Method $m) => $m->setInheritedThrowsUnionType(self::intType()),
+            'setReturnTypeLinkForLazyCopy' => static fn(Method $m) => $m->setReturnTypeLinkForLazyCopy(self::makeMethod('original')),
             'recordStaticPropertyModification' => static fn(Method $m) => $m->recordStaticPropertyModification(
                 FullyQualifiedClassName::fromFullyQualifiedString('\StateVersionTest\C'),
                 'prop',

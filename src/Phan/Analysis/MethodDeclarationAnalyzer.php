@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan\Analysis;
 
 use Phan\CodeBase;
+use Phan\Issue;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
 use Phan\Phan;
@@ -17,11 +18,16 @@ use Phan\Plugin\ConfigPluginSet;
  * and the analyzeFunction/analyzeMethod plugins.
  *
  * Analysis::analyzeFunctions() creates one instance per call and calls analyze() for each function and method.
+ * With lazy_inherited_methods, the copies of inherited methods created later get the same analysis
+ * (analyzeNested() during the method loop, analyzeMethodDeclaration() after it, see LazyInheritedMethods).
  *
  * @internal
  */
 final class MethodDeclarationAnalyzer
 {
+    /** @var ?self the analyzer of the method loop of Analysis::analyzeFunctions() while it runs */
+    public static $current = null;
+
     /** @var CodeBase the code base being analyzed */
     private $code_base;
 
@@ -69,8 +75,10 @@ final class MethodDeclarationAnalyzer
      *
      * @param ?CloneReplaySnapshot $clone_replay_snapshot for an inherited method,
      * the results of the declaration analysis of the method it was cloned from, to replay (see CloneReplay)
+     * @param bool $run_plugins false to skip the analyzeFunction/analyzeMethod plugins
+     * (for lazily created copies of inherited methods first needed after finalizeProcess() started)
      */
-    public function analyze(Func|Method $function_or_method, ?CloneReplaySnapshot $clone_replay_snapshot = null): void
+    public function analyze(Func|Method $function_or_method, ?CloneReplaySnapshot $clone_replay_snapshot = null, bool $run_plugins = true): void
     {
         $code_base = $this->code_base;
         if ($function_or_method->isPHPInternal()) {
@@ -155,7 +163,7 @@ final class MethodDeclarationAnalyzer
         // which isn't necessarily the case.
         // (Plugins always run, even for elements declared in excluded files: they may record state.)
         // 0.06
-        if ($this->has_function_or_method_plugins) {
+        if ($this->has_function_or_method_plugins && $run_plugins) {
             if ($function_or_method instanceof Func) {
                 $this->plugin_set->analyzeFunction(
                     $code_base,
@@ -168,5 +176,116 @@ final class MethodDeclarationAnalyzer
                 );
             }
         }
+    }
+
+    /**
+     * Returns an analyzer with the inputs that Analysis::analyzeFunctions() uses for a full analysis,
+     * for the copies of inherited methods created lazily after it (see LazyInheritedMethods).
+     */
+    public static function forLateUse(CodeBase $code_base): self
+    {
+        $plugin_set = ConfigPluginSet::instance();
+        return new self(
+            $code_base,
+            $plugin_set,
+            $plugin_set->hasAnalyzeFunctionPlugins() || $plugin_set->hasAnalyzeMethodPlugins(),
+            null,
+            EmitOnlyChecks::modeForExcludedFiles()
+        );
+    }
+
+    /**
+     * Run the declaration analysis of $method, a copy of an inherited method that LazyInheritedMethods created after
+     * the method loop of Analysis::analyzeFunctions() (during the analysis phase, or in plugins), which an eager
+     * import would have created and analyzed in that loop.
+     *
+     * The records of CloneReplay are gone by then, so this runs the full declaration analysis, which computes
+     * the same state as a replay. The plugins' analyzeMethod() is skipped once finalizeProcess() has started.
+     */
+    public static function analyzeMethodDeclaration(CodeBase $code_base, Method $method): void
+    {
+        $lazy = $code_base->getLazyInherited();
+        if ($lazy === null || $method->isPHPInternal()) {
+            return;
+        }
+        $analyzer = $lazy->analyzer ??= self::forLateUse($code_base);
+        $start_ns = \hrtime(true);
+        $loaded_class_count = $code_base->getLoadedClassCount();
+        $counts_before = EmitOnlyChecks::getSideEffectCounts($code_base);
+        $side_effect_check = $lazy->verify ? $lazy->beginSideEffectCheck() : null;
+        $saved_walks = [EmitOnlyChecks::$method_with_skippable_mandatory_param_walk, EmitOnlyChecks::$method_with_skippable_throws_walk];
+        EmitOnlyChecks::beginAnalyzingMethod($code_base, $method);
+        $run_plugins = !$lazy->finalize_started;
+        try {
+            $analyzer->analyze($method, null, $run_plugins);
+        } finally {
+            [EmitOnlyChecks::$method_with_skippable_mandatory_param_walk, EmitOnlyChecks::$method_with_skippable_throws_walk] = $saved_walks;
+            if ($side_effect_check !== null) {
+                $lazy->endSideEffectCheck($method, $side_effect_check, 'late pipeline');
+            }
+            $lazy->addNestedEffects(self::subtractCounts(EmitOnlyChecks::getSideEffectCounts($code_base), $counts_before));
+            $loaded_class_delta = $code_base->getLoadedClassCount() - $loaded_class_count;
+            if ($loaded_class_delta > 0) {
+                $lazy->countLateInternalLoads($method, $loaded_class_delta);
+            }
+            $lazy->addToCounter('late_pipelines');
+            if (!$run_plugins) {
+                $lazy->addToCounter('post_finalize_materializations');
+            }
+            $lazy->addToCounter('late_pipeline_s', (\hrtime(true) - $start_ns) / 1e9);
+        }
+    }
+
+    /**
+     * Run the declaration analysis of $method, a copy of an inherited method that LazyInheritedMethods created
+     * during the method loop, while another method is being processed, when an eager import would have created it
+     * earlier and the loop would already have processed it (it comes before the method being processed in eager order).
+     *
+     * This saves and restores the state of the method being processed, and excludes the side effects of this
+     * analysis from the checks of that method (Issue::$emit_attempt_count, EmitOnlyChecks::getSideEffectCounts()),
+     * so that they see what they would have seen if $method had been processed before.
+     */
+    public static function analyzeNested(CodeBase $code_base, Method $method): void
+    {
+        $lazy = $code_base->getLazyInherited();
+        if ($lazy === null) {
+            return;
+        }
+        if ($method->isPHPInternal()) {
+            $lazy->processCopy($method);
+            return;
+        }
+        $saved_walks = [EmitOnlyChecks::$method_with_skippable_mandatory_param_walk, EmitOnlyChecks::$method_with_skippable_throws_walk];
+        $saved_clone_replay = CloneReplay::suspendPending();
+        $emit_attempt_count = Issue::$emit_attempt_count;
+        $counts_before = EmitOnlyChecks::getSideEffectCounts($code_base);
+        $previous_ordinal = $lazy->current_ordinal;
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        $lazy->current_ordinal = $method->getEagerOrdinal();
+        $side_effect_check = $lazy->verify ? $lazy->beginSideEffectCheck() : null;
+        try {
+            $lazy->processCopy($method);
+        } finally {
+            $lazy->current_ordinal = $previous_ordinal;
+            if ($side_effect_check !== null) {
+                $lazy->endSideEffectCheck($method, $side_effect_check, 'nested pipeline');
+            }
+            $lazy->addNestedEffects(self::subtractCounts(EmitOnlyChecks::getSideEffectCounts($code_base), $counts_before));
+            // The issues that this checked would have been checked before the method being processed
+            Issue::$emit_attempt_count = $emit_attempt_count;
+            CloneReplay::resumePending($saved_clone_replay);
+            [EmitOnlyChecks::$method_with_skippable_mandatory_param_walk, EmitOnlyChecks::$method_with_skippable_throws_walk] = $saved_walks;
+            $lazy->addToCounter('nested_processed');
+        }
+    }
+
+    /**
+     * @param array{0:int,1:int,2:int,3:int} $after
+     * @param array{0:int,1:int,2:int,3:int} $before
+     * @return array{0:int,1:int,2:int,3:int}
+     */
+    private static function subtractCounts(array $after, array $before): array
+    {
+        return [$after[0] - $before[0], $after[1] - $before[1], $after[2] - $before[2], $after[3] - $before[3]];
     }
 }
