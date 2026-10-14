@@ -896,7 +896,11 @@ class Analysis
                     $closure = $closures_by_defining_fqsen[$key];
                 } else {
                     $closure = ConfigPluginSet::buildCallableArgumentAnalyzer($method, $plugin_closures);
-                    $closures_by_defining_fqsen[$key] = $closure;
+                    if ($method->getDefiningFQSEN() === $method->getFQSEN()) {
+                        // The analyzer of the defining method is the one its unspecialized copies share.
+                        // (A specialized copy has the same defining FQSEN but different parameters: it must not be stored there.)
+                        $closures_by_defining_fqsen[$key] = $closure;
+                    }
                 }
                 if ($closure !== null) {
                     $method->addFunctionCallAnalyzer($closure, $plugin_set);
