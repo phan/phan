@@ -53,6 +53,9 @@ class ForkPool
      */
     private $issues_by_worker = [];
 
+    /** @var array<string,int> the counts reported by the workers (Writer::emitCounts()), added up */
+    private $worker_counts = [];
+
     /** @var bool did any of the child processes fail (e.g. crash or send data that couldn't be unserialized) */
     private $did_have_error = false;
 
@@ -191,6 +194,14 @@ class ForkPool
                             $issues = unserialize($payload);
                             if (\is_array($issues) && $issues) {
                                 $this->issues_by_worker[$i] = \array_values($issues);
+                            }
+                            break;
+                        case Writer::TYPE_COUNTS:
+                            $counts = unserialize($payload, ['allowed_classes' => false]);
+                            if (\is_array($counts)) {
+                                foreach ($counts as $name => $count) {
+                                    $this->worker_counts[(string)$name] = ($this->worker_counts[(string)$name] ?? 0) + (int)$count;
+                                }
                             }
                             break;
                         case Writer::TYPE_PHASE_TIMINGS:
@@ -444,6 +455,14 @@ class ForkPool
             }
             $this->reaped_status[$i] = $status;
         }
+    }
+
+    /**
+     * Returns the sum of the counts named $name that the workers reported (Writer::emitCounts()), after wait().
+     */
+    public function getWorkerCount(string $name): int
+    {
+        return $this->worker_counts[$name] ?? 0;
     }
 
     /**

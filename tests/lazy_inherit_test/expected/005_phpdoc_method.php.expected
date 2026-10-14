@@ -1,0 +1,5 @@
+src/005_phpdoc_method.php:3 PhanParamSignatureMismatch Declaration of function magic(int $x) : string should be compatible with function magic() : int defined in external/005.php:4 (Saw more required parameters in the override)
+src/005_phpdoc_method.php:3 PhanParamSignaturePHPDocMismatchTooManyRequiredParameters Declaration of real/@method function magic(int $x) should be compatible with real/@method function magic() : int (the method override requires 1 parameter(s), but the overridden method requires only 0) defined in external/005.php:4
+src/005_phpdoc_method.php:11 PhanTypeMismatchArgument Argument 1 ($i) is $c->magic(1) of type string but \expect_int_005() takes int defined at src/005_phpdoc_method.php:7
+src/005_phpdoc_method.php:12 PhanTypeMismatchArgument Argument 1 ($i) is $c->parentMagic() of type string but \expect_int_005() takes int defined at src/005_phpdoc_method.php:7
+src/005_phpdoc_method.php:13 PhanParamTooMany Call with 1 arg(s) to \C005::plain() which only takes 0 arg(s) defined at external/005.php:5

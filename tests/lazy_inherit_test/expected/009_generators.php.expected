@@ -1,0 +1,4 @@
+src/009_generators.php:13 PhanTypeMismatchArgument Argument 1 ($s) is $v of type int but \expect_string_009() takes string defined at src/009_generators.php:5
+src/009_generators.php:15 PhanTypeMismatchArgumentReal Argument 1 ($s) is $c->genTyped() of type \Generator|\Iterator|\Traversable|iterable but \expect_string_009() takes string defined at src/009_generators.php:5
+src/009_generators.php:16 PhanTypeMismatchArgumentReal Argument 1 ($s) is $d->genTyped() of type \Generator|\Iterator|\Traversable|iterable but \expect_string_009() takes string defined at src/009_generators.php:5
+src/009_generators.php:17 PhanTypeMismatchArgument Argument 1 ($s) is $d->notGen() of type int[] but \expect_string_009() takes string defined at src/009_generators.php:5

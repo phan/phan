@@ -57,6 +57,7 @@ class ConfigEntry
         'ast_trim_max_elements_per_level' => self::CATEGORY_ANALYSIS,
         'ast_trim_max_total_elements' => self::CATEGORY_ANALYSIS,
         'max_union_type_set_size' => self::CATEGORY_ANALYSIS,
+        'lazy_inherited_methods' => self::CATEGORY_ANALYSIS,
         'exclude_file_list' => self::CATEGORY_FILES,
         'enable_include_path_checks' => self::CATEGORY_ANALYSIS,
         'include_paths' => self::CATEGORY_ANALYSIS,

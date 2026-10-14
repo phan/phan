@@ -17,6 +17,7 @@ use Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCapability;
 use Phan\PluginV3\AnalyzeMethodCapability;
+use Phan\PluginV3\AnalyzeMethodSkipsInheritedCopiesCapability;
 use Phan\PluginV3\AnalyzePropertyCapability;
 use Phan\PluginV3\AutomaticFixCapability;
 use PHPDocRedundantPlugin\Fixers;
@@ -38,6 +39,7 @@ use PHPDocRedundantPlugin\Fixers;
 class PHPDocRedundantPlugin extends PluginV3 implements
     AnalyzeFunctionCapability,
     AnalyzeMethodCapability,
+    AnalyzeMethodSkipsInheritedCopiesCapability,
     AnalyzePropertyCapability,
     AutomaticFixCapability
 {

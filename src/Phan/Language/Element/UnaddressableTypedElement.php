@@ -56,6 +56,12 @@ abstract class UnaddressableTypedElement implements Stringable
     private $phan_flags = 0;
 
     /**
+     * @var int
+     * The version of the state owned by this element, see getStateVersion().
+     */
+    private $state_version = 0;
+
+    /**
      * @param Context $context
      * The Context in which the structural element lives.
      *
@@ -91,6 +97,27 @@ abstract class UnaddressableTypedElement implements Stringable
         $this->name = $name;
         $this->type = $type;
         $this->flags = $flags;
+    }
+
+    /**
+     * Returns the version of the state that this element owns.
+     *
+     * Same as TypedElement::getStateVersion(): incremented by every setter, in-place mutation and cache fill of
+     * the state owned by this element (in this class and its subclasses), except for changes of the phan flags in
+     * TypedElement::UNVERSIONED_PHAN_FLAGS. Shared and immutable objects (the UnionType, FileRef and default value
+     * ast\Node objects) are not covered. A clone starts with the version of the element it was cloned from.
+     */
+    public function getStateVersion(): int
+    {
+        return $this->state_version;
+    }
+
+    /**
+     * Records a change of the state owned by this element (see getStateVersion()).
+     */
+    protected function bumpStateVersion(): void
+    {
+        ++$this->state_version;
     }
 
     /**
@@ -130,6 +157,7 @@ abstract class UnaddressableTypedElement implements Stringable
      */
     public function setUnionType(UnionType $type): void
     {
+        ++$this->state_version;
         $this->type = $type;
     }
 
@@ -140,6 +168,7 @@ abstract class UnaddressableTypedElement implements Stringable
         if ($type->isEmpty() || $type->containsNullable()) {
             return;
         }
+        ++$this->state_version;
         $this->type = $type->nullableClone();
     }
 
@@ -172,6 +201,7 @@ abstract class UnaddressableTypedElement implements Stringable
      */
     public function setFlags(int $flags): void
     {
+        ++$this->state_version;
         $this->flags = $flags;
     }
 
@@ -204,6 +234,9 @@ abstract class UnaddressableTypedElement implements Stringable
      */
     public function setPhanFlags(int $phan_flags): void
     {
+        if (($this->phan_flags ^ $phan_flags) & ~TypedElement::UNVERSIONED_PHAN_FLAGS) {
+            ++$this->state_version;
+        }
         $this->phan_flags = $phan_flags;
     }
 
@@ -212,7 +245,11 @@ abstract class UnaddressableTypedElement implements Stringable
      */
     public function enablePhanFlagBits(int $new_bits): void
     {
-        $this->phan_flags |= $new_bits;
+        $phan_flags = $this->phan_flags | $new_bits;
+        if (($this->phan_flags ^ $phan_flags) & ~TypedElement::UNVERSIONED_PHAN_FLAGS) {
+            ++$this->state_version;
+        }
+        $this->phan_flags = $phan_flags;
     }
 
     /**
@@ -220,7 +257,11 @@ abstract class UnaddressableTypedElement implements Stringable
      */
     public function disablePhanFlagBits(int $new_bits): void
     {
-        $this->phan_flags &= (~$new_bits);
+        $phan_flags = $this->phan_flags & ~$new_bits;
+        if (($this->phan_flags ^ $phan_flags) & ~TypedElement::UNVERSIONED_PHAN_FLAGS) {
+            ++$this->state_version;
+        }
+        $this->phan_flags = $phan_flags;
     }
 
     /**

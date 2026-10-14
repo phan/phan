@@ -1,0 +1,3 @@
+src/010_enum.php:2 PhanClassContainsAbstractMethod non-abstract class \E010 contains abstract method \V010Labeled::weight(): int declared at external/010.php:5
+src/010_enum.php:12 PhanTypeMismatchArgument Argument 1 ($i) is $e->label() of type string but \expect_int_010() takes int defined at src/010_enum.php:8
+src/010_enum.php:14 PhanTypeMismatchArgument Argument 1 ($i) is E010::from('a')->value of type string but \expect_int_010() takes int defined at src/010_enum.php:8

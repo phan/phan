@@ -1,0 +1,5 @@
+src/019_internal_root.php:11 PhanTypeMismatchArgument Argument 1 ($i) is $e->getMessage() of type string but \expect_int_019() takes int defined at src/019_internal_root.php:6
+src/019_internal_root.php:12 PhanPartialTypeMismatchArgument Argument 1 ($i) is $c->getCode() of type int|string but \expect_int_019() takes int (string is incompatible) defined at src/019_internal_root.php:6
+src/019_internal_root.php:13 PhanTypeMismatchArgument Argument 1 ($s) is $c->getLine() of type int but \expect_string_019() takes string defined at src/019_internal_root.php:7
+src/019_internal_root.php:14 PhanTypeMismatchArgument Argument 1 ($s) is $a->count() of type int but \expect_string_019() takes string defined at src/019_internal_root.php:7
+src/019_internal_root.php:15 PhanUndeclaredMethod Call to undeclared method \E019::getMessages (Did you mean expr->getMessage())

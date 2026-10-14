@@ -130,7 +130,8 @@ final class CloneReplay
         if (!$is_enabled) {
             return false;
         }
-        foreach ($code_base->getMethodSet() as $method) {
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        foreach ($code_base->getMethodSetWithoutLazyEntries() as $method) {
             $source = $method->getCloneSource();
             if ($source !== null) {
                 self::$source_ids[\spl_object_id($source)] = true;
@@ -333,6 +334,51 @@ final class CloneReplay
         self::$pending_method = null;
         self::$pending_fingerprint = null;
         self::$pending_record = null;
+    }
+
+    /**
+     * Save and clear the state of the method that is being recorded or verified, before the declaration analysis
+     * of another method runs in the middle of its processing (a lazily created copy of an inherited method that comes
+     * before it in eager order, see MethodDeclarationAnalyzer::analyzeNested()). resumePending() restores it.
+     *
+     * @return array{0:bool,1:?Method,2:?list<mixed>,3:?array{0:list<mixed>,1:CloneReplaySnapshot},4:int,5:array{0:int,1:int,2:int,3:int},6:int|float}
+     * @internal
+     */
+    public static function suspendPending(): array
+    {
+        $state = [
+            self::$has_pending_method,
+            self::$pending_method,
+            self::$pending_fingerprint,
+            self::$pending_record,
+            self::$pending_emit_attempt_count,
+            self::$pending_side_effect_counts,
+            self::$pending_start_ns,
+        ];
+        self::endAnalyzingMethod();
+        return $state;
+    }
+
+    /**
+     * Restore the state saved by suspendPending().
+     * (The caller restores Issue::$emit_attempt_count and excludes the side effects of the nested analysis from
+     * EmitOnlyChecks::getSideEffectCounts(), so the pending method's record is decided as if the nested analysis
+     * had run before it.)
+     *
+     * @param array{0:bool,1:?Method,2:?list<mixed>,3:?array{0:list<mixed>,1:CloneReplaySnapshot},4:int,5:array{0:int,1:int,2:int,3:int},6:int|float} $state
+     * @internal
+     */
+    public static function resumePending(array $state): void
+    {
+        [
+            self::$has_pending_method,
+            self::$pending_method,
+            self::$pending_fingerprint,
+            self::$pending_record,
+            self::$pending_emit_attempt_count,
+            self::$pending_side_effect_counts,
+            self::$pending_start_ns,
+        ] = $state;
     }
 
     /**

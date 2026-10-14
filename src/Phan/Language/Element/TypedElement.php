@@ -21,6 +21,14 @@ use Phan\Language\UnionType;
 abstract class TypedElement implements TypedElementInterface
 {
     /**
+     * @var ?list<TypedElement> if non-null, incrementSuppressIssueCount() appends the element to this list
+     * (set by LazyInheritedMethods with PHAN_LAZY_INHERIT_VERIFY=1, to check that the declaration analysis of a copy
+     * of an inherited method created out of order changes no suppression count of an element in an analyzed file)
+     * @internal
+     */
+    public static $suppression_count_recorder = null;
+
+    /**
      * @var string
      * The name of the typed structural element
      * @readonly
@@ -64,6 +72,19 @@ abstract class TypedElement implements TypedElementInterface
     private $suppress_issue_list = [];
 
     /**
+     * The phan flags whose changes do not change the state version (see getStateVersion()):
+     * both are set again for every inherited copy of a method (Clazz::addMethod()).
+     * @internal
+     */
+    public const UNVERSIONED_PHAN_FLAGS = Flags::IS_OVERRIDE | Flags::IS_OVERRIDDEN_BY_ANOTHER;
+
+    /**
+     * @var int
+     * The version of the state owned by this element, see getStateVersion().
+     */
+    private $state_version = 0;
+
+    /**
      * @param Context $context
      * The context in which the structural element lives
      *
@@ -105,6 +126,44 @@ abstract class TypedElement implements TypedElementInterface
     }
 
     /**
+     * Returns the version of the state that this element owns.
+     *
+     * The version is incremented by every setter, in-place mutation and cache fill of the state owned by this element
+     * (in this class and its subclasses), so "has this element's owned state changed since version X"
+     * is a cheap check. A later change uses it to create inherited method copies lazily from a remembered copy of
+     * the method they are cloned from, which is only valid while that method's state is unchanged.
+     *
+     * Not covered: objects that are immutable or shared with clones (the Comment, Context, UnionType and ast\Node
+     * objects), the counts of suppressed issues (incrementSuppressIssueCount()) and the phan flags in
+     * UNVERSIONED_PHAN_FLAGS. Writes to a new object while it is created (e.g. in Method::fromNode() or on a clone
+     * before it is returned) do not increment it either. A clone starts with the version of the element it was cloned from.
+     */
+    public function getStateVersion(): int
+    {
+        return $this->state_version;
+    }
+
+    /**
+     * Records a change of the state owned by this element (see getStateVersion()).
+     */
+    protected function bumpStateVersion(): void
+    {
+        ++$this->state_version;
+    }
+
+    /**
+     * Sets the phan flags to $phan_flags, incrementing the state version
+     * unless only bits in UNVERSIONED_PHAN_FLAGS change.
+     */
+    private function writePhanFlags(int $phan_flags): void
+    {
+        if (($this->phan_flags ^ $phan_flags) & ~self::UNVERSIONED_PHAN_FLAGS) {
+            ++$this->state_version;
+        }
+        $this->phan_flags = $phan_flags;
+    }
+
+    /**
      * @return string
      * The (not fully-qualified) name of this element.
      */
@@ -130,6 +189,7 @@ abstract class TypedElement implements TypedElementInterface
      */
     public function setUnionType(UnionType $type): void
     {
+        ++$this->state_version;
         $this->type = $type;
     }
 
@@ -164,6 +224,7 @@ abstract class TypedElement implements TypedElementInterface
 
     public function setFlags(int $flags): void
     {
+        ++$this->state_version;
         $this->flags = $flags;
     }
 
@@ -187,6 +248,10 @@ abstract class TypedElement implements TypedElementInterface
 
     public function setPhanFlags(int $phan_flags): void
     {
+        // Inlined writePhanFlags(), this is called frequently.
+        if (($this->phan_flags ^ $phan_flags) & ~self::UNVERSIONED_PHAN_FLAGS) {
+            ++$this->state_version;
+        }
         $this->phan_flags = $phan_flags;
     }
 
@@ -195,7 +260,7 @@ abstract class TypedElement implements TypedElementInterface
      */
     public function enablePhanFlagBits(int $bits): void
     {
-        $this->phan_flags |= $bits;
+        $this->writePhanFlags($this->phan_flags | $bits);
     }
 
     /**
@@ -204,7 +269,7 @@ abstract class TypedElement implements TypedElementInterface
      */
     public function disablePhanFlagBits(int $bits): void
     {
-        $this->phan_flags &= (~$bits);
+        $this->writePhanFlags($this->phan_flags & ~$bits);
     }
 
     /**
@@ -242,11 +307,11 @@ abstract class TypedElement implements TypedElementInterface
      */
     public function setIsDeprecated(bool $is_deprecated): void
     {
-        $this->phan_flags = Flags::bitVectorWithState(
+        $this->writePhanFlags(Flags::bitVectorWithState(
             $this->phan_flags,
             Flags::IS_DEPRECATED,
             $is_deprecated
-        );
+        ));
     }
 
     /**
@@ -257,6 +322,7 @@ abstract class TypedElement implements TypedElementInterface
      */
     public function setSuppressIssueSet(array $suppress_issue_set): void
     {
+        ++$this->state_version;
         $this->suppress_issue_list = $suppress_issue_set;
     }
 
@@ -270,11 +336,15 @@ abstract class TypedElement implements TypedElementInterface
 
     /**
      * Increments the number of times $issue_name was suppressed.
+     * (This does not change the state version, see getStateVersion())
      */
     public function incrementSuppressIssueCount(string $issue_name): void
     {
         ++Issue::$emit_attempt_count;
         ++$this->suppress_issue_list[$issue_name];
+        if (self::$suppression_count_recorder !== null) {
+            self::$suppression_count_recorder[] = $this;
+        }
     }
 
     /**
@@ -316,11 +386,11 @@ abstract class TypedElement implements TypedElementInterface
 
     private function setIsPHPInternal(bool $is_internal): void
     {
-        $this->phan_flags = Flags::bitVectorWithState(
+        $this->writePhanFlags(Flags::bitVectorWithState(
             $this->phan_flags,
             Flags::IS_PHP_INTERNAL,
             $is_internal
-        );
+        ));
     }
 
     /**

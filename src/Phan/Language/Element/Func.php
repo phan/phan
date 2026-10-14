@@ -546,6 +546,7 @@ class Func extends AddressableElement implements FunctionInterface
                 // Don't track functions calling themselves
                 return;
             }
+            $this->bumpStateVersion();
             $this->reference_list[$file_ref->__toString()] = $file_ref;
         }
     }

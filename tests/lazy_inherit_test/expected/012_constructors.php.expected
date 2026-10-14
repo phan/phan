@@ -1,0 +1,6 @@
+src/012_constructors.php:9 PhanParamTooFew Call with 0 arg(s) to \C012A::__construct(int $x) which requires 1 arg(s) defined at external/012.php:4
+src/012_constructors.php:10 PhanParamTooMany Call with 1 arg(s) to \C012B::__construct() which only takes 0 arg(s) defined at src/012_constructors.php:3
+src/012_constructors.php:11 PhanTypeMismatchArgumentReal Argument 1 ($x) is 'x' of type string but \C012A::__construct() takes int defined at external/012.php:4
+src/012_constructors.php:12 PhanTypeMismatchArgument Argument 1 ($s) is $a->m() of type int but \expect_string_012() takes string defined at src/012_constructors.php:5
+src/012_constructors.php:13 PhanTypeMismatchArgument Argument 1 ($s) is $b->m() of type int but \expect_string_012() takes string defined at src/012_constructors.php:5
+src/012_constructors.php:14 PhanTypeMismatchArgument Argument 1 ($s) is $c->m() of type int but \expect_string_012() takes string defined at src/012_constructors.php:5

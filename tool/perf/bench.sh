@@ -11,9 +11,9 @@ Usage: bench.sh -t TARGET [-j N] [-r K] [-w W] [-v VARIANT] [--phan PATH]
                 [--self-root DIR] [--baseline] [--mem-max 12G] [--pin] [--no-timings]
                 [--label X] [-- extra phan args]
 
-  -t TARGET     self | self-quick | self-noisy | project-subset
+  -t TARGET     self | self-quick | self-noisy | project-subset | project-tests
   -j N          phan --processes (default 1)
-  -r K          measured runs (default 5 for self*, 3 for project-subset)
+  -r K          measured runs (default 5 for self*, 3 for project-subset/project-tests)
   -w W          warmup runs, discarded (default 1)
   -v VARIANT    ci | nocache | shm | jit (default ci)
   --phan PATH   phan entry point to benchmark (default: this checkout's ./phan);
@@ -70,7 +70,7 @@ TIME_FMT='{"wall_s":%e,"user_s":%U,"sys_s":%S,"maxrss_kb":%M,"minflt":%R,"majflt
 FAIL_RE='Child terminated with return code|Saw errors for an analysis worker|PHP Fatal error|Allowed memory size'
 STDOUT_FAIL_RE='^(PHP )?Fatal error:|Allowed memory size of'
 
-target= j=1 runs= warm=1 variant=ci phan= baseline=0 mem_max=12G pin=0 timings=auto label=
+target= j=1 runs= warm=1 variant=ci phan= baseline=0 mem_max=12G mem_max_set=0 pin=0 timings=auto label=
 run_dir= run_offset=0 summarize=1 self_root=${PHAN_PERF_SELF_ROOT:-}
 extra=()
 
@@ -97,7 +97,7 @@ while (($#)); do
         -v|--variant) variant=${2?missing value for $1}; shift 2 ;;
         --phan) phan=${2?missing value for $1}; shift 2 ;;
         --baseline) baseline=1; shift ;;
-        --mem-max) mem_max=${2?missing value for $1}; shift 2 ;;
+        --mem-max) mem_max=${2?missing value for $1}; mem_max_set=1; shift 2 ;;
         --pin) pin=1; shift ;;
         --no-timings) timings=off; shift ;;
         --label) label=${2?missing value for $1}; shift 2 ;;
@@ -156,10 +156,17 @@ case $target in
         default_runs=5
         ((baseline)) && warn "--baseline is ignored for $target"
         ;;
-    project-subset)
+    project-subset|project-tests)
+        # project-tests: the same corpus with the test-heavy selection in $PERF/project-tests
+        # (built by tool/perf/make_subset.php --rate-match), which needs more memory.
         [[ -n $self_root ]] && self_root= # only meaningful for self* targets
         project_root=${PHAN_PERF_PROJECT_ROOT:-$PERF/project-src}
-        subset_dir=${PHAN_PERF_SUBSET_DIR:-$PERF/project}
+        if [[ $target == project-tests ]]; then
+            subset_dir=${PHAN_PERF_SUBSET_DIR:-$PERF/project-tests}
+            ((mem_max_set)) || mem_max=14G
+        else
+            subset_dir=${PHAN_PERF_SUBSET_DIR:-$PERF/project}
+        fi
         project_root=$(realpath -e -- "$project_root") || die "project root not found (set PHAN_PERF_PROJECT_ROOT)"
         [[ -f $subset_dir/config.frozen.php ]] || die "missing $subset_dir/config.frozen.php"
         [[ -f $subset_dir/subset.files ]] || die "missing $subset_dir/subset.files"
@@ -207,7 +214,7 @@ fi
 
 # ---- project-subset tree pin ----------------------------------------------
 tree_pin=
-if [[ $target == project-subset ]]; then
+if [[ $target == project-subset || $target == project-tests ]]; then
     if head=$(git -C "$project_root" rev-parse HEAD 2>/dev/null); then
         status_sha=$(git --no-optional-locks -C "$project_root" status --porcelain 2>/dev/null | sha1sum | cut -c1-40)
         lock_sha=$( { sha1sum < "$project_root/composer.lock" 2>/dev/null || echo none; } | cut -c1-40)
@@ -282,7 +289,7 @@ run_dir=$(realpath -- "$run_dir")
 
 # ---- project-subset arguments ----------------------------------------------
 analyze_count=
-if [[ $target == project-subset ]]; then
+if [[ $target == project-subset || $target == project-tests ]]; then
     subset_config=$subset_dir/config.frozen.php
     if [[ -n $analyze_list ]]; then
         # --include-analysis-file-list takes a comma-separated list of files, not a list

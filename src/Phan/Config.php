@@ -564,6 +564,17 @@ class Config
         // Currently, this just affects inferring that methods without return statements have type `void`
         'assume_no_external_class_overrides' => false,
 
+        // Set this to true to create the copies of inherited methods only when they are needed.
+        // Classes inherit the methods of their parent classes as copies; a class extending a large base class
+        // from a file excluded from analysis (e.g. a test framework) holds a copy of every method of that class.
+        // With this option, such copies are created when a method is first looked up in that class,
+        // which reduces memory and time on projects with many such classes. The output is unchanged.
+        //
+        // This is disabled automatically in daemon mode and the language server, with dead code detection
+        // or reference tracking, with --analyze-twice or --analyze-until-convergence, and when a plugin
+        // implementing AnalyzeMethodCapability does not implement AnalyzeMethodSkipsInheritedCopiesCapability.
+        'lazy_inherited_methods' => false,
+
         // Set to true in order to force tracking references to elements
         // (functions/methods/consts/protected).
         //
@@ -1857,6 +1868,7 @@ class Config
             'language_server_enable_hover' => $is_bool,
             'language_server_hide_category_of_issues' => $is_bool,
             'language_server_use_pcntl_fallback' => $is_bool,
+            'lazy_inherited_methods' => $is_bool,
             'long_progress_bar' => $is_bool,
             'markdown_issue_messages' => $is_bool,
             'max_literal_string_type_length' => $is_int_strict,

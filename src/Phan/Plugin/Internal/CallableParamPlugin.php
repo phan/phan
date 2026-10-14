@@ -235,7 +235,8 @@ final class CallableParamPlugin extends PluginV3 implements
         foreach ($code_base->getFunctionMap() as $function) {
             $add_misc_closures($function);
         }
-        foreach ($code_base->getMethodSet() as $function) {
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        foreach ($code_base->getMethodSetWithoutLazyEntries() as $function) {
             // An inherited copy of a method that still has its parameters and comment gets the closure generated for the
             // method it was inherited from, attached by Analysis::loadMethodPlugins() (CodeBase::getMethodsInheritedFrom()).
             // Such copies are ~90 % of the methods of a large project with deep hierarchies, so skip them here.

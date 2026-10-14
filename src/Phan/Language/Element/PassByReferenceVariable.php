@@ -112,6 +112,7 @@ class PassByReferenceVariable extends Variable
      */
     public function setUnionType(UnionType $type): void
     {
+        $this->bumpStateVersion();
         $this->type = $type;
         if ($this->element instanceof Property && $this->code_base) {
             // TODO: Also warn about incompatible types

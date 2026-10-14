@@ -14,6 +14,7 @@ use Phan\Language\Type\VoidType;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCapability;
 use Phan\PluginV3\AnalyzeMethodCapability;
+use Phan\PluginV3\AnalyzeMethodSkipsInheritedCopiesCapability;
 
 /**
  * This file checks if a function, closure or method unconditionally returns.
@@ -44,7 +45,8 @@ use Phan\PluginV3\AnalyzeMethodCapability;
  */
 final class AlwaysReturnPlugin extends PluginV3 implements
     AnalyzeFunctionCapability,
-    AnalyzeMethodCapability
+    AnalyzeMethodCapability,
+    AnalyzeMethodSkipsInheritedCopiesCapability
 {
 
     /**

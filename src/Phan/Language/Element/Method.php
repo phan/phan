@@ -11,6 +11,7 @@ use Phan\Analysis\Analyzable;
 use Phan\Analysis\CloneReplaySnapshot;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
+use Phan\CodeBase\InheritedMethodLink;
 use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Context;
@@ -61,6 +62,7 @@ class Method extends ClassElement implements FunctionInterface
 
     /**
      * @var Set<FullyQualifiedMethodName> FQSENs of methods potentially overriding this one.
+     * (This Set is shared with clones, so adding to it does not change the state version.)
      */
     private $method_overrides;
 
@@ -71,6 +73,7 @@ class Method extends ClassElement implements FunctionInterface
 
     /**
      * @var ?array<int,Method> cache of overridden methods (abstract before concrete)
+     * (Filling it does not change the state version: clones reset it.)
      */
     private $overridden_methods_cache = null;
 
@@ -79,6 +82,14 @@ class Method extends ClassElement implements FunctionInterface
      *              Used by Analysis\CloneReplay during the method analysis phase - do not use this.
      */
     private $clone_source = null;
+
+    /**
+     * @var int the rank of this method in the order in which methods were added to the code base
+     * (set by CodeBase::addMethod(), 0 if it was not added). Clones keep it until they are added themselves.
+     * A later change that creates inherited method copies lazily uses it to process those copies in the order
+     * in which they would have been added.
+     */
+    private $eager_ordinal = 0;
 
     /**
      * @var bool whether this is a clone whose parameter or return types were specialized by template substitution
@@ -165,7 +176,8 @@ class Method extends ClassElement implements FunctionInterface
 
     public function __clone()
     {
-        $this->setInternalScope(clone($this->getInternalScope()));
+        // (Not setInternalScope(): a clone starts with the state version of the method it was cloned from.)
+        $this->internal_scope = clone($this->internal_scope);
         $this->overridden_methods_cache = null;
         // Only Clazz::addMethod() records the method that a clone was created from
         $this->clone_source = null;
@@ -757,24 +769,49 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function ensureClonesReturnType(Method $original_method): void
     {
-        if ($this->defining_method_for_type_fetching) {
-            return;
+        if (!$this->defining_method_for_type_fetching) {
+            $link_target = $original_method->getReturnTypeLinkTargetForClone();
+            if ($link_target) {
+                $this->bumpStateVersion();
+                $this->defining_method_for_type_fetching = $link_target;
+            }
         }
+    }
+
+    /**
+     * Returns the method whose return type a clone of this method would use (what ensureClonesReturnType($this) would
+     * record in a clone that has none yet), or null if a clone of this method would use its own return type.
+     * This has no side effects.
+     * @internal
+     */
+    public function getReturnTypeLinkTargetForClone(): ?Method
+    {
         // Get the real ancestor of C::method() if C extends B and B extends A
-        $original_method = $original_method->defining_method_for_type_fetching ?? $original_method;
+        $original_method = $this->defining_method_for_type_fetching ?? $this;
 
         // Don't bother with methods that can't have types inferred recursively
         if ($original_method->isAbstract() || $original_method->isFromPHPDoc() || $original_method->isPHPInternal()) {
-            return;
+            return null;
         }
 
         if (!$original_method->getUnionType()->isEmpty() || !$original_method->getRealReturnType()->isEmpty()) {
             // This heuristic is used as little as possible.
             // It will only use this fallback of directly using the (possibly modified)
             // parent's type if the parent method declaration had no phpdoc return type and no real return type (and nothing was guessed such as `void`).
-            return;
+            return null;
         }
-        $this->defining_method_for_type_fetching = $original_method;
+        return $original_method;
+    }
+
+    /**
+     * Returns the method whose return type a clone of this method created now would use
+     * (Clazz::addMethod() clones this method, which keeps its link, then calls ensureClonesReturnType()),
+     * or null if such a clone would use its own return type. This has no side effects.
+     * @internal
+     */
+    public function getReturnTypeLinkOfClone(): ?Method
+    {
+        return $this->defining_method_for_type_fetching ?: $this->getReturnTypeLinkTargetForClone();
     }
 
     /**
@@ -783,7 +820,42 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function setCloneSource(Method $source): void
     {
+        // This does not change the state version: Clazz::addMethod() sets this on every copy, and clones reset it.
         $this->clone_source = $source;
+    }
+
+    /**
+     * Sets the method whose return type this copy uses, as ensureClonesReturnType() would have when the copy was cloned
+     * from the method that $link_target was computed for (getReturnTypeLinkOfClone()). Used for copies of inherited methods
+     * created lazily (Analysis\LazyInheritedMethods), which take that decision when the copy would have been created.
+     * @internal
+     */
+    public function setReturnTypeLinkForLazyCopy(?Method $link_target): void
+    {
+        if ($link_target && !$this->defining_method_for_type_fetching) {
+            $this->bumpStateVersion();
+            $this->defining_method_for_type_fetching = $link_target;
+        }
+    }
+
+    /**
+     * Records the rank of this method in the order in which methods were added to the code base.
+     * This does not change the state version: CodeBase::addMethod() sets it on every method it adds.
+     * @internal
+     */
+    public function setEagerOrdinal(int $eager_ordinal): void
+    {
+        $this->eager_ordinal = $eager_ordinal;
+    }
+
+    /**
+     * Returns the rank of this method in the order in which methods were added to the code base
+     * (CodeBase::nextEagerOrdinal()), or 0 if it was not added.
+     * @internal
+     */
+    public function getEagerOrdinal(): int
+    {
+        return $this->eager_ordinal;
     }
 
     /**
@@ -802,6 +874,26 @@ class Method extends ClassElement implements FunctionInterface
     public function getCloneSource(): ?Method
     {
         return $this->clone_source;
+    }
+
+    /**
+     * @return ?Method the method whose return type this inherited method uses (see ensureClonesReturnType()), if any
+     * (for PHAN_DUMP_METHOD_STATE_DIGEST_EXTENDED=1)
+     * @internal
+     */
+    public function getReturnTypeLink(): ?Method
+    {
+        return $this->defining_method_for_type_fetching;
+    }
+
+    /**
+     * @return ?UnionType the (at)throws types that this method inherits (see setInheritedThrowsUnionType()), if set
+     * (for PHAN_DUMP_METHOD_STATE_DIGEST_EXTENDED=1)
+     * @internal
+     */
+    public function getInheritedThrowsUnionType(): ?UnionType
+    {
+        return $this->inherited_throws_union_type;
     }
 
     /**
@@ -919,6 +1011,7 @@ class Method extends ClassElement implements FunctionInterface
     public function replayDeclarationAnalysis(CodeBase $code_base, CloneReplaySnapshot $snapshot): void
     {
         $this->is_inner_scope_initialized = true;
+        $this->bumpStateVersion();
         if ($snapshot->adds_this_variable) {
             $this_variable = $this->createThisVariableOfGenericClass($code_base);
             if ($this_variable) {
@@ -954,6 +1047,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function applyCloneReplaySnapshot(CloneReplaySnapshot $snapshot): void
     {
+        $this->bumpStateVersion();
         $this->phpdoc_parameter_type_map = $snapshot->phpdoc_parameter_type_map;
         $this->last_mandatory_phpdoc_param_offset = $snapshot->last_mandatory_phpdoc_param_offset;
         $parameter_states = $snapshot->parameter_states;
@@ -1090,16 +1184,28 @@ class Method extends ClassElement implements FunctionInterface
             // A trait may be earlier in $ancestor_class_list than the parent, but the parent may define abstract classes.
             // TODO: What about trait aliasing rules?
             $ancestor_fqsen = $ancestor_class->getFQSEN();
-            $method = $code_base->getMethodByClassAndLowercaseName($ancestor_fqsen, $lowercase_name);
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $method = $code_base->getMethodEntryByClassAndLowercaseName($ancestor_fqsen, $lowercase_name);
             if (!$method) {
                 // Same as Clazz->hasMethodWithName(): hydrate the ancestor if this is the first time, then check again.
                 if (!$ancestor_class->hydrateIndicatingFirstTime($code_base)) {
                     continue;
                 }
-                $method = $code_base->getMethodByClassAndLowercaseName($ancestor_fqsen, $lowercase_name);
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                $method = $code_base->getMethodEntryByClassAndLowercaseName($ancestor_fqsen, $lowercase_name);
                 if (!$method) {
                     continue;
                 }
+            }
+            if ($method instanceof InheritedMethodLink) {
+                // A copy of an inherited method that was not created yet (see LazyInheritedMethods):
+                // skip it without creating it if it is a copy of the same method, otherwise create it.
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                if ($method->registry->templateOf($method, $lowercase_name)->getDefiningFQSEN() === $defining_fqsen) {
+                    continue;
+                }
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                $method = $method->registry->materialize($method->class_map, $lowercase_name, $method, 'override_walk');
             }
             if ($method->getDefiningFQSEN() === $defining_fqsen) {
                 // Skip it, this method **is** the one which defined this.
@@ -1502,6 +1608,7 @@ class Method extends ClassElement implements FunctionInterface
                 // Don't track methods calling themselves
                 return;
             }
+            $this->bumpStateVersion();
             $this->reference_list[$file_ref->__toString()] = $file_ref;
         }
     }
@@ -1520,6 +1627,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function setInheritedThrowsUnionType(UnionType $type): void
     {
+        $this->bumpStateVersion();
         $this->inherited_throws_union_type = $type;
     }
 
@@ -1531,6 +1639,7 @@ class Method extends ClassElement implements FunctionInterface
         if ($union_type->isEmpty()) {
             return;
         }
+        $this->bumpStateVersion();
         $class_key = $class_fqsen->__toString();
         if (!isset($this->static_property_set_types[$class_key])) {
             $this->static_property_set_types[$class_key] = [

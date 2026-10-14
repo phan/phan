@@ -1,0 +1,4 @@
+src/002_abstract_concrete.php:3 PhanClassContainsAbstractMethod non-abstract class \C002 contains abstract method \V002Base::compute(int $x): int declared at external/002.php:4
+src/002_abstract_concrete.php:12 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression $d->describe() with type string
+src/002_abstract_concrete.php:13 PhanTypeMismatchArgumentReal Argument 1 ($x) is 'a' of type string but \D002::compute() takes int defined at src/002_abstract_concrete.php:7
+src/002_abstract_concrete.php:14 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression $c->compute(1) with type int

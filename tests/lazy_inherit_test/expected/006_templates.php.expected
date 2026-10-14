@@ -1,0 +1,5 @@
+src/006_templates.php:7 PhanGenericMissingParameters Class \S006Plain must substitute all 1 template parameters when inheriting \V006Box (found 0) defined at external/006.php:5 (use @extends or @inherit)
+src/006_templates.php:13 PhanTypeMismatchArgument Argument 1 ($i) is $s->get() of type string but \expect_int_006() takes int defined at src/006_templates.php:9
+src/006_templates.php:15 PhanParamTooMany Call with 1 arg(s) to \S006Plain::count() which only takes 0 arg(s) defined at external/006.php:13
+src/006_templates.php:16 PhanTypeMismatchArgument Argument 1 ($value) is 42 of type int (value: 42) but \S006StringBox::__construct() takes string defined at external/006.php:10
+src/006_templates.php:17 PhanTypeMismatchArgument Argument 1 ($i) is $box->get() of type string but \expect_int_006() takes int defined at src/006_templates.php:9

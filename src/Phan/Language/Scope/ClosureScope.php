@@ -37,6 +37,7 @@ class ClosureScope extends FunctionLikeScope
     {
         // If there is an FQSEN override, then this is in a class scope.
         // If there is no override, then this inherits the class of the parent
+        $this->bumpStateVersion();
         if ($fqsen) {
             $this->flags |= Scope::IN_CLASS_SCOPE;
         } else {

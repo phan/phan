@@ -105,6 +105,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      */
     public function setFQSEN(FQSEN $fqsen): void
     {
+        $this->bumpStateVersion();
         $this->fqsen = $fqsen;
     }
 
@@ -219,6 +220,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
             if ($this->isPHPInternal()) {
                 return;
             }
+            $this->bumpStateVersion();
             $this->reference_list[$file_ref->__toString()] = $file_ref;
         }
     }
@@ -232,6 +234,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
             // Should be impossible
             return;
         }
+        $this->bumpStateVersion();
         foreach ($element->reference_list as $key => $file_ref) {
             $this->reference_list[$key] = $file_ref;
         }
@@ -271,6 +274,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
             return;
         }
         $this->is_hydrated = true;
+        $this->bumpStateVersion();
 
         $this->hydrateOnce($code_base);
     }
@@ -308,6 +312,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      */
     public function setDocComment(?string $doc_comment = null): void
     {
+        $this->bumpStateVersion();
         $this->doc_comment = $doc_comment;
     }
 

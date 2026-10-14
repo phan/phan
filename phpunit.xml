@@ -48,6 +48,7 @@
       <file>tests/Phan/InternalStubCacheTest.php</file>
       <file>tests/Phan/OrderingTest.php</file>
       <file>tests/Phan/CodeBaseInheritedMethodsTest.php</file>
+      <file>tests/Phan/LazyInheritedMethodsTest.php</file>
       <directory>tests/Phan/Analysis</directory>
       <directory>tests/Phan/AST</directory>
       <directory>tests/Phan/Debug</directory>

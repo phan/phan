@@ -1,0 +1,4 @@
+src/004_mixin.php:12 PhanTypeMismatchArgument Argument 1 ($i) is $m->mixed2('x') of type string but \expect_int_004() takes int defined at src/004_mixin.php:8
+src/004_mixin.php:13 PhanParamTooMany Call with 1 arg(s) to \M004::mixed1() which only takes 0 arg(s) defined at external/004.php:4
+src/004_mixin.php:14 PhanTypeMismatchArgument Argument 1 ($i) is $s->mixed2(1) of type string but \expect_int_004() takes int defined at src/004_mixin.php:8
+src/004_mixin.php:14 PhanTypeMismatchArgument Argument 1 ($s) is 1 of type int (value: 1) but \S004::mixed2() takes string defined at external/004.php:5

@@ -1,0 +1,3 @@
+src/008_nna_middle.php:11 PhanNoNamedArgument Saw named argument for a: 1 in call to \L008::call(int $a, int $b) declared with @no-named-arguments defined at external/008.php:4
+src/008_nna_middle.php:11 PhanNoNamedArgument Saw named argument for b: 2 in call to \L008::call(int $a, int $b) declared with @no-named-arguments defined at external/008.php:4
+src/008_nna_middle.php:13 PhanTypeMismatchArgumentReal Argument 1 ($a) is 'x' of type string but \P008::call() takes int defined at external/008.php:4

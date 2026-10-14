@@ -1,0 +1,4 @@
+src/017_throws.php:7 PhanThrowTypeMismatch \C017Override::risky() throws new LogicException('x') of type \LogicException here, but it only has declarations of '@throws \InvalidArgumentException'
+src/017_throws.php:13 PhanThrowTypeAbsentForCall \test017() can throw \InvalidArgumentException because it calls \C017::risky(), but has no '@throws' declarations for that class
+src/017_throws.php:14 PhanThrowTypeAbsentForCall \test017() can throw \RuntimeException because it calls \C017::riskier(), but has no '@throws' declarations for that class
+src/017_throws.php:15 PhanThrowTypeAbsentForCall \test017() can throw \RuntimeException because it calls \C017Override::riskier(), but has no '@throws' declarations for that class

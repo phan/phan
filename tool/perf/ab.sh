@@ -67,7 +67,7 @@ while (($#)); do
 done
 [[ -n $target ]] || die "bench.sh args must include -t TARGET"
 if [[ -z $K ]]; then
-    [[ $target == project-subset ]] && K=3 || K=5
+    [[ $target == project-subset || $target == project-tests ]] && K=3 || K=5
 fi
 [[ $K =~ ^[1-9][0-9]*$ ]] || die "-r must be a positive integer"
 [[ $W =~ ^[0-9]+$ ]] || die "-w must be a non-negative integer"

@@ -13,12 +13,9 @@ use InvalidArgumentException;
 use ParseError;
 use Phan\Analysis\AttributeAnalyzer;
 use Phan\Analysis\CloneReplay;
-use Phan\Analysis\CloneReplaySnapshot;
-use Phan\Analysis\DuplicateFunctionAnalyzer;
 use Phan\Analysis\EmitOnlyChecks;
-use Phan\Analysis\ParameterTypesAnalyzer;
+use Phan\Analysis\MethodDeclarationAnalyzer;
 use Phan\Analysis\ReferenceCountsAnalyzer;
-use Phan\Analysis\ThrowsTypesAnalyzer;
 use Phan\AST\ASTSimplifier;
 use Phan\AST\Parser;
 use Phan\AST\PhanAnnotationAdder;
@@ -531,118 +528,16 @@ class Analysis
         // the checks that only emit issues about a function or method declared in such a file are skipped.
         // (PHAN_ANALYZE_EXCLUDED_METHODS=1 runs them, PHAN_VERIFY_SKIPPED_CHECKS=1 verifies that skipping them changes nothing)
         $excluded_file_checks = EmitOnlyChecks::modeForExcludedFiles();
-        /** @var array<string,bool> $is_excluded_file cache of Phan::isExcludedAnalysisFile() */
-        $is_excluded_file = [];
-        // The number of user-defined functions and methods for which the emit-only checks were run/skipped or verified
-        $checks_count = [EmitOnlyChecks::RUN => 0, EmitOnlyChecks::SKIP => 0, EmitOnlyChecks::VERIFY => 0];
+        // The cache of Phan::isExcludedAnalysisFile() and the number of user-defined functions and methods
+        // for which the emit-only checks were run/skipped or verified are kept in the analyzer.
         EmitOnlyChecks::resetLookedUpTypes();
-        /**
-         * @param ?CloneReplaySnapshot $clone_replay_snapshot for an inherited method,
-         * the results of the declaration analysis of the method it was cloned from, to replay (see CloneReplay)
-         */
-        $analyze_function_or_method = static function (Func|Method $function_or_method, ?CloneReplaySnapshot $clone_replay_snapshot = null) use (
+        $analyzer = new MethodDeclarationAnalyzer(
             $code_base,
             $plugin_set,
             $has_function_or_method_plugins,
             $file_filter,
-            $excluded_file_checks,
-            &$is_excluded_file,
-            &$checks_count
-        ): void {
-            if ($function_or_method->isPHPInternal()) {
-                return;
-            }
-            if ($clone_replay_snapshot !== null && $function_or_method instanceof Method) {
-                // An inherited method whose declaration analysis (the parameters part of ensureScopeInitialized() and
-                // ParameterTypesAnalyzer::analyzeParameterTypesOfDeclaration()) would compute the same as that of the method
-                // it was cloned from, and check no issue: make the same changes to it instead (see CloneReplay).
-                $function_or_method->replayDeclarationAnalysis($code_base, $clone_replay_snapshot);
-            } else {
-                // Phan always has to call this, to add default values to types of parameters.
-                $function_or_method->ensureScopeInitialized($code_base);
-            }
-
-            $file = $function_or_method->getContext()->getFile();
-            // If there is an array limiting the set of files, skip this file if it's not in the list.
-            if (\is_array($file_filter) && !isset($file_filter[$file])) {
-                return;
-            }
-            // The steps below that modify $function_or_method (or other state read by the analysis) always run.
-            // The checks that only emit issues about $function_or_method are skipped
-            // if it is declared in a file excluded from analysis (Issue::emitInstance() discards those issues).
-            $checks = EmitOnlyChecks::RUN;
-            if ($excluded_file_checks !== EmitOnlyChecks::RUN && ($is_excluded_file[$file] ??= Phan::isExcludedAnalysisFile($file))) {
-                $checks = $excluded_file_checks;
-            }
-            $checks_count[$checks]++;
-
-            // This emits issues at the location of the original definition, which may be in a file that is analyzed.
-            DuplicateFunctionAnalyzer::analyzeDuplicateFunction(
-                $code_base,
-                $function_or_method
-            );
-
-            // This is the most time consuming step.
-            // Can probably apply this to other functions, but this was the slowest.
-            // (Its first part is replayed with the rest of the declaration analysis, see above)
-            if ($clone_replay_snapshot === null) {
-                $is_declaration_analyzed = ParameterTypesAnalyzer::analyzeParameterTypesOfDeclaration(
-                    $code_base,
-                    $function_or_method,
-                    $checks
-                );
-                if (CloneReplay::$has_pending_method && $function_or_method instanceof Method) {
-                    // Record the results of the declaration analysis of a method that other methods were cloned from
-                    // (or verify those of a clone that could be replayed, for PHAN_VERIFY_SKIPPED_CHECKS=1)
-                    CloneReplay::endDeclarationAnalysis($code_base, $function_or_method, $is_declaration_analyzed);
-                }
-            } else {
-                $is_declaration_analyzed = true;
-            }
-            if ($is_declaration_analyzed) {
-                ParameterTypesAnalyzer::analyzeParameterTypesOfOverrides(
-                    $code_base,
-                    $function_or_method,
-                    $checks
-                );
-            }
-
-            // This always runs: it adds references to attribute classes, may create their default constructor,
-            // and analyzes the arguments of the attributes.
-            AttributeAnalyzer::analyzeAttributesOfFunctionInterface(
-                $code_base,
-                $function_or_method
-            );
-
-            // Infer more accurate return types
-            // For daemon mode/the language server, we also call this whenever we use the return type of a function/method.
-            $function_or_method->analyzeReturnTypes($code_base, $checks);
-
-            // This always runs: it inherits (at)throws types, and its checks look up the classes used in them.
-            ThrowsTypesAnalyzer::analyzeThrowsTypes(
-                $code_base,
-                $function_or_method
-            );
-            // Let any plugins analyze the methods or functions
-            // XXX: Add a way to run plugins on all functions/methods, this was limited for speed.
-            // Assumes that the given plugins will emit an issue in the same file as the function/method,
-            // which isn't necessarily the case.
-            // (Plugins always run, even for elements declared in excluded files: they may record state.)
-            // 0.06
-            if ($has_function_or_method_plugins) {
-                if ($function_or_method instanceof Func) {
-                    $plugin_set->analyzeFunction(
-                        $code_base,
-                        $function_or_method
-                    );
-                } else {
-                    $plugin_set->analyzeMethod(
-                        $code_base,
-                        $function_or_method
-                    );
-                }
-            }
-        };
+            $excluded_file_checks
+        );
 
         // Analyze user-defined method declarations.
         // Plugins may also analyze user-defined methods here.
@@ -653,14 +548,14 @@ class Analysis
             if ($show_progress) {
                 CLI::progress('function', (++$i) / (count($function_map)), $function);
             }
-            $analyze_function_or_method($function);
+            $analyzer->analyze($function);
         }
 
         // Analyze user-defined method declarations.
         // Plugins may also analyze user-defined methods here.
         PhaseTimer::begin('analyze_methods');
         $i = 0;
-        $method_set = $code_base->getMethodSet();
+        $method_set = $code_base->getMethodSetWithoutLazyEntries();
         CLI::progress('method', 0.0, null);
         $collect_timings = PhaseTimer::$enabled;
         // Nanoseconds spent on methods, split by declared vs. inherited and by excluded vs. analyzed file (--dump-phase-timings)
@@ -676,12 +571,24 @@ class Analysis
             $excluded_file_checks === EmitOnlyChecks::VERIFY,
             $collect_timings
         );
+        // With lazy_inherited_methods, copies of inherited methods created in the class phase or in this loop
+        // are processed in the order in which they would have been added (see LazyInheritedMethods).
+        $lazy = $code_base->getLazyInherited();
+        if ($lazy !== null) {
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $lazy->beginMethodLoop($analyzer, $clone_replay);
+        }
         foreach ($method_set as $method) {
             if ($show_progress) {
                 // Method analysis can trigger class hydration which adds
                 // inherited methods to the end of the set. This recalculation
                 // is needed so that the progress bar is accurate.
                 CLI::progress('method', (++$i) / (count($method_set)), $method);
+            }
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            if ($lazy !== null && $lazy->beginLoopMethod($method)) {
+                // Already processed (a lazily created copy that comes before a method processed earlier)
+                continue;
             }
             if ($method->isPHPInternal()) {
                 continue;
@@ -692,13 +599,14 @@ class Analysis
             try {
                 if ($collect_timings) {
                     $start_ns = \hrtime(true);
-                    $analyze_function_or_method($method, $clone_replay ? CloneReplay::beginAnalyzingMethod($code_base, $method) : null);
+                    $analyzer->analyze($method, $clone_replay ? CloneReplay::beginAnalyzingMethod($code_base, $method) : null);
                     $elapsed_ns = \hrtime(true) - $start_ns;
                     $file = $method->getContext()->getFile();
                     $method_ns[$method->getDefiningFQSEN() !== $method->getFQSEN() ? 'inherited' : 'declared'] += $elapsed_ns;
-                    $method_ns[($is_excluded_file[$file] ??= Phan::isExcludedAnalysisFile($file)) ? 'excluded' : 'analyzed'] += $elapsed_ns;
+                    // @phan-suppress-next-line PhanAccessPropertyInternal
+                    $method_ns[($analyzer->is_excluded_file[$file] ??= Phan::isExcludedAnalysisFile($file)) ? 'excluded' : 'analyzed'] += $elapsed_ns;
                 } else {
-                    $analyze_function_or_method($method, $clone_replay ? CloneReplay::beginAnalyzingMethod($code_base, $method) : null);
+                    $analyzer->analyze($method, $clone_replay ? CloneReplay::beginAnalyzingMethod($code_base, $method) : null);
                 }
             } finally {
                 EmitOnlyChecks::endAnalyzingMethod();
@@ -707,16 +615,25 @@ class Analysis
                 }
             }
         }
+        if ($lazy !== null) {
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $lazy->endMethodLoop();
+        }
         if ($collect_timings) {
-            self::recordMethodSetStats($code_base, $method_ns, $is_excluded_file);
-            PhaseTimer::note('functionlikes_checks_run', $checks_count[EmitOnlyChecks::RUN]);
-            PhaseTimer::note('functionlikes_checks_skipped', $checks_count[EmitOnlyChecks::SKIP]);
-            PhaseTimer::note('functionlikes_checks_verified', $checks_count[EmitOnlyChecks::VERIFY]);
+            // @phan-suppress-next-line PhanAccessPropertyInternal
+            self::recordMethodSetStats($code_base, $method_ns, $analyzer->is_excluded_file);
+            // @phan-suppress-next-line PhanAccessPropertyInternal
+            PhaseTimer::note('functionlikes_checks_run', $analyzer->checks_count[EmitOnlyChecks::RUN]);
+            // @phan-suppress-next-line PhanAccessPropertyInternal
+            PhaseTimer::note('functionlikes_checks_skipped', $analyzer->checks_count[EmitOnlyChecks::SKIP]);
+            // @phan-suppress-next-line PhanAccessPropertyInternal
+            PhaseTimer::note('functionlikes_checks_verified', $analyzer->checks_count[EmitOnlyChecks::VERIFY]);
             EmitOnlyChecks::recordAncestorWalkStats();
         }
         CloneReplay::endAnalyzingMethods($code_base);
         EmitOnlyChecks::resetLookedUpTypes();
-        EmitOnlyChecks::reportVerificationResults($code_base, $checks_count[EmitOnlyChecks::VERIFY]);
+        // @phan-suppress-next-line PhanAccessPropertyInternal
+        EmitOnlyChecks::reportVerificationResults($code_base, $analyzer->checks_count[EmitOnlyChecks::VERIFY]);
     }
 
     /**
@@ -729,7 +646,7 @@ class Analysis
     private static function recordMethodSetStats(CodeBase $code_base, array $method_ns, array &$is_excluded_file): void
     {
         $counts = ['declared' => 0, 'inherited_clones' => 0, 'excluded' => 0, 'analyzed' => 0, 'internal' => 0];
-        foreach ($code_base->getMethodSet() as $method) {
+        foreach ($code_base->getMethodSetWithoutLazyEntries() as $method) {
             if ($method->isPHPInternal()) {
                 $counts['internal']++;
                 continue;
@@ -778,6 +695,12 @@ class Analysis
                 $return_type_override_fqsen_strings[$fqsen->__toString()] = true;
             }
         }
+        // With lazy_inherited_methods, the closures attached to methods whose copies are still lazy are recorded,
+        // and those copies get them when they are created (see LazyInheritedMethods::replayOps()).
+        $lazy = $code_base->getLazyInherited();
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        $lazy?->beginLoadMethodPlugins($return_type_override_fqsen_strings);
+        $passed_lazy_entry = false;
 
         // A plugin closure for a method also applies to the copies of that method inherited by the descendants of its class.
         // Those are found by walking the descendants (CodeBase::getMethodsInheritedFrom()) rather than by grouping the whole
@@ -803,7 +726,7 @@ class Analysis
                             // 1) The FQSEN that's actually in the code base is allowed to differ from what the plugin used as an array key.
                             //      Thus, we use $fqsen->__toString() rather than $fqsen_string.
                             // 2) The parent method is included in this list, i.e. the parent method is its own defining method.
-                            foreach ($code_base->getMethodsInheritedFrom($fqsen, $child_class_index) as $child_method) {
+                            foreach ($code_base->getMethodsInheritedFrom($fqsen, $child_class_index, $passed_lazy_entry) as $child_method) {
                                 if ($child_method->getFQSEN() !== $fqsen &&
                                     isset($return_type_override_fqsen_strings[$child_method->getFQSEN()->__toString()])
                                 ) {
@@ -812,6 +735,10 @@ class Analysis
                                     continue;
                                 }
                                 $child_method->setDependentReturnTypeClosure($closure);
+                            }
+                            if ($passed_lazy_entry && $lazy !== null) {
+                                // @phan-suppress-next-line PhanAccessMethodInternal
+                                $lazy->recordOp($fqsen, 'return_type', $closure, null);
                             }
                         }
                     }
@@ -851,8 +778,12 @@ class Analysis
                             $child_class_index ??= $code_base->getDirectChildClassIndex();
                             $fqsen = FullyQualifiedMethodName::fromFullyQualifiedString($fqsen_string);
 
-                            foreach ($code_base->getMethodsInheritedFrom($fqsen, $child_class_index) as $child_method) {
+                            foreach ($code_base->getMethodsInheritedFrom($fqsen, $child_class_index, $passed_lazy_entry) as $child_method) {
                                 $child_method->addFunctionCallAnalyzer($closure, $plugin);
+                            }
+                            if ($passed_lazy_entry && $lazy !== null) {
+                                // @phan-suppress-next-line PhanAccessMethodInternal
+                                $lazy->recordOp($fqsen, 'call', $closure, $plugin);
                             }
                         }
                     } else {
@@ -887,25 +818,48 @@ class Analysis
             // substitution gets its own. FQSEN objects are memoized for the lifetime of the process, so their ids are stable keys.
             /** @var array<int,?\Closure> $closures_by_defining_fqsen */
             $closures_by_defining_fqsen = [];
-            foreach ($code_base->getMethodSet() as $method) {
-                $key = \spl_object_id($method->getDefiningFQSEN());
-                if ($code_base->isInheritedCopyWithSameSignature($method)) {
-                    if (!\array_key_exists($key, $closures_by_defining_fqsen)) {
-                        $closures_by_defining_fqsen[$key] = ConfigPluginSet::buildCallableArgumentAnalyzer($method, $plugin_closures);
-                    }
-                    $closure = $closures_by_defining_fqsen[$key];
-                } else {
-                    $closure = ConfigPluginSet::buildCallableArgumentAnalyzer($method, $plugin_closures);
-                    if ($method->getDefiningFQSEN() === $method->getFQSEN()) {
-                        // The analyzer of the defining method is the one its unspecialized copies share.
-                        // (A specialized copy has the same defining FQSEN but different parameters: it must not be stored there.)
-                        $closures_by_defining_fqsen[$key] = $closure;
-                    }
-                }
-                if ($closure !== null) {
-                    $method->addFunctionCallAnalyzer($closure, $plugin_set);
-                }
+            foreach ($code_base->getMethodSetWithoutLazyEntries() as $method) {
+                self::attachCallableArgumentAnalyzer($code_base, $method, $plugin_closures, $closures_by_defining_fqsen, $plugin_set);
             }
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $lazy?->setCallableArgumentState($plugin_closures, $closures_by_defining_fqsen, $plugin_set);
+        }
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        $lazy?->endLoadMethodPlugins();
+    }
+
+    /**
+     * Add the analyzer of the AnalyzeCallableArgumentCapability plugins to $method, if it has callable parameters
+     * (part of loadMethodPlugins()).
+     *
+     * @param list<\Closure> $plugin_closures the closures of the AnalyzeCallableArgumentCapability plugins
+     * @param array<int,?\Closure> &$closures_by_defining_fqsen the analyzers shared by the unspecialized copies
+     * of a method, by spl_object_id() of their defining FQSEN
+     * @internal (also used for the copies of inherited methods that Analysis\LazyInheritedMethods creates later)
+     */
+    public static function attachCallableArgumentAnalyzer(
+        CodeBase $code_base,
+        Method $method,
+        array $plugin_closures,
+        array &$closures_by_defining_fqsen,
+        ConfigPluginSet $plugin_set
+    ): void {
+        $key = \spl_object_id($method->getDefiningFQSEN());
+        if ($code_base->isInheritedCopyWithSameSignature($method)) {
+            if (!\array_key_exists($key, $closures_by_defining_fqsen)) {
+                $closures_by_defining_fqsen[$key] = ConfigPluginSet::buildCallableArgumentAnalyzer($method, $plugin_closures);
+            }
+            $closure = $closures_by_defining_fqsen[$key];
+        } else {
+            $closure = ConfigPluginSet::buildCallableArgumentAnalyzer($method, $plugin_closures);
+            if ($method->getDefiningFQSEN() === $method->getFQSEN()) {
+                // The analyzer of the defining method is the one its unspecialized copies share.
+                // (A specialized copy has the same defining FQSEN but different parameters: it must not be stored there.)
+                $closures_by_defining_fqsen[$key] = $closure;
+            }
+        }
+        if ($closure !== null) {
+            $method->addFunctionCallAnalyzer($closure, $plugin_set);
         }
     }
 

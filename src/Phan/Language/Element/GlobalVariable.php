@@ -21,6 +21,7 @@ class GlobalVariable extends Variable
 
     public function setUnionType(UnionType $type): void
     {
+        $this->bumpStateVersion();
         $this->type = $type;
         // Always merge the type on the actual global.
         // Convert undefined to null before merging in the type.
