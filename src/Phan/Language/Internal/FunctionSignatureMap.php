@@ -15528,7 +15528,7 @@ return [
 'msession_unlock' => ['int', 'session'=>'string', 'key'=>'int'],
 'msg_get_queue' => ['SysvMessageQueue', 'key'=>'int', 'permissions='=>'int'],
 'msg_queue_exists' => ['bool', 'key'=>'int'],
-'msg_receive' => ['bool'],
+'msg_receive' => ['bool', 'queue'=>'SysvMessageQueue', 'desired_message_type'=>'int', '&w_received_message_type'=>'int', 'max_message_size'=>'int', '&w_message'=>'mixed', 'unserialize='=>'bool', 'flags='=>'int', '&w_error_code='=>'int'],
 'msg_remove_queue' => ['bool', 'queue'=>'SysvMessageQueue'],
 'msg_send' => ['bool', 'queue'=>'SysvMessageQueue', 'message_type'=>'int', 'message'=>'array|object|bool|float|int|string|null', 'serialize='=>'bool', 'blocking='=>'bool', '&w_error_code='=>'int'],
 'msg_set_queue' => ['bool', 'queue'=>'SysvMessageQueue', 'data'=>'array'],

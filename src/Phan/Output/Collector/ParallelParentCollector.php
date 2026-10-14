@@ -95,7 +95,6 @@ class ParallelParentCollector implements IssueCollectorInterface
 
             // Receive the message, populating $message by
             // reference
-            // @phan-suppress-next-line PhanParamTooManyInternal msg_receive() signature may be incomplete in stubs
             if (\msg_receive(
                 $this->message_queue_resource,
                 self::MESSAGE_TYPE_ISSUE,

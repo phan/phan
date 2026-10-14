@@ -251,10 +251,16 @@ class FunctionFactory
                 }
                 $alternate_function->setUnionType($return_type);
             }
-            if (($map['parameter_name_type_map'] ?? []) === [] && $function->getRealParameterList()) {
+            if (($map['parameter_name_type_map'] ?? []) === []
+                && $function->getRealParameterList()
+                && Config::get_closest_target_php_version_id() >= \PHP_VERSION_ID - \PHP_VERSION_ID % 100
+            ) {
                 // The signature map entry has a return type but no parameters, while reflection says the function or method
                 // has parameters: the entry is incomplete (e.g. a delta generated with return types only). Keep the reflected
                 // parameters instead of replacing them with none, which would report every call as passing too many arguments.
+                // Only when the target PHP version is not older than the running one: the running PHP's reflection may
+                // otherwise carry parameters that the target version does not have yet (e.g. posix_getrlimit()'s $resource,
+                // added in PHP 8.3), and a map entry without parameters may be exactly right for the target version.
                 if (!$alternate_function->getParameterList()) {
                     $alternate_function->setParameterList($function->getRealParameterList());
                 }

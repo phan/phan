@@ -1,6 +1,7 @@
 <?php // phpcs:ignoreFile
 /**
  * @see FunctionSignatureMap.php
+ * @phan-file-suppress PhanPluginMixedKeyNoKey
  */
 return [
   'added' => [
@@ -148,6 +149,7 @@ return [
     'ziparchive::setarchiveflag' => ['bool', 'flag'=>'int', 'value'=>'int'],
   ],
   'changed' => [
+    'posix_getrlimit' => ['old' => ['array'], 'new' => ['array', 'resource='=>'?int']],
   ],
   'removed' => [
   ],
