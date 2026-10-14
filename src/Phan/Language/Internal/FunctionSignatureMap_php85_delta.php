@@ -15,7 +15,7 @@ return [
       'Locale::isRightToLeft' => ['bool', 'locale'=>'string'],
       'grapheme_levenshtein' => ['int|false', 'string1'=>'string', 'string2'=>'string', 'insertion_cost='=>'int', 'replacement_cost='=>'int', 'deletion_cost='=>'int'],
       'curl_multi_get_handles' => ['array', 'multi_handle'=>'CurlMultiHandle'],
-      'curl_share_init_persistent' => ['CurlShareHandle'],
+      'curl_share_init_persistent' => ['CurlShareHandle', 'share_options'=>'array'],
       'enchant_dict_remove' => ['void', 'dictionary'=>'EnchantDictionary', 'word'=>'string'],
       'enchant_dict_remove_from_session' => ['void', 'dictionary'=>'EnchantDictionary', 'word'=>'string'],
       'opcache_is_script_cached_in_file_cache' => ['bool', 'filename'=>'string'],

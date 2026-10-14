@@ -1,0 +1,4 @@
+%s:4 PhanPluginUnknownArrayFunctionParamType Function randomizer4707() has a parameter type of array for $values, but does not specify any key types or value types
+%s:4 PhanPluginUnknownArrayFunctionReturnType Function \randomizer4707() has a return type of array, but does not specify key or value types
+%s:4 PhanUnreferencedFunction Possibly zero references to function \randomizer4707()
+%s:14 PhanParamTooManyInternal Call with 2 arg(s) to \Random\Randomizer::shuffleArray(array $array) which only takes 1 arg(s). This would throw an ArgumentCountError.
