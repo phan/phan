@@ -578,8 +578,6 @@ class Analysis
             // @phan-suppress-next-line PhanAccessMethodInternal
             $lazy->beginMethodLoop($analyzer, $clone_replay);
         }
-        // @phan-suppress-next-line PhanAccessPropertyInternal
-        MethodDeclarationAnalyzer::$current = $analyzer;
         foreach ($method_set as $method) {
             if ($show_progress) {
                 // Method analysis can trigger class hydration which adds
@@ -621,8 +619,6 @@ class Analysis
             // @phan-suppress-next-line PhanAccessMethodInternal
             $lazy->endMethodLoop();
         }
-        // @phan-suppress-next-line PhanAccessPropertyInternal
-        MethodDeclarationAnalyzer::$current = null;
         if ($collect_timings) {
             // @phan-suppress-next-line PhanAccessPropertyInternal
             self::recordMethodSetStats($code_base, $method_ns, $analyzer->is_excluded_file);

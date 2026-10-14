@@ -25,8 +25,6 @@ use Phan\Plugin\ConfigPluginSet;
  */
 final class MethodDeclarationAnalyzer
 {
-    /** @var ?self the analyzer of the method loop of Analysis::analyzeFunctions() while it runs */
-    public static $current = null;
 
     /** @var CodeBase the code base being analyzed */
     private $code_base;
@@ -108,7 +106,7 @@ final class MethodDeclarationAnalyzer
         if ($excluded_file_checks !== EmitOnlyChecks::RUN && ($this->is_excluded_file[$file] ??= Phan::isExcludedAnalysisFile($file))) {
             $checks = $excluded_file_checks;
         }
-        $this->checks_count[$checks]++;
+        $this->checks_count[$checks] += 1;
 
         // This emits issues at the location of the original definition, which may be in a file that is analyzed.
         DuplicateFunctionAnalyzer::analyzeDuplicateFunction(
