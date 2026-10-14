@@ -31,7 +31,8 @@ class AbstractMethodAnalyzer
         if ($class->isAbstract() || $class->isTrait() || $class->isInterface()) {
             return;
         }
-        foreach ($class->getMethodMap($code_base) as $method) {
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        foreach ($class->getMethodEntryMap($code_base) as $method) {
             if ($method->isAbstract()) {
                 if ($method->isPHPInternal()) {
                     Issue::maybeEmit(

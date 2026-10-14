@@ -10,6 +10,7 @@ use Exception;
 use InvalidArgumentException;
 use Phan\Analysis\ConvergenceWorklist;
 use Phan\Analysis\EmitOnlyChecks;
+use Phan\Analysis\LazyInheritedMethodsEligibility;
 use Phan\AST\TolerantASTConverter\Shim;
 use Phan\Daemon\Request;
 use Phan\Language\Element\FunctionInterface;
@@ -629,6 +630,9 @@ class Phan implements IgnoredFilesFilterInterface
             // lets us only need to do hydrate a subset of classes.
             PhaseTimer::begin('class_aliases');
             $code_base->setShouldHydrateRequestedElements(true);
+            // Inherited method copies could be created lazily from here until the end of Analysis::analyzeClasses()
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            LazyInheritedMethodsEligibility::setCreationWindowOpen(true);
 
             // This is only needed when `pcntl` *isn't* used.
             // This object (if non-null) removes the temporary plugins added to implement "Go To Definition", etc.
@@ -650,6 +654,8 @@ class Phan implements IgnoredFilesFilterInterface
             // state in memory
             PhaseTimer::begin('analyze_classes');
             Analysis::analyzeClasses($code_base, $path_filter);
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            LazyInheritedMethodsEligibility::setCreationWindowOpen(false);
 
             // Take a pass over all functions verifying
             // various states now that we have the whole

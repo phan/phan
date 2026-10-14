@@ -288,7 +288,8 @@ final class EmitOnlyChecks
      */
     public static function getSideEffectCounts(CodeBase $code_base): array
     {
-        return [Clazz::getHydrationCount(), Method::getScopeInitializationCount(), \count($code_base->getMethodSet()), $code_base->getLoadedClassCount()];
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        return [Clazz::getHydrationCount(), Method::getScopeInitializationCount(), \count($code_base->getMethodSetWithoutLazyEntries()), $code_base->getLoadedClassCount()];
     }
 
     /**
@@ -470,7 +471,8 @@ final class EmitOnlyChecks
         // Internal methods are added to the method set when an internal class is first used,
         // so their positions show the order in which internal classes were loaded.
         $internal_method_lines = [];
-        foreach ($code_base->getMethodSet() as $method) {
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        foreach ($code_base->getMethodSetWithoutLazyEntries() as $method) {
             if ($method->isPHPInternal()) {
                 $internal_method_lines[] = 'internal ' . $method->getFQSEN();
                 continue;

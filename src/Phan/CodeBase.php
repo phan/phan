@@ -1411,6 +1411,43 @@ class CodeBase
     }
 
     /**
+     * Returns the entry of the method named $lowercase_name (with alternate id 0) in the class $fqsen, if any.
+     *
+     * Every entry is a Method today. A later change adds lazy entries for inherited methods
+     * (created on the first lookup by name); this accessor never creates those copies.
+     *
+     * @param string $lowercase_name the lowercase name of the method
+     * @internal
+     */
+    public function getMethodEntryByClassAndLowercaseName(
+        FullyQualifiedClassName $fqsen,
+        string $lowercase_name
+    ): ?Method {
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        return $this->getClassMapByFullyQualifiedClassName(
+            $fqsen
+        )->entry($lowercase_name);
+    }
+
+    /**
+     * Returns the entries of the methods of the class $fqsen, by lowercase name (including any alternate id suffix).
+     *
+     * Every entry is a Method today. A later change adds lazy entries for inherited methods
+     * (created on the first lookup by name); this accessor never creates those copies.
+     *
+     * @return array<string,Method>
+     * @internal
+     */
+    public function getMethodEntryMapByFullyQualifiedClassName(
+        FullyQualifiedClassName $fqsen
+    ): array {
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        return $this->getClassMapByFullyQualifiedClassName(
+            $fqsen
+        )->getMethodEntryMap();
+    }
+
+    /**
      * @return Set<Method>
      * A set of all known methods with the given name
      */
@@ -1449,6 +1486,31 @@ class CodeBase
     public function getMethodSet(): Set
     {
         return $this->method_set;
+    }
+
+    /**
+     * Returns the set of all methods that Phan is tracking, without the lazy entries of inherited methods.
+     *
+     * This is the same set as getMethodSet() today. A later change adds lazy entries for inherited methods,
+     * which are never in this set; getMethodSet() will then create their copies first. Phan's own passes over
+     * all methods use this so that they do not create those copies.
+     *
+     * @return Set<Method>
+     * @internal
+     */
+    public function getMethodSetWithoutLazyEntries(): Set
+    {
+        return $this->method_set;
+    }
+
+    /**
+     * Returns the number of lazy entries of inherited methods in all class maps (always 0 until lazy entries are added).
+     *
+     * @internal
+     */
+    public function getLazyEntryCount(): int
+    {
+        return 0;
     }
 
     /**
@@ -1533,7 +1595,7 @@ class CodeBase
             if ($class) {
                 if ($class->getTraitFQSENList() || $class->getMixinTypes()) {
                     // A method of a trait may have been given another name here (`use T { m as n; }`), so check every method.
-                    foreach ($class->getMethodMap($this) as $method) {
+                    foreach ($this->getMethodEntryMapByFullyQualifiedClassName($class_fqsen) as $method) {
                         if (self::isMethodDefinedBy($method, $fqsen_string)) {
                             $result[] = $method;
                             $names[$method->getFQSEN()->getName()] = true;
@@ -1541,12 +1603,9 @@ class CodeBase
                     }
                 } else {
                     foreach ($new_names as $name => $_) {
-                        $method_fqsen = FullyQualifiedMethodName::make($class_fqsen, (string)$name);
-                        if ($this->hasMethodWithFQSEN($method_fqsen)) {
-                            $method = $this->getMethodByFQSEN($method_fqsen);
-                            if (self::isMethodDefinedBy($method, $fqsen_string)) {
-                                $result[] = $method;
-                            }
+                        $method = $this->getMethodEntryByClassAndLowercaseName($class_fqsen, \strtolower((string)$name));
+                        if ($method && self::isMethodDefinedBy($method, $fqsen_string)) {
+                            $result[] = $method;
                         }
                     }
                 }
@@ -2099,7 +2158,8 @@ class CodeBase
             $sum += (
                 \count($class_map->getClassConstantMap())
                 + \count($class_map->getPropertyMap())
-                + \count($class_map->getMethodMap())
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                + \count($class_map->getMethodEntryMap())
             );
         }
 

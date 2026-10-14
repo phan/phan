@@ -141,4 +141,53 @@ class ClassMap
     {
         return $this->method_map;
     }
+
+    // The entry API below is used by Phan's own code that must not cause the creation of method copies.
+    // Every entry is a Method today. A later change adds lazy entries for inherited methods (the copy is
+    // created on the first lookup by name); the entry API never creates those copies.
+
+    /**
+     * Returns the entry for the lowercase method name $lowercase_name (including any alternate id suffix), if any.
+     * This never materializes a lazy entry.
+     *
+     * @internal
+     */
+    public function entry(string $lowercase_name): ?Method
+    {
+        return $this->method_map[$lowercase_name] ?? null;
+    }
+
+    /**
+     * Returns the entries of this class's methods, by lowercase name (including any alternate id suffix),
+     * in insertion order. This never materializes lazy entries.
+     *
+     * @return array<string,Method>
+     * @internal
+     */
+    public function getMethodEntryMap(): array
+    {
+        return $this->method_map;
+    }
+
+    /**
+     * Returns the lowercase names (including any alternate id suffix) of this class's methods, in insertion order.
+     * This never materializes lazy entries.
+     *
+     * @return list<string>
+     * @internal
+     */
+    public function getMethodNames(): array
+    {
+        return \array_keys($this->method_map);
+    }
+
+    /**
+     * Returns whether any entry of this map is a lazy entry (always false until lazy entries are added).
+     *
+     * @internal
+     */
+    public function hasLazyEntries(): bool
+    {
+        return false;
+    }
 }

@@ -757,24 +757,45 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function ensureClonesReturnType(Method $original_method): void
     {
-        if ($this->defining_method_for_type_fetching) {
-            return;
+        if (!$this->defining_method_for_type_fetching) {
+            $this->defining_method_for_type_fetching = $original_method->getReturnTypeLinkTargetForClone();
         }
+    }
+
+    /**
+     * Returns the method whose return type a clone of this method would use (what ensureClonesReturnType($this) would
+     * record in a clone that has none yet), or null if a clone of this method would use its own return type.
+     * This has no side effects.
+     * @internal
+     */
+    public function getReturnTypeLinkTargetForClone(): ?Method
+    {
         // Get the real ancestor of C::method() if C extends B and B extends A
-        $original_method = $original_method->defining_method_for_type_fetching ?? $original_method;
+        $original_method = $this->defining_method_for_type_fetching ?? $this;
 
         // Don't bother with methods that can't have types inferred recursively
         if ($original_method->isAbstract() || $original_method->isFromPHPDoc() || $original_method->isPHPInternal()) {
-            return;
+            return null;
         }
 
         if (!$original_method->getUnionType()->isEmpty() || !$original_method->getRealReturnType()->isEmpty()) {
             // This heuristic is used as little as possible.
             // It will only use this fallback of directly using the (possibly modified)
             // parent's type if the parent method declaration had no phpdoc return type and no real return type (and nothing was guessed such as `void`).
-            return;
+            return null;
         }
-        $this->defining_method_for_type_fetching = $original_method;
+        return $original_method;
+    }
+
+    /**
+     * Returns the method whose return type a clone of this method created now would use
+     * (Clazz::addMethod() clones this method, which keeps its link, then calls ensureClonesReturnType()),
+     * or null if such a clone would use its own return type. This has no side effects.
+     * @internal
+     */
+    public function getReturnTypeLinkOfClone(): ?Method
+    {
+        return $this->defining_method_for_type_fetching ?: $this->getReturnTypeLinkTargetForClone();
     }
 
     /**
@@ -1090,13 +1111,15 @@ class Method extends ClassElement implements FunctionInterface
             // A trait may be earlier in $ancestor_class_list than the parent, but the parent may define abstract classes.
             // TODO: What about trait aliasing rules?
             $ancestor_fqsen = $ancestor_class->getFQSEN();
-            $method = $code_base->getMethodByClassAndLowercaseName($ancestor_fqsen, $lowercase_name);
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $method = $code_base->getMethodEntryByClassAndLowercaseName($ancestor_fqsen, $lowercase_name);
             if (!$method) {
                 // Same as Clazz->hasMethodWithName(): hydrate the ancestor if this is the first time, then check again.
                 if (!$ancestor_class->hydrateIndicatingFirstTime($code_base)) {
                     continue;
                 }
-                $method = $code_base->getMethodByClassAndLowercaseName($ancestor_fqsen, $lowercase_name);
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                $method = $code_base->getMethodEntryByClassAndLowercaseName($ancestor_fqsen, $lowercase_name);
                 if (!$method) {
                     continue;
                 }

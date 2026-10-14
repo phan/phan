@@ -9,7 +9,8 @@ declare(strict_types=1);
  *
  * Usage:
  *   make_subset.php --root DIR --universe FILE [--fixed-prefix P]... --rate 0.12
- *                   --salt S [--closure none|hard|hard+soft1|hard+soft1+sig1]
+ *                   --salt S [--rate-match REGEX=RATE]...
+ *                   [--closure none|hard|hard+soft1|hard+soft1+sig1]
  *                   [--convention SPEC]... [--manifest out.json]
  *                   [--analyze-list subset.analyze.files] > subset.files
  *
@@ -20,6 +21,11 @@ declare(strict_types=1);
  *              and never written to either output list
  * --rate       fraction of first-party files used as seeds:
  *              hexdec(substr(sha1(salt . path), 0, 8)) % 1000000 < rate * 1000000
+ * --rate-match REGEX=RATE  (repeatable) per-path seed rate: the first --rate-match whose
+ *              REGEX (a complete PCRE pattern with delimiters, e.g.
+ *              '@(^|/)tests/phpunit/@=0.10') matches a path supplies the rate for that
+ *              path; other paths use --rate. Split on the last '=', so REGEX may contain
+ *              '='. A --rate-match that matches no path changes nothing.
  * --closure    none:            seeds only
  *              hard:            + files declaring what the selection extends, implements,
  *                               uses as a trait or names first in an extends, implements,
@@ -111,6 +117,7 @@ function usage(int $code): never
 {
     fwrite($code ? STDERR : STDOUT, <<<'EOT'
 Usage: make_subset.php --root DIR --universe FILE [--fixed-prefix P]... --rate R --salt S
+                       [--rate-match REGEX=RATE]...
                        [--closure none|hard|hard+soft1|hard+soft1+sig1]
                        [--convention underscore:DIR | psr4:NS\=DIR[/{1}/...]]...
                        [--manifest out.json] [--analyze-list subset.analyze.files]
@@ -889,6 +896,7 @@ function main(array $argv): int
     $analyzeList = null;
     $conventionSpecs = [];
     $unresolvedOut = null;
+    $rateMatchSpecs = [];
     $args = array_slice($argv, 1);
     for ($i = 0; $i < count($args); $i++) {
         $a = $args[$i];
@@ -912,6 +920,7 @@ function main(array $argv): int
             case '--fixed-prefix': $fixed[] = $val(); break;
             case '--rate': $rate = (float)$val(); break;
             case '--salt': $salt = $val(); break;
+            case '--rate-match': $rateMatchSpecs[] = $val(); break;
             case '--closure': $closure = $val(); break;
             case '--manifest': $manifest = $val(); break;
             case '--analyze-list': $analyzeList = $val(); break;
@@ -934,6 +943,25 @@ function main(array $argv): int
     if ($rate < 0 || $rate > 1) {
         fwrite(STDERR, "make_subset: --rate must be in [0, 1]\n");
         return 2;
+    }
+    $rateMatches = [];
+    foreach ($rateMatchSpecs as $spec) {
+        $eq = strrpos($spec, '=');
+        if ($eq === false || $eq === 0) {
+            fwrite(STDERR, "make_subset: bad --rate-match '$spec' (expected REGEX=RATE)\n");
+            return 2;
+        }
+        $re = substr($spec, 0, $eq);
+        $r = substr($spec, $eq + 1);
+        if (!is_numeric($r) || (float)$r < 0 || (float)$r > 1) {
+            fwrite(STDERR, "make_subset: --rate-match '$spec': RATE must be a number in [0, 1]\n");
+            return 2;
+        }
+        if (@preg_match($re, '') === false) {
+            fwrite(STDERR, "make_subset: --rate-match '$spec': invalid regular expression (a complete PCRE pattern with delimiters is required)\n");
+            return 2;
+        }
+        $rateMatches[] = [$re, (float)$r, (int)round((float)$r * 1000000)];
     }
     $conventions = array_map('parse_convention', $conventionSpecs);
     $rootReal = realpath($root);
@@ -989,6 +1017,14 @@ function main(array $argv): int
     $total = count($paths);
     $threshold = (int)round($rate * 1000000);
     $seeds = [];
+    $thresholdFor = static function (string $p) use ($rateMatches, $threshold): int {
+        foreach ($rateMatches as [$re, , $t]) {
+            if (preg_match($re, $p) === 1) {
+                return $t;
+            }
+        }
+        return $threshold;
+    };
     foreach ($paths as $fid => $p) {
         $fx = $isFixed($p);
         $fileFixed[$fid] = $fx;
@@ -1001,7 +1037,7 @@ function main(array $argv): int
         }
         $exists[$fid] = true;
         hash_update($tree, $p . "\0" . sha1($code) . "\n");
-        if (!$fx && (int)hexdec(substr(sha1($salt . $p), 0, 8)) % 1000000 < $threshold) {
+        if (!$fx && (int)hexdec(substr(sha1($salt . $p), 0, 8)) % 1000000 < ($rateMatches ? $thresholdFor($p) : $threshold)) {
             $seeds[] = $fid;
         }
         if ($fx && !preg_match('/\b(?:class|interface|trait|enum|function)\b/i', $code)) {
@@ -1251,6 +1287,7 @@ function main(array $argv): int
         ],
         'params' => [
             'rate' => $rate,
+            'rate_match' => array_map(static fn(array $m): array => [$m[0], $m[1]], $rateMatches),
             'salt' => $salt,
             'closure' => $closure,
             'fixed_prefix' => $fixed,

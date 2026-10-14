@@ -65,7 +65,8 @@ class AttributeAnalyzer
                 self::analyzeAttributesOfElement($code_base, $const);
             }
         }
-        foreach ($class->getMethodMap($code_base) as $method) {
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        foreach ($class->getMethodEntryMap($code_base) as $method) {
             if ($method->getFQSEN() === $method->getRealDefiningFQSEN()) {
                 self::analyzeAttributesOfElement($code_base, $method);
             }

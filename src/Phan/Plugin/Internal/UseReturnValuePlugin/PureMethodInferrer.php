@@ -30,7 +30,8 @@ class PureMethodInferrer
         $graph = new PureMethodGraph($code_base);
         // $start = microtime(true);
         // Mark methods as pure.
-        foreach ($code_base->getMethodSet() as $method) {
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        foreach ($code_base->getMethodSetWithoutLazyEntries() as $method) {
             self::checkIsReadOnlyMethod($code_base, $method, $graph);
         }
         // Mark functions and closures as pure.
