@@ -4,6 +4,7 @@ Phan 6.0.11-dev
 --------------
 
 Performance improvements:
+- Speed up the loading of plugins' return type overrides and function call analyzers, which took ~10 s on a large codebase before the analysis processes were forked: the inherited copies of a method are found by walking the subclasses of its class instead of grouping every method of the code base by its defining method, the internal callable-parameter checks are generated once per declared method instead of once per inherited copy, and the analyzer for plugins checking callable arguments is built once per declared method
 - In the `'balanced'` `process_file_assignment`, also try splitting groups of files weighing more than half or a quarter of an even share (not only more than a whole share) and use the partition with the lowest predicted maximum load: a large class hierarchy that is under a share but placed first no longer leaves one analysis process noticeably heavier than the others (on a large codebase with `--processes 4`, the heaviest worker went from ~25 % above the mean to a few percent)
 
 Bug fixes:

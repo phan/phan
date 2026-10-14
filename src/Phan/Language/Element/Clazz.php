@@ -683,6 +683,14 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * @return list<Type> the class types this class was declared to mix in with `@mixin`
+     */
+    public function getMixinTypes(): array
+    {
+        return $this->mixin_types;
+    }
+
+    /**
      * Is this a subclass of $other?
      *
      * This only checks parent classes.

@@ -1452,6 +1452,134 @@ class CodeBase
     }
 
     /**
+     * @return array<string,list<FullyQualifiedClassName>>
+     * For each class, interface or trait (by FQSEN string; internal ones such as `\ArrayObject` can be keys),
+     * the user-defined classes that directly extend, implement, use or `@mixin` it.
+     */
+    public function getDirectChildClassIndex(): array
+    {
+        $index = [];
+        foreach ($this->fqsen_class_map_user_defined as $class) {
+            $fqsen = $class->getFQSEN();
+            if ($class->hasParentType()) {
+                $index[$this->canonicalClassFQSENString($class->getParentClassFQSEN())][] = $fqsen;
+            }
+            foreach ($class->getInterfaceFQSENList() as $interface_fqsen) {
+                $index[$this->canonicalClassFQSENString($interface_fqsen)][] = $fqsen;
+            }
+            foreach ($class->getTraitFQSENList() as $trait_fqsen) {
+                $index[$this->canonicalClassFQSENString($trait_fqsen)][] = $fqsen;
+            }
+            foreach ($class->getMixinTypes() as $mixin_type) {
+                try {
+                    $index[$this->canonicalClassFQSENString(FullyQualifiedClassName::fromType($mixin_type))][] = $fqsen;
+                } catch (\Exception) {
+                    // An invalid @mixin type; Clazz::importMixin() reports it.
+                }
+            }
+        }
+        return $index;
+    }
+
+    /**
+     * The FQSEN string of the class that $fqsen names once class aliases are resolved (`class_alias()` maps the alias FQSEN
+     * to the original class), or $fqsen itself if it names no class in the code base (yet).
+     * Does not load internal classes: an alias of an internal class is not resolved.
+     */
+    private function canonicalClassFQSENString(FullyQualifiedClassName $fqsen): string
+    {
+        if ($this->fqsen_class_map->offsetExists($fqsen)) {
+            return $this->fqsen_class_map->offsetGet($fqsen)->getFQSEN()->__toString();
+        }
+        return $fqsen->__toString();
+    }
+
+    /**
+     * Returns the methods whose defining FQSEN or real defining FQSEN is $fqsen: the method itself, if it exists,
+     * and the copies of it that the classes extending, implementing, using or mixing in its class inherited
+     * (recursively) without overriding it.
+     *
+     * This is what getMethodsMapGroupedByDefiningFQSEN()->offsetGet($fqsen) contains, found by walking the descendants
+     * of the method's class instead of the whole method set, which large projects dominate with inherited copies.
+     *
+     * @param array<string,list<FullyQualifiedClassName>> $child_class_index the result of getDirectChildClassIndex()
+     * @return list<Method>
+     */
+    public function getMethodsInheritedFrom(FullyQualifiedMethodName $fqsen, array $child_class_index): array
+    {
+        $fqsen_string = $fqsen->__toString();
+        $result = [];
+        // The names a copy of the method can have in each class: the method's name, plus the aliases given to it with
+        // `use T { m as n; }` in a class on the way down, which that class's subclasses inherit under the alias.
+        /** @var array<string,array<string,true>> $names_seen the names already checked for each visited class */
+        $names_seen = [];
+        // Classes to visit, with the names to check there (two stacks, popped together).
+        $class_queue = [$fqsen->getFullyQualifiedClassName()];
+        $names_queue = [[$fqsen->getName() => true]];
+        while ($class_queue) {
+            $class_fqsen = \array_pop($class_queue);
+            $names = \array_pop($names_queue);
+            $class = $this->hasClassWithFQSEN($class_fqsen) ? $this->getClassByFQSEN($class_fqsen) : null;
+            // A class alias names the original class: visit it (and look its subclasses up) under its own FQSEN.
+            if ($class) {
+                $class_fqsen = $class->getFQSEN();
+            }
+            $class_fqsen_string = $class_fqsen->__toString();
+            $new_names = \array_diff_key($names, $names_seen[$class_fqsen_string] ?? []);
+            if (!$new_names) {
+                continue;
+            }
+            $names_seen[$class_fqsen_string] = ($names_seen[$class_fqsen_string] ?? []) + $new_names;
+            if ($class) {
+                if ($class->getTraitFQSENList() || $class->getMixinTypes()) {
+                    // A method of a trait may have been given another name here (`use T { m as n; }`), so check every method.
+                    foreach ($class->getMethodMap($this) as $method) {
+                        if (self::isMethodDefinedBy($method, $fqsen_string)) {
+                            $result[] = $method;
+                            $names[$method->getFQSEN()->getName()] = true;
+                        }
+                    }
+                } else {
+                    foreach ($new_names as $name => $_) {
+                        $method_fqsen = FullyQualifiedMethodName::make($class_fqsen, (string)$name);
+                        if ($this->hasMethodWithFQSEN($method_fqsen)) {
+                            $method = $this->getMethodByFQSEN($method_fqsen);
+                            if (self::isMethodDefinedBy($method, $fqsen_string)) {
+                                $result[] = $method;
+                            }
+                        }
+                    }
+                }
+            }
+            foreach ($child_class_index[$class_fqsen_string] ?? [] as $child_fqsen) {
+                $class_queue[] = $child_fqsen;
+                $names_queue[] = $names;
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Whether $method is a copy of a method of another class (its defining FQSEN names that method, and Clazz::addMethod()
+     * recorded the method it was cloned from) that still has the parameter list and comment of that method, so that
+     * anything computed from them for the defining method (e.g. the parameters that accept callables) holds for the copy.
+     * Copies whose types were specialized by template substitution (`@extends Base<callable>`, see
+     * Method::cloneWithTemplateParameterTypeMap()) have parameters and a comment of their own and are not such copies.
+     */
+    public function isInheritedCopyWithSameSignature(Method $method): bool
+    {
+        return $method->getCloneSource() !== null
+            && !$method->isTemplateSpecialized()
+            && $method->getDefiningFQSEN() !== $method->getFQSEN();
+    }
+
+    private static function isMethodDefinedBy(Method $method, string $fqsen_string): bool
+    {
+        return $method->getDefiningFQSEN()->__toString() === $fqsen_string
+            || $method->getRealDefiningFQSEN()->__toString() === $fqsen_string;
+    }
+
+    /**
      * @return Map<FullyQualifiedMethodName,ArrayObject<Method>>
      */
     public function getMethodsMapGroupedByDefiningFQSEN(): Map

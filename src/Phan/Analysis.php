@@ -779,7 +779,10 @@ class Analysis
             }
         }
 
-        $methods_by_defining_fqsen = null;
+        // A plugin closure for a method also applies to the copies of that method inherited by the descendants of its class.
+        // Those are found by walking the descendants (CodeBase::getMethodsInheritedFrom()) rather than by grouping the whole
+        // method set by defining FQSEN, which large projects dominate with inherited copies.
+        $child_class_index = null;
         foreach ($return_type_overrides as $fqsen_string => $closure) {
             try {
                 if (str_contains($fqsen_string, '::')) {
@@ -795,15 +798,12 @@ class Analysis
                             $method = $code_base->getMethodByFQSEN($fqsen);
                             $method->setDependentReturnTypeClosure($closure);
 
-                            $methods_by_defining_fqsen ??= $code_base->getMethodsMapGroupedByDefiningFQSEN();
-                            if (!$methods_by_defining_fqsen->offsetExists($fqsen)) {
-                                continue;
-                            }
+                            $child_class_index ??= $code_base->getDirectChildClassIndex();
 
                             // 1) The FQSEN that's actually in the code base is allowed to differ from what the plugin used as an array key.
                             //      Thus, we use $fqsen->__toString() rather than $fqsen_string.
                             // 2) The parent method is included in this list, i.e. the parent method is its own defining method.
-                            foreach ($methods_by_defining_fqsen->offsetGet($fqsen) as $child_method) {
+                            foreach ($code_base->getMethodsInheritedFrom($fqsen, $child_class_index) as $child_method) {
                                 if ($child_method->getFQSEN() !== $fqsen &&
                                     isset($return_type_override_fqsen_strings[$child_method->getFQSEN()->__toString()])
                                 ) {
@@ -848,13 +848,10 @@ class Analysis
                             $method = $class->getMethodByName($code_base, $method_name);
                             $method->addFunctionCallAnalyzer($closure, $plugin);
 
-                            $methods_by_defining_fqsen ??= $code_base->getMethodsMapGroupedByDefiningFQSEN();
+                            $child_class_index ??= $code_base->getDirectChildClassIndex();
                             $fqsen = FullyQualifiedMethodName::fromFullyQualifiedString($fqsen_string);
-                            if (!$methods_by_defining_fqsen->offsetExists($fqsen)) {
-                                continue;
-                            }
 
-                            foreach ($methods_by_defining_fqsen->offsetGet($fqsen) as $child_method) {
+                            foreach ($code_base->getMethodsInheritedFrom($fqsen, $child_class_index) as $child_method) {
                                 $child_method->addFunctionCallAnalyzer($closure, $plugin);
                             }
                         }
@@ -884,9 +881,28 @@ class Analysis
                     $function->addFunctionCallAnalyzer($closure, $plugin_set);
                 }
             }
+            // The analyzer only depends on which parameters are callable and on $plugin_closures, so an inherited copy of a
+            // method that still has its parameter list (~90 % of the methods of a large project with deep hierarchies) can share
+            // the analyzer built for the method it was inherited from; one whose parameter types were specialized by template
+            // substitution gets its own. FQSEN objects are memoized for the lifetime of the process, so their ids are stable keys.
+            /** @var array<int,?\Closure> $closures_by_defining_fqsen */
+            $closures_by_defining_fqsen = [];
             foreach ($code_base->getMethodSet() as $method) {
-                $closure = ConfigPluginSet::buildCallableArgumentAnalyzer($method, $plugin_closures);
-                if ($closure) {
+                $key = \spl_object_id($method->getDefiningFQSEN());
+                if ($code_base->isInheritedCopyWithSameSignature($method)) {
+                    if (!\array_key_exists($key, $closures_by_defining_fqsen)) {
+                        $closures_by_defining_fqsen[$key] = ConfigPluginSet::buildCallableArgumentAnalyzer($method, $plugin_closures);
+                    }
+                    $closure = $closures_by_defining_fqsen[$key];
+                } else {
+                    $closure = ConfigPluginSet::buildCallableArgumentAnalyzer($method, $plugin_closures);
+                    if ($method->getDefiningFQSEN() === $method->getFQSEN()) {
+                        // The analyzer of the defining method is the one its unspecialized copies share.
+                        // (A specialized copy has the same defining FQSEN but different parameters: it must not be stored there.)
+                        $closures_by_defining_fqsen[$key] = $closure;
+                    }
+                }
+                if ($closure !== null) {
                     $method->addFunctionCallAnalyzer($closure, $plugin_set);
                 }
             }
