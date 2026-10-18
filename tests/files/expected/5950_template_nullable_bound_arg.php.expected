@@ -1,0 +1,3 @@
+%s:34 PhanTypeMismatchArgumentNullable Argument 1 ($arg) is $x of type ?T but \Demo5950::testNonNull() takes T defined at %s:19 (expected type to be non-nullable)
+%s:38 PhanTemplateTypeConstraintViolation Template type T of \Demo5950::test() must be compatible with \DemoObject5950, but \OtherObject5950 was provided in call to \Demo5950::test()
+%s:39 PhanTemplateTypeConstraintViolation Template type T of \Demo5950::testNonNull() must be compatible with \DemoObject5950, but \OtherObject5950 was provided in call to \Demo5950::testNonNull()

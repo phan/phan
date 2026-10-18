@@ -1390,7 +1390,9 @@ final class ArgumentType
             }
             $argument_fragment = $argument_fragment_cache[$name] ?? null;
             if ($argument_fragment === null) {
-                $extractor = $parameter_union_type->getTemplateTypeExtractorClosure($code_base, $type);
+                // Look up the extractor for the non-nullable template type, so that for `@param ?T $x`
+                // the extractor strips null from the argument instead of treating null as T.
+                $extractor = $parameter_union_type->getTemplateTypeExtractorClosure($code_base, $type->withIsNullable(false));
                 if ($extractor) {
                     $argument_fragment = $extractor($argument_union_type, $context);
                 } else {
