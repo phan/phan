@@ -113,6 +113,11 @@ class Daemon
                 if ($request instanceof Request) {
                     return $request;  // We forked off a worker process successfully, and this is the worker process
                 }
+                // This is the parent. Accepting the request re-parsed the files that changed, which replaced the
+                // elements declared in them; automatic cycle collection is off (Bootstrap.php), so collect
+                // their cycles here, after the fork, or repeated edits would grow this long-lived process.
+                // The first collection also clears the possible roots left by the initial parse.
+                \gc_collect_cycles();
             }
             \error_log("Stopped accepting connections");
         } finally {

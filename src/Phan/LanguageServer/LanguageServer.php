@@ -681,6 +681,9 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                 return;
             }
             $this->handleJSONResponseFromWorker($uris_to_analyze, $json_contents);
+            // Automatic cycle collection is off (Bootstrap.php); collect the cycles left by re-parsing the
+            // changed files in this long-lived process, as Daemon::run() does after forking.
+            \gc_collect_cycles();
             return;
         }
         // This is the worker process.
