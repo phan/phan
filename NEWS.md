@@ -3,6 +3,9 @@
 Phan 6.0.12-dev
 --------------
 
+Performance improvements:
+- Keep PHP's cycle collector disabled in daemon mode and the language server, as it already is for ordinary runs. It was re-enabled there for the fallback without `pcntl`, which creates reference cycles when it clones the code base for a restore point, but that fallback collects them itself once per request (the language server fallback now does too), and the forked analysis processes exit after one request. With automatic collection on, every collector run walked the millions of possible roots left by the parse phase to free a few thousand cycles: on a local benchmark the daemon took 56 s instead of 24 s to start listening and 26 s instead of 6.7 s per request, at the same peak memory
+
 Oct 15 2026, Phan 6.0.11
 --------------
 
