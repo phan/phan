@@ -564,7 +564,7 @@ class Config
         // Currently, this just affects inferring that methods without return statements have type `void`
         'assume_no_external_class_overrides' => false,
 
-        // Set this to true to create the copies of inherited methods only when they are needed.
+        // Create the copies of inherited methods only when they are needed.
         // Classes inherit the methods of their parent classes as copies; a class extending a large base class
         // from a file excluded from analysis (e.g. a test framework) holds a copy of every method of that class.
         // With this option, such copies are created when a method is first looked up in that class,
@@ -573,7 +573,9 @@ class Config
         // This is disabled automatically in daemon mode and the language server, with dead code detection
         // or reference tracking, with --analyze-twice or --analyze-until-convergence, and when a plugin
         // implementing AnalyzeMethodCapability does not implement AnalyzeMethodSkipsInheritedCopiesCapability.
-        'lazy_inherited_methods' => false,
+        // Phan says why on stderr only when this was set to true explicitly (here or with
+        // PHAN_LAZY_INHERITED_METHODS=1). Set this to false to turn the option off.
+        'lazy_inherited_methods' => true,
 
         // Set to true in order to force tracking references to elements
         // (functions/methods/consts/protected).
@@ -1313,6 +1315,26 @@ class Config
         return self::$closest_minimum_target_php_version_id;
     }
     // phpcs:enable PSR1.Methods.CamelCapsMethodName.NotCamelCaps
+
+    /** @var array<string,true> the keys the project's config file (.phan/config.php) set, as opposed to defaults and CLI flags */
+    private static array $project_config_keys = [];
+
+    /**
+     * Records the keys the project's config file set (called once after that file is applied).
+     * @param list<string> $keys
+     */
+    public static function setProjectConfigKeys(array $keys): void
+    {
+        self::$project_config_keys = \array_fill_keys($keys, true);
+    }
+
+    /**
+     * Whether the project's config file set $name (regardless of CLI flags), i.e. the value is not Phan's default.
+     */
+    public static function isConfiguredByProject(string $name): bool
+    {
+        return isset(self::$project_config_keys[$name]);
+    }
 
     /**
      * @phan-hardcode-return-type

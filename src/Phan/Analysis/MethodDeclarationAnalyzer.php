@@ -26,8 +26,12 @@ use Phan\Plugin\ConfigPluginSet;
 final class MethodDeclarationAnalyzer
 {
 
-    /** @var CodeBase the code base being analyzed */
-    private $code_base;
+    /**
+     * @var \WeakReference<CodeBase> the code base being analyzed. Weak, because LazyInheritedMethods (which the
+     * code base owns) caches an analyzer for late copies and PHP's cycle collector is disabled (Bootstrap.php),
+     * so a strong reference would keep the code base alive forever.
+     */
+    private \WeakReference $code_base_ref;
 
     /** @var ConfigPluginSet the plugin set */
     private $plugin_set;
@@ -61,7 +65,7 @@ final class MethodDeclarationAnalyzer
         ?array $file_filter,
         int $excluded_file_checks
     ) {
-        $this->code_base = $code_base;
+        $this->code_base_ref = \WeakReference::create($code_base);
         $this->plugin_set = $plugin_set;
         $this->has_function_or_method_plugins = $has_function_or_method_plugins;
         $this->file_filter = $file_filter;
@@ -78,7 +82,7 @@ final class MethodDeclarationAnalyzer
      */
     public function analyze(Func|Method $function_or_method, ?CloneReplaySnapshot $clone_replay_snapshot = null, bool $run_plugins = true): void
     {
-        $code_base = $this->code_base;
+        $code_base = $this->codeBase();
         if ($function_or_method->isPHPInternal()) {
             return;
         }
@@ -174,6 +178,15 @@ final class MethodDeclarationAnalyzer
                 );
             }
         }
+    }
+
+    private function codeBase(): CodeBase
+    {
+        $code_base = $this->code_base_ref->get();
+        if ($code_base === null) {
+            throw new \AssertionError('the code base of this MethodDeclarationAnalyzer no longer exists');
+        }
+        return $code_base;
     }
 
     /**

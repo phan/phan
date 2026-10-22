@@ -3075,6 +3075,7 @@ EOB
         foreach ($config as $key => $value) {
             Config::setValue($key, $value);
         }
+        Config::setProjectConfigKeys(\array_map('strval', \array_keys($config)));
     }
 
     /**

@@ -806,8 +806,8 @@ class CodeBase
             // them into the method set of the code base owning the registry, in eager order (as getMethodSet() does).
             // Then the original and the clone both have the complete method set.
             // (Only daemon mode and the language server clone code bases, and lazy_inherited_methods is disabled there.)
-            // @phan-suppress-next-line PhanAccessPropertyInternal
-            $owner = $lazy->code_base;
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $owner = $lazy->getCodeBase();
             // @phan-suppress-next-line PhanAccessMethodInternal
             $this->method_set = $lazy->getMethodSetInEagerOrder($owner->method_set, 'clone', static function (Set $sorted_set) use ($owner): void {
                 $owner->method_set = $sorted_set;
