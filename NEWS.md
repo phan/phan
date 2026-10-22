@@ -3,7 +3,11 @@
 Phan 6.0.12-dev
 --------------
 
+New features:
+- `--phase-timings-json` and `--dump-phase-timings` record PHP's cycle collector statistics for the main process and each analysis worker: `gc_enabled`, `gc_runs`, `gc_collected`, `gc_roots` and, on PHP 8.3+, `gc_collector_s`
+
 Performance improvements:
+- Enable `lazy_inherited_methods` by default: the copies of methods inherited from classes declared in files excluded from analysis (e.g. a test framework's base classes) are created on their first lookup instead of when the class is loaded. The option still disables itself in the modes it does not support (daemon mode and the language server, dead code detection or reference tracking, `--analyze-twice`, `--analyze-until-convergence`, a plugin implementing `AnalyzeMethodCapability` without `AnalyzeMethodSkipsInheritedCopiesCapability`), now silently unless it was set to true explicitly in the config or with `PHAN_LAZY_INHERITED_METHODS=1`; `--phase-timings-json` records the reason either way. Set it to false to turn it off. A week of CI runs on a large codebase with the option on reported identical issues at 20-25 % less wall time and 40 % less peak memory
 - Keep PHP's cycle collector disabled in daemon mode and the language server, as it already is for ordinary runs. It was re-enabled there for the fallback without `pcntl`, which creates reference cycles when it clones the code base for a restore point, but that fallback collects them itself once per request (the language server fallback now does too), and the forked analysis processes exit after one request. With automatic collection on, every collector run walked the millions of possible roots left by the parse phase to free a few thousand cycles: on a local benchmark the daemon took 56 s instead of 24 s to start listening and 26 s instead of 6.7 s per request, at the same peak memory
 
 Oct 15 2026, Phan 6.0.11

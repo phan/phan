@@ -73,8 +73,13 @@ final class LazyInheritedMethods
     /** The prefix of the PhaseTimer notes */
     public const NOTE_PREFIX = 'lazy_';
 
-    /** @var CodeBase the code base that owns this registry */
-    public $code_base;
+    /**
+     * @var \WeakReference<CodeBase> the code base that owns this registry. Weak, because the code base holds
+     * the registry (CodeBase::$lazy_inherited) and PHP's cycle collector is disabled (Bootstrap.php): a strong
+     * reference back would keep every code base alive forever, which exhausts memory in a process that creates
+     * many of them, such as the unit tests.
+     */
+    private \WeakReference $code_base_ref;
 
     /** @var bool true while lazy entries may be created (from the start of hydration to the end of Analysis::analyzeClasses()) */
     public $creation_open = false;
@@ -175,8 +180,26 @@ final class LazyInheritedMethods
 
     public function __construct(CodeBase $code_base)
     {
-        $this->code_base = $code_base;
+        $this->code_base_ref = \WeakReference::create($code_base);
         $this->pending = new SplMinHeap();
+    }
+
+    /**
+     * The code base owning this registry.
+     * @internal used by CodeBase::__clone()
+     */
+    public function getCodeBase(): CodeBase
+    {
+        return $this->codeBase();
+    }
+
+    private function codeBase(): CodeBase
+    {
+        $code_base = $this->code_base_ref->get();
+        if ($code_base === null) {
+            throw new \AssertionError('the code base owning this LazyInheritedMethods registry no longer exists');
+        }
+        return $code_base;
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -195,7 +218,8 @@ final class LazyInheritedMethods
         if ($reason !== null) {
             if ($is_requested) {
                 PhaseTimer::note(self::NOTE_PREFIX . 'disabled_reason', $reason);
-                if ($reason !== 'env_disabled') {
+                // The option is on by default; only someone who turned it on explicitly wants to hear why it is off.
+                if ($reason !== 'env_disabled' && self::isRequestedExplicitly()) {
                     CLI::printToStderr("Phan: lazy_inherited_methods disabled: " . self::describeReason($reason) . "\n");
                 }
             }
@@ -267,6 +291,18 @@ final class LazyInheritedMethods
     }
 
     /**
+     * Whether lazy inherited methods were requested explicitly rather than by the default: set to true in the
+     * project's config file, or by PHAN_LAZY_INHERITED_METHODS=1 or PHAN_LAZY_INHERIT_VERIFY=1.
+     */
+    public static function isRequestedExplicitly(): bool
+    {
+        if (\getenv('PHAN_LAZY_INHERIT_VERIFY') === '1' || \getenv('PHAN_LAZY_INHERITED_METHODS') === '1') {
+            return true;
+        }
+        return Config::isConfiguredByProject('lazy_inherited_methods') && (bool)Config::getValue('lazy_inherited_methods');
+    }
+
+    /**
      * Returns the reason why the last activation did not enable lazy inherited methods although they were requested.
      */
     public static function getLastDisabledReason(): ?string
@@ -312,7 +348,7 @@ final class LazyInheritedMethods
      */
     public function canCreateLinksFor(Clazz $class, Clazz $parent, int $entry_count): bool
     {
-        $reason = $this->creation_open ? LazyInheritedMethodsEligibility::getReasonForImportInWindow($this->code_base, $class, $parent) : 'window';
+        $reason = $this->creation_open ? LazyInheritedMethodsEligibility::getReasonForImportInWindow($this->codeBase(), $class, $parent) : 'window';
         if ($reason === null) {
             return true;
         }
@@ -347,7 +383,7 @@ final class LazyInheritedMethods
             // and nothing can have changed the parent's copy since (any access to it would have created it).
             return null;
         }
-        $reason = LazyInheritedMethodsEligibility::getReasonForRoot($this->code_base, $entry);
+        $reason = LazyInheritedMethodsEligibility::getReasonForRoot($this->codeBase(), $entry);
         if ($reason !== null) {
             return $this->ineligible($reason);
         }
@@ -381,7 +417,7 @@ final class LazyInheritedMethods
      */
     public function addLazySlot(InheritedMethodLink $link, string $lowercase_name, Method|InheritedMethodLink $entry): void
     {
-        $code_base = $this->code_base;
+        $code_base = $this->codeBase();
         // @phan-suppress-next-line PhanAccessMethodInternal
         $link->ordinals[$lowercase_name] = $code_base->nextEagerOrdinal();
         $link->unresolved++;
@@ -559,7 +595,7 @@ final class LazyInheritedMethods
         }
         if ($method->hasYield()) {
             $new_type = UnionType::fromFullyQualifiedRealString('\\Generator');
-            if (!$new_type->canCastToUnionType($method->getUnionType(), $this->code_base)) {
+            if (!$new_type->canCastToUnionType($method->getUnionType(), $this->codeBase())) {
                 $method->setUnionType($new_type);
             }
         }
@@ -582,7 +618,7 @@ final class LazyInheritedMethods
         // @phan-suppress-next-line PhanAccessMethodInternal
         $method->setEagerOrdinal($ordinal);
         self::releaseLinkIfDone($link);
-        $code_base = $this->code_base;
+        $code_base = $this->codeBase();
         if ($this->registration_open) {
             $phase = $this->creation_open ? 'class' : 'loop';
             $this->count("materialized_{$phase}_$trigger");
@@ -649,7 +685,7 @@ final class LazyInheritedMethods
     {
         $this->count('history_records');
         // @phan-suppress-next-line PhanAccessMethodInternal
-        return $this->code_base->nextLazySeq();
+        return $this->codeBase()->nextLazySeq();
     }
 
     /**
@@ -674,7 +710,7 @@ final class LazyInheritedMethods
     public function materializeAllOfClass(FullyQualifiedClassName $fqsen, string $trigger): void
     {
         // @phan-suppress-next-line PhanAccessMethodInternal
-        $map = $this->code_base->getClassMapForLazyInheritance($fqsen);
+        $map = $this->codeBase()->getClassMapForLazyInheritance($fqsen);
         // @phan-suppress-next-line PhanAccessMethodInternal
         if ($map->hasLazyEntries()) {
             $this->materializeAllOf($map, $trigger);
@@ -874,7 +910,7 @@ final class LazyInheritedMethods
         if ($method->isPHPInternal()) {
             return;
         }
-        $code_base = $this->code_base;
+        $code_base = $this->codeBase();
         $analyzer = $this->analyzer ??= MethodDeclarationAnalyzer::forLateUse($code_base);
         EmitOnlyChecks::beginAnalyzingMethod($code_base, $method);
         try {
@@ -970,7 +1006,7 @@ final class LazyInheritedMethods
         $this->closures_by_defining_fqsen = $closures_by_defining_fqsen;
         foreach ($this->late_materialized as $method) {
             // @phan-suppress-next-line PhanAccessMethodInternal
-            Analysis::attachCallableArgumentAnalyzer($this->code_base, $method, $plugin_closures, $this->closures_by_defining_fqsen, $plugin_set);
+            Analysis::attachCallableArgumentAnalyzer($this->codeBase(), $method, $plugin_closures, $this->closures_by_defining_fqsen, $plugin_set);
         }
     }
 
@@ -1003,7 +1039,7 @@ final class LazyInheritedMethods
         if ($this->callable_arg_state !== null) {
             [$plugin_closures, $plugin_set] = $this->callable_arg_state;
             // @phan-suppress-next-line PhanAccessMethodInternal
-            Analysis::attachCallableArgumentAnalyzer($this->code_base, $method, $plugin_closures, $this->closures_by_defining_fqsen, $plugin_set);
+            Analysis::attachCallableArgumentAnalyzer($this->codeBase(), $method, $plugin_closures, $this->closures_by_defining_fqsen, $plugin_set);
         }
     }
 
@@ -1041,8 +1077,8 @@ final class LazyInheritedMethods
                 continue;
             }
             try {
-                $expected = self::describeOverriddenMethods($root->getOverriddenMethods($this->code_base));
-                $actual = self::describeOverriddenMethods($copy->getOverriddenMethods($this->code_base));
+                $expected = self::describeOverriddenMethods($root->getOverriddenMethods($this->codeBase()));
+                $actual = self::describeOverriddenMethods($copy->getOverriddenMethods($this->codeBase()));
             } catch (\Exception $e) {
                 $this->recordViolation($copy, 'overridden methods', 'threw ' . \get_class($e) . ': ' . $e->getMessage());
                 continue;
@@ -1236,7 +1272,7 @@ final class LazyInheritedMethods
         $method->setCloneSource($original);
         if ($method->hasYield()) {
             $new_type = UnionType::fromFullyQualifiedRealString('\\Generator');
-            if (!$new_type->canCastToUnionType($method->getUnionType(), $this->code_base)) {
+            if (!$new_type->canCastToUnionType($method->getUnionType(), $this->codeBase())) {
                 $method->setUnionType($new_type);
             }
         }
@@ -1440,7 +1476,7 @@ final class LazyInheritedMethods
         $previous_recorder = TypedElement::$suppression_count_recorder;
         // @phan-suppress-next-line PhanAccessPropertyInternal
         TypedElement::$suppression_count_recorder = [];
-        return [$issue_collector, $capturing_collector, EmitOnlyChecks::getSideEffectCounts($this->code_base), $previous_recorder];
+        return [$issue_collector, $capturing_collector, EmitOnlyChecks::getSideEffectCounts($this->codeBase()), $previous_recorder];
     }
 
     /**
@@ -1473,7 +1509,7 @@ final class LazyInheritedMethods
             $name = $element instanceof AddressableElementInterface ? (string)$element->getFQSEN() : $element->getName();
             $this->recordViolation($method, $label, "changed a suppression count of $name, declared in the analyzed file $file");
         }
-        $after = EmitOnlyChecks::getSideEffectCounts($this->code_base);
+        $after = EmitOnlyChecks::getSideEffectCounts($this->codeBase());
         if ($after[0] !== $before[0] || $after[2] !== $before[2] || $after[3] !== $before[3] || $after[1] > $before[1] + 1) {
             $this->recordViolation($method, $label, 'had side effects (hydrations, scope initializations, methods, classes): ' . \json_encode($before) . ' -> ' . \json_encode($after));
         }

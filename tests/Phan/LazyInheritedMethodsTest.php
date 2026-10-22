@@ -485,14 +485,24 @@ PHP;
      */
     public function testDisabledInModesWhereItWasNotVerified(): void
     {
+        // On by default, and the default is not an explicit request (so disabling it is silent)
+        $this->assertSame([true, null], LazyInheritedMethods::decide(null, null));
+        $this->assertFalse(LazyInheritedMethods::isRequestedExplicitly());
+        Config::setValue('lazy_inherited_methods', false);
         $this->assertSame([false, 'not_requested'], LazyInheritedMethods::decide(null, null));
         \putenv('PHAN_LAZY_INHERITED_METHODS=1');
         $this->assertSame([true, null], LazyInheritedMethods::decide(null, null));
+        $this->assertTrue(LazyInheritedMethods::isRequestedExplicitly());
         \putenv('PHAN_LAZY_INHERITED_METHODS=0');
         Config::setValue('lazy_inherited_methods', true);
         $this->assertSame([false, 'not_requested'], LazyInheritedMethods::decide(null, null));
         \putenv('PHAN_LAZY_INHERITED_METHODS');
         $this->assertSame([true, null], LazyInheritedMethods::decide(null, null));
+        // Set to true by the project's config file: an explicit request
+        Config::setProjectConfigKeys(['lazy_inherited_methods']);
+        $this->assertTrue(LazyInheritedMethods::isRequestedExplicitly());
+        Config::setProjectConfigKeys([]);
+        $this->assertFalse(LazyInheritedMethods::isRequestedExplicitly());
         \putenv('PHAN_DISABLE_LAZY_INHERIT=1');
         $this->assertSame([true, 'env_disabled'], LazyInheritedMethods::decide(null, null));
         \putenv('PHAN_DISABLE_LAZY_INHERIT');

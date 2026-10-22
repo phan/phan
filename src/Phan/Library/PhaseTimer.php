@@ -227,7 +227,7 @@ final class PhaseTimer
             'task_count' => self::$worker_task_count,
             'phases' => self::$phases,
             'files' => self::$files[self::FILE_ANALYZE],
-            'notes' => self::$notes,
+            'notes' => self::$notes + self::gcNotes(),
             'memory_kb' => self::readMemoryKb(),
             'start_ns' => self::$start['ns'] ?? $end['ns'],
             'end_ns' => \hrtime(true),
@@ -294,6 +294,26 @@ final class PhaseTimer
     }
 
     /**
+     * PHP's cycle collector statistics for this process: whether automatic collection is on, how often it ran,
+     * what it freed, the possible roots still buffered and, on PHP 8.3+, the time it took.
+     * @return array<string,int|float>
+     */
+    private static function gcNotes(): array
+    {
+        $gc = \gc_status();
+        $notes = [
+            'gc_enabled' => \gc_enabled() ? 1 : 0,
+            'gc_runs' => (int)($gc['runs'] ?? 0),
+            'gc_collected' => (int)($gc['collected'] ?? 0),
+            'gc_roots' => (int)($gc['roots'] ?? 0),
+        ];
+        if (isset($gc['collector_time'])) {
+            $notes['gc_collector_s'] = \round((float)$gc['collector_time'], 6);
+        }
+        return $notes;
+    }
+
+    /**
      * Build the report from the data collected so far.
      *
      * @return array<string,mixed> (see self::SCHEMA)
@@ -331,6 +351,7 @@ final class PhaseTimer
         $notes['majflt'] = $self_usage['majflt'];
         $notes['nvcsw'] = $self_usage['nvcsw'];
         $notes['nivcsw'] = $self_usage['nivcsw'];
+        $notes += self::gcNotes();
 
         $workers = [];
         $worker_count = 0;
