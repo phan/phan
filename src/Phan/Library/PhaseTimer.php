@@ -71,6 +71,11 @@ final class PhaseTimer
 
     /** @var array<string,int|float|string> */
     private static array $notes = [];
+    /**
+     * @var ?array<string,int|float> gc_status() when this worker started: the cumulative counters a forked worker
+     * inherits from the parent, subtracted from the worker's own notes
+     */
+    private static ?array $gc_baseline = null;
 
     /** @var ?int the index of this analysis worker, if this is a forked analysis worker */
     private static ?int $worker_id = null;
@@ -201,6 +206,7 @@ final class PhaseTimer
         self::$phases = [];
         self::$files = [[], []];
         self::$notes = [];
+        self::$gc_baseline = \gc_status();
         self::$workers = [];
         self::$worker_exit_ns = [];
         unset($GLOBALS['__phase']);
@@ -295,20 +301,24 @@ final class PhaseTimer
 
     /**
      * PHP's cycle collector statistics for this process: whether automatic collection is on, how often it ran,
-     * what it freed, the possible roots still buffered and, on PHP 8.3+, the time it took.
+     * what it freed, the possible roots still buffered and, on PHP 8.3+, the time it took. In an analysis worker
+     * the counters cover the worker's own work only (see self::$gc_baseline).
      * @return array<string,int|float>
      */
     private static function gcNotes(): array
     {
         $gc = \gc_status();
+        // runs, collected and collector_time are cumulative for the process; a forked worker inherits the
+        // parent's values, so report what happened since beginWorker() there.
+        $base = self::$gc_baseline ?? [];
         $notes = [
             'gc_enabled' => \gc_enabled() ? 1 : 0,
-            'gc_runs' => (int)($gc['runs'] ?? 0),
-            'gc_collected' => (int)($gc['collected'] ?? 0),
+            'gc_runs' => (int)($gc['runs'] ?? 0) - (int)($base['runs'] ?? 0),
+            'gc_collected' => (int)($gc['collected'] ?? 0) - (int)($base['collected'] ?? 0),
             'gc_roots' => (int)($gc['roots'] ?? 0),
         ];
         if (isset($gc['collector_time'])) {
-            $notes['gc_collector_s'] = \round((float)$gc['collector_time'], 6);
+            $notes['gc_collector_s'] = \round((float)$gc['collector_time'] - (float)($base['collector_time'] ?? 0.0), 6);
         }
         return $notes;
     }
