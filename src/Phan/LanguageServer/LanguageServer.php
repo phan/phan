@@ -681,6 +681,9 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
                 return;
             }
             $this->handleJSONResponseFromWorker($uris_to_analyze, $json_contents);
+            // Automatic cycle collection is off (Bootstrap.php); collect the cycles left by re-parsing the
+            // changed files in this long-lived process, as Daemon::run() does after forking.
+            \gc_collect_cycles();
             return;
         }
         // This is the worker process.
@@ -779,6 +782,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             // Something is probably broken if we don't get response data
             // But just in case we can recover, restore this.
             $code_base->restoreFromRestorePoint($restore_point);
+            \gc_collect_cycles();
             throw new \RuntimeException("Failed to get a response from a worker");
         }
 
@@ -789,6 +793,10 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         $this->handleJSONResponseFromWorker($uris_to_analyze, $response_data);
 
         $code_base->restoreFromRestorePoint($restore_point);
+        // Automatic cycle collection is off (Bootstrap.php); collect the cycles the restore point's
+        // CodeBase clone leaves behind, as Daemon::runWithoutPcntl() does, so memory does not grow
+        // with every request.
+        \gc_collect_cycles();
 
         Logger::logInfo("Response from non-pcntl server: " . StringUtil::jsonEncode($response_data));
     }

@@ -39,7 +39,6 @@ use function count;
 use function file_put_contents;
 use function fprintf;
 use function fwrite;
-use function gc_enable;
 use function getmypid;
 use function in_array;
 use function is_array;
@@ -285,23 +284,15 @@ class Phan implements IgnoredFilesFilterInterface
             echo \implode("\n", $file_path_list) . (count($file_path_list) > 0 ? "\n" : "");
             exit(EXIT_SUCCESS);
         }
-        if (CLI::isDaemonOrLanguageServer()) {
-            // The PCNTL fallback generates cyclic references (to the CodeBase instance which references many other things) in createRestorePoint,
-            // so we need to garbage collect that.
-            //
-            // 1. Phan clones the old codebase to restore it, and cyclic references exist as a side effect.
-            //
-            //    This causes memory usage to increase while typing.
-            //
-            //    Memory inspection/profiling would help with creating a better fix.
-            // 2. It's possible that some plugins may benefit from garbage collection.
-            //
-            // This fix works in PHP 7.3, which has an improved garbage collector.
-            // It might not work as well in earlier PHP versions on large codebases.
-            //
-            // Other parts of the code also generate reference cycles even with PCNTL enabled.
-            gc_enable();
-        }
+        // The cycle collector stays disabled (Bootstrap.php) in daemon mode and the language server as well.
+        // It used to be re-enabled here because the fallback without pcntl creates reference cycles when it
+        // clones the CodeBase for a restore point, but that fallback collects them itself with
+        // gc_collect_cycles() once per request (Daemon::runWithoutPcntl(),
+        // LanguageServer::finishAnalyzingURIsWithoutPcntl()), which works with automatic collection off,
+        // and the forked analysis processes exit after one request. With automatic collection on, every
+        // run walked the millions of possible roots the parse phase leaves behind to free a few thousand
+        // cycles: on a local benchmark the daemon took 56 s instead of 24 s to start listening and 26 s
+        // instead of 6.7 s per request, at the same peak memory.
 
         PhaseTimer::begin('stubs');
         Shim::load();
