@@ -384,7 +384,6 @@ return [
     'file_list' => [
         'phan',
         'phan_client',
-        'plugins/codeclimate/engine',
         'tool/analyze_phpt',
         'tool/make_stubs',
         'tool/pdep',
