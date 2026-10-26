@@ -8,6 +8,7 @@ use AssertionError;
 use ast;
 use ast\Node;
 use Closure;
+use Phan\Analysis\ArgumentType;
 use Phan\Analysis\AssignmentVisitor;
 use Phan\Analysis\BlockExitStatusChecker;
 use Phan\Analysis\ConditionVisitor;
@@ -36,6 +37,7 @@ use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope;
 use Phan\Language\Scope\BranchScope;
@@ -3874,16 +3876,22 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      */
     private function applyInferredClosureScope(Node $node): void
     {
-        $parent = end($this->parent_node_list);
+        $depth = count($this->parent_node_list);
+        $parent = $this->parent_node_list[$depth - 1] ?? null;
         if (!($parent instanceof Node)) {
             return;
         }
-        if ($parent->kind === ast\AST_ARG_LIST) {
-            // Closure::bind(function () {...}, $newThis, $scope)
-            if (($parent->children[0] ?? null) !== $node) {
+        if ($parent->kind === ast\AST_NAMED_ARG) {
+            // Closure::bind(closure: function () {...}, ...)
+            $depth--;
+            $parent = $this->parent_node_list[$depth - 1] ?? null;
+            if (!($parent instanceof Node)) {
                 return;
             }
-            $call = $this->parent_node_list[count($this->parent_node_list) - 2] ?? null;
+        }
+        if ($parent->kind === ast\AST_ARG_LIST) {
+            // Closure::bind(function () {...}, $newThis, $scope)
+            $call = $this->parent_node_list[$depth - 2] ?? null;
             if (!($call instanceof Node) || $call->kind !== ast\AST_STATIC_CALL) {
                 return;
             }
@@ -3903,19 +3911,24 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             if ((string)$class_type !== '\Closure') {
                 return;
             }
-            $new_this_node = $parent->children[1] ?? null;
-            $scope_node = $parent->children[2] ?? null;
+            $args = $this->closureMethodArgsInDeclarationOrder($parent->children, 'bind');
+            if (($args[0] ?? null) !== $node) {
+                return;
+            }
+            $new_this_node = $args[1] ?? null;
+            $scope_node = $args[2] ?? null;
         } elseif ($parent->kind === ast\AST_METHOD_CALL && $parent->children['expr'] === $node) {
             // (function () {...})->bindTo($newThis, $scope) or (function () {...})->call($newThis, ...)
             $method = $parent->children['method'];
             if (!is_string($method)) {
                 return;
             }
-            $args = $parent->children['args']->children;
             if (\strcasecmp($method, 'bindTo') === 0) {
+                $args = $this->closureMethodArgsInDeclarationOrder($parent->children['args']->children, 'bindTo');
                 $new_this_node = $args[0] ?? null;
                 $scope_node = $args[1] ?? null;
             } elseif (\strcasecmp($method, 'call') === 0) {
+                $args = $this->closureMethodArgsInDeclarationOrder($parent->children['args']->children, 'call');
                 $new_this_node = $args[0] ?? null;
                 $scope_node = $new_this_node;
             } else {
@@ -3959,6 +3972,23 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $scope->overrideClassFQSEN($class_fqsen);
         $scope->setOverrideHasThis($has_this);
         $func->getContext()->setScope($scope);
+    }
+
+    /**
+     * Put the arguments of a call to the given method of \Closure in declaration order,
+     * so that named arguments (`newScope: Foo::class`) can be looked up by position.
+     *
+     * @param list<Node|int|string|float> $args
+     * @return array<int, Node|int|string|float>
+     */
+    private function closureMethodArgsInDeclarationOrder(array $args, string $method_name): array
+    {
+        // @phan-suppress-next-line PhanThrowTypeAbsentForCall this is valid
+        $method_fqsen = FullyQualifiedMethodName::make(FullyQualifiedClassName::fromFullyQualifiedString('\Closure'), $method_name);
+        if (!$this->code_base->hasMethodWithFQSEN($method_fqsen)) {
+            return $args;
+        }
+        return ArgumentType::normalizeNamedArgs($args, $this->code_base->getMethodByFQSEN($method_fqsen));
     }
 
     private static function isNullLiteral(Node|string|int|float|null $node): bool

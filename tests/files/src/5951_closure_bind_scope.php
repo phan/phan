@@ -105,6 +105,18 @@ function scope5951(?Item5951 $x, Item5951|Other5951 $y): array {
 }
 var_dump(scope5951($item, $item));
 
+// Named arguments, in any order
+$t = Closure::bind(newScope: Item5951::class, newThis: $item, closure: function (): int { return $this->priv; });
+var_dump($t());
+$u = Closure::bind(closure: static function () { return Item5951::DEFAULT_VALUE; }, newThis: null, newScope: 'Item5951');
+var_dump($u());
+$v = (function (): int { return $this->priv; })->bindTo(newScope: Item5951::class, newThis: $item);
+var_dump($v());
+var_dump((function (): int { return $this->priv; })->call(newThis: $item));
+// A closure variable is still not analyzed in the bound scope, named or not
+$w = Closure::bind(closure: $h, newThis: null, newScope: Item5951::class);
+var_dump($w());
+
 // A static call to bind() on something that is not \Closure is not a binding
 class NotClosure5951 {
     public static function bind(Closure $c, $t, $s): Closure { return $c; }

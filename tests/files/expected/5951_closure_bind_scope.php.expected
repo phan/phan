@@ -11,4 +11,4 @@
 %s:102 PhanAccessClassConstantPrivate Cannot access private class constant \Item5951::DEFAULT_VALUE defined at %s:7
 %s:102 PhanTypeMismatchArgumentNullableInternal Argument 3 ($newScope) is $x of type ?\Item5951 but \Closure::bind() takes object|string (expected type to be non-nullable)
 %s:103 PhanAccessClassConstantPrivate Cannot access private class constant \Item5951::DEFAULT_VALUE defined at %s:7
-%s:112 PhanAccessClassConstantPrivate Cannot access private class constant \Item5951::DEFAULT_VALUE defined at %s:7
+%s:124 PhanAccessClassConstantPrivate Cannot access private class constant \Item5951::DEFAULT_VALUE defined at %s:7
