@@ -19,8 +19,8 @@ class Unrelated {
             }
         };
         $c = new SomeClass();
-        // Phan does not analyze bind/bindTo
-        // The place where the closure is used might be unanalyzable
+        // Phan does not analyze bind/bindTo when the closure was stored in a variable first: its body was already analyzed.
+        // (A closure literal passed directly to bind/bindTo is analyzed in the bound scope, see 5951_closure_bind_scope.php)
         $closure = $closure->bindTo($c, SomeClass::class);
         $closure();
     }

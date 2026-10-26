@@ -1,0 +1,9 @@
+%s:53 PhanUndeclaredProperty Reference to undeclared property \Item5951->nope
+%s:57 PhanUndeclaredThis Variable $this is undeclared
+%s:61 PhanAccessClassConstantPrivate Cannot access private class constant \Item5951::DEFAULT_VALUE defined at %s:7
+%s:68 PhanUndeclaredProperty Reference to undeclared property \Other5951->priv
+%s:75 PhanAccessClassConstantPrivate Cannot access private class constant \Item5951::DEFAULT_VALUE defined at %s:7
+%s:75 PhanUndeclaredClassReference Reference to undeclared class \NoSuchClass5951
+%s:77 PhanAccessClassConstantPrivate Cannot access private class constant \Item5951::DEFAULT_VALUE defined at %s:7
+%s:81 PhanAccessClassConstantPrivate Cannot access private class constant \Item5951::DEFAULT_VALUE defined at %s:7
+%s:88 PhanAccessClassConstantPrivate Cannot access private class constant \Item5951::DEFAULT_VALUE defined at %s:7

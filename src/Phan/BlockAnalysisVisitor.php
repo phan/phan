@@ -35,10 +35,12 @@ use Phan\Language\Element\Parameter;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope;
 use Phan\Language\Scope\BranchScope;
 use Phan\Language\Scope\ClassConstantScope;
+use Phan\Language\Scope\ClosureScope;
 use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Scope\PropertyScope;
 use Phan\Language\Scope\TopLevelBranchScope;
@@ -3856,7 +3858,141 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      */
     public function visitClosure(Node $node): Context
     {
+        $this->applyInferredClosureScope($node);
         return $this->visitClosedContext($node);
+    }
+
+    /**
+     * If this closure literal is the direct receiver of `Closure::bind()`, `->bindTo()` or `->call()`
+     * with a known class as the scope, analyze its body as if it had `@phan-closure-scope ThatClass`
+     * (https://github.com/phan/phan/issues/5260).
+     *
+     * This reuses the `@phan-closure-scope` machinery of ClosureScope and PreOrderAnalysisVisitor,
+     * which reads the override right before the closure's body is analyzed.
+     *
+     * A closure stored in a variable before being bound is not handled: its body was already analyzed.
+     */
+    private function applyInferredClosureScope(Node $node): void
+    {
+        $parent = end($this->parent_node_list);
+        if (!($parent instanceof Node)) {
+            return;
+        }
+        if ($parent->kind === ast\AST_ARG_LIST) {
+            // Closure::bind(function () {...}, $newThis, $scope)
+            if (($parent->children[0] ?? null) !== $node) {
+                return;
+            }
+            $call = $this->parent_node_list[count($this->parent_node_list) - 2] ?? null;
+            if (!($call instanceof Node) || $call->kind !== ast\AST_STATIC_CALL) {
+                return;
+            }
+            $method = $call->children['method'];
+            if (!is_string($method) || \strcasecmp($method, 'bind') !== 0) {
+                return;
+            }
+            $class_node = $call->children['class'];
+            if (!($class_node instanceof Node) || $class_node->kind !== ast\AST_NAME) {
+                return;
+            }
+            try {
+                $class_type = UnionTypeVisitor::unionTypeFromClassNode($this->code_base, $this->context, $class_node);
+            } catch (IssueException | FQSENException) {
+                return;
+            }
+            if ((string)$class_type !== '\Closure') {
+                return;
+            }
+            $scope_node = $parent->children[2] ?? null;
+        } elseif ($parent->kind === ast\AST_METHOD_CALL && $parent->children['expr'] === $node) {
+            // (function () {...})->bindTo($newThis, $scope) or (function () {...})->call($newThis, ...)
+            $method = $parent->children['method'];
+            if (!is_string($method)) {
+                return;
+            }
+            if (\strcasecmp($method, 'bindTo') === 0) {
+                $scope_node = $parent->children['args']->children[1] ?? null;
+            } elseif (\strcasecmp($method, 'call') === 0) {
+                $scope_node = $parent->children['args']->children[0] ?? null;
+            } else {
+                return;
+            }
+        } else {
+            return;
+        }
+        if ($scope_node === null) {
+            // No scope argument: PHP keeps the declaring scope.
+            return;
+        }
+        $closure_fqsen = FullyQualifiedFunctionName::fromClosureInContext(
+            $this->context->withLineNumberStart($node->lineno),
+            $node
+        );
+        if (!$this->code_base->hasFunctionWithFQSEN($closure_fqsen)) {
+            return;
+        }
+        $func = $this->code_base->getFunctionByFQSEN($closure_fqsen);
+        $scope = $func->getInternalScope();
+        if (!($scope instanceof ClosureScope) || $scope->getOverrideClassFQSEN() !== null) {
+            // An explicit @phan-closure-scope annotation wins, and a second analysis pass has nothing to do.
+            return;
+        }
+        $class_fqsen = $this->closureScopeFQSENFromNode($scope_node);
+        if ($class_fqsen === null || !$this->code_base->hasClassWithFQSEN($class_fqsen)) {
+            // An undeclared class is reported by the normal analysis of the argument.
+            return;
+        }
+        $scope->overrideClassFQSEN($class_fqsen);
+        $func->getContext()->setScope($scope);
+    }
+
+    /**
+     * Resolve the scope argument of Closure::bind()/bindTo()/call() to a single class, if possible.
+     */
+    private function closureScopeFQSENFromNode(Node|string|int|float $scope_node): ?FullyQualifiedClassName
+    {
+        if (is_string($scope_node)) {
+            // 'static' keeps the current scope; 'self' and 'parent' are not meaningful as a literal here.
+            if (\in_array(\strtolower($scope_node), ['static', 'self', 'parent'], true)) {
+                return null;
+            }
+            try {
+                return FullyQualifiedClassName::fromFullyQualifiedString('\\' . \ltrim($scope_node, '\\'));
+            } catch (FQSENException) {
+                return null;
+            }
+        }
+        if (!($scope_node instanceof Node)) {
+            return null;
+        }
+        try {
+            if ($scope_node->kind === ast\AST_CLASS_NAME && ($scope_node->children['class']->kind ?? null) === ast\AST_NAME) {
+                // Foo::class
+                $union_type = UnionTypeVisitor::unionTypeFromClassNode($this->code_base, $this->context, $scope_node->children['class']);
+            } else {
+                // $obj, new Foo(), $this, ... : the scope becomes the class of that object.
+                // Don't let unionTypeFromNode emit issues here; the argument is analyzed normally later.
+                $union_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $scope_node, false)->objectTypes();
+            }
+        } catch (IssueException | FQSENException | NodeException) {
+            return null;
+        }
+        $result = null;
+        foreach ($union_type->getTypeSet() as $type) {
+            if ($type->isNativeType() || $type->isSelfType() || $type->isStaticType() || !$type->isObjectWithKnownFQSEN()) {
+                return null;
+            }
+            $fqsen = $type->asFQSEN();
+            if (!($fqsen instanceof FullyQualifiedClassName)) {
+                return null;
+            }
+            if ($result !== null && (string)$result !== (string)$fqsen) {
+                // More than one possible class: don't guess.
+                return null;
+            }
+            $result = $fqsen;
+        }
+        return $result;
     }
 
     /**
@@ -3870,6 +4006,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      */
     public function visitArrowFunc(Node $node): Context
     {
+        $this->applyInferredClosureScope($node);
         return $this->visitClosedContext($node);
     }
 
