@@ -50,6 +50,30 @@ class ClosureScope extends FunctionLikeScope
     }
 
     /**
+     * Whether a `$this` is available inside the overridden scope.
+     * False when the closure was bound with `Closure::bind($closure, null, SomeClass::class)`: the scope of
+     * SomeClass applies, but there is no object.
+     * @var bool
+     */
+    private $override_has_this = true;
+
+    /**
+     * Record whether a `$this` is available inside the overridden scope.
+     */
+    public function setOverrideHasThis(bool $has_this): void
+    {
+        $this->override_has_this = $has_this;
+    }
+
+    /**
+     * Whether a `$this` is available inside the overridden scope (true unless the closure was bound to null).
+     */
+    public function hasOverrideThis(): bool
+    {
+        return $this->override_has_this;
+    }
+
+    /**
      * @return FullyQualifiedClassName|null
      * If the (at)phan-closure-scope annotation is used, returns the corresponding override class FQSEN.
      * Returns the class FQSEN inside this closure's scope (with an (at)phan-closure-scope annotation).

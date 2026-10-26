@@ -3903,6 +3903,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             if ((string)$class_type !== '\Closure') {
                 return;
             }
+            $new_this_node = $parent->children[1] ?? null;
             $scope_node = $parent->children[2] ?? null;
         } elseif ($parent->kind === ast\AST_METHOD_CALL && $parent->children['expr'] === $node) {
             // (function () {...})->bindTo($newThis, $scope) or (function () {...})->call($newThis, ...)
@@ -3910,10 +3911,13 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             if (!is_string($method)) {
                 return;
             }
+            $args = $parent->children['args']->children;
             if (\strcasecmp($method, 'bindTo') === 0) {
-                $scope_node = $parent->children['args']->children[1] ?? null;
+                $new_this_node = $args[0] ?? null;
+                $scope_node = $args[1] ?? null;
             } elseif (\strcasecmp($method, 'call') === 0) {
-                $scope_node = $parent->children['args']->children[0] ?? null;
+                $new_this_node = $args[0] ?? null;
+                $scope_node = $new_this_node;
             } else {
                 return;
             }
@@ -3942,8 +3946,45 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // An undeclared class is reported by the normal analysis of the argument.
             return;
         }
+        $has_this = true;
+        if ($new_this_node !== $scope_node) {
+            if (self::isNullLiteral($new_this_node)) {
+                // Closure::bind($closure, null, SomeClass::class): the scope applies, but there is no $this.
+                $has_this = false;
+            } elseif ($new_this_node !== null && !$this->isInstanceOfClass($new_this_node, $class_fqsen)) {
+                // The bound object is known to be unrelated to the scope class: don't guess what $this is.
+                return;
+            }
+        }
         $scope->overrideClassFQSEN($class_fqsen);
+        $scope->setOverrideHasThis($has_this);
         $func->getContext()->setScope($scope);
+    }
+
+    private static function isNullLiteral(Node|string|int|float|null $node): bool
+    {
+        return $node instanceof Node
+            && $node->kind === ast\AST_CONST
+            && \strcasecmp((string)($node->children['name']->children['name'] ?? ''), 'null') === 0;
+    }
+
+    /**
+     * Whether the object expression $node may be an instance of $class_fqsen (or of one of its parent classes,
+     * since the declared type of an expression may be a parent class of its runtime class).
+     * True when the expression's class is unknown.
+     */
+    private function isInstanceOfClass(Node|string|int|float $node, FullyQualifiedClassName $class_fqsen): bool
+    {
+        $this_fqsen = $this->closureScopeFQSENFromNode($node);
+        if ($this_fqsen === null || !$this->code_base->hasClassWithFQSEN($this_fqsen)) {
+            return true;
+        }
+        if ((string)$this_fqsen === (string)$class_fqsen) {
+            return true;
+        }
+        $this_type = $this_fqsen->asType();
+        $scope_type = $class_fqsen->asType();
+        return $this_type->isSubclassOf($scope_type, $this->code_base) || $scope_type->isSubclassOf($this_type, $this->code_base);
     }
 
     /**
@@ -3972,14 +4013,17 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             } else {
                 // $obj, new Foo(), $this, ... : the scope becomes the class of that object.
                 // Don't let unionTypeFromNode emit issues here; the argument is analyzed normally later.
-                $union_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $scope_node, false)->objectTypes();
+                $union_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $scope_node, false);
             }
         } catch (IssueException | FQSENException | NodeException) {
             return null;
         }
+        // Only a single, non-nullable class is used (e.g. `?Foo` or `Foo|Bar` is not).
+        // The declared type may be a parent class of the runtime class; Phan then analyzes the closure
+        // as that parent class, as it does with an explicit @phan-closure-scope naming a parent class.
         $result = null;
         foreach ($union_type->getTypeSet() as $type) {
-            if ($type->isNativeType() || $type->isSelfType() || $type->isStaticType() || !$type->isObjectWithKnownFQSEN()) {
+            if ($type->isNullable() || $type->isNativeType() || $type->isSelfType() || $type->isStaticType() || !$type->isObjectWithKnownFQSEN()) {
                 return null;
             }
             $fqsen = $type->asFQSEN();

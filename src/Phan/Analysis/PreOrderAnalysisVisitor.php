@@ -422,6 +422,11 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
 
         $override_this_fqsen = self::getOverrideClassFQSEN($code_base, $func);
         if ($override_this_fqsen !== null) {
+            $closure_scope = $func->getInternalScope();
+            if ($closure_scope instanceof ClosureScope && !$closure_scope->hasOverrideThis()) {
+                // Bound with Closure::bind($closure, null, SomeClass::class): the scope applies, but there is no $this.
+                return;
+            }
             if ($context->getScope()->hasVariableWithName('this') || !$context->isInClassScope()) {
                 // Handle @phan-closure-scope - Should set $this to the overridden class, as well as handling self:: and parent::
                 $func->getInternalScope()->addVariable(

@@ -39,7 +39,7 @@ var_dump($a());
 // Scope given as an object
 $b = Closure::bind(function () { return $this->priv; }, $item, $item);
 var_dump($b());
-$c = Closure::bind(function () { return $this->priv; }, null, new Item5951());
+$c = Closure::bind(static function () { return Item5951::DEFAULT_VALUE; }, null, new Item5951());
 var_dump($c());
 
 // bindTo() and call() on a closure literal
@@ -80,6 +80,30 @@ var_dump($k());
 // 'static' as the scope keeps the declaring scope
 $l = Closure::bind(static function () { return Item5951::DEFAULT_VALUE; }, null, 'static');
 var_dump($l());
+
+// A non-static closure bound without an object: the scope applies, but there is no $this
+$n = Closure::bind(function () { return Item5951::DEFAULT_VALUE + static::privStatic(); }, null, Item5951::class);
+var_dump($n());
+$o = Closure::bind(function () { return $this->priv; }, null, Item5951::class);
+var_dump($o());
+
+// The bound object is not an instance of the scope class: don't guess what $this is
+$p = Closure::bind(function () { return $this->priv; }, new Other5951(), Item5951::class);
+var_dump($p());
+
+// An instance of a subclass bound to the parent scope is fine
+class Child5951 extends Item5951 {}
+$q = Closure::bind(function () { return $this->priv; }, new Child5951(), Item5951::class);
+var_dump($q());
+
+// A nullable or union-typed scope object is not a single known class
+function scope5951(?Item5951 $x, Item5951|Other5951 $y): array {
+    return [
+        Closure::bind(static function () { return Item5951::DEFAULT_VALUE; }, null, $x),
+        Closure::bind(static function () { return Item5951::DEFAULT_VALUE; }, null, $y),
+    ];
+}
+var_dump(scope5951($item, $item));
 
 // A static call to bind() on something that is not \Closure is not a binding
 class NotClosure5951 {
