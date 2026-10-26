@@ -1,0 +1,14 @@
+%s:53 PhanUndeclaredProperty Reference to undeclared property \Item5951->nope
+%s:57 PhanUndeclaredThis Variable $this is undeclared
+%s:61 PhanAccessClassConstantPrivate Cannot access private class constant \Item5951::DEFAULT_VALUE defined at %s:7
+%s:68 PhanUndeclaredProperty Reference to undeclared property \Other5951->priv
+%s:75 PhanAccessClassConstantPrivate Cannot access private class constant \Item5951::DEFAULT_VALUE defined at %s:7
+%s:75 PhanUndeclaredClassReference Reference to undeclared class \NoSuchClass5951
+%s:77 PhanAccessClassConstantPrivate Cannot access private class constant \Item5951::DEFAULT_VALUE defined at %s:7
+%s:81 PhanAccessClassConstantPrivate Cannot access private class constant \Item5951::DEFAULT_VALUE defined at %s:7
+%s:87 PhanUndeclaredThis Variable $this is undeclared
+%s:91 PhanUndeclaredThis Variable $this is undeclared
+%s:102 PhanAccessClassConstantPrivate Cannot access private class constant \Item5951::DEFAULT_VALUE defined at %s:7
+%s:102 PhanTypeMismatchArgumentNullableInternal Argument 3 ($newScope) is $x of type ?\Item5951 but \Closure::bind() takes object|string (expected type to be non-nullable)
+%s:103 PhanAccessClassConstantPrivate Cannot access private class constant \Item5951::DEFAULT_VALUE defined at %s:7
+%s:124 PhanAccessClassConstantPrivate Cannot access private class constant \Item5951::DEFAULT_VALUE defined at %s:7
