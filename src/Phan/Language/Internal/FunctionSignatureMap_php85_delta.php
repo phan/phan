@@ -32,8 +32,8 @@ return [
   ],
   'changed' => [
       'closedir' => [
-          'old' => ['void', 'dir_handle='=>'resource'],
-          'new' => ['void', 'dir_handle='=>'resource|Directory'],
+          'old' => ['void', 'dir_handle='=>'?resource'],
+          'new' => ['void', 'dir_handle='=>'?resource|Directory'],
       ],
       'grapheme_stripos' => [
           'old' => ['int|false', 'haystack'=>'string', 'needle'=>'string', 'offset='=>'int'],
@@ -56,12 +56,12 @@ return [
           'new' => ['string|false', 'haystack'=>'string', 'needle'=>'string', 'beforeNeedle='=>'bool', 'locale='=>'?string'],
       ],
       'readdir' => [
-          'old' => ['string|false', 'dir_handle='=>'resource'],
-          'new' => ['string|false', 'dir_handle='=>'resource|Directory'],
+          'old' => ['string|false', 'dir_handle='=>'?resource'],
+          'new' => ['string|false', 'dir_handle='=>'?resource|Directory'],
       ],
       'rewinddir' => [
-          'old' => ['void', 'dir_handle='=>'resource'],
-          'new' => ['void', 'dir_handle='=>'resource|Directory'],
+          'old' => ['void', 'dir_handle='=>'?resource'],
+          'new' => ['void', 'dir_handle='=>'?resource|Directory'],
       ],
   ],
   'removed' => [
