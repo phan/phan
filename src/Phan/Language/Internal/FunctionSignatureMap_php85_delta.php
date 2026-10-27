@@ -31,10 +31,6 @@ return [
       'Dom\Element::insertAdjacentHTML' => ['void', 'position'=>'string', 'text'=>'string'],
   ],
   'changed' => [
-      'closedir' => [
-          'old' => ['void', 'dir_handle='=>'?resource'],
-          'new' => ['void', 'dir_handle='=>'?resource|Directory'],
-      ],
       'grapheme_stripos' => [
           'old' => ['int|false', 'haystack'=>'string', 'needle'=>'string', 'offset='=>'int'],
           'new' => ['int|false', 'haystack'=>'string', 'needle'=>'string', 'offset='=>'int', 'locale='=>'?string'],
@@ -54,14 +50,6 @@ return [
       'grapheme_strstr' => [
           'old' => ['string|false', 'haystack'=>'string', 'needle'=>'string', 'beforeNeedle='=>'bool'],
           'new' => ['string|false', 'haystack'=>'string', 'needle'=>'string', 'beforeNeedle='=>'bool', 'locale='=>'?string'],
-      ],
-      'readdir' => [
-          'old' => ['string|false', 'dir_handle='=>'?resource'],
-          'new' => ['string|false', 'dir_handle='=>'?resource|Directory'],
-      ],
-      'rewinddir' => [
-          'old' => ['void', 'dir_handle='=>'?resource'],
-          'new' => ['void', 'dir_handle='=>'?resource|Directory'],
       ],
   ],
   'removed' => [

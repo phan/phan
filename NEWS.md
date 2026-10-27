@@ -12,7 +12,7 @@ Performance improvements:
 - Keep PHP's cycle collector disabled in daemon mode and the language server, as it already is for ordinary runs. It was re-enabled there for the fallback without `pcntl`, which creates reference cycles when it clones the code base for a restore point, but that fallback collects them itself once per request (the language server fallback now does too), and the forked analysis processes exit after one request. With automatic collection on, every collector run walked the millions of possible roots left by the parse phase to free a few thousand cycles: on a local benchmark the daemon took 56 s instead of 24 s to start listening and 26 s instead of 6.7 s per request, at the same peak memory
 
 Bug fixes:
-- Updated parameter types for internal functions which were made nullable in PHP8, allowing null to be passed to represent the behaviour when the parameter was ommitted ([#5616](https://github.com/phan/phan/issues/5616))
+- Updated parameter types for internal functions which were made nullable in PHP 8.0, allowing null to be passed to represent the behaviour when the parameter was omitted ([#5616](https://github.com/phan/phan/pull/5616)). With `--target-php-version 8.5`, `closedir()`, `readdir()` and `rewinddir()` also accept null again and no longer accept a `Directory` object, which PHP rejects with a TypeError
 
 Maintenance:
 - Remove the unmaintained Code Climate engine (`plugins/codeclimate/`): its Dockerfile built on PHP 8.0 with php-ast 1.0.16 and could no longer install Phan's dependencies, and no image is published for it. The `codeclimate` output format is unaffected
