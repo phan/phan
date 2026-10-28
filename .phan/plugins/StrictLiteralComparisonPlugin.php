@@ -5,8 +5,11 @@ declare(strict_types=1);
 use ast\Node;
 use Phan\AST\ASTReverter;
 use Phan\AST\UnionTypeVisitor;
+use Phan\Language\Type;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
+use Phan\Language\UnionType;
 use Phan\Parse\ParseVisitor;
 use Phan\PluginV3;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
@@ -38,6 +41,13 @@ class StrictLiteralComparisonPlugin extends PluginV3 implements
  */
 class StrictLiteralComparisonVisitor extends PluginAwarePostAnalysisVisitor
 {
+    public const ComparisonNotStrictForScalar = 'PhanPluginComparisonNotStrictForScalar';
+    public const ComparisonNotStrictForTruthyScalar = 'PhanPluginComparisonNotStrictForTruthyScalar';
+
+    private const ISSUE_MESSAGE = 'Expected strict equality check when comparing {TYPE} to {TYPE} in {CODE}';
+    private const ZERO_INT = 0;
+    private const EMPTY_STRING = '';
+
     /**
      * @param Node $node
      * A node of kind ast\AST_BINARY_OP to analyze
@@ -63,7 +73,11 @@ class StrictLiteralComparisonVisitor extends PluginAwarePostAnalysisVisitor
         if ($left_is_const === $right_is_const) {
             return;
         }
-        $const_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $left_is_const ? $left : $right);
+        $const_type = UnionTypeVisitor::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $left_is_const ? $left : $right
+        );
         if ($const_type->isEmpty()) {
             return;
         }
@@ -72,17 +86,48 @@ class StrictLiteralComparisonVisitor extends PluginAwarePostAnalysisVisitor
                 return;
             }
         }
+        $scalar_value = $const_type->asSingleScalarValueOrNullOrSelf();
+        $issue_type = self::ComparisonNotStrictForScalar;
+        $other_type = UnionTypeVisitor::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $left_is_const ? $right : $left
+        );
+        if (self::isStrictComparisonEquivalent($scalar_value, $other_type)) {
+            $issue_type = self::ComparisonNotStrictForTruthyScalar;
+        }
+        $left_type = $left_is_const ? $const_type : $other_type;
+        $right_type = $left_is_const ? $other_type : $const_type;
         self::emitPluginIssue(
             $this->code_base,
             $this->context,
-            'PhanPluginComparisonNotStrictForScalar',
-            "Expected strict equality check when comparing {TYPE} to {TYPE} in {CODE}",
+            $issue_type,
+            self::ISSUE_MESSAGE,
             [
-                UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $left),
-                UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $right),
+                $left_type,
+                $right_type,
                 ASTReverter::toShortString($node),
             ]
         );
+    }
+
+    private static function isStrictComparisonEquivalent(
+        UnionType|int|string|float|bool|null $scalar_value,
+        UnionType $other_type
+    ): bool {
+        if (\is_int($scalar_value)) {
+            return $scalar_value !== self::ZERO_INT && $other_type->isIntTypeOrNull();
+        }
+        if (!\is_string($scalar_value)
+            || $scalar_value === self::EMPTY_STRING
+            || \is_numeric($scalar_value)
+            || $other_type->isEmpty()
+        ) {
+            return false;
+        }
+        return $other_type->allTypesMatchCallback(static function (Type $type): bool {
+            return $type instanceof StringType || $type instanceof NullType;
+        });
     }
 }
 

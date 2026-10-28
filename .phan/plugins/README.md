@@ -392,6 +392,10 @@ This is used to avoid surprising behaviors such as `0 == 'a'`, `"10" == "1e1"`, 
 *Following the advice of this plugin may subtly break existing code (e.g. break implicit null/false checks, or code relying on these unexpected behaviors).*
 
 - **PhanPluginComparisonNotStrictForScalar**: `Expected strict equality check when comparing {TYPE} to {TYPE} in {CODE}`
+- **PhanPluginComparisonNotStrictForTruthyScalar**: `Expected strict equality check when comparing {TYPE} to {TYPE} in {CODE}`
+
+The truthy issue type identifies comparisons where the inferred operand type and literal value
+guarantee that changing to strict equality will not alter behavior through type juggling.
 
 Also see [`StrictComparisonPlugin`](#StrictComparisonPlugin.php) and [`NumericalComparisonPlugin`](#NumericalComparisonPlugin.php).
 
