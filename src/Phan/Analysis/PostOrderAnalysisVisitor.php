@@ -329,6 +329,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $this->analyzeUnsetDim($var_node);
         } elseif ($kind === ast\AST_PROP) {
             return $this->analyzeUnsetProp($var_node);
+        } elseif ($kind === ast\AST_STATIC_PROP) {
+            // unset(self::$prop) (or any other class) always throws Error: "Attempt to unset static property"
+            $this->emitIssue(
+                Issue::TypeUnsetStaticProperty,
+                $var_node->lineno,
+                ASTReverter::toShortString($var_node)
+            );
         }
         return $context;
     }

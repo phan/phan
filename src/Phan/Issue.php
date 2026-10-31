@@ -125,6 +125,7 @@ class Issue
     public const TypeArraySuspiciousNull           = 'PhanTypeArraySuspiciousNull';
     public const TypeSuspiciousIndirectVariable    = 'PhanTypeSuspiciousIndirectVariable';
     public const TypeObjectUnsetDeclaredProperty   = 'PhanTypeObjectUnsetDeclaredProperty';
+    public const TypeUnsetStaticProperty           = 'PhanTypeUnsetStaticProperty';
     public const TypeModifyImmutableObjectProperty            = 'PhanTypeModifyImmutableObjectProperty';
     public const TypeComparisonFromArray   = 'PhanTypeComparisonFromArray';
     public const TypeComparisonToArray     = 'PhanTypeComparisonToArray';
@@ -2477,6 +2478,14 @@ class Issue
                 "Suspicious attempt to unset class {TYPE}'s property \${PROPERTY} declared at {FILE}:{LINE} (This can be done, but is more commonly done for dynamic properties and Phan does not expect this)",
                 self::REMEDIATION_B,
                 10081
+            ),
+            new Issue(
+                self::TypeUnsetStaticProperty,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "Cannot unset static property {CODE}: PHP throws an Error at runtime (Attempt to unset static property)",
+                self::REMEDIATION_B,
+                10213
             ),
             new Issue(
                 self::TypeModifyImmutableObjectProperty,
