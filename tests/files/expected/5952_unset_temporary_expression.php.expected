@@ -1,13 +1,13 @@
-%s:10 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression (self::DEMO['c'] of type array{c:array{d:42}}) in write context
-%s:11 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression (UnsetTemporary5952::DEMO['c']['d'] of type array{c:array{d:42}}) in write context
-%s:12 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression (PHP_EOL['c'] of type '\n') in write context
-%s:13 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression ('str'['c'] of type 'str') in write context
-%s:14 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression (['c'=>1]['c'] of type array{c:1}) in write context
-%s:15 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression (($arr + [])['c'] of type array) in write context
-%s:17 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression (new UnsetTemporary5952()->prop['c'] of type \UnsetTemporary5952) in write context
-%s:18 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression (new UnsetTemporary5952()->prop of type \UnsetTemporary5952) in write context
-%s:19 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression ('str'->prop['c'] of type 'str') in write context
-%s:19 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression 'str' with type string
-%s:20 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression (self::DEMO['c']->prop of type array{c:array{d:42}}) in write context
-%s:20 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression self::DEMO['c'] with type array{d:42}
-%s:24 PhanTypeObjectUnsetDeclaredProperty Suspicious attempt to unset class \UnsetTemporary5952's property $prop declared at %s:6 (This can be done, but is more commonly done for dynamic properties and Phan does not expect this)
+%s:11 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression (self::DEMO['c'] of type array{c:array{d:42}}) in write context
+%s:12 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression (UnsetTemporary5952::DEMO['c']['d'] of type array{c:array{d:42}}) in write context
+%s:13 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression (EOL_5952['c'] of type '\n') in write context
+%s:14 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression ('str'['c'] of type 'str') in write context
+%s:15 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression (['c'=>1]['c'] of type array{c:1}) in write context
+%s:16 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression (($arr + [])['c'] of type array) in write context
+%s:18 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression (new UnsetTemporary5952()->prop['c'] of type \UnsetTemporary5952) in write context
+%s:19 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression (new UnsetTemporary5952()->prop of type \UnsetTemporary5952) in write context
+%s:20 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression ('str'->prop['c'] of type 'str') in write context
+%s:20 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression 'str' with type string
+%s:21 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression (self::DEMO['c']->prop of type array{c:array{d:42}}) in write context
+%s:21 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression self::DEMO['c'] with type array{d:42}
+%s:25 PhanTypeObjectUnsetDeclaredProperty Suspicious attempt to unset class \UnsetTemporary5952's property $prop declared at %s:7 (This can be done, but is more commonly done for dynamic properties and Phan does not expect this)

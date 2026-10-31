@@ -1,5 +1,6 @@
 <?php
 // unset() of a dimension of a constant, class constant, literal or other temporary expression is a compile error
+const EOL_5952 = "\n";
 function get_array_5952(): array { return []; }
 class UnsetTemporary5952 {
     private const DEMO = ['c' => ['d' => 42]];
@@ -9,7 +10,7 @@ class UnsetTemporary5952 {
     public function run(array $arr): void {
         unset(self::DEMO['c']);
         unset(UnsetTemporary5952::DEMO['c']['d']);
-        unset(PHP_EOL['c']);
+        unset(EOL_5952['c']);
         unset('str'['c']);
         unset(['c' => 1]['c']);
         unset(($arr + [])['c']);
