@@ -1,0 +1,6 @@
+%s:10 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression (self::DEMO['c'] of type array{c:array{d:42}}) in write context
+%s:11 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression (UnsetTemporary5952::DEMO['c']['d'] of type array{c:array{d:42}}) in write context
+%s:12 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression (PHP_EOL['c'] of type '\n') in write context
+%s:13 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression ('str'['c'] of type 'str') in write context
+%s:14 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression (['c'=>1]['c'] of type array{c:1}) in write context
+%s:15 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression (($arr + [])['c'] of type array) in write context

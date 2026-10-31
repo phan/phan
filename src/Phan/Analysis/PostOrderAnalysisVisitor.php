@@ -334,6 +334,22 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * The node kinds that PHP accepts as the base of `unset($base['dim'])` (and of other writes to dimensions).
+     * Removing a dimension from anything else (a constant, a class constant, a literal, an array literal, a binary operation...)
+     * is a compile error: "Cannot use temporary expression in write context"
+     */
+    private const UNSET_DIM_BASE_KINDS = [
+        ast\AST_VAR,
+        ast\AST_PROP,
+        ast\AST_NULLSAFE_PROP,
+        ast\AST_STATIC_PROP,
+        ast\AST_CALL,
+        ast\AST_METHOD_CALL,
+        ast\AST_NULLSAFE_METHOD_CALL,
+        ast\AST_STATIC_CALL,
+    ];
+
+    /**
      * @param Node $node a node of type AST_DIM in unset()
      * @see UnionTypeVisitor::resolveArrayShapeElementTypes()
      * @see UnionTypeVisitor::visitDim()
@@ -341,8 +357,32 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     private function analyzeUnsetDim(Node $node): void
     {
         $expr_node = $node->children['expr'];
+        // Find the expression the dimension is removed from, e.g. `self::CONST` in `unset(self::CONST['a']['b'])`
+        $base_node = $expr_node;
+        while ($base_node instanceof Node && $base_node->kind === ast\AST_DIM) {
+            $base_node = $base_node->children['expr'];
+        }
+        if (!$base_node instanceof Node) {
+            $this->emitIssue(
+                Issue::InvalidWriteToTemporaryExpression,
+                $node->lineno,
+                ASTReverter::toShortString($node),
+                Type::fromObject($base_node)
+            );
+            return;
+        }
+        if (!\in_array($base_node->kind, self::UNSET_DIM_BASE_KINDS, true)) {
+            // e.g. unset(self::CONST['key']) or unset(FOO['key']) is a compile error.
+            $this->emitIssue(
+                Issue::InvalidWriteToTemporaryExpression,
+                $node->lineno,
+                ASTReverter::toShortString($node),
+                UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $base_node)
+            );
+            return;
+        }
         if (!($expr_node instanceof Node)) {
-            // php -l would warn
+            // unreachable: $base_node is $expr_node when there is a single dimension
             return;
         }
 
@@ -4000,15 +4040,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * Check if the parent node list contains a compound or null coalescing
-     * assignment such as ??=, .=, +=, etc...
+     * Check if the AST_DIM node at the end of $parent_node_list (whose expression is the node being analyzed)
+     * is itself being written to, through zero or more enclosing dimensions or array destructuring elements:
+     * the target of `=`, `=&`, a compound assignment such as `??=` or `.=`, `++`/`--`, or `unset()`.
      *
-     * Used for write tracking since assignment operators count as read and
-     * write for nested dimensions.
+     * Used for write tracking: `$this->prop['key'] = ...`, `[$this->prop['key']] = ...`, `$this->prop['key'] .= ...`,
+     * `$this->prop['key']++` and `unset($this->prop['key'])` all modify the property.
      *
      * @param list<Node> $parent_node_list
      */
-    private static function isNestedCompoundAssignment(array $parent_node_list): bool
+    private static function isNestedDimModification(array $parent_node_list): bool
     {
         $cur_parent_node = \end($parent_node_list);
         for (;; $cur_parent_node = $prev_parent_node) {
@@ -4022,8 +4063,23 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         return false;
                     }
                     break;
+                case ast\AST_ASSIGN:
+                case ast\AST_ASSIGN_REF:
                 case ast\AST_ASSIGN_OP:
                     return $prev_parent_node->children['var'] === $cur_parent_node;
+                case ast\AST_ARRAY_ELEM:
+                    if ($prev_parent_node->children['value'] !== $cur_parent_node) {
+                        // e.g. `[$this->prop['key'] => $v] = ...` reads the key
+                        return false;
+                    }
+                    $prev_parent_node = \prev($parent_node_list);  // this becomes AST_ARRAY
+                    break;
+                case ast\AST_UNSET:
+                case ast\AST_PRE_INC:
+                case ast\AST_PRE_DEC:
+                case ast\AST_POST_INC:
+                case ast\AST_POST_DEC:
+                    return true;
                 default:
                     return false;
             }
@@ -4302,7 +4358,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @return ?bool
      * - false if this is a read reference
      * - true if this is a write reference
-     * - true if this is a modification such as $x++
+     * - true if this is a modification such as $x++, $x['k']++ or unset($x['k'])
      * - null if this is both, e.g. $a =& $b for $a and $b
      */
     private function isAssignmentOrNestedAssignmentOrModification(Node $node): ?bool
@@ -4333,14 +4389,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if ($parent_node->children['expr'] !== $node) {
                 return false;
             }
-            if (self::shouldSkipNestedAssignDim($parent_node_list)) {
-                return true;
-            }
-            return self::isNestedCompoundAssignment($parent_node_list);
+            return self::isNestedDimModification($parent_node_list);
         } elseif ($parent_kind === ast\AST_ASSIGN || $parent_kind === ast\AST_ASSIGN_OP) {
             return $parent_node->children['var'] === $node;
         } elseif ($parent_kind === ast\AST_ASSIGN_REF) {
             return null;
+        } elseif ($parent_kind === ast\AST_UNSET) {
+            // unset($this->prop) removes the property
+            return true;
         } else {
             return \in_array($parent_kind, self::READ_AND_WRITE_KINDS, true);
         }
