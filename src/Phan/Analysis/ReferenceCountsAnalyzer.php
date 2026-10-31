@@ -205,16 +205,12 @@ class ReferenceCountsAnalyzer
                 continue;
             }
             $fqsen = $element->getFQSEN();
-            if ($element instanceof Method) {
-                $defining_fqsen = $element->getRealDefiningFQSEN();
-            } elseif ($element instanceof Property) {
-                $defining_fqsen = $element->getRealDefiningFQSEN();
-                if ($element->getPhanFlagsHasState(Flags::IS_ENUM_PROPERTY)) {
-                    // Don't warn about immutable enum properties automatically created by php itself.
-                    continue;
-                }
-            } else {
-                $defining_fqsen = $element->getDefiningFQSEN();
+            // For the private/protected copies of methods, properties and constants made for a class using a trait,
+            // this is the trait's element (getDefiningFQSEN() is the using class, for access checks).
+            $defining_fqsen = $element->getRealDefiningFQSEN();
+            if ($element instanceof Property && $element->getPhanFlagsHasState(Flags::IS_ENUM_PROPERTY)) {
+                // Don't warn about immutable enum properties automatically created by php itself.
+                continue;
             }
 
             // copy references to methods, properties, and constants into the defining trait or class.

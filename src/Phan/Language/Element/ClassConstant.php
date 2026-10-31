@@ -46,6 +46,14 @@ class ClassConstant extends ClassElement implements ConstantInterface
      * @param FullyQualifiedClassConstantName $fqsen
      * A fully qualified name for the class constant
      */
+    /**
+     * @var FullyQualifiedClassConstantName
+     * The FQSEN of the original declaration of this constant, even if this is the private/protected copy
+     * made for a class that uses a trait: getDefiningFQSEN() is the using class for those copies so that
+     * access checks work. Used for dead code detection.
+     */
+    private $real_defining_fqsen;
+
     public function __construct(
         Context $context,
         string $name,
@@ -65,6 +73,18 @@ class ClassConstant extends ClassElement implements ConstantInterface
         // of this class constant, and let it be overwritten
         // if it isn't.
         $this->setDefiningFQSEN($fqsen);
+        $this->real_defining_fqsen = $fqsen;
+    }
+
+    /**
+     * @return FullyQualifiedClassConstantName the FQSEN of the original declaration of this constant
+     * (even if this is the private/protected copy made for a class that uses a trait). Used for dead code detection.
+     * Access checks use getDefiningFQSEN() instead.
+     * @override
+     */
+    public function getRealDefiningFQSEN(): FullyQualifiedClassConstantName
+    {
+        return $this->real_defining_fqsen;
     }
 
     /**
@@ -111,6 +131,8 @@ class ClassConstant extends ClassElement implements ConstantInterface
         if ($constant->isPublic()) {
             $constant->setDefiningFQSEN($defining_fqsen);
         }
+        // References to the copy in the class using the trait count as references to the trait's constant.
+        $constant->real_defining_fqsen = $this->getRealDefiningFQSEN();
         $constant->setHasDeclaredType($this->has_declared_type);
 
         // Copy the defining node so that compatibility checks can recognize
