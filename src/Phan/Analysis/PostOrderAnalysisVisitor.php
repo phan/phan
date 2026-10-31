@@ -207,6 +207,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             );
             return $this->context;
         }
+        if (AssignmentVisitor::checkWriteToNullsafeChain($this->code_base, $this->context, $var_node)) {
+            return $this->context;
+        }
 
         if ($redundant_condition_detection && $right_type->hasRealTypeSet() &&
             !\in_array($var_node->kind, [ast\AST_VAR, ast\AST_ARRAY], true)) {
@@ -297,6 +300,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitAssignOp(Node $node): Context
     {
+        $var_node = $node->children['var'];
+        if ($var_node instanceof Node && AssignmentVisitor::checkWriteToNullsafeChain($this->code_base, $this->context, $var_node)) {
+            return $this->context;
+        }
         return (new AssignOperatorAnalysisVisitor($this->code_base, $this->context))->__invoke($node);
     }
 
@@ -314,6 +321,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // Get the type of the thing being unset
         $var_node = $node->children['var'];
         if (!($var_node instanceof Node)) {
+            return $context;
+        }
+        if (AssignmentVisitor::checkWriteToNullsafeChain($this->code_base, $context, $var_node)) {
             return $context;
         }
 
@@ -347,6 +357,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * so `unset(self::C['k'])`, `unset((new C)->p)` and `unset((new C)->p['k'])` are compile errors
      * ("Cannot use temporary expression in write context"), while a variable, a static property or the result of a call
      * can be the base of a write (the write to a call result is a no-op).
+     * Nullsafe chains were already rejected by AssignmentVisitor::checkWriteToNullsafeChain().
      *
      * @param Node $node a node of kind AST_DIM or AST_PROP in unset()
      * @return bool true if an issue was emitted
@@ -358,14 +369,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             switch ($base_node->kind) {
                 case ast\AST_DIM:
                 case ast\AST_PROP:
-                case ast\AST_NULLSAFE_PROP:
                     $base_node = $base_node->children['expr'];
                     continue 2;
                 case ast\AST_VAR:
                 case ast\AST_STATIC_PROP:
                 case ast\AST_CALL:
                 case ast\AST_METHOD_CALL:
-                case ast\AST_NULLSAFE_METHOD_CALL:
                 case ast\AST_STATIC_CALL:
                     return false;
             }
@@ -1427,6 +1436,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     private function analyzeIncOrDec(Node $node): Context
     {
         $var = $node->children['var'];
+        if ($var instanceof Node && AssignmentVisitor::checkWriteToNullsafeChain($this->code_base, $this->context, $var)) {
+            return $this->context;
+        }
         $old_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $var);
         if (!$old_type->canCastToUnionType(UnionType::fromFullyQualifiedPHPDocString('int|string|float'), $this->code_base)) {
             $this->emitIssue(

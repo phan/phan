@@ -33,6 +33,7 @@ class Issue
     public const InvalidConstantExpression      = 'PhanInvalidConstantExpression';
     public const InvalidNode                    = 'PhanInvalidNode';
     public const InvalidWriteToTemporaryExpression = 'PhanInvalidWriteToTemporaryExpression';
+    public const InvalidWriteToNullsafeChain    = 'PhanInvalidWriteToNullsafeChain';
     public const InvalidTraitUse                = 'PhanInvalidTraitUse';
     public const ContinueTargetingSwitch        = 'PhanContinueTargetingSwitch';
     public const ContinueOrBreakNotInLoop       = 'PhanContinueOrBreakNotInLoop';
@@ -917,6 +918,14 @@ class Issue
                 "Cannot use temporary expression ({CODE} of type {TYPE}) in write context",
                 self::REMEDIATION_A,
                 17003
+            ),
+            new Issue(
+                self::InvalidWriteToNullsafeChain,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_CRITICAL,
+                "Cannot use nullsafe operator in write context ({CODE}): PHP refuses to compile this",
+                self::REMEDIATION_A,
+                17024
             ),
             new Issue(
                 self::InvalidTraitUse,

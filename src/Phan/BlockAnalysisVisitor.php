@@ -1583,7 +1583,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     {
         $code_base = $this->code_base;
         $value_node = $node->children['value'];
-        if ($value_node instanceof Node) {
+        if ($value_node instanceof Node && !AssignmentVisitor::checkWriteToNullsafeChain($code_base, $context, $value_node)) {
             // should be a parse error when not a Node
             // Note: The array assign backwards compatibility check was removed as we now require PHP 8.1+
             // Note: array assignments are supported since we require PHP 8.1+
@@ -1605,7 +1605,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     $key_node->lineno,
                     "Can't use list() as a key element - aborting"
                 );
-            } else {
+            } elseif (!AssignmentVisitor::checkWriteToNullsafeChain($code_base, $context, $key_node)) {
                 // If we see array<int,T> or array<string,T> and no other array types, we're reasonably sure the foreach key is an integer or a string, so set it.
                 // For Traversable<Key, T> or iterable<Key, T>, return Key.
                 $context = (new AssignmentVisitor(

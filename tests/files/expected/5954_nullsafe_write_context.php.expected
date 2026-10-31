@@ -1,0 +1,26 @@
+%s:11 PhanInvalidWriteToNullsafeChain Cannot use nullsafe operator in write context ($c?->p): PHP refuses to compile this
+%s:12 PhanInvalidWriteToNullsafeChain Cannot use nullsafe operator in write context ($c?->items[$k]): PHP refuses to compile this
+%s:13 PhanInvalidWriteToNullsafeChain Cannot use nullsafe operator in write context ($c?->child->p): PHP refuses to compile this
+%s:14 PhanInvalidWriteToNullsafeChain Cannot use nullsafe operator in write context ($c->child?->p): PHP refuses to compile this
+%s:15 PhanInvalidWriteToNullsafeChain Cannot use nullsafe operator in write context ($c?->m()->p): PHP refuses to compile this
+%s:16 PhanInvalidWriteToNullsafeChain Cannot use nullsafe operator in write context ($c->m()?->items[$k]): PHP refuses to compile this
+%s:17 PhanInvalidWriteToNullsafeChain Cannot use nullsafe operator in write context ($c?->child): PHP refuses to compile this
+%s:17 PhanInvalidWriteToNullsafeChain Cannot use nullsafe operator in write context ($c?->p): PHP refuses to compile this
+%s:19 PhanInvalidWriteToNullsafeChain Cannot use nullsafe operator in write context ($c?->p): PHP refuses to compile this
+%s:20 PhanInvalidWriteToNullsafeChain Cannot use nullsafe operator in write context ($c?->items[$k]): PHP refuses to compile this
+%s:21 PhanInvalidWriteToNullsafeChain Cannot use nullsafe operator in write context ($c?->child->items[$k]['x']): PHP refuses to compile this
+%s:22 PhanInvalidWriteToNullsafeChain Cannot use nullsafe operator in write context ($c?->p): PHP refuses to compile this
+%s:23 PhanInvalidWriteToNullsafeChain Cannot use nullsafe operator in write context ($c?->p): PHP refuses to compile this
+%s:24 PhanInvalidWriteToNullsafeChain Cannot use nullsafe operator in write context ($c?->items[$k]): PHP refuses to compile this
+%s:25 PhanInvalidWriteToNullsafeChain Cannot use nullsafe operator in write context ($c?->p): PHP refuses to compile this
+%s:26 PhanInvalidWriteToNullsafeChain Cannot use nullsafe operator in write context ($c?->items[$k]): PHP refuses to compile this
+%s:26 PhanTypeArraySuspiciousNullable Suspicious array access to $c?->items of nullable type ?array|?array{}
+%s:27 PhanInvalidWriteToNullsafeChain Cannot use nullsafe operator in write context ($c?->p::$s): PHP refuses to compile this
+%s:28 PhanInvalidWriteToNullsafeChain Cannot use nullsafe operator in write context ($c?->items[$k]): PHP refuses to compile this
+%s:28 PhanInvalidWriteToNullsafeChain Cannot use nullsafe operator in write context ($c?->p): PHP refuses to compile this
+%s:29 PhanInvalidWriteToNullsafeChain Cannot use nullsafe operator in write context ($c->child?->p): PHP refuses to compile this
+%s:30 PhanInvalidWriteToNullsafeChain Cannot use nullsafe operator in write context ($c?->p): PHP refuses to compile this
+%s:31 PhanInvalidWriteToNullsafeChain Cannot use nullsafe operator in write context ($c?->p): PHP refuses to compile this
+%s:32 PhanInvalidWriteToNullsafeChain Cannot use nullsafe operator in write context ($c?->items[$k]): PHP refuses to compile this
+%s:32 PhanTypeArraySuspiciousNullable Suspicious array access to $c?->items of nullable type ?array|?array{}
+%s:35 PhanTypeArraySuspiciousNullable Suspicious array access to $c?->items of nullable type ?array|?array{}
