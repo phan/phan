@@ -1,0 +1,9 @@
+src/325_trait_private_constant_references.php:6 PhanCompatibleTraitConstant Trait \ConstTrait325 declares constant USED_IN_CLASS which is only allowed in 8.2+
+src/325_trait_private_constant_references.php:6 PhanNativePHPSyntaxCheckPlugin Saw error or notice for php --syntax-check: "Fatal error: Traits cannot have constants"
+src/325_trait_private_constant_references.php:7 PhanCompatibleTraitConstant Trait \ConstTrait325 declares constant UNUSED which is only allowed in 8.2+
+src/325_trait_private_constant_references.php:7 PhanUnreferencedPrivateClassConstant Possibly zero references to private class constant \ConstTrait325::UNUSED
+src/325_trait_private_constant_references.php:8 PhanCompatibleTraitConstant Trait \ConstTrait325 declares constant USED_IN_TRAIT which is only allowed in 8.2+
+src/325_trait_private_constant_references.php:9 PhanCompatibleTraitConstant Trait \ConstTrait325 declares constant PROTECTED_USED_IN_CLASS which is only allowed in 8.2+
+src/325_trait_private_constant_references.php:10 PhanCompatibleTraitConstant Trait \ConstTrait325 declares constant PROTECTED_UNUSED which is only allowed in 8.2+
+src/325_trait_private_constant_references.php:10 PhanUnreferencedProtectedClassConstant Possibly zero references to protected class constant \ConstTrait325::PROTECTED_UNUSED
+src/325_trait_private_constant_references.php:13 PhanUnreferencedPrivateProperty Possibly zero references to private property \ConstTrait325::$unused
