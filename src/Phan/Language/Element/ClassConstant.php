@@ -132,7 +132,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
             $constant->setDefiningFQSEN($defining_fqsen);
         }
         // References to the copy in the class using the trait count as references to the trait's constant.
-        $constant->real_defining_fqsen = $this->getRealDefiningFQSEN();
+        $constant->real_defining_fqsen = $this->real_defining_fqsen;
         $constant->setHasDeclaredType($this->has_declared_type);
 
         // Copy the defining node so that compatibility checks can recognize
