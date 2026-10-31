@@ -334,20 +334,46 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * The node kinds that PHP accepts as the base of `unset($base['dim'])` (and of other writes to dimensions).
-     * Removing a dimension from anything else (a constant, a class constant, a literal, an array literal, a binary operation...)
-     * is a compile error: "Cannot use temporary expression in write context"
+     * Emit PhanInvalidWriteToTemporaryExpression if the dimension or property being unset is fetched from a temporary expression.
+     *
+     * PHP compiles the array of `unset($x['k'])` and the object of `unset($x->p)` in the same write context, recursively,
+     * so `unset(self::C['k'])`, `unset((new C)->p)` and `unset((new C)->p['k'])` are compile errors
+     * ("Cannot use temporary expression in write context"), while a variable, a static property or the result of a call
+     * can be the base of a write (the write to a call result is a no-op).
+     *
+     * @param Node $node a node of kind AST_DIM or AST_PROP in unset()
+     * @return bool true if an issue was emitted
      */
-    private const UNSET_DIM_BASE_KINDS = [
-        ast\AST_VAR,
-        ast\AST_PROP,
-        ast\AST_NULLSAFE_PROP,
-        ast\AST_STATIC_PROP,
-        ast\AST_CALL,
-        ast\AST_METHOD_CALL,
-        ast\AST_NULLSAFE_METHOD_CALL,
-        ast\AST_STATIC_CALL,
-    ];
+    private function checkUnsetOfTemporaryExpression(Node $node): bool
+    {
+        $base_node = $node->children['expr'];
+        while ($base_node instanceof Node) {
+            switch ($base_node->kind) {
+                case ast\AST_DIM:
+                case ast\AST_PROP:
+                case ast\AST_NULLSAFE_PROP:
+                    $base_node = $base_node->children['expr'];
+                    continue 2;
+                case ast\AST_VAR:
+                case ast\AST_STATIC_PROP:
+                case ast\AST_CALL:
+                case ast\AST_METHOD_CALL:
+                case ast\AST_NULLSAFE_METHOD_CALL:
+                case ast\AST_STATIC_CALL:
+                    return false;
+            }
+            break;
+        }
+        $this->emitIssue(
+            Issue::InvalidWriteToTemporaryExpression,
+            $node->lineno,
+            ASTReverter::toShortString($node),
+            $base_node instanceof Node
+                ? UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $base_node)
+                : Type::fromObject($base_node)
+        );
+        return true;
+    }
 
     /**
      * @param Node $node a node of type AST_DIM in unset()
@@ -356,33 +382,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     private function analyzeUnsetDim(Node $node): void
     {
+        if ($this->checkUnsetOfTemporaryExpression($node)) {
+            return;
+        }
         $expr_node = $node->children['expr'];
-        // Find the expression the dimension is removed from, e.g. `self::CONST` in `unset(self::CONST['a']['b'])`
-        $base_node = $expr_node;
-        while ($base_node instanceof Node && $base_node->kind === ast\AST_DIM) {
-            $base_node = $base_node->children['expr'];
-        }
-        if (!$base_node instanceof Node) {
-            $this->emitIssue(
-                Issue::InvalidWriteToTemporaryExpression,
-                $node->lineno,
-                ASTReverter::toShortString($node),
-                Type::fromObject($base_node)
-            );
-            return;
-        }
-        if (!\in_array($base_node->kind, self::UNSET_DIM_BASE_KINDS, true)) {
-            // e.g. unset(self::CONST['key']) or unset(FOO['key']) is a compile error.
-            $this->emitIssue(
-                Issue::InvalidWriteToTemporaryExpression,
-                $node->lineno,
-                ASTReverter::toShortString($node),
-                UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $base_node)
-            );
-            return;
-        }
         if (!($expr_node instanceof Node)) {
-            // unreachable: $base_node is $expr_node when there is a single dimension
+            // unreachable: already reported above
             return;
         }
 
@@ -461,10 +466,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     private function analyzeUnsetProp(Node $node): Context
     {
-        $expr_node = $node->children['expr'];
         $context = $this->context;
+        if ($this->checkUnsetOfTemporaryExpression($node)) {
+            return $context;
+        }
+        $expr_node = $node->children['expr'];
         if (!($expr_node instanceof Node)) {
-            // php -l would warn
+            // unreachable: already reported above
             return $context;
         }
         $prop_name = $node->children['prop'];

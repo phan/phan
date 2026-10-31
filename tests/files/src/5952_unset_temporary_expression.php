@@ -13,8 +13,17 @@ class UnsetTemporary5952 {
         unset('str'['c']);
         unset(['c' => 1]['c']);
         unset(($arr + [])['c']);
+        // The receiver of a property fetch is compiled in the same write context
+        unset((new UnsetTemporary5952())->prop['c']);
+        unset((new UnsetTemporary5952())->prop);
+        unset('str'->prop['c']);
+        unset(self::DEMO['c']->prop);
         // These are accepted by PHP
         unset($arr['c']);
+        unset($this->obj()->prop['c']);
+        unset($this->obj()->prop);
+        unset($this->obj()::$static_prop['c']);
+        unset($this->obj()->prop['c']['d']);
         unset($this->prop['c']);
         unset(self::$static_prop['c']);
         unset($this->other()['c']);
@@ -23,6 +32,8 @@ class UnsetTemporary5952 {
     }
 
     public function other(): array { return []; }
+
+    public function obj(): UnsetTemporary5952 { return $this; }
 
     public static function make(): array { return []; }
 }

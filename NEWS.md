@@ -13,7 +13,7 @@ Performance improvements:
 
 Bug fixes:
 - Fix false positive `PhanReadOnlyPrivateProperty` (and the protected/public variants) with `--dead-code-detection` for a property that is only modified by `unset($this->prop['key'])`, `unset(self::$prop['key'])`, `unset($this->prop)`, or `$this->prop['key']++`/`--`: these are now tracked as write references, as `$this->prop['key'] = ...`, `$this->prop['key'] .= ...` and `$this->prop++` already were ([#5617](https://github.com/phan/phan/issues/5617))
-- Emit `PhanInvalidWriteToTemporaryExpression` for `unset()` of a dimension of a constant, class constant, literal or other temporary expression (e.g. `unset(self::DEMO['key'])`), which is a compile error in PHP ([#5617](https://github.com/phan/phan/issues/5617))
+- Emit `PhanInvalidWriteToTemporaryExpression` for `unset()` of a dimension or property of a constant, class constant, literal, `new` expression or other temporary expression (e.g. `unset(self::DEMO['key'])`, `unset((new Foo())->prop['key'])`), which is a compile error in PHP ([#5617](https://github.com/phan/phan/issues/5617))
 - Updated parameter types for internal functions which were made nullable in PHP 8.0, allowing null to be passed to represent the behaviour when the parameter was omitted ([#5616](https://github.com/phan/phan/pull/5616)). With `--target-php-version 8.5`, `closedir()`, `readdir()` and `rewinddir()` also accept null again and no longer accept a `Directory` object, which PHP rejects with a TypeError
 
 Maintenance:
