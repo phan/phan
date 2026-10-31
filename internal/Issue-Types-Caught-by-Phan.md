@@ -4125,6 +4125,14 @@ Saw enum case {CONST} with a value of type {TYPE} that did not match expected ty
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/1145_enum_wrong_case_type.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/1145_enum_wrong_case_type.php#L13).
 
+## PhanTypeUnsetStaticProperty
+
+```
+Cannot unset static property {CODE}: PHP throws an Error at runtime (Attempt to unset static property)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/5953_unset_static_property.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/5953_unset_static_property.php#L10).
+
 ## PhanTypeVoidArgument
 
 ```

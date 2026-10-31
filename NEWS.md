@@ -4,6 +4,7 @@ Phan 6.0.12-dev
 --------------
 
 New features:
+- Add `PhanTypeUnsetStaticProperty` (critical), emitted for `unset(self::$prop)`, `unset(Foo::$prop)` and other attempts to unset a static property, which always throw `Error: Attempt to unset static property` at runtime. `unset(self::$prop['key'])` and `unset(self::$prop->field)` are still allowed
 - Analyze a closure literal passed directly to `Closure::bind()`, or used as the receiver of `->bindTo()` or `->call()`, in the scope it is bound to when that scope is a known class (`Foo::class`, `'Foo'`, or an object of a single known class), as if it had `@phan-closure-scope Foo`: accesses to private and protected members of the bound class and `$this`, `self::` and `static::` inside the closure no longer produce false positives such as `PhanAccessClassConstantPrivate`. `$this` stays undefined when the closure is bound to `null`, and nothing is inferred when the bound object is not an instance of the scope class. A closure stored in a variable before being bound still needs the annotation ([#5260](https://github.com/phan/phan/issues/5260))
 - `--phase-timings-json` and `--dump-phase-timings` record PHP's cycle collector statistics for the main process and each analysis worker: `gc_enabled`, `gc_runs`, `gc_collected`, `gc_roots` and, on PHP 8.3+, `gc_collector_s`
 
