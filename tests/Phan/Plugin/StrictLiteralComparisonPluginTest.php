@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Phan\Plugin;
+namespace Phan\Tests\Plugin;
 
 use Phan\Config;
+use Phan\Plugin\ConfigPluginSet;
 use Phan\Tests\AbstractPhanFileTestBase;
 
 /**
@@ -12,13 +13,14 @@ use Phan\Tests\AbstractPhanFileTestBase;
  */
 final class StrictLiteralComparisonPluginTest extends AbstractPhanFileTestBase
 {
-    private const TEST_DIRECTORY = __DIR__ . '/../../strict_literal_comparison_plugin_test';
+    // Relative to the project root, like the directories in tests/bootstrap.php, so that dumped expectations use `%s`.
+    private const TEST_DIRECTORY = './tests/strict_literal_comparison_plugin_test';
 
     public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
         Config::setValue('plugins', ['StrictLiteralComparisonPlugin']);
-        ConfigPluginSet::reset();
+        ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
     }
 
     public static function getTestFiles(): array

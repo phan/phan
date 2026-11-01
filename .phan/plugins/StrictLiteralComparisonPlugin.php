@@ -42,9 +42,10 @@ class StrictLiteralComparisonPlugin extends PluginV3 implements
 class StrictLiteralComparisonVisitor extends PluginAwarePostAnalysisVisitor
 {
     public const ComparisonNotStrictForScalar = 'PhanPluginComparisonNotStrictForScalar';
-    public const ComparisonNotStrictForTruthyScalar = 'PhanPluginComparisonNotStrictForTruthyScalar';
+    public const ComparisonNotStrictForScalarSafe = 'PhanPluginComparisonNotStrictForScalarSafe';
 
     private const ISSUE_MESSAGE = 'Expected strict equality check when comparing {TYPE} to {TYPE} in {CODE}';
+    private const ISSUE_MESSAGE_SAFE = 'Expected strict equality check when comparing {TYPE} to {TYPE} in {CODE} (a strict check gives the same result for these types)';
     private const ZERO_INT = 0;
     private const EMPTY_STRING = '';
 
@@ -87,14 +88,17 @@ class StrictLiteralComparisonVisitor extends PluginAwarePostAnalysisVisitor
             }
         }
         $scalar_value = $const_type->asSingleScalarValueOrNullOrSelf();
-        $issue_type = self::ComparisonNotStrictForScalar;
         $other_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
             $left_is_const ? $right : $left
         );
         if (self::isStrictComparisonEquivalent($scalar_value, $other_type)) {
-            $issue_type = self::ComparisonNotStrictForTruthyScalar;
+            $issue_type = self::ComparisonNotStrictForScalarSafe;
+            $message = self::ISSUE_MESSAGE_SAFE;
+        } else {
+            $issue_type = self::ComparisonNotStrictForScalar;
+            $message = self::ISSUE_MESSAGE;
         }
         $left_type = $left_is_const ? $const_type : $other_type;
         $right_type = $left_is_const ? $other_type : $const_type;
@@ -102,7 +106,7 @@ class StrictLiteralComparisonVisitor extends PluginAwarePostAnalysisVisitor
             $this->code_base,
             $this->context,
             $issue_type,
-            self::ISSUE_MESSAGE,
+            $message,
             [
                 $left_type,
                 $right_type,
@@ -111,6 +115,17 @@ class StrictLiteralComparisonVisitor extends PluginAwarePostAnalysisVisitor
         );
     }
 
+    /**
+     * Returns true if `===`/`!==` would give the same result as `==`/`!=` for the literal `$scalar_value`
+     * and an operand of type `$other_type`: a non-zero int literal compared to `int` or `?int`
+     * (`null == 1` is false), or a non-empty, non-numeric string literal compared to `string` or `?string`
+     * (`null == 'a'` is false, and PHP 8 compares two strings numerically only if both are numeric).
+     *
+     * Comparisons to `0`, `''` and numeric strings such as `'10'` or `'1e1'`, or with operands of other or unknown
+     * types, may rely on type juggling and are left to the caller to report as PhanPluginComparisonNotStrictForScalar.
+     *
+     * @param UnionType|int|string|float|bool|null $scalar_value the literal, or the UnionType if there is no single literal value
+     */
     private static function isStrictComparisonEquivalent(
         UnionType|int|string|float|bool|null $scalar_value,
         UnionType $other_type
