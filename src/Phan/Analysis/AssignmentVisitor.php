@@ -343,6 +343,18 @@ class AssignmentVisitor extends AnalysisVisitor
     }
 
     /**
+     * `$c?->m() = 1` is as invalid as `$c->m() = 1`
+     *
+     * @param Node $node a node of kind ast\AST_NULLSAFE_METHOD_CALL
+     *
+     * @throws UnanalyzableException for first-class callable conversion
+     */
+    public function visitNullsafeMethodCall(Node $node): Context
+    {
+        return $this->visitMethodCall($node);
+    }
+
+    /**
      * This happens for code like the following
      * ```
      * list($a) = [1, 2, 3];
@@ -528,6 +540,14 @@ class AssignmentVisitor extends AnalysisVisitor
      */
     public static function isShortCircuitedChain(Node $node): bool
     {
+        switch ($node->kind) {
+            case \ast\AST_METHOD_CALL:
+            case \ast\AST_NULLSAFE_METHOD_CALL:
+            case \ast\AST_STATIC_CALL:
+                // `$c?->m() = 1` fails for a different reason ("Can't use method return value in write context"),
+                // and would still fail with `->`. Leave that to the existing call-target analysis.
+                return false;
+        }
         while (true) {
             switch ($node->kind) {
                 case \ast\AST_NULLSAFE_PROP:

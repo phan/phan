@@ -6,6 +6,7 @@ class C5954 {
     public ?C5954 $child = null;
     public static $s;
     public function m(): C5954 { return $this; }
+    public static function sm(): void {}
 }
 function test5954(?C5954 $c, string $k, iterable $it): void {
     unset($c?->p);
@@ -30,6 +31,11 @@ function test5954(?C5954 $c, string $k, iterable $it): void {
     foreach ($it as $c?->p) {}
     foreach ($it as $c?->p => $v) { echo $v; }
     foreach ($it as &$c?->items[$k]) {}
+
+    // A bare call as the write target is a different compile error (method return value in write context)
+    $c?->m() = 1;
+    unset($c?->m());
+    $c?->p::sm() = 1;
 
     // Reads and non-nullsafe writes are fine
     echo $c?->p, $c?->items[$k], $c?->m()->p;
