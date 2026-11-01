@@ -27,6 +27,12 @@ abstract class AbstractPhanFileTestBase extends CodeBaseAwareTestBase
 {
     public const EXPECTED_SUFFIX = '.expected';
 
+    /** @var int collect cycles when the heap has grown by this much since the last collection (see tearDown()) */
+    private const GC_INTERVAL_BYTES = 64 * 1024 * 1024;
+
+    /** @var int the heap size after the last collection of cycles */
+    private static $memory_usage_after_gc = 0;
+
     /**
      * @return array<mixed,array{0:list<string>,1:string}> Array of <filename => [filename]>
      */
@@ -72,9 +78,15 @@ abstract class AbstractPhanFileTestBase extends CodeBaseAwareTestBase
         Type::clearAllMemoizations();
         FullyQualifiedGlobalStructuralElement::clearPreferredNameMap();
 
-        // Force garbage collection to reclaim memory from circular references
-        // created by template type instantiations (e.g., SplObjectStorage<T,TInfo>)
-        \gc_collect_cycles();
+        // Collect the circular references that the tests leave behind (e.g. template type instantiations such as
+        // SplObjectStorage<T,TInfo>) once the heap has grown by GC_INTERVAL_BYTES since the last collection.
+        // The cycle collector is disabled (src/Phan/Bootstrap.php), and a run of it walks every object reachable from the
+        // shared CodeBase: collecting after every test took a third of the run time of the test suite.
+        $memory_usage = \memory_get_usage();
+        if ($memory_usage - self::$memory_usage_after_gc > self::GC_INTERVAL_BYTES) {
+            \gc_collect_cycles();
+            self::$memory_usage_after_gc = \memory_get_usage();
+        }
 
         \Phan\Language\Scope\GlobalScope::reset();
         // Ensure we start with the correct project root

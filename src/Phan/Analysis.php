@@ -711,9 +711,16 @@ class Analysis
                 if (str_contains($fqsen_string, '::')) {
                     $fqsen = FullyQualifiedMethodName::fromFullyQualifiedString($fqsen_string);
                     $class_fqsen = $fqsen->getFullyQualifiedClassName();
-                    // We have to call hasClassWithFQSEN before calling hasMethodWithFQSEN in order to autoload the internal function signatures.
-                    // TODO: Move class autoloading into hasMethodWithFQSEN()?
-                    if ($code_base->hasClassWithFQSEN($class_fqsen)) {
+                    if (!$code_base->hasLoadedClassWithFQSEN($class_fqsen)) {
+                        // An internal class that nothing has loaded yet is configured if and when it gets loaded, instead of
+                        // being loaded here. No class has inherited its methods at that point, and the copies made later
+                        // (clones, or templates captured by LazyInheritedMethods) have the closure.
+                        $code_base->whenInternalClassIsLoaded($class_fqsen, static function (Clazz $unused_class) use ($code_base, $fqsen, $closure): void {
+                            if ($code_base->hasMethodWithFQSEN($fqsen)) {
+                                $code_base->getMethodByFQSEN($fqsen)->setDependentReturnTypeClosure($closure);
+                            }
+                        });
+                    } else {
                         // This is an override of a method.
                         if ($code_base->hasMethodWithFQSEN($fqsen)) {
                             // The $fqsen_string from a plugin can refer to a method
@@ -743,12 +750,12 @@ class Analysis
                         }
                     }
                 } else {
-                    // This is an override of a function.
+                    // This is an override of a function. An internal function that nothing has loaded yet is configured
+                    // if and when it gets loaded, instead of being loaded here: most are never called by the analyzed code.
                     $fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString($fqsen_string);
-                    if ($code_base->hasFunctionWithFQSEN($fqsen)) {
-                        $function = $code_base->getFunctionByFQSEN($fqsen);
+                    $code_base->whenFunctionIsLoaded($fqsen, static function (Func $function) use ($closure): void {
                         $function->setDependentReturnTypeClosure($closure);
-                    }
+                    });
                 }
             } catch (FQSENException | InvalidArgumentException $e) {
                 // @phan-suppress-next-line PhanPluginRemoveDebugCall
@@ -757,7 +764,9 @@ class Analysis
         }
 
         // To fix issues such as https://github.com/phan/phan/issues/4090, this (1) always calls addFunctionCallAnalyzer,
-        // and (2) automatically loads definitions for functions and methods by calling hasFunctionWithFQSEN (etc.), so that internal function definitions used by previous plugins can be iterated over by the next plugin being called (e.g. if getFunctionSet is called).
+        // and (2) automatically loads definitions for methods by calling hasClassWithFQSEN (etc.), so that internal method definitions used by previous plugins can be iterated over by the next plugin being called (e.g. if getMethodSet is called).
+        // Internal functions are not loaded here: a plugin that iterates over the loaded functions (e.g. CallableParamPlugin)
+        // gets the functions loaded later through handleLazyLoadInternalFunction().
         // @phan-suppress-next-line PhanAccessMethodInternal
         foreach ($plugin_set->getAnalyzeFunctionCallPluginSet() as $plugin) {
             foreach ($plugin->getAnalyzeFunctionCallClosures($code_base) as $fqsen_string => $closure) {
@@ -766,7 +775,13 @@ class Analysis
                         // This is an override of a method.
                         [$class, $method_name] = \explode('::', $fqsen_string, 2);
                         $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class);
-                        if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+                        if (!$code_base->hasLoadedClassWithFQSEN($class_fqsen)) {
+                            // Configured when loaded, like the return type overrides above.
+                            $code_base->whenInternalClassIsLoaded($class_fqsen, static function (Clazz $class) use ($code_base, $method_name, $closure, $plugin): void {
+                                if ($class->hasMethodWithName($code_base, $method_name, false)) {
+                                    $class->getMethodByName($code_base, $method_name)->addFunctionCallAnalyzer($closure, $plugin);
+                                }
+                            });
                             continue;
                         }
                         $class = $code_base->getClassByFQSEN($class_fqsen);
@@ -787,12 +802,11 @@ class Analysis
                             }
                         }
                     } else {
-                        // This is a function.
+                        // This is a function (configured when loaded, like the return type overrides above).
                         $fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString($fqsen_string);
-                        if ($code_base->hasFunctionWithFQSEN($fqsen)) {
-                            $function = $code_base->getFunctionByFQSEN($fqsen);
+                        $code_base->whenFunctionIsLoaded($fqsen, static function (Func $function) use ($closure, $plugin): void {
                             $function->addFunctionCallAnalyzer($closure, $plugin);
-                        }
+                        });
                     }
                 } catch (FQSENException | InvalidArgumentException $e) {
                     // @phan-suppress-next-line PhanPluginRemoveDebugCall

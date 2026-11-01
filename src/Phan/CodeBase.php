@@ -144,6 +144,18 @@ class CodeBase
     private $internal_function_fqsen_set;
 
     /**
+     * @var array<string,list<Closure(Func):void>> maps the FQSEN of an internal function that plugins configure but that
+     * nothing has loaded yet to the callbacks that configure it (see whenFunctionIsLoaded()).
+     */
+    private $function_load_callbacks = [];
+
+    /**
+     * @var array<string,list<Closure(Clazz):void>> maps the FQSEN of an internal class that plugins configure but that
+     * nothing has loaded yet to the callbacks that configure it (see whenInternalClassIsLoaded()).
+     */
+    private $class_load_callbacks = [];
+
+    /**
      * @var Set<Method>
      * The set of all methods
      */
@@ -975,6 +987,8 @@ class CodeBase
             clone($this->fqsen_func_map);
         $code_base->internal_function_fqsen_set =
             clone($this->internal_function_fqsen_set);
+        $code_base->function_load_callbacks = $this->function_load_callbacks;
+        $code_base->class_load_callbacks = $this->class_load_callbacks;
         $code_base->class_fqsen_class_map_map =
             clone($this->class_fqsen_class_map_map);
         $code_base->method_set =
@@ -1230,6 +1244,31 @@ class CodeBase
     }
 
     /**
+     * Returns true if the class $fqsen is declared or already loaded. Unlike hasClassWithFQSEN(), this does not load an
+     * internal class from reflection.
+     */
+    public function hasLoadedClassWithFQSEN(FullyQualifiedClassName $fqsen): bool
+    {
+        return $this->fqsen_class_map->offsetExists($fqsen);
+    }
+
+    /**
+     * Calls $callback with the internal class $fqsen when that class is loaded from reflection on its first use.
+     * It is never called if nothing uses the class, or if the class is already loaded (see hasLoadedClassWithFQSEN()).
+     *
+     * Analysis::loadMethodPlugins() configures the methods of internal classes that plugins know about this way
+     * instead of loading the classes (and the ancestors they are hydrated with) in every run.
+     *
+     * @param Closure(Clazz):void $callback
+     */
+    public function whenInternalClassIsLoaded(FullyQualifiedClassName $fqsen, Closure $callback): void
+    {
+        if ($this->fqsen_class_map_reflection->offsetExists($fqsen)) {
+            $this->class_load_callbacks[$fqsen->__toString()][] = $callback;
+        }
+    }
+
+    /**
      * @return bool
      * True if a Clazz with the given FQSEN was created
      */
@@ -1262,6 +1301,11 @@ class CodeBase
         $this->fqsen_class_map->offsetSet($fqsen, $class);
         $this->fqsen_class_map_internal->offsetSet($fqsen, $class);
         $this->fqsen_class_map_reflection->offsetUnset($fqsen);
+        if ($this->class_load_callbacks) {
+            foreach ($this->class_load_callbacks[$fqsen->__toString()] ?? [] as $callback) {
+                $callback($class);
+            }
+        }
     }
 
     /**
@@ -1914,6 +1958,25 @@ class CodeBase
     }
 
     /**
+     * Calls $callback with the function $fqsen now if that function is declared or already loaded, and otherwise when the
+     * internal function is loaded from the signature map on its first use. It is never called for a function that does not exist.
+     *
+     * Analysis::loadMethodPlugins() configures the functions that plugins know about this way: loading them up front created
+     * a Func (plus its alternates) for the ~200 internal functions the built-in plugins mention in every run, whether or not
+     * the analyzed code called any of them.
+     *
+     * @param Closure(Func):void $callback
+     */
+    public function whenFunctionIsLoaded(FullyQualifiedFunctionName $fqsen, Closure $callback): void
+    {
+        if ($this->fqsen_func_map->offsetExists($fqsen)) {
+            $callback($this->fqsen_func_map->offsetGet($fqsen));
+            return;
+        }
+        $this->function_load_callbacks[$fqsen->__toString()][] = $callback;
+    }
+
+    /**
      * Marks that the given internal function (canonical alternate id) has been fully loaded,
      * preventing lazy loading from signature maps.
      */
@@ -2185,6 +2248,7 @@ class CodeBase
 
         // Don't need to track this any more
         unset($this->internal_function_fqsen_set[$canonical_fqsen]);
+        $load_callbacks = $this->function_load_callbacks[$canonical_fqsen->__toString()] ?? [];
 
         if (isset($function_signature_map[$name])) {
             $signature = $function_signature_map[$name];
@@ -2219,6 +2283,7 @@ class CodeBase
                     $function->inheritRealParameterDefaults();
                 }
                 $this->addFunction($function);
+                self::runFunctionLoadCallbacks($function, $load_callbacks);
                 $this->notifyPluginsOnInternalFunctionLoad($function);
             }
 
@@ -2230,12 +2295,29 @@ class CodeBase
                 new \ReflectionFunction($name)
             ) as $function) {
                 $this->addFunction($function);
+                self::runFunctionLoadCallbacks($function, $load_callbacks);
                 $this->notifyPluginsOnInternalFunctionLoad($function);
             }
 
             return true;
         }
         return false;
+    }
+
+    /**
+     * Runs the callbacks registered by whenFunctionIsLoaded() for an internal function that was just loaded.
+     * Only the canonical function gets them: Analysis::loadMethodPlugins() configured the function registered under
+     * the plugin's FQSEN, never its alternates.
+     * @param list<Closure(Func):void> $load_callbacks
+     */
+    private static function runFunctionLoadCallbacks(Func $function, array $load_callbacks): void
+    {
+        if (!$load_callbacks || $function->getFQSEN()->getAlternateId() !== 0) {
+            return;
+        }
+        foreach ($load_callbacks as $callback) {
+            $callback($function);
+        }
     }
 
     /**
