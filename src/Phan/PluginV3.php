@@ -140,6 +140,12 @@ use Phan\PluginV3\IssueEmitter;
  *     with callable parameters and handles lazy loading. Plugins may resolve callables themselves
  *     via UnionTypeVisitor::functionLikeListFromNodeAndContext().
  *     (implement \Phan\PluginV3\AnalyzeCallableArgumentCapability)
+ * 22. public function handleLazyLoadInternalMethod(CodeBase $code_base, Method $method)
+ *
+ *     This method is called for each method of an internal class after Phan lazily loads that class during analysis.
+ *     The counterpart of handleLazyLoadInternalFunction() for methods.
+ *
+ *     (implement \Phan\PluginV3\HandleLazyLoadInternalMethodCapability)
  */
 abstract class PluginV3
 {

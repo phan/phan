@@ -22,6 +22,7 @@ use Phan\Plugin\ConfigPluginSet;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCallCapability;
 use Phan\PluginV3\HandleLazyLoadInternalFunctionCapability;
+use Phan\PluginV3\HandleLazyLoadInternalMethodCapability;
 
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
@@ -31,7 +32,8 @@ use Phan\PluginV3\HandleLazyLoadInternalFunctionCapability;
  */
 final class CallableParamPlugin extends PluginV3 implements
     AnalyzeFunctionCallCapability,
-    HandleLazyLoadInternalFunctionCapability
+    HandleLazyLoadInternalFunctionCapability,
+    HandleLazyLoadInternalMethodCapability
 {
 
     public const PARAM_HAS_CALLABLE = (1 << 0);
@@ -275,6 +277,22 @@ final class CallableParamPlugin extends PluginV3 implements
         $closure = self::generateClosureForFunctionInterface($function);
         if ($closure) {
             $function->addFunctionCallAnalyzer($closure, $this);
+        }
+    }
+
+    /**
+     * When an internal class is loaded during the analysis phase (e.g. Closure for `Closure::fromCallable()`),
+     * this is called to conditionally add any checkers for callable/closure/class-string parameters of its methods.
+     * @unused-param $code_base
+     * @override
+     */
+    public function handleLazyLoadInternalMethod(
+        CodeBase $code_base,
+        Method $method
+    ): void {
+        $closure = self::generateClosureForFunctionInterface($method);
+        if ($closure) {
+            $method->addFunctionCallAnalyzer($closure, $this);
         }
     }
 
