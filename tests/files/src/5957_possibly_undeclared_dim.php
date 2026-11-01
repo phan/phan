@@ -5,6 +5,10 @@
 function byref5957(array &$a): void { $a[] = 1; }
 function sink5957(int ...$values): void { var_dump($values); }
 function refs5957(array &...$refs): void { var_dump($refs); }
+class Magic5957 {
+    public function __call(string $name, array $arguments): void { var_dump($name, $arguments); }
+    public static function __callStatic(string $name, array $arguments): void { var_dump($name, $arguments); }
+}
 
 function test5957(bool $b, array $src): void {
     if ($b) {
@@ -25,6 +29,8 @@ function test5957(bool $b, array $src): void {
     var_dump(strlen(string: $str[2]));
     sink5957(item: $arr[0]);
     sink5957($pb[0], count($pb = [1]));
+    (new Magic5957)->missing(foo: $arr[0]);
+    Magic5957::missing(bar: $arr[0]);
 
     // Not warned about: PHP does not read the variable (or does so silently)
     $w[0] = 1;
