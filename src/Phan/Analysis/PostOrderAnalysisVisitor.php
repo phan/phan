@@ -753,6 +753,57 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * The parents of a `$var[...]` node for which visitDim() does not check whether `$var` is possibly undeclared.
+     */
+    private const SKIP_DIM_VAR_CHECK_TYPES = [
+        ast\AST_ARG_LIST   => true,  // may be a reference, which creates the variable: checked in analyzeCallToFunctionLike()
+        ast\AST_NAMED_ARG  => true,  // same, and the parameter cannot be found by position
+        ast\AST_ASSIGN_REF => true,  // `$x = &$var[0]` creates the variable
+    ];
+
+    /**
+     * Emits PhanPossiblyUndeclaredVariable (or the global variant) for `$var` when `$var[...]` is read
+     * and `$var` is possibly undeclared.
+     *
+     * UnionTypeVisitor::visitVar() emits it only when it is allowed to emit issues, and visitDim() computes the type
+     * of `$var[...]` without that permission. The result is then cached for the parent expression as well
+     * (Context::setCachedUnionTypeOfNode()), so the echo, assignment, argument, etc. reading `$var[...]` never
+     * emitted it either, unlike the same read of `$var` or `$var->prop` (#5621).
+     * An undeclared variable is still reported by the parent expression: no type is cached when computing it throws.
+     *
+     * @param Node $node a node of kind ast\AST_DIM
+     */
+    private function checkForPossiblyUndeclaredVariableOfDimRead(Node $node): void
+    {
+        if ($node->flags & PhanAnnotationAdder::FLAG_IGNORE_NULLABLE_AND_UNDEF) {
+            return;
+        }
+        $var_node = $node->children['expr'];
+        if (!($var_node instanceof Node) || $var_node->kind !== ast\AST_VAR || ($var_node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF)) {
+            return;
+        }
+        $variable_name = $var_node->children['name'];
+        if (!\is_string($variable_name)) {
+            return;
+        }
+        $scope = $this->context->getScope();
+        if (!$scope->hasVariableWithName($variable_name)
+            || !$scope->getVariableByName($variable_name)->getUnionType()->isPossiblyUndefined()
+            || ConditionVisitor::isInRecursiveConditionalAnalysis()
+        ) {
+            return;
+        }
+        if ($this->context->isInGlobalScope()) {
+            if (Config::getValue('ignore_undeclared_variables_in_global_scope')) {
+                return;
+            }
+            $this->emitIssue(Issue::PossiblyUndeclaredGlobalVariable, $var_node->lineno, $variable_name);
+            return;
+        }
+        $this->emitIssue(Issue::PossiblyUndeclaredVariable, $var_node->lineno, $variable_name);
+    }
+
+    /**
      * @param Node $node (@phan-unused-param)
      * A node to parse
      *
@@ -3931,6 +3982,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($flags & PhanAnnotationAdder::FLAG_IGNORE_NULLABLE_AND_UNDEF) {
             return $context;
         }
+        $parent_kind = (\end($this->parent_node_list)->kind ?? null);
+        if (!isset(self::SKIP_DIM_VAR_CHECK_TYPES[$parent_kind])) {
+            $this->checkForPossiblyUndeclaredVariableOfDimRead($node);
+        }
         // Check the array type to trigger TypeArraySuspicious
         try {
             /* $array_type = */
@@ -4524,6 +4579,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
             $parameter = $method->getParameterForCaller($i);
             if (!$parameter) {
+                if ($argument->kind === ast\AST_DIM) {
+                    $this->checkForPossiblyUndeclaredVariableOfDimRead($argument);
+                }
                 continue;
             }
 
@@ -4531,6 +4589,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // or create it if it doesn't.
             if ($parameter->isPassByReference()) {
                 $this->createPassByReferenceArgumentInCall($method, $argument, $parameter, $method->getRealParameterForCaller($i));
+            } elseif ($argument->kind === ast\AST_DIM) {
+                // visitDim() leaves `$var[...]` arguments to this check, since a reference would have created `$var`.
+                $this->checkForPossiblyUndeclaredVariableOfDimRead($argument);
             }
         }
 
