@@ -536,17 +536,21 @@ class AssignmentVisitor extends AnalysisVisitor
     /**
      * Returns true if $node is a nullsafe chain, i.e. a variable expression that PHP can short-circuit.
      * PHP refuses to compile a write (unset, assignment, foreach target, increment/decrement) to such a chain,
-     * so this mirrors zend_ast_is_short_circuited() in zend_compile.c.
+     * or a reference to it (`$x = &$c?->p`), so this mirrors zend_ast_is_short_circuited() in zend_compile.c.
+     *
+     * @param bool $is_write_target true for the target of a write, false for the source of a reference assignment.
      */
-    public static function isShortCircuitedChain(Node $node): bool
+    public static function isShortCircuitedChain(Node $node, bool $is_write_target = true): bool
     {
-        switch ($node->kind) {
-            case \ast\AST_METHOD_CALL:
-            case \ast\AST_NULLSAFE_METHOD_CALL:
-            case \ast\AST_STATIC_CALL:
-                // `$c?->m() = 1` fails for a different reason ("Can't use method return value in write context"),
-                // and would still fail with `->`. Leave that to the existing call-target analysis.
-                return false;
+        if ($is_write_target) {
+            switch ($node->kind) {
+                case \ast\AST_METHOD_CALL:
+                case \ast\AST_NULLSAFE_METHOD_CALL:
+                case \ast\AST_STATIC_CALL:
+                    // `$c?->m() = 1` fails for a different reason ("Can't use method return value in write context"),
+                    // and would still fail with `->`. Leave that to the existing call-target analysis.
+                    return false;
+            }
         }
         while (true) {
             switch ($node->kind) {

@@ -5310,6 +5310,14 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/misc/fallback_test/
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/misc/fallback_test/expected/026_invalid_assign.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/misc/fallback_test/src/026_invalid_assign.php#L2).
 
+## PhanInvalidReferenceToNullsafeChain
+
+```
+Cannot take reference of a nullsafe chain ({CODE}): PHP refuses to compile this
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/5955_nullsafe_reference.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/5955_nullsafe_reference.php#L10).
+
 ## PhanInvalidTraitUse
 
 ```

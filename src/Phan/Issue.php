@@ -34,6 +34,7 @@ class Issue
     public const InvalidNode                    = 'PhanInvalidNode';
     public const InvalidWriteToTemporaryExpression = 'PhanInvalidWriteToTemporaryExpression';
     public const InvalidWriteToNullsafeChain    = 'PhanInvalidWriteToNullsafeChain';
+    public const InvalidReferenceToNullsafeChain = 'PhanInvalidReferenceToNullsafeChain';
     public const InvalidTraitUse                = 'PhanInvalidTraitUse';
     public const ContinueTargetingSwitch        = 'PhanContinueTargetingSwitch';
     public const ContinueOrBreakNotInLoop       = 'PhanContinueOrBreakNotInLoop';
@@ -931,6 +932,14 @@ class Issue
                 "Cannot use nullsafe operator in write context ({CODE}): PHP refuses to compile this",
                 self::REMEDIATION_A,
                 17024
+            ),
+            new Issue(
+                self::InvalidReferenceToNullsafeChain,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_CRITICAL,
+                "Cannot take reference of a nullsafe chain ({CODE}): PHP refuses to compile this",
+                self::REMEDIATION_A,
+                17025
             ),
             new Issue(
                 self::InvalidTraitUse,
