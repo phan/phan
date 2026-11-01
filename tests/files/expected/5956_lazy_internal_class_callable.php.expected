@@ -1,0 +1,2 @@
+%s:9 PhanDeprecatedFunction Call to deprecated function \deprecated_func5956() defined at %s:6
+%s:10 PhanUndeclaredFunctionInCallable Call to undeclared function missing_func5956 in callable

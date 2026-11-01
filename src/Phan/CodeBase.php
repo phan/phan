@@ -1306,6 +1306,7 @@ class CodeBase
                 $callback($class);
             }
         }
+        ConfigPluginSet::instance()->handleLazyLoadInternalClass($this, $class);
     }
 
     /**

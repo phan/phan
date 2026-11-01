@@ -1,0 +1,1 @@
+src/327_lazy_internal_class_callable.php:6 PhanUnreferencedFunction Possibly zero references to function \unreferenced_func327()
