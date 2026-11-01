@@ -392,6 +392,11 @@ This is used to avoid surprising behaviors such as `0 == 'a'`, `"10" == "1e1"`, 
 *Following the advice of this plugin may subtly break existing code (e.g. break implicit null/false checks, or code relying on these unexpected behaviors).*
 
 - **PhanPluginComparisonNotStrictForScalar**: `Expected strict equality check when comparing {TYPE} to {TYPE} in {CODE}`
+- **PhanPluginComparisonNotStrictForScalarSafe**: `Expected strict equality check when comparing {TYPE} to {TYPE} in {CODE} (a strict check gives the same result for these types)`
+
+`PhanPluginComparisonNotStrictForScalarSafe` is emitted instead of `PhanPluginComparisonNotStrictForScalar` when the type of the other operand guarantees that `===`/`!==` gives the same result as `==`/`!=`:
+a non-zero integer literal compared to `int` or `?int`, or a non-empty, non-numeric string literal compared to `string` or `?string`.
+Those comparisons can be changed to strict comparisons mechanically. The others (`0`, `''`, numeric strings such as `'10'`, or operands of other or unknown types such as `mixed`) may rely on type juggling and keep the original issue type.
 
 Also see [`StrictComparisonPlugin`](#StrictComparisonPlugin.php) and [`NumericalComparisonPlugin`](#NumericalComparisonPlugin.php).
 
