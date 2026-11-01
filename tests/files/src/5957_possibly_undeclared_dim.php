@@ -3,6 +3,8 @@
 // reading `$var[...]` of a possibly undeclared variable should warn like reading `$var` or `$var->prop`.
 
 function byref5957(array &$a): void { $a[] = 1; }
+function sink5957(int ...$values): void { var_dump($values); }
+function refs5957(array &...$refs): void { var_dump($refs); }
 
 function test5957(bool $b, array $src): void {
     if ($b) {
@@ -21,6 +23,7 @@ function test5957(bool $b, array $src): void {
     $cat[0] .= 'b';
     var_dump($x, $y, $z, strlen($str[1]));
     var_dump(strlen(string: $str[2]));
+    sink5957(item: $arr[0]);
 
     // Not warned about: PHP does not read the variable (or does so silently)
     $w[0] = 1;
@@ -28,6 +31,7 @@ function test5957(bool $b, array $src): void {
     $ref = &$r[0];
     byref5957($q[0]);
     byref5957(a: $q[1]);
+    refs5957(item: $q[0]);
     preg_match('/a/', 'a', $n[0]);
     unset($u[0]);
     $c[0] ??= 1;

@@ -4582,13 +4582,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 // (An unknown name is reported by ArgumentType::analyze().)
                 $argument_expression = $argument->children['expr'];
                 if ($argument_expression instanceof Node && $argument_expression->kind === ast\AST_DIM) {
+                    $parameter = null;
                     foreach ($method->getRealParameterList() as $parameter) {
                         if ($parameter->getName() === $argument->children['name']) {
-                            if (!$parameter->isPassByReference()) {
-                                $this->checkForPossiblyUndeclaredVariableOfDimRead($argument_expression);
-                            }
                             break;
                         }
+                    }
+                    // Without a match, $parameter is the last parameter: a variadic one collects the argument (as in ArgumentType::analyze()).
+                    if ($parameter && ($parameter->getName() === $argument->children['name'] || $parameter->isVariadic()) && !$parameter->isPassByReference()) {
+                        $this->checkForPossiblyUndeclaredVariableOfDimRead($argument_expression);
                     }
                 }
                 continue;
