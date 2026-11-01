@@ -753,6 +753,104 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * The parents of a `$var[...]` node for which visitDim() does not check whether `$var` is possibly undeclared.
+     */
+    private const SKIP_DIM_VAR_CHECK_TYPES = [
+        ast\AST_ARG_LIST   => true,  // may be a reference, which creates the variable: checked in analyzeCallToFunctionLike()
+        ast\AST_NAMED_ARG  => true,  // same, and the parameter cannot be found by position
+        ast\AST_ASSIGN_REF => true,  // `$x = &$var[0]` creates the variable
+    ];
+
+    /**
+     * Emits PhanPossiblyUndeclaredVariable (or the global variant) for `$var` when `$var[...]` is read
+     * and `$var` is possibly undeclared (see getIssueTypeForPossiblyUndeclaredVariableOfDimRead()).
+     *
+     * @param Node $node a node of kind ast\AST_DIM
+     */
+    private function checkForPossiblyUndeclaredVariableOfDimRead(Node $node): void
+    {
+        $issue_type = $this->getIssueTypeForPossiblyUndeclaredVariableOfDimRead($node);
+        if ($issue_type !== null) {
+            $var_node = self::getBaseVariableNodeOfDim($node);
+            if ($var_node) {
+                $this->emitIssue($issue_type, $var_node->lineno, $var_node->children['name']);
+            }
+        }
+    }
+
+    /**
+     * Returns the `$var` node of `$var[...]`, `$var[...][...]`, etc., or null if the chain does not start with a variable.
+     *
+     * @param Node $node a node of kind ast\AST_DIM
+     */
+    private static function getBaseVariableNodeOfDim(Node $node): ?Node
+    {
+        do {
+            $node = $node->children['expr'];
+            if (!($node instanceof Node)) {
+                return null;
+            }
+        } while ($node->kind === ast\AST_DIM);
+        return $node->kind === ast\AST_VAR ? $node : null;
+    }
+
+    /**
+     * Emits the issue that visitDim() recorded for a `$var[...]` argument of a call (with the scope at that point),
+     * now that the parameter is known not to be by reference.
+     *
+     * @param Node $node a node of kind ast\AST_DIM
+     */
+    private function emitPossiblyUndeclaredVariableOfDimArgument(Node $node): void
+    {
+        // @phan-suppress-next-line PhanUndeclaredProperty this is added by visitDim()
+        $issue_type = $node->possibly_undeclared_variable_issue ?? null;
+        if (\is_string($issue_type)) {
+            $var_node = self::getBaseVariableNodeOfDim($node);
+            if ($var_node) {
+                $this->emitIssue($issue_type, $var_node->lineno, $var_node->children['name']);
+            }
+        }
+    }
+
+    /**
+     * Returns the issue type to emit (PhanPossiblyUndeclaredVariable or the global variant) when `$var[...]` is read
+     * and `$var` is possibly undeclared in the current scope, or null when nothing should be emitted.
+     *
+     * UnionTypeVisitor::visitVar() emits it only when it is allowed to emit issues, and visitDim() computes the type
+     * of `$var[...]` without that permission. The result is then cached for the parent expression as well
+     * (Context::setCachedUnionTypeOfNode()), so the echo, assignment, argument, etc. reading `$var[...]` never
+     * emitted it either, unlike the same read of `$var` or `$var->prop` (#5621).
+     * An undeclared variable is still reported by the parent expression: no type is cached when computing it throws.
+     *
+     * @param Node $node a node of kind ast\AST_DIM
+     */
+    private function getIssueTypeForPossiblyUndeclaredVariableOfDimRead(Node $node): ?string
+    {
+        if ($node->flags & PhanAnnotationAdder::FLAG_IGNORE_NULLABLE_AND_UNDEF) {
+            return null;
+        }
+        $var_node = self::getBaseVariableNodeOfDim($node);
+        if (!$var_node || ($var_node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF)) {
+            return null;
+        }
+        $variable_name = $var_node->children['name'];
+        if (!\is_string($variable_name)) {
+            return null;
+        }
+        $scope = $this->context->getScope();
+        if (!$scope->hasVariableWithName($variable_name)
+            || !$scope->getVariableByName($variable_name)->getUnionType()->isPossiblyUndefined()
+            || ConditionVisitor::isInRecursiveConditionalAnalysis()
+        ) {
+            return null;
+        }
+        if ($this->context->isInGlobalScope()) {
+            return Config::getValue('ignore_undeclared_variables_in_global_scope') ? null : Issue::PossiblyUndeclaredGlobalVariable;
+        }
+        return Issue::PossiblyUndeclaredVariable;
+    }
+
+    /**
      * @param Node $node (@phan-unused-param)
      * A node to parse
      *
@@ -3931,6 +4029,19 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($flags & PhanAnnotationAdder::FLAG_IGNORE_NULLABLE_AND_UNDEF) {
             return $context;
         }
+        $parent_node = \end($this->parent_node_list);
+        $parent_kind = $parent_node->kind ?? null;
+        if ($parent_kind === ast\AST_DIM && $parent_node instanceof Node && $parent_node->children['expr'] === $node) {
+            // `$var[...][...]`: the outermost dimension checks the chain, since its parent decides whether `$var` is read
+            // (`byref($var[0][1])` and `$x = &$var[0][1]` create `$var`).
+        } elseif (!isset(self::SKIP_DIM_VAR_CHECK_TYPES[$parent_kind])) {
+            $this->checkForPossiblyUndeclaredVariableOfDimRead($node);
+        } elseif ($parent_kind !== ast\AST_ASSIGN_REF) {
+            // An argument: analyzeCallToFunctionLike() decides once it knows whether the parameter is by reference,
+            // but with the scope of this point, since a later argument can assign the variable (`f($var[0], $var = [])`).
+            // @phan-suppress-next-line PhanUndeclaredProperty this is added for analyzeCallToFunctionLike()
+            $node->possibly_undeclared_variable_issue = $this->getIssueTypeForPossiblyUndeclaredVariableOfDimRead($node);
+        }
         // Check the array type to trigger TypeArraySuspicious
         try {
             /* $array_type = */
@@ -4522,8 +4633,34 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 continue;
             }
 
+            if ($argument->kind === ast\AST_NAMED_ARG) {
+                // visitDim() leaves `name: $var[...]` to this check as well: the parameter is found by name here.
+                // (An unknown name is reported by ArgumentType::analyze().)
+                $argument_expression = $argument->children['expr'];
+                if ($argument_expression instanceof Node && $argument_expression->kind === ast\AST_DIM) {
+                    if ($method instanceof Method && ($method->isMagicCall() || $method->isMagicCallStatic())) {
+                        // __call()/__callStatic() collect every named argument by value (the stand-in Method has no real parameters).
+                        $this->emitPossiblyUndeclaredVariableOfDimArgument($argument_expression);
+                        continue;
+                    }
+                    $parameter = null;
+                    foreach ($method->getRealParameterList() as $parameter) {
+                        if ($parameter->getName() === $argument->children['name']) {
+                            break;
+                        }
+                    }
+                    // Without a match, $parameter is the last parameter: a variadic one collects the argument (as in ArgumentType::analyze()).
+                    if ($parameter && ($parameter->getName() === $argument->children['name'] || $parameter->isVariadic()) && !$parameter->isPassByReference()) {
+                        $this->emitPossiblyUndeclaredVariableOfDimArgument($argument_expression);
+                    }
+                }
+                continue;
+            }
             $parameter = $method->getParameterForCaller($i);
             if (!$parameter) {
+                if ($argument->kind === ast\AST_DIM) {
+                    $this->emitPossiblyUndeclaredVariableOfDimArgument($argument);
+                }
                 continue;
             }
 
@@ -4531,6 +4668,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // or create it if it doesn't.
             if ($parameter->isPassByReference()) {
                 $this->createPassByReferenceArgumentInCall($method, $argument, $parameter, $method->getRealParameterForCaller($i));
+            } elseif ($argument->kind === ast\AST_DIM) {
+                // visitDim() leaves `$var[...]` arguments to this check, since a reference would have created `$var`.
+                // (It recorded whether `$var` was possibly undeclared when the argument was evaluated.)
+                $this->emitPossiblyUndeclaredVariableOfDimArgument($argument);
             }
         }
 
