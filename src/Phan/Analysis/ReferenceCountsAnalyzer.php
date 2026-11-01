@@ -205,16 +205,12 @@ class ReferenceCountsAnalyzer
                 continue;
             }
             $fqsen = $element->getFQSEN();
-            if ($element instanceof Method) {
-                $defining_fqsen = $element->getRealDefiningFQSEN();
-            } elseif ($element instanceof Property) {
-                $defining_fqsen = $element->getRealDefiningFQSEN();
-                if ($element->getPhanFlagsHasState(Flags::IS_ENUM_PROPERTY)) {
-                    // Don't warn about immutable enum properties automatically created by php itself.
-                    continue;
-                }
-            } else {
-                $defining_fqsen = $element->getDefiningFQSEN();
+            // For the private/protected copies of methods, properties and constants made for a class using a trait,
+            // this is the trait's element (getDefiningFQSEN() is the using class, for access checks).
+            $defining_fqsen = $element->getRealDefiningFQSEN();
+            if ($element instanceof Property && $element->getPhanFlagsHasState(Flags::IS_ENUM_PROPERTY)) {
+                // Don't warn about immutable enum properties automatically created by php itself.
+                continue;
             }
 
             // copy references to methods, properties, and constants into the defining trait or class.
@@ -362,7 +358,7 @@ class ReferenceCountsAnalyzer
         if ($element instanceof ClassElement) {
             if ($element instanceof Method) {
                 if ($element->isPrivate()) {
-                    $issue_type = Issue::UnreferencedPrivateMethod;
+                    $issue_type = self::isDeclaredInTrait($code_base, $element) ? Issue::UnreferencedPrivateTraitMethod : Issue::UnreferencedPrivateMethod;
                 } elseif ($element->isProtected()) {
                     $issue_type = Issue::UnreferencedProtectedMethod;
                 } else {
@@ -372,7 +368,7 @@ class ReferenceCountsAnalyzer
                 if ($element->isFromPHPDoc()) {
                     $issue_type = Issue::UnreferencedPHPDocProperty;
                 } elseif ($element->isPrivate()) {
-                    $issue_type = Issue::UnreferencedPrivateProperty;
+                    $issue_type = self::isDeclaredInTrait($code_base, $element) ? Issue::UnreferencedPrivateTraitProperty : Issue::UnreferencedPrivateProperty;
                 } elseif ($element->isProtected()) {
                     $issue_type = Issue::UnreferencedProtectedProperty;
                 } else {
@@ -380,7 +376,7 @@ class ReferenceCountsAnalyzer
                 }
             } elseif ($element instanceof ClassConstant) {
                 if ($element->isPrivate()) {
-                    $issue_type = Issue::UnreferencedPrivateClassConstant;
+                    $issue_type = self::isDeclaredInTrait($code_base, $element) ? Issue::UnreferencedPrivateTraitClassConstant : Issue::UnreferencedPrivateClassConstant;
                 } elseif ($element->isProtected()) {
                     $issue_type = Issue::UnreferencedProtectedClassConstant;
                 } else {
@@ -407,7 +403,7 @@ class ReferenceCountsAnalyzer
 
 
         // If we're suppressing this element type being unreferenced, then exit early.
-        if ($element->checkHasSuppressIssueAndIncrementCount($issue_type)) {
+        if (self::checkHasSuppressIssueOrNonTraitVariant($element, $issue_type)) {
             return;
         }
 
@@ -458,19 +454,57 @@ class ReferenceCountsAnalyzer
             );
             return;
         }
-        Issue::maybeEmit(
-            $code_base,
-            $element->getContext(),
-            $issue_type,
-            $element->getFileRef()->getLineNumberStart(),
-            $element->getRepresentationForIssue()
-        );
+        self::emitUnlessSuppressed($code_base, $element, $issue_type);
     }
 
     private static function hasSuppressionForUnreferencedClosure(CodeBase $code_base, Func $func): bool
     {
         $context = $func->getContext();
         return $context->withScope($context->getScope()->getParentScope())->hasSuppressIssue($code_base, Issue::UnreferencedClosure);
+    }
+
+    /**
+     * Private elements of a trait get their own issue types (#5526): they can be used by classes using the trait,
+     * which a library providing the trait does not necessarily contain.
+     */
+    private static function isDeclaredInTrait(CodeBase $code_base, ClassElement $element): bool
+    {
+        $class_fqsen = $element->getClassFQSEN();
+        return $code_base->hasClassWithFQSEN($class_fqsen) && $code_base->getClassByFQSEN($class_fqsen)->isTrait();
+    }
+
+    /**
+     * The private trait variants were split from the private issue types,
+     * so a suppression of the private issue type (in the config, in a file, on a line or on the element)
+     * keeps suppressing the trait variant.
+     */
+    private const NON_TRAIT_VARIANT = [
+        Issue::UnreferencedPrivateTraitMethod => Issue::UnreferencedPrivateMethod,
+        Issue::UnreferencedPrivateTraitProperty => Issue::UnreferencedPrivateProperty,
+        Issue::UnreferencedPrivateTraitClassConstant => Issue::UnreferencedPrivateClassConstant,
+        Issue::ReadOnlyPrivateTraitProperty => Issue::ReadOnlyPrivateProperty,
+        Issue::WriteOnlyPrivateTraitProperty => Issue::WriteOnlyPrivateProperty,
+    ];
+
+    private static function checkHasSuppressIssueOrNonTraitVariant(AddressableElement $element, string $issue_type): bool
+    {
+        if ($element->checkHasSuppressIssueAndIncrementCount($issue_type)) {
+            return true;
+        }
+        $non_trait_variant = self::NON_TRAIT_VARIANT[$issue_type] ?? null;
+        return $non_trait_variant !== null && $element->checkHasSuppressIssueAndIncrementCount($non_trait_variant);
+    }
+
+    private static function emitUnlessSuppressed(CodeBase $code_base, AddressableElement $element, string $issue_type): void
+    {
+        $context = $element->getContext();
+        $lineno = $element->getFileRef()->getLineNumberStart();
+        $representation = $element->getRepresentationForIssue();
+        $non_trait_variant = self::NON_TRAIT_VARIANT[$issue_type] ?? null;
+        if ($non_trait_variant !== null && Issue::shouldSuppressIssue($code_base, $context, $non_trait_variant, $lineno, [$representation])) {
+            return;
+        }
+        Issue::maybeEmit($code_base, $context, $issue_type, $lineno, $representation);
     }
 
     private static function maybeWarnWriteOnlyProperty(CodeBase $code_base, Property $property): void
@@ -482,13 +516,13 @@ class ReferenceCountsAnalyzer
         if ($property->isFromPHPDoc()) {
             $issue_type = Issue::WriteOnlyPHPDocProperty;
         } elseif ($property->isPrivate()) {
-            $issue_type = Issue::WriteOnlyPrivateProperty;
+            $issue_type = self::isDeclaredInTrait($code_base, $property) ? Issue::WriteOnlyPrivateTraitProperty : Issue::WriteOnlyPrivateProperty;
         } elseif ($property->isProtected()) {
             $issue_type = Issue::WriteOnlyProtectedProperty;
         } else {
             $issue_type = Issue::WriteOnlyPublicProperty;
         }
-        if ($property->checkHasSuppressIssueAndIncrementCount($issue_type)) {
+        if (self::checkHasSuppressIssueOrNonTraitVariant($property, $issue_type)) {
             return;
         }
         $property_alt = self::findAlternateReferencedElementDeclaration($code_base, $property);
@@ -497,13 +531,7 @@ class ReferenceCountsAnalyzer
                 return;
             }
         }
-        Issue::maybeEmit(
-            $code_base,
-            $property->getContext(),
-            $issue_type,
-            $property->getFileRef()->getLineNumberStart(),
-            $property->getRepresentationForIssue()
-        );
+        self::emitUnlessSuppressed($code_base, $property, $issue_type);
     }
 
     private static function maybeWarnReadOnlyProperty(CodeBase $code_base, Property $property): void
@@ -539,13 +567,13 @@ class ReferenceCountsAnalyzer
         if ($property->isFromPHPDoc()) {
             $issue_type = Issue::ReadOnlyPHPDocProperty;
         } elseif ($property->isPrivate()) {
-            $issue_type = Issue::ReadOnlyPrivateProperty;
+            $issue_type = self::isDeclaredInTrait($code_base, $property) ? Issue::ReadOnlyPrivateTraitProperty : Issue::ReadOnlyPrivateProperty;
         } elseif ($property->isProtected()) {
             $issue_type = Issue::ReadOnlyProtectedProperty;
         } else {
             $issue_type = Issue::ReadOnlyPublicProperty;
         }
-        if ($property->checkHasSuppressIssueAndIncrementCount($issue_type)) {
+        if (self::checkHasSuppressIssueOrNonTraitVariant($property, $issue_type)) {
             return;
         }
         $property_alt = self::findAlternateReferencedElementDeclaration($code_base, $property);
@@ -555,13 +583,7 @@ class ReferenceCountsAnalyzer
             }
         }
         // echo "known references to $property: " . implode(array_map('strval', $property->getReferenceList())) . "\n";
-        Issue::maybeEmit(
-            $code_base,
-            $property->getContext(),
-            $issue_type,
-            $property->getFileRef()->getLineNumberStart(),
-            $property->getRepresentationForIssue()
-        );
+        self::emitUnlessSuppressed($code_base, $property, $issue_type);
     }
 
     /**

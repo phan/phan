@@ -22,7 +22,19 @@ trait HasAttributesTrait
      */
     public function setAttributeList(array $attribute_list): void
     {
+        $this->recordAttributeListChange();
         $this->attribute_list = $attribute_list;
+    }
+
+    /**
+     * The attribute list is state owned by elements (see TypedElement::getStateVersion()): record its changes.
+     * (PropertyHook uses this trait too and has no state version.)
+     */
+    private function recordAttributeListChange(): void
+    {
+        if ($this instanceof TypedElement || $this instanceof UnaddressableTypedElement) {
+            $this->bumpStateVersion();
+        }
     }
 
     /**

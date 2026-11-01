@@ -45,13 +45,57 @@ class ParameterTypesAnalyzer
      * Check function, closure, and method parameters to make sure they're valid
      *
      * This will also warn if method parameters are incompatible with the parameters of ancestor methods.
+     *
+     * @param int $emit_only_checks EmitOnlyChecks::SKIP to only make the changes to $method that the rest of the analysis reads
+     *                              (narrowed and inherited phpdoc types, output references, (at)phan-pure), without the checks
+     *                              that only emit issues about $method (for elements declared in files excluded from analysis).
      */
     public static function analyzeParameterTypes(
         CodeBase $code_base,
-        FunctionInterface $method
+        FunctionInterface $method,
+        int $emit_only_checks = EmitOnlyChecks::RUN
+    ): void {
+        if (self::analyzeParameterTypesOfDeclaration($code_base, $method, $emit_only_checks)) {
+            self::analyzeParameterTypesOfOverrides($code_base, $method, $emit_only_checks);
+        }
+    }
+
+    /**
+     * The first part of analyzeParameterTypes(), which only depends on the declaration of $method:
+     * narrows the parameter types to the phpdoc types, and checks the parameters.
+     * (Analysis\CloneReplay may replay this for inherited methods)
+     *
+     * @return bool false if this was aborted by a RecursionDepthException (then analyzeParameterTypes() skips the second part)
+     */
+    public static function analyzeParameterTypesOfDeclaration(
+        CodeBase $code_base,
+        FunctionInterface $method,
+        int $emit_only_checks
+    ): bool {
+        try {
+            if (Config::getValue('check_docblock_signature_param_type_match')) {
+                // This narrows the parameter types to the phpdoc types (and emits issues if they're incompatible)
+                self::analyzeParameterTypesDocblockSignaturesMatch($code_base, $method);
+            }
+
+            self::checkParameters($code_base, $method, $emit_only_checks);
+        } catch (RecursionDepthException) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * The second part of analyzeParameterTypes(): checks the signature of $method against the methods it overrides
+     * (inheriting phpdoc types from them), and checks the return type.
+     */
+    public static function analyzeParameterTypesOfOverrides(
+        CodeBase $code_base,
+        FunctionInterface $method,
+        int $emit_only_checks
     ): void {
         try {
-            self::analyzeParameterTypesInner($code_base, $method);
+            self::analyzeParameterTypesOfOverridesInner($code_base, $method, $emit_only_checks);
         } catch (RecursionDepthException) {
         }
     }
@@ -71,148 +115,13 @@ class ParameterTypesAnalyzer
     }
 
     /**
-     * @see analyzeParameterTypes
+     * @see analyzeParameterTypesOfOverrides
      */
-    private static function analyzeParameterTypesInner(
+    private static function analyzeParameterTypesOfOverridesInner(
         CodeBase $code_base,
-        FunctionInterface $method
+        FunctionInterface $method,
+        int $emit_only_checks
     ): void {
-        if (Config::getValue('check_docblock_signature_param_type_match')) {
-            self::analyzeParameterTypesDocblockSignaturesMatch($code_base, $method);
-        }
-
-        self::checkCommentParametersAreInOrder($code_base, $method);
-
-        // Look at each parameter to make sure their types
-        // are valid
-        $is_optional_seen = false;
-        foreach ($method->getParameterList() as $i => $parameter) {
-            if ($parameter->getFlags() & Parameter::PARAM_MODIFIER_FLAGS) {
-                if ($method instanceof Method && strcasecmp($method->getName(), '__construct') === 0) {
-                } else {
-                    // emit an InvalidNode warning for non-constructors (closures, global functions, other methods)
-                    Issue::maybeEmit(
-                        $code_base,
-                        $parameter->createContext($method),
-                        Issue::InvalidNode,
-                        $parameter->getFileRef()->getLineNumberStart(),
-                        "Cannot use constructor property promotion modifier on parameter $parameter of non-constructor " . $method->getRepresentationForIssue(true)
-                    );
-                }
-            }
-            $union_type = $parameter->getUnionType();
-            // @phan-suppress-next-line PhanPluginUseReturnValueKnown
-            $union_type->checkImpossibleCombination($code_base, $parameter->createContext($method));
-
-            if ($parameter->isOptional()) {
-                $is_optional_seen = true;
-            } else {
-                if ($is_optional_seen) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $method->getContext(),
-                        Issue::ParamReqAfterOpt,
-                        $parameter->getFileRef()->getLineNumberStart(),
-                        '(' . $parameter->toStubString() . ')',
-                        '(' . $method->getParameterList()[$i - 1]->toStubString() . ')'
-                    );
-                }
-            }
-
-            // Look at each type in the parameter's Union Type
-            foreach ($union_type->getReferencedClasses() as $outer_type => $type) {
-                // If it's a reference to self, its OK
-                if ($method instanceof Method && $type instanceof StaticOrSelfType) {
-                    continue;
-                }
-
-                if ($type instanceof TemplateType) {
-                    if ($method instanceof Method) {
-                        if ($method->isStatic() && !$method->declaresTemplateTypeInComment($type)) {
-                            Issue::maybeEmit(
-                                $code_base,
-                                $method->getContext(),
-                                Issue::TemplateTypeStaticMethod,
-                                $parameter->getFileRef()->getLineNumberStart(),
-                                (string)$method->getFQSEN()
-                            );
-                        }
-                    }
-                } else {
-                    // Make sure the class exists
-                    $type_fqsen = FullyQualifiedClassName::fromType($type);
-                    if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
-                        Issue::maybeEmitWithParameters(
-                            $code_base,
-                            $method->getContext(),
-                            Issue::UndeclaredTypeParameter,
-                            $parameter->getFileRef()->getLineNumberStart(),
-                            [$parameter->getName(), (string)$outer_type],
-                            IssueFixSuggester::suggestSimilarClass(
-                                $code_base,
-                                $method->getContext(),
-                                $type_fqsen,
-                                null,
-                                IssueFixSuggester::DEFAULT_CLASS_SUGGESTION_PREFIX,
-                                IssueFixSuggester::CLASS_SUGGEST_CLASSES_AND_TYPES
-                            )
-                        );
-                    } elseif ($code_base->hasClassWithFQSEN($type_fqsen->withAlternateId(1))) {
-                        UnionType::emitRedefinedClassReferenceWarning(
-                            $code_base,
-                            (clone($method->getContext()))->withLineNumberStart($parameter->getFileRef()->getLineNumberStart()),
-                            $type_fqsen
-                        );
-                    }
-                }
-            }
-        }
-        foreach ($method->getRealParameterList() as $parameter) {
-            if ($parameter->hasDefaultValue()) {
-                $default_node = $parameter->getDefaultValue();
-                if ($default_node instanceof Node &&
-                        !$parameter->getUnionType()->containsNullableOrIsEmpty() &&
-                        $parameter->getDefaultValueType()->isNull()) {
-                    // @phan-suppress-next-next-line PhanPartialTypeMismatchArgumentInternal
-                    if (!($default_node->kind === ast\AST_CONST &&
-                            \strtolower($default_node->children['name']->children['name'] ?? '') === 'null')) {
-                        Issue::maybeEmit(
-                            $code_base,
-                            $method->getContext(),
-                            Issue::CompatibleDefaultEqualsNull,
-                            $default_node->lineno,
-                            ASTReverter::toShortString($default_node),
-                            $parameter->getUnionType() . ' $' . $parameter->getName()
-                        );
-                    }
-                }
-            }
-            $union_type = $parameter->getUnionType();
-
-            foreach ($union_type->getUniqueFlattenedTypeSet() as $type) {
-                if (!$type->isObjectWithKnownFQSEN()) {
-                    continue;
-                }
-                $type_fqsen = FullyQualifiedClassName::fromType($type);
-                if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
-                    // We should have already warned
-                    continue;
-                }
-                $class = $code_base->getClassByFQSEN($type_fqsen);
-                if ($class->isTrait()) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $method->getContext(),
-                        Issue::TypeInvalidTraitParam,
-                        $parameter->getFileRef()->getLineNumberStart(),
-                        $method->getNameForIssue(),
-                        $parameter->getName(),
-                        $type_fqsen->__toString()
-                    );
-                }
-            }
-        }
-
         if ($method instanceof Method) {
             if ($method->getName() === '__construct') {
                 $class = $method->getClass($code_base);
@@ -222,9 +131,252 @@ class ParameterTypesAnalyzer
                     $class->getGenericConstructorBuilder($code_base);
                 }
             }
-            self::analyzeOverrideSignature($code_base, $method);
+            self::analyzeOverrideSignature($code_base, $method, $emit_only_checks);
         }
 
+        if ($emit_only_checks === EmitOnlyChecks::RUN) {
+            self::checkReturnTypeCombination($code_base, $method);
+        } elseif ($emit_only_checks === EmitOnlyChecks::VERIFY) {
+            EmitOnlyChecks::verify($method, 'ParameterTypesAnalyzer::checkReturnTypeCombination()', static function () use ($code_base, $method): void {
+                self::checkReturnTypeCombination($code_base, $method);
+            });
+        } elseif (EmitOnlyChecks::containsIntersectionType($method->getUnionType())) {
+            // The impossible-combination check of an intersection type hydrates the classes it refers to, so it is not skipped.
+            self::checkReturnTypeCombination($code_base, $method);
+        }
+    }
+
+    /**
+     * Check the parameters of $method: the order of (at)param in the doc comment, promotion modifiers, impossible types,
+     * required parameters after optional ones, default values, and the classes used in the parameter types.
+     *
+     * With EmitOnlyChecks::SKIP, the classes used in a parameter type are still looked up the first time the type is seen,
+     * because this loads internal classes (see EmitOnlyChecks::modeForClassLookup()).
+     */
+    private static function checkParameters(
+        CodeBase $code_base,
+        FunctionInterface $method,
+        int $emit_only_checks
+    ): void {
+        if ($emit_only_checks === EmitOnlyChecks::RUN) {
+            self::checkCommentParametersAreInOrder($code_base, $method);
+        } elseif ($emit_only_checks === EmitOnlyChecks::VERIFY) {
+            EmitOnlyChecks::verify($method, 'ParameterTypesAnalyzer::checkCommentParametersAreInOrder()', static function () use ($code_base, $method): void {
+                self::checkCommentParametersAreInOrder($code_base, $method);
+            });
+        }
+
+        // Look at each parameter to make sure their types
+        // are valid
+        $is_optional_seen = false;
+        foreach ($method->getParameterList() as $i => $parameter) {
+            if ($emit_only_checks === EmitOnlyChecks::RUN || EmitOnlyChecks::containsIntersectionType($parameter->getUnionType())) {
+                // The impossible-combination check of an intersection type hydrates the classes it refers to
+                // (see EmitOnlyChecks::containsIntersectionType()), so it is not skipped.
+                self::checkParameterDeclaration($code_base, $method, $i, $parameter, $is_optional_seen);
+            } elseif ($emit_only_checks === EmitOnlyChecks::VERIFY) {
+                EmitOnlyChecks::verify($method, 'ParameterTypesAnalyzer::checkParameterDeclaration()', static function () use ($code_base, $method, $i, $parameter, $is_optional_seen): void {
+                    self::checkParameterDeclaration($code_base, $method, $i, $parameter, $is_optional_seen);
+                });
+            }
+            if ($parameter->isOptional()) {
+                $is_optional_seen = true;
+            }
+            $lookup = EmitOnlyChecks::modeForClassLookup($emit_only_checks, $method instanceof Method ? 'method parameter' : 'function parameter', $parameter->getUnionType());
+            if ($lookup === EmitOnlyChecks::RUN) {
+                self::checkParameterTypeClassesExist($code_base, $method, $parameter);
+            } elseif ($lookup === EmitOnlyChecks::VERIFY) {
+                EmitOnlyChecks::verify($method, 'ParameterTypesAnalyzer::checkParameterTypeClassesExist()', static function () use ($code_base, $method, $parameter): void {
+                    self::checkParameterTypeClassesExist($code_base, $method, $parameter);
+                });
+            }
+        }
+        foreach ($method->getRealParameterList() as $parameter) {
+            if ($emit_only_checks === EmitOnlyChecks::RUN) {
+                self::checkRealParameterDefault($code_base, $method, $parameter);
+            } elseif ($emit_only_checks === EmitOnlyChecks::VERIFY) {
+                EmitOnlyChecks::verify($method, 'ParameterTypesAnalyzer::checkRealParameterDefault()', static function () use ($code_base, $method, $parameter): void {
+                    self::checkRealParameterDefault($code_base, $method, $parameter);
+                });
+            }
+            $lookup = EmitOnlyChecks::modeForClassLookup($emit_only_checks, 'real parameter', $parameter->getUnionType());
+            if ($lookup === EmitOnlyChecks::RUN) {
+                self::checkRealParameterTypeIsNotTrait($code_base, $method, $parameter);
+            } elseif ($lookup === EmitOnlyChecks::VERIFY) {
+                EmitOnlyChecks::verify($method, 'ParameterTypesAnalyzer::checkRealParameterTypeIsNotTrait()', static function () use ($code_base, $method, $parameter): void {
+                    self::checkRealParameterTypeIsNotTrait($code_base, $method, $parameter);
+                });
+            }
+        }
+    }
+
+    /**
+     * Emit issues about promotion modifiers on parameters of non-constructors, impossible parameter types
+     * and required parameters after optional parameters.
+     */
+    private static function checkParameterDeclaration(
+        CodeBase $code_base,
+        FunctionInterface $method,
+        int $i,
+        Parameter $parameter,
+        bool $is_optional_seen
+    ): void {
+        if ($parameter->getFlags() & Parameter::PARAM_MODIFIER_FLAGS) {
+            if ($method instanceof Method && strcasecmp($method->getName(), '__construct') === 0) {
+            } else {
+                // emit an InvalidNode warning for non-constructors (closures, global functions, other methods)
+                Issue::maybeEmit(
+                    $code_base,
+                    $parameter->createContext($method),
+                    Issue::InvalidNode,
+                    $parameter->getFileRef()->getLineNumberStart(),
+                    "Cannot use constructor property promotion modifier on parameter $parameter of non-constructor " . $method->getRepresentationForIssue(true)
+                );
+            }
+        }
+        // @phan-suppress-next-line PhanPluginUseReturnValueKnown
+        $parameter->getUnionType()->checkImpossibleCombination($code_base, $parameter->createContext($method));
+
+        if ($is_optional_seen && !$parameter->isOptional()) {
+            Issue::maybeEmit(
+                $code_base,
+                $method->getContext(),
+                Issue::ParamReqAfterOpt,
+                $parameter->getFileRef()->getLineNumberStart(),
+                '(' . $parameter->toStubString() . ')',
+                '(' . $method->getParameterList()[$i - 1]->toStubString() . ')'
+            );
+        }
+    }
+
+    /**
+     * Emit issues if the classes used in the type of $parameter are undeclared or declared more than once,
+     * or if a static method uses template types it does not declare.
+     */
+    private static function checkParameterTypeClassesExist(
+        CodeBase $code_base,
+        FunctionInterface $method,
+        Parameter $parameter
+    ): void {
+        // Look at each type in the parameter's Union Type
+        foreach ($parameter->getUnionType()->getReferencedClasses() as $outer_type => $type) {
+            // If it's a reference to self, its OK
+            if ($method instanceof Method && $type instanceof StaticOrSelfType) {
+                continue;
+            }
+
+            if ($type instanceof TemplateType) {
+                if ($method instanceof Method) {
+                    if ($method->isStatic() && !$method->declaresTemplateTypeInComment($type)) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $method->getContext(),
+                            Issue::TemplateTypeStaticMethod,
+                            $parameter->getFileRef()->getLineNumberStart(),
+                            (string)$method->getFQSEN()
+                        );
+                    }
+                }
+            } else {
+                // Make sure the class exists
+                $type_fqsen = FullyQualifiedClassName::fromType($type);
+                if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
+                    Issue::maybeEmitWithParameters(
+                        $code_base,
+                        $method->getContext(),
+                        Issue::UndeclaredTypeParameter,
+                        $parameter->getFileRef()->getLineNumberStart(),
+                        [$parameter->getName(), (string)$outer_type],
+                        IssueFixSuggester::suggestSimilarClass(
+                            $code_base,
+                            $method->getContext(),
+                            $type_fqsen,
+                            null,
+                            IssueFixSuggester::DEFAULT_CLASS_SUGGESTION_PREFIX,
+                            IssueFixSuggester::CLASS_SUGGEST_CLASSES_AND_TYPES
+                        )
+                    );
+                } elseif ($code_base->mayHaveAlternatesOfClass($type_fqsen) && $code_base->hasClassWithFQSEN($type_fqsen->withAlternateId(1))) {
+                    UnionType::emitRedefinedClassReferenceWarning(
+                        $code_base,
+                        (clone($method->getContext()))->withLineNumberStart($parameter->getFileRef()->getLineNumberStart()),
+                        $type_fqsen
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * Emit an issue if the default value of $parameter is null but its real type is not nullable
+     * @param Parameter $parameter a parameter from getRealParameterList()
+     */
+    private static function checkRealParameterDefault(
+        CodeBase $code_base,
+        FunctionInterface $method,
+        Parameter $parameter
+    ): void {
+        if ($parameter->hasDefaultValue()) {
+            $default_node = $parameter->getDefaultValue();
+            if ($default_node instanceof Node &&
+                    !$parameter->getUnionType()->containsNullableOrIsEmpty() &&
+                    $parameter->getDefaultValueType()->isNull()) {
+                // @phan-suppress-next-next-line PhanPartialTypeMismatchArgumentInternal
+                if (!($default_node->kind === ast\AST_CONST &&
+                        \strtolower($default_node->children['name']->children['name'] ?? '') === 'null')) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $method->getContext(),
+                        Issue::CompatibleDefaultEqualsNull,
+                        $default_node->lineno,
+                        ASTReverter::toShortString($default_node),
+                        $parameter->getUnionType() . ' $' . $parameter->getName()
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * Emit an issue if the real type of $parameter is a trait
+     * @param Parameter $parameter a parameter from getRealParameterList()
+     */
+    private static function checkRealParameterTypeIsNotTrait(
+        CodeBase $code_base,
+        FunctionInterface $method,
+        Parameter $parameter
+    ): void {
+        foreach ($parameter->getUnionType()->getUniqueFlattenedTypeSet() as $type) {
+            if (!$type->isObjectWithKnownFQSEN()) {
+                continue;
+            }
+            $type_fqsen = FullyQualifiedClassName::fromType($type);
+            if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
+                // We should have already warned
+                continue;
+            }
+            $class = $code_base->getClassByFQSEN($type_fqsen);
+            if ($class->isTrait()) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $method->getContext(),
+                    Issue::TypeInvalidTraitParam,
+                    $parameter->getFileRef()->getLineNumberStart(),
+                    $method->getNameForIssue(),
+                    $parameter->getName(),
+                    $type_fqsen->__toString()
+                );
+            }
+        }
+    }
+
+    /**
+     * Emit an issue if the return type of $method (after inheriting phpdoc types) contains an impossible intersection type
+     */
+    private static function checkReturnTypeCombination(
+        CodeBase $code_base,
+        FunctionInterface $method
+    ): void {
         // @phan-suppress-next-line PhanPluginUseReturnValueKnown this is invoked to emit issues
         $method->getUnionType()->checkImpossibleCombination($code_base, $method->getContext());
     }
@@ -277,7 +429,8 @@ class ParameterTypesAnalyzer
      */
     private static function analyzeOverrideSignature(
         CodeBase $code_base,
-        Method $method
+        Method $method,
+        int $emit_only_checks
     ): void {
         if (!Config::getValue('analyze_signature_compatibility')) {
             return;
@@ -295,12 +448,14 @@ class ParameterTypesAnalyzer
         // TODO(in another PR): check that signatures of magic methods are valid, if not done already (e.g. __get expects one param, most can't define return types, etc.)?
         $is_actually_override = $method->isOverride();
 
-        if (!$is_actually_override && $method->isOverrideIntended()) {
-            self::analyzeOverrideComment($code_base, $method);
-        }
-
         if (!$is_actually_override) {
-            self::analyzeInheritDocComment($code_base, $method, $class);
+            if ($emit_only_checks === EmitOnlyChecks::RUN) {
+                self::checkNonOverrideComments($code_base, $method, $class);
+            } elseif ($emit_only_checks === EmitOnlyChecks::VERIFY) {
+                EmitOnlyChecks::verify($method, 'ParameterTypesAnalyzer::checkNonOverrideComments()', static function () use ($code_base, $method, $class): void {
+                    self::checkNonOverrideComments($code_base, $method, $class);
+                });
+            }
             // For internal methods, check if they implement interface methods that are marked as pure
             // This is a heuristic for dead-code detection: if an interface method is pure,
             // the internal implementation is likely pure as well (issue #3864)
@@ -350,6 +505,17 @@ class ParameterTypesAnalyzer
             }
             self::analyzeOverrideSignatureForOverriddenMethod($code_base, $method, $class, $overridden_method);
         }
+    }
+
+    /**
+     * Emit issues about (at)override and (at)inheritDoc in the doc comment of a method that does not override anything
+     */
+    private static function checkNonOverrideComments(CodeBase $code_base, Method $method, Clazz $class): void
+    {
+        if ($method->isOverrideIntended()) {
+            self::analyzeOverrideComment($code_base, $method);
+        }
+        self::analyzeInheritDocComment($code_base, $method, $class);
     }
 
     /**
@@ -484,6 +650,8 @@ class ParameterTypesAnalyzer
         if ($overridden_method->isFinal()) {
             // Even if it is a constructor, verify that a method doesn't override a final method.
             // TODO: different warning for trait (#1126)
+            // (This also runs for EmitOnlyChecks::SKIP: it can increment the suppression count of $class,
+            // which is the class inheriting $method and can be declared in a file that is analyzed.)
             self::warnOverridingFinalMethod($code_base, $method, $class, $overridden_method);
         }
 
@@ -531,8 +699,33 @@ class ParameterTypesAnalyzer
         // A lot of analyzeOverrideRealSignature is redundant.
         // However, phan should consistently emit both issue types if one of them is suppressed.
         // This may modify $method by inheriting PHPDoc types from $overridden_method_mapped.
+        // (Whether it does depends on the compatibility checks it makes, so it also runs for EmitOnlyChecks::SKIP)
         self::analyzeOverrideRealSignature($code_base, $method, $class, $overridden_method_mapped, $o_class);
 
+        // This only emits issues, but its casting checks expand the phpdoc types of both methods, which hydrates
+        // the classes they refer to (loading the methods those classes inherit before Analysis::loadMethodPlugins() runs),
+        // so it also runs for EmitOnlyChecks::SKIP.
+        self::checkOverrideSignatureCompatibility($code_base, $method, $class, $overridden_method, $overridden_method_mapped, $o_class);
+    }
+
+    /**
+     * Emit issues if the phpdoc and real signature of $method is incompatible with the signature of $overridden_method
+     * (parameters, return type, static, visibility)
+     *
+     * @param Method $method the overriding method.
+     * @param Clazz  $class the subclass where the overrides take place.
+     * @param Method $overridden_method the overridden method.
+     * @param Method $overridden_method_mapped $overridden_method with template types of the ancestor class mapped to the types used by $class
+     * @param Clazz $o_class the class of $overridden_method
+     */
+    private static function checkOverrideSignatureCompatibility(
+        CodeBase $code_base,
+        Method $method,
+        Clazz $class,
+        Method $overridden_method,
+        Method $overridden_method_mapped,
+        Clazz $o_class
+    ): void {
         // Phan needs to complain in some cases, such as a trait existing for an abstract method defined in the class.
         // PHP also checks if a trait redefines a method in the class.
         if ($o_class->isTrait() && $method->getDefiningFQSEN()->getFullyQualifiedClassName() === $class->getFQSEN()) {
@@ -1044,17 +1237,47 @@ class ParameterTypesAnalyzer
             $phpdoc_return_type = $method->getUnionType();
             if ($phpdoc_return_type->isEmpty()) {
                 $method->setUnionType($parent_phpdoc_return_type);
+                self::maybeInheritConditionalReturnType($method, $overridden_method);
             } else {
-                self::maybeInheritCommentReturnType($code_base, $method, $parent_phpdoc_return_type);
+                self::maybeInheritCommentReturnType($code_base, $method, $overridden_method, $parent_phpdoc_return_type);
             }
         }
+    }
+
+    /**
+     * Inherit the parent's conditional return type (`(at)return ($x is null ? A : B)`) when the child has no (at)return of its own.
+     * Parameters renamed by the child are renamed in the inherited conditional by position.
+     */
+    private static function maybeInheritConditionalReturnType(Method $method, Method $overridden_method): void
+    {
+        if ($method->getConditionalReturnType()) {
+            return;
+        }
+        $conditional = $overridden_method->getConditionalReturnType();
+        if (!$conditional) {
+            return;
+        }
+        $comment = $method->getComment();
+        if ($comment && $comment->hasReturnUnionType() && !$comment->getReturnType()->isEmpty()) {
+            // This comment explicitly specified the desired return type.
+            return;
+        }
+        $name_map = [];
+        $child_parameter_list = $method->getParameterList();
+        foreach ($overridden_method->getParameterList() as $i => $parent_parameter) {
+            $child_parameter = $child_parameter_list[$i] ?? null;
+            if ($child_parameter && $child_parameter->getName() !== $parent_parameter->getName()) {
+                $name_map[$parent_parameter->getName()] = $child_parameter->getName();
+            }
+        }
+        $method->setConditionalReturnType($name_map ? $conditional->withRenamedParams($name_map) : $conditional);
     }
 
     /**
      * @param Method $method a method which has a union type, but is permitted to inherit a more specific type.
      * @param UnionType $inherited_union_type a non-empty union type
      */
-    private static function maybeInheritCommentReturnType(CodeBase $code_base, Method $method, UnionType $inherited_union_type): void
+    private static function maybeInheritCommentReturnType(CodeBase $code_base, Method $method, Method $overridden_method, UnionType $inherited_union_type): void
     {
         $comment = $method->getComment();
         if ($comment && $comment->hasReturnUnionType()) {
@@ -1065,7 +1288,13 @@ class ParameterTypesAnalyzer
             }
         }
         if ($inherited_union_type->isExclusivelyNarrowedFormOf($code_base, $method->getUnionType())) {
+            if (!$inherited_union_type->isEqualTo($method->getUnionType())) {
+                // The return type changed (e.g. a second interface narrowed it), so a conditional inherited
+                // from an earlier overridden method no longer describes it.
+                $method->setConditionalReturnType(null);
+            }
             $method->setUnionType($inherited_union_type);
+            self::maybeInheritConditionalReturnType($method, $overridden_method);
         }
     }
 

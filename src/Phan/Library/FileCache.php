@@ -94,10 +94,13 @@ final class FileCache
         if ($entry !== null) {
             return $entry;
         }
-        if (!\file_exists($file_name)) {
-            throw new RuntimeException("FileCache::getOrReadEntry: unable to find '$file_name'\n");
-        }
+        // is_readable() already implies existence, so this needs only one stat on the hot
+        // path; file_exists() is called solely to pick the message on the failure path.
+        // Analysis re-reads every analyzed file, so this runs once per file per process.
         if (!\is_readable($file_name)) {
+            if (!\file_exists($file_name)) {
+                throw new RuntimeException("FileCache::getOrReadEntry: unable to find '$file_name'\n");
+            }
             throw new RuntimeException("FileCache::getOrReadEntry: unable to read '$file_name'\n");
         }
         $contents = \file_get_contents($file_name);

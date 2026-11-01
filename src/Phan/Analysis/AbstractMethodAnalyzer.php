@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan\Analysis;
 
 use Phan\CodeBase;
+use Phan\CodeBase\InheritedMethodLink;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Method;
@@ -31,7 +32,12 @@ class AbstractMethodAnalyzer
         if ($class->isAbstract() || $class->isTrait() || $class->isInterface()) {
             return;
         }
-        foreach ($class->getMethodMap($code_base) as $method) {
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        foreach ($class->getMethodEntryMap($code_base) as $lowercase_name => $method) {
+            if ($method instanceof InheritedMethodLink) {
+                // A lazily inherited method (see LazyInheritedMethods): its template has the flags, signature and file of the copy
+                $method = $method->registry->templateOf($method, (string)$lowercase_name);
+            }
             if ($method->isAbstract()) {
                 if ($method->isPHPInternal()) {
                     Issue::maybeEmit(

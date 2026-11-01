@@ -19,6 +19,7 @@ use Phan\Language\UnionType;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCapability;
 use Phan\PluginV3\AnalyzeMethodCapability;
+use Phan\PluginV3\AnalyzeMethodSkipsInheritedCopiesCapability;
 use Phan\PluginV3\AnalyzePropertyCapability;
 use Phan\PluginV3\FinalizeProcessCapability;
 use Phan\Suggestion;
@@ -29,6 +30,7 @@ use Phan\Suggestion;
 class UnknownElementTypePlugin extends PluginV3 implements
     AnalyzeFunctionCapability,
     AnalyzeMethodCapability,
+    AnalyzeMethodSkipsInheritedCopiesCapability,
     AnalyzePropertyCapability,
     FinalizeProcessCapability
 {

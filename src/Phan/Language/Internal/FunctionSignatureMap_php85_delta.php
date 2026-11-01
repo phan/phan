@@ -15,7 +15,7 @@ return [
       'Locale::isRightToLeft' => ['bool', 'locale'=>'string'],
       'grapheme_levenshtein' => ['int|false', 'string1'=>'string', 'string2'=>'string', 'insertion_cost='=>'int', 'replacement_cost='=>'int', 'deletion_cost='=>'int'],
       'curl_multi_get_handles' => ['array', 'multi_handle'=>'CurlMultiHandle'],
-      'curl_share_init_persistent' => ['CurlShareHandle'],
+      'curl_share_init_persistent' => ['CurlShareHandle', 'share_options'=>'array'],
       'enchant_dict_remove' => ['void', 'dictionary'=>'EnchantDictionary', 'word'=>'string'],
       'enchant_dict_remove_from_session' => ['void', 'dictionary'=>'EnchantDictionary', 'word'=>'string'],
       'opcache_is_script_cached_in_file_cache' => ['bool', 'filename'=>'string'],
@@ -31,10 +31,6 @@ return [
       'Dom\Element::insertAdjacentHTML' => ['void', 'position'=>'string', 'text'=>'string'],
   ],
   'changed' => [
-      'closedir' => [
-          'old' => ['void', 'dir_handle='=>'resource'],
-          'new' => ['void', 'dir_handle='=>'resource|Directory'],
-      ],
       'grapheme_stripos' => [
           'old' => ['int|false', 'haystack'=>'string', 'needle'=>'string', 'offset='=>'int'],
           'new' => ['int|false', 'haystack'=>'string', 'needle'=>'string', 'offset='=>'int', 'locale='=>'?string'],
@@ -54,14 +50,6 @@ return [
       'grapheme_strstr' => [
           'old' => ['string|false', 'haystack'=>'string', 'needle'=>'string', 'beforeNeedle='=>'bool'],
           'new' => ['string|false', 'haystack'=>'string', 'needle'=>'string', 'beforeNeedle='=>'bool', 'locale='=>'?string'],
-      ],
-      'readdir' => [
-          'old' => ['string|false', 'dir_handle='=>'resource'],
-          'new' => ['string|false', 'dir_handle='=>'resource|Directory'],
-      ],
-      'rewinddir' => [
-          'old' => ['void', 'dir_handle='=>'resource'],
-          'new' => ['void', 'dir_handle='=>'resource|Directory'],
       ],
   ],
   'removed' => [

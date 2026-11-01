@@ -63,7 +63,7 @@ final class PhantasmVisitor extends PluginAwarePostAnalysisVisitor
             return;
         }
         $class_fqsen = $constant->getClassFQSEN();
-        if ($this->code_base->hasClassWithFQSEN($class_fqsen->withAlternateId(1))) {
+        if ($this->code_base->mayHaveAlternatesOfClass($class_fqsen) && $this->code_base->hasClassWithFQSEN($class_fqsen->withAlternateId(1))) {
             // Give up on copies of the class.
             return;
         }

@@ -264,6 +264,11 @@ final class EmptyUnionType extends UnionType
         return $this;
     }
 
+    public function isStaticResolutionNoOp(): bool
+    {
+        return true;
+    }
+
     /**
      * @return UnionType
      * A new UnionType *plus* any references to 'self' (but not 'static') resolved

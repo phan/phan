@@ -197,7 +197,7 @@ class AnnotatedUnionType extends UnionType
         if (!$real_type_set && $new_type_set === $type_set) {
             return $this;
         }
-        $result = new AnnotatedUnionType($new_type_set, false, $real_type_set);
+        $result = new AnnotatedUnionType($new_type_set, false, []);
         // @phan-suppress-next-line PhanAccessReadOnlyProperty
         $result->is_possibly_undefined = $this->is_possibly_undefined;
         return $result;

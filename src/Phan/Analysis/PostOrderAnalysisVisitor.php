@@ -25,6 +25,7 @@ use Phan\Exception\EmptyFQSENException;
 use Phan\Exception\FQSENException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
+use Phan\Exception\NullsafeShortCircuitException;
 use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
@@ -44,6 +45,7 @@ use Phan\Language\Type;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralFloatType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
@@ -205,6 +207,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             );
             return $this->context;
         }
+        if (AssignmentVisitor::checkWriteToNullsafeChain($this->code_base, $this->context, $var_node)) {
+            return $this->context;
+        }
 
         if ($redundant_condition_detection && $right_type->hasRealTypeSet() &&
             !\in_array($var_node->kind, [ast\AST_VAR, ast\AST_ARRAY], true)) {
@@ -281,6 +286,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitAssignRef(Node $node): Context
     {
+        $expr_node = $node->children['expr'];
+        if ($expr_node instanceof Node && AssignmentVisitor::isShortCircuitedChain($expr_node, false)) {
+            // `$x = &$c?->p` is a compile error ("Cannot take reference of a nullsafe chain"), for a bare `$c?->m()` as well.
+            // Still analyze it as an assignment so that the target variable is declared.
+            $this->emitIssue(
+                Issue::InvalidReferenceToNullsafeChain,
+                $expr_node->lineno,
+                ASTReverter::toShortString($expr_node)
+            );
+        }
         return $this->visitAssign($node);
     }
 
@@ -295,6 +310,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitAssignOp(Node $node): Context
     {
+        $var_node = $node->children['var'];
+        if ($var_node instanceof Node && AssignmentVisitor::checkWriteToNullsafeChain($this->code_base, $this->context, $var_node)) {
+            return $this->context;
+        }
         return (new AssignOperatorAnalysisVisitor($this->code_base, $this->context))->__invoke($node);
     }
 
@@ -314,6 +333,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if (!($var_node instanceof Node)) {
             return $context;
         }
+        if (AssignmentVisitor::checkWriteToNullsafeChain($this->code_base, $context, $var_node)) {
+            return $context;
+        }
 
         $kind = $var_node->kind;
         if ($kind === ast\AST_VAR) {
@@ -327,8 +349,56 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $this->analyzeUnsetDim($var_node);
         } elseif ($kind === ast\AST_PROP) {
             return $this->analyzeUnsetProp($var_node);
+        } elseif ($kind === ast\AST_STATIC_PROP) {
+            // unset(self::$prop) (or any other class) always throws Error: "Attempt to unset static property"
+            $this->emitIssue(
+                Issue::TypeUnsetStaticProperty,
+                $var_node->lineno,
+                ASTReverter::toShortString($var_node)
+            );
         }
         return $context;
+    }
+
+    /**
+     * Emit PhanInvalidWriteToTemporaryExpression if the dimension or property being unset is fetched from a temporary expression.
+     *
+     * PHP compiles the array of `unset($x['k'])` and the object of `unset($x->p)` in the same write context, recursively,
+     * so `unset(self::C['k'])`, `unset((new C)->p)` and `unset((new C)->p['k'])` are compile errors
+     * ("Cannot use temporary expression in write context"), while a variable, a static property or the result of a call
+     * can be the base of a write (the write to a call result is a no-op).
+     * Nullsafe chains were already rejected by AssignmentVisitor::checkWriteToNullsafeChain().
+     *
+     * @param Node $node a node of kind AST_DIM or AST_PROP in unset()
+     * @return bool true if an issue was emitted
+     */
+    private function checkUnsetOfTemporaryExpression(Node $node): bool
+    {
+        $base_node = $node->children['expr'];
+        while ($base_node instanceof Node) {
+            switch ($base_node->kind) {
+                case ast\AST_DIM:
+                case ast\AST_PROP:
+                    $base_node = $base_node->children['expr'];
+                    continue 2;
+                case ast\AST_VAR:
+                case ast\AST_STATIC_PROP:
+                case ast\AST_CALL:
+                case ast\AST_METHOD_CALL:
+                case ast\AST_STATIC_CALL:
+                    return false;
+            }
+            break;
+        }
+        $this->emitIssue(
+            Issue::InvalidWriteToTemporaryExpression,
+            $node->lineno,
+            ASTReverter::toShortString($node),
+            $base_node instanceof Node
+                ? UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $base_node)
+                : Type::fromObject($base_node)
+        );
+        return true;
     }
 
     /**
@@ -338,9 +408,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     private function analyzeUnsetDim(Node $node): void
     {
+        if ($this->checkUnsetOfTemporaryExpression($node)) {
+            return;
+        }
         $expr_node = $node->children['expr'];
         if (!($expr_node instanceof Node)) {
-            // php -l would warn
+            // unreachable: already reported above
             return;
         }
 
@@ -419,10 +492,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     private function analyzeUnsetProp(Node $node): Context
     {
-        $expr_node = $node->children['expr'];
         $context = $this->context;
+        if ($this->checkUnsetOfTemporaryExpression($node)) {
+            return $context;
+        }
+        $expr_node = $node->children['expr'];
         if (!($expr_node instanceof Node)) {
-            // php -l would warn
+            // unreachable: already reported above
             return $context;
         }
         $prop_name = $node->children['prop'];
@@ -674,6 +750,104 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 IssueFixSuggester::suggestVariableTypoFix($this->code_base, $this->context, $variable_name)
             );
         }
+    }
+
+    /**
+     * The parents of a `$var[...]` node for which visitDim() does not check whether `$var` is possibly undeclared.
+     */
+    private const SKIP_DIM_VAR_CHECK_TYPES = [
+        ast\AST_ARG_LIST   => true,  // may be a reference, which creates the variable: checked in analyzeCallToFunctionLike()
+        ast\AST_NAMED_ARG  => true,  // same, and the parameter cannot be found by position
+        ast\AST_ASSIGN_REF => true,  // `$x = &$var[0]` creates the variable
+    ];
+
+    /**
+     * Emits PhanPossiblyUndeclaredVariable (or the global variant) for `$var` when `$var[...]` is read
+     * and `$var` is possibly undeclared (see getIssueTypeForPossiblyUndeclaredVariableOfDimRead()).
+     *
+     * @param Node $node a node of kind ast\AST_DIM
+     */
+    private function checkForPossiblyUndeclaredVariableOfDimRead(Node $node): void
+    {
+        $issue_type = $this->getIssueTypeForPossiblyUndeclaredVariableOfDimRead($node);
+        if ($issue_type !== null) {
+            $var_node = self::getBaseVariableNodeOfDim($node);
+            if ($var_node) {
+                $this->emitIssue($issue_type, $var_node->lineno, $var_node->children['name']);
+            }
+        }
+    }
+
+    /**
+     * Returns the `$var` node of `$var[...]`, `$var[...][...]`, etc., or null if the chain does not start with a variable.
+     *
+     * @param Node $node a node of kind ast\AST_DIM
+     */
+    private static function getBaseVariableNodeOfDim(Node $node): ?Node
+    {
+        do {
+            $node = $node->children['expr'];
+            if (!($node instanceof Node)) {
+                return null;
+            }
+        } while ($node->kind === ast\AST_DIM);
+        return $node->kind === ast\AST_VAR ? $node : null;
+    }
+
+    /**
+     * Emits the issue that visitDim() recorded for a `$var[...]` argument of a call (with the scope at that point),
+     * now that the parameter is known not to be by reference.
+     *
+     * @param Node $node a node of kind ast\AST_DIM
+     */
+    private function emitPossiblyUndeclaredVariableOfDimArgument(Node $node): void
+    {
+        // @phan-suppress-next-line PhanUndeclaredProperty this is added by visitDim()
+        $issue_type = $node->possibly_undeclared_variable_issue ?? null;
+        if (\is_string($issue_type)) {
+            $var_node = self::getBaseVariableNodeOfDim($node);
+            if ($var_node) {
+                $this->emitIssue($issue_type, $var_node->lineno, $var_node->children['name']);
+            }
+        }
+    }
+
+    /**
+     * Returns the issue type to emit (PhanPossiblyUndeclaredVariable or the global variant) when `$var[...]` is read
+     * and `$var` is possibly undeclared in the current scope, or null when nothing should be emitted.
+     *
+     * UnionTypeVisitor::visitVar() emits it only when it is allowed to emit issues, and visitDim() computes the type
+     * of `$var[...]` without that permission. The result is then cached for the parent expression as well
+     * (Context::setCachedUnionTypeOfNode()), so the echo, assignment, argument, etc. reading `$var[...]` never
+     * emitted it either, unlike the same read of `$var` or `$var->prop` (#5621).
+     * An undeclared variable is still reported by the parent expression: no type is cached when computing it throws.
+     *
+     * @param Node $node a node of kind ast\AST_DIM
+     */
+    private function getIssueTypeForPossiblyUndeclaredVariableOfDimRead(Node $node): ?string
+    {
+        if ($node->flags & PhanAnnotationAdder::FLAG_IGNORE_NULLABLE_AND_UNDEF) {
+            return null;
+        }
+        $var_node = self::getBaseVariableNodeOfDim($node);
+        if (!$var_node || ($var_node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF)) {
+            return null;
+        }
+        $variable_name = $var_node->children['name'];
+        if (!\is_string($variable_name)) {
+            return null;
+        }
+        $scope = $this->context->getScope();
+        if (!$scope->hasVariableWithName($variable_name)
+            || !$scope->getVariableByName($variable_name)->getUnionType()->isPossiblyUndefined()
+            || ConditionVisitor::isInRecursiveConditionalAnalysis()
+        ) {
+            return null;
+        }
+        if ($this->context->isInGlobalScope()) {
+            return Config::getValue('ignore_undeclared_variables_in_global_scope') ? null : Issue::PossiblyUndeclaredGlobalVariable;
+        }
+        return Issue::PossiblyUndeclaredVariable;
     }
 
     /**
@@ -1370,6 +1544,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     private function analyzeIncOrDec(Node $node): Context
     {
         $var = $node->children['var'];
+        if ($var instanceof Node && AssignmentVisitor::checkWriteToNullsafeChain($this->code_base, $this->context, $var)) {
+            return $this->context;
+        }
         $old_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $var);
         if (!$old_type->canCastToUnionType(UnionType::fromFullyQualifiedPHPDocString('int|string|float'), $this->code_base)) {
             $this->emitIssue(
@@ -1383,6 +1560,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $kind = $var->kind ?? null;
         if ($kind === \ast\AST_VAR) {
             $new_type = $old_type->getTypeAfterIncOrDec();
+            if ($old_type->isNonNullIntType()) {
+                // e.g. incrementing a positive-int results in a positive-int, decrementing a negative-int results in a negative-int.
+                $is_decrement = $node->kind === ast\AST_POST_DEC || $node->kind === ast\AST_PRE_DEC;
+                $new_type = IntType::computeArithmeticResultType(
+                    $is_decrement ? '-' : '+',
+                    $old_type,
+                    LiteralIntType::instanceForValue(1, false)->asPHPDocUnionType()
+                )->asPHPDocUnionType();
+            }
             if ($old_type === $new_type) {
                 return $this->context;
             }
@@ -2743,10 +2929,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 false
             );
 
-            $this->analyzeCallToFunctionLike(
-                $method,
-                $node
-            );
+            if (!$this->isConstructorOfClassStringUnknown($method, $node)) {
+                $this->analyzeCallToFunctionLike(
+                    $method,
+                    $node
+                );
+            }
 
             foreach ($class_list as $class) {
                 if ($class->isEnum() || $class->isAbstract() || $class->isInterface() || $class->isTrait()) {
@@ -2771,6 +2959,43 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         return $this->context;
+    }
+
+    /**
+     * Returns true if the arguments of `new $class(...)` must not be checked against $constructor,
+     * because $class is a `class-string<T>` and T declares no constructor (neither itself nor
+     * through a parent class), so $constructor is the placeholder Phan creates for T.
+     *
+     * The string names some class that is T or extends/implements T, which can declare any
+     * constructor - e.g. T is an interface, or a class whose subclasses add one. When T does
+     * declare a constructor, or cannot be extended (a final class), the arguments are still
+     * checked against it.
+     *
+     * @param Node $node a node of type AST_NEW
+     */
+    private function isConstructorOfClassStringUnknown(Method $constructor, Node $node): bool
+    {
+        if (!$constructor->isFakeConstructor()) {
+            return false;
+        }
+        $class_node = $node->children['class'];
+        if (!$class_node instanceof Node || $class_node->kind === ast\AST_NAME) {
+            return false;
+        }
+        $class_fqsen = $constructor->getClassFQSEN();
+        if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {
+            return false;
+        }
+        $class = $this->code_base->getClassByFQSEN($class_fqsen);
+        if ($class->isFinal()) {
+            // The string can only name this class, whose placeholder constructor takes no arguments.
+            return false;
+        }
+        return (new ContextNode(
+            $this->code_base,
+            $this->context,
+            $class_node
+        ))->isClassOnlyNamedByClassString($class);
     }
 
     /**
@@ -3036,6 +3261,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->context,
                 $exception->getIssueInstance()
             );
+        } catch (NullsafeShortCircuitException) {
+            // The call is part of a chain that PHP short-circuits to null: it never happens, so it references no method.
+            return $this->context;
         } catch (Exception) {
             // If we can't figure out the class for this method
             // call, cry YOLO and mark every method with that
@@ -3318,6 +3546,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->context,
                 $exception->getIssueInstance()
             );
+        } catch (NullsafeShortCircuitException) {
+            // The call is part of a chain that PHP short-circuits to null: it never happens, so it references no method.
+            return null;
         } catch (Exception $e) {
             if ($e instanceof FQSENException) {
                 Issue::maybeEmit(
@@ -3622,6 +3853,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $exception->getIssueInstance()
             );
             return $this->context;
+        } catch (NullsafeShortCircuitException) {
+            // The call is part of a chain that PHP short-circuits to null: it never happens, so it references no method.
+            return $this->context;
         } catch (NodeException) {
             // If we can't figure out the class for this method
             // call, cry YOLO and mark every method with that
@@ -3795,6 +4029,19 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($flags & PhanAnnotationAdder::FLAG_IGNORE_NULLABLE_AND_UNDEF) {
             return $context;
         }
+        $parent_node = \end($this->parent_node_list);
+        $parent_kind = $parent_node->kind ?? null;
+        if ($parent_kind === ast\AST_DIM && $parent_node instanceof Node && $parent_node->children['expr'] === $node) {
+            // `$var[...][...]`: the outermost dimension checks the chain, since its parent decides whether `$var` is read
+            // (`byref($var[0][1])` and `$x = &$var[0][1]` create `$var`).
+        } elseif (!isset(self::SKIP_DIM_VAR_CHECK_TYPES[$parent_kind])) {
+            $this->checkForPossiblyUndeclaredVariableOfDimRead($node);
+        } elseif ($parent_kind !== ast\AST_ASSIGN_REF) {
+            // An argument: analyzeCallToFunctionLike() decides once it knows whether the parameter is by reference,
+            // but with the scope of this point, since a later argument can assign the variable (`f($var[0], $var = [])`).
+            // @phan-suppress-next-line PhanUndeclaredProperty this is added for analyzeCallToFunctionLike()
+            $node->possibly_undeclared_variable_issue = $this->getIssueTypeForPossiblyUndeclaredVariableOfDimRead($node);
+        }
         // Check the array type to trigger TypeArraySuspicious
         try {
             /* $array_type = */
@@ -3941,15 +4188,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * Check if the parent node list contains a compound or null coalescing
-     * assignment such as ??=, .=, +=, etc...
+     * Check if the AST_DIM node at the end of $parent_node_list (whose expression is the node being analyzed)
+     * is itself being written to, through zero or more enclosing dimensions or array destructuring elements:
+     * the target of `=`, `=&`, a compound assignment such as `??=` or `.=`, `++`/`--`, or `unset()`.
      *
-     * Used for write tracking since assignment operators count as read and
-     * write for nested dimensions.
+     * Used for write tracking: `$this->prop['key'] = ...`, `[$this->prop['key']] = ...`, `$this->prop['key'] .= ...`,
+     * `$this->prop['key']++` and `unset($this->prop['key'])` all modify the property.
      *
      * @param list<Node> $parent_node_list
      */
-    private static function isNestedCompoundAssignment(array $parent_node_list): bool
+    private static function isNestedDimModification(array $parent_node_list): bool
     {
         $cur_parent_node = \end($parent_node_list);
         for (;; $cur_parent_node = $prev_parent_node) {
@@ -3963,8 +4211,23 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         return false;
                     }
                     break;
+                case ast\AST_ASSIGN:
+                case ast\AST_ASSIGN_REF:
                 case ast\AST_ASSIGN_OP:
                     return $prev_parent_node->children['var'] === $cur_parent_node;
+                case ast\AST_ARRAY_ELEM:
+                    if ($prev_parent_node->children['value'] !== $cur_parent_node) {
+                        // e.g. `[$this->prop['key'] => $v] = ...` reads the key
+                        return false;
+                    }
+                    $prev_parent_node = \prev($parent_node_list);  // this becomes AST_ARRAY
+                    break;
+                case ast\AST_UNSET:
+                case ast\AST_PRE_INC:
+                case ast\AST_PRE_DEC:
+                case ast\AST_POST_INC:
+                case ast\AST_POST_DEC:
+                    return true;
                 default:
                     return false;
             }
@@ -4243,7 +4506,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @return ?bool
      * - false if this is a read reference
      * - true if this is a write reference
-     * - true if this is a modification such as $x++
+     * - true if this is a modification such as $x++, $x['k']++ or unset($x['k'])
      * - null if this is both, e.g. $a =& $b for $a and $b
      */
     private function isAssignmentOrNestedAssignmentOrModification(Node $node): ?bool
@@ -4274,14 +4537,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if ($parent_node->children['expr'] !== $node) {
                 return false;
             }
-            if (self::shouldSkipNestedAssignDim($parent_node_list)) {
-                return true;
-            }
-            return self::isNestedCompoundAssignment($parent_node_list);
+            return self::isNestedDimModification($parent_node_list);
         } elseif ($parent_kind === ast\AST_ASSIGN || $parent_kind === ast\AST_ASSIGN_OP) {
             return $parent_node->children['var'] === $node;
         } elseif ($parent_kind === ast\AST_ASSIGN_REF) {
             return null;
+        } elseif ($parent_kind === ast\AST_UNSET) {
+            // unset($this->prop) removes the property
+            return true;
         } else {
             return \in_array($parent_kind, self::READ_AND_WRITE_KINDS, true);
         }
@@ -4370,8 +4633,34 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 continue;
             }
 
+            if ($argument->kind === ast\AST_NAMED_ARG) {
+                // visitDim() leaves `name: $var[...]` to this check as well: the parameter is found by name here.
+                // (An unknown name is reported by ArgumentType::analyze().)
+                $argument_expression = $argument->children['expr'];
+                if ($argument_expression instanceof Node && $argument_expression->kind === ast\AST_DIM) {
+                    if ($method instanceof Method && ($method->isMagicCall() || $method->isMagicCallStatic())) {
+                        // __call()/__callStatic() collect every named argument by value (the stand-in Method has no real parameters).
+                        $this->emitPossiblyUndeclaredVariableOfDimArgument($argument_expression);
+                        continue;
+                    }
+                    $parameter = null;
+                    foreach ($method->getRealParameterList() as $parameter) {
+                        if ($parameter->getName() === $argument->children['name']) {
+                            break;
+                        }
+                    }
+                    // Without a match, $parameter is the last parameter: a variadic one collects the argument (as in ArgumentType::analyze()).
+                    if ($parameter && ($parameter->getName() === $argument->children['name'] || $parameter->isVariadic()) && !$parameter->isPassByReference()) {
+                        $this->emitPossiblyUndeclaredVariableOfDimArgument($argument_expression);
+                    }
+                }
+                continue;
+            }
             $parameter = $method->getParameterForCaller($i);
             if (!$parameter) {
+                if ($argument->kind === ast\AST_DIM) {
+                    $this->emitPossiblyUndeclaredVariableOfDimArgument($argument);
+                }
                 continue;
             }
 
@@ -4379,6 +4668,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // or create it if it doesn't.
             if ($parameter->isPassByReference()) {
                 $this->createPassByReferenceArgumentInCall($method, $argument, $parameter, $method->getRealParameterForCaller($i));
+            } elseif ($argument->kind === ast\AST_DIM) {
+                // visitDim() leaves `$var[...]` arguments to this check, since a reference would have created `$var`.
+                // (It recorded whether `$var` was possibly undeclared when the argument was evaluated.)
+                $this->emitPossiblyUndeclaredVariableOfDimArgument($argument);
             }
         }
 

@@ -1,0 +1,8 @@
+%s:32 PhanTypeMismatchArgumentNullable Argument 1 ($n) is $item->nullable_doc of type ?int but \takes_int5945() takes int defined at %s:24 (expected type to be non-nullable)
+%s:33 PhanTypeMismatchArgumentNullable Argument 1 ($n) is $item->nullable_native of type ?int but \takes_int5945() takes int defined at %s:24 (expected type to be non-nullable)
+%s:34 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type int(real=mixed)
+%s:36 PhanDebugAnnotation @phan-debug-var requested for variable $union - it has union type int|string(real=mixed)
+%s:38 PhanDebugAnnotation @phan-debug-var requested for variable $nullable_doc - it has union type ?int(real=mixed)
+%s:40 PhanDebugAnnotation @phan-debug-var requested for variable $nullable_native - it has union type ?int(real=?int)
+%s:42 PhanDebugAnnotation @phan-debug-var requested for variable $nullable_object - it has union type ?\stdClass(real=?object)
+%s:44 PhanDebugAnnotation @phan-debug-var requested for variable $list - it has union type int[](real=array)

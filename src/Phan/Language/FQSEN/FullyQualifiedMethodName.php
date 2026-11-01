@@ -93,6 +93,10 @@ class FullyQualifiedMethodName extends FullyQualifiedClassElement implements Ful
      */
     public static function canonicalName(string $name): string
     {
+        // Every key of CANONICAL_NAMES starts with '__', and strtolower() doesn't change '_'.
+        if (!\str_starts_with($name, '__')) {
+            return $name;
+        }
         return self::CANONICAL_NAMES[\strtolower($name)] ?? $name;
     }
 

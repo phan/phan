@@ -15,6 +15,7 @@ use Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCapability;
 use Phan\PluginV3\AnalyzeMethodCapability;
+use Phan\PluginV3\AnalyzeMethodSkipsInheritedCopiesCapability;
 use Phan\PluginV3\AutomaticFixCapability;
 use Phan\PluginV3\BeforeAnalyzePhaseCapability;
 use PHPDocToRealTypesPlugin\Fixers;
@@ -29,6 +30,7 @@ use PHPDocToRealTypesPlugin\Fixers;
 class PHPDocToRealTypesPlugin extends PluginV3 implements
     AnalyzeFunctionCapability,
     AnalyzeMethodCapability,
+    AnalyzeMethodSkipsInheritedCopiesCapability,
     AutomaticFixCapability,
     BeforeAnalyzePhaseCapability
 {

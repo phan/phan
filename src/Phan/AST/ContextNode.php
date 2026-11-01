@@ -17,6 +17,7 @@ use Phan\Exception\EmptyFQSENException;
 use Phan\Exception\FQSENException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
+use Phan\Exception\NullsafeShortCircuitException;
 use Phan\Exception\RecursionDepthException;
 use Phan\Exception\UnanalyzableException;
 use Phan\Exception\UnanalyzableMagicPropertyException;
@@ -696,6 +697,110 @@ class ContextNode
     }
 
     /**
+     * Returns true if getClassList() resolves this class node (e.g. the class part of
+     * `$class::method()`, `$class::$prop`, `$class::CONST` or `new $class()`) to $class only
+     * through a `class-string<T>` alternative of its union type, and not also through an object
+     * type such as `T|class-string<T>`.
+     *
+     * Such a string names *some* class that is T or extends/implements T, so what T itself
+     * declares is not necessarily all that the runtime class declares.
+     */
+    public function isClassOnlyNamedByClassString(Clazz $class): bool
+    {
+        [$union_type, $class_list_without_class_strings] = $this->getClassListInner(true);
+        if (\in_array($class, $class_list_without_class_strings, true)) {
+            return false;
+        }
+        foreach ($union_type->getTypeSet() as $type) {
+            if (!($type instanceof ClassStringType)) {
+                continue;
+            }
+            try {
+                foreach ($type->getClassUnionTypeResolvingBounds()->asClassList($this->code_base, $this->context) as $represented_class) {
+                    if ($represented_class === $class) {
+                        return true;
+                    }
+                }
+            } catch (CodeBaseException | IssueException) {
+                // getClassList() already reported this.
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns true if a static method, static property or class constant that $class lacks must
+     * not be reported as undeclared, because this class node names $class only through a
+     * `class-string<I>` where I is an interface (see isClassOnlyNamedByClassString()).
+     *
+     * The string names some class implementing I, which may declare members that I doesn't,
+     * e.g. an enum's `cases()` and `from()`, or a static property (an interface can't declare
+     * properties at all). Members that I does declare are still resolved through I and validated
+     * as usual. A `class-string<C>` for a class C is still treated as declaring only what C
+     * declares, the same way an object of type C is.
+     */
+    public function isInterfaceWithUnknownStaticMembers(Clazz $class): bool
+    {
+        return $class->isInterface() && $this->isClassOnlyNamedByClassString($class);
+    }
+
+    /**
+     * Returns true if the receiver of a nullsafe access (`$x?->method()`, `$x?->prop`) with the type $union_type
+     * is definitely null, so that the access short-circuits to null without calling the method or accessing the property.
+     *
+     * This requires the real type to be null (or unknown) as well: after `if (!$x)`, a `?non-zero-int` is
+     * `null` in phpdoc but `?0` for real, and `0?->method()` throws. A possibly undefined variable is not
+     * definitely null either: the nullsafe operator checks for null, not for undefined.
+     */
+    public static function isDefinitelyNull(UnionType $union_type): bool
+    {
+        if (!$union_type->isNull() || $union_type->isPossiblyUndefined()) {
+            return false;
+        }
+        $real_union_type = $union_type->getRealUnionType();
+        return $real_union_type->isEmpty() || $real_union_type->isNull();
+    }
+
+    /**
+     * Returns true if $node is a chain of dereferences (method calls, property and element accesses, instance or static)
+     * that PHP short-circuits as a whole because it contains a nullsafe access whose receiver is definitely null,
+     * e.g. `$x?->method()` in `$x?->method()->other()` or `$x?->method()::other()` when $x is null: `other()` is never called.
+     * (Class constant accesses and `::class` are not part of the chain: `$x?->method()::CONSTANT` throws an Error.)
+     *
+     * (Only called when the type of $node is definitely null, which is rare)
+     *
+     * @param Node|string|int|float|null $node the receiver of a dereference
+     */
+    public function isShortCircuitedNullsafeChain(mixed $node): bool
+    {
+        while ($node instanceof Node) {
+            switch ($node->kind) {
+                case ast\AST_NULLSAFE_METHOD_CALL:
+                case ast\AST_NULLSAFE_PROP:
+                    $expr = $node->children['expr'];
+                    if (self::isDefinitelyNull(UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $expr))) {
+                        return true;
+                    }
+                    $node = $expr;
+                    break;
+                case ast\AST_METHOD_CALL:
+                case ast\AST_PROP:
+                case ast\AST_DIM:
+                    $node = $node->children['expr'];
+                    break;
+                case ast\AST_STATIC_CALL:
+                case ast\AST_STATIC_PROP:
+                    $node = $node->children['class'];
+                    break;
+                // Not part of the chain: invoking the result as a callable (`$x?->method()()`) and `::CONSTANT` throw.
+                default:
+                    return false;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Check if the given AST_PROP/AST_NULLSAFE_PROP node accesses a dynamic
      * property on a plain (unshaped) stdClass receiver.
      *
@@ -930,15 +1035,16 @@ class ContextNode
             throw new AssertionError('$node must be a node');
         }
 
+        $class_node_context = new ContextNode(
+            $this->code_base,
+            $this->context,
+            $node->children['expr']
+                ?? $node->children['class']
+        );
         try {
             // Fetch the list of valid classes, and warn about any undefined classes.
             // (We have more specific issue types such as PhanNonClassMethodCall below, don't emit PhanTypeExpected*)
-            $class_list = (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $node->children['expr']
-                    ?? $node->children['class']
-            ))->getClassList(
+            $class_list = $class_node_context->getClassList(
                 false,
                 $is_static || $is_new_expression ? self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME : self::CLASS_LIST_ACCEPT_OBJECT,
                 null,
@@ -976,6 +1082,18 @@ class ContextNode
                         $node->lineno,
                         [$e->getFQSEN()]
                     )
+                );
+            }
+
+            if (($node->kind === ast\AST_NULLSAFE_METHOD_CALL || $this->isShortCircuitedNullsafeChain($node->children['expr'] ?? $node->children['class'] ?? null))
+                && self::isDefinitelyNull($union_type)) {
+                // `$x?->method()` short-circuits to null when $x is null, so the method is never called.
+                // (e.g. a variable that was only assigned null before the try block of the enclosing catch block)
+                // The same goes for the rest of a chain of dereferences such as `$x?->method()->other()` or `$x?->method()::other()`.
+                // A possibly undefined variable is still reported: the nullsafe operator checks for null, not for undefined.
+                throw new NullsafeShortCircuitException(
+                    $node,
+                    "Nullsafe call of $method_name on null never calls the method"
                 );
             }
 
@@ -1043,7 +1161,7 @@ class ContextNode
             } elseif ($is_static && $class->allowsCallingUndeclaredStaticMethod($this->code_base)) {
                 $last_call_method = $class->getCallStaticMethod($this->code_base);
                 $call_methods[] = $last_call_method;
-            } else {
+            } elseif (!$class_node_context->isInterfaceWithUnknownStaticMembers($class)) {
                 $class_without_method = $class->getFQSEN();
             }
         }
@@ -1077,7 +1195,21 @@ class ContextNode
             return $methods;
         }
 
-        $first_class = $class_list[0];
+        // Report the method as undeclared on the first class known to lack it - not on an
+        // interface named only by a `class-string<I>`, whose implementing class may declare it.
+        $first_class = null;
+        foreach ($class_list as $class) {
+            if (!$class_node_context->isInterfaceWithUnknownStaticMembers($class)) {
+                $first_class = $class;
+                break;
+            }
+        }
+        if (!$first_class) {
+            throw new NodeException(
+                $node,
+                "Can't determine if the class implementing the interface declares $method_name"
+            );
+        }
 
         // Figure out an FQSEN for the method we couldn't find
         $method_fqsen = FullyQualifiedMethodName::make(
@@ -1696,15 +1828,27 @@ class ContextNode
 
         $class_fqsen = null;
 
+        $class_node_context = new ContextNode(
+            $this->code_base,
+            $this->context,
+            $node->children['expr'] ??
+                $node->children['class']
+        );
+        $receiver_node = $node->children['expr'] ?? $node->children['class'];
+        if (($node->kind === ast\AST_NULLSAFE_PROP || $this->isShortCircuitedNullsafeChain($receiver_node))
+            && self::isDefinitelyNull(UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $receiver_node))) {
+            // `$x?->prop` short-circuits to null when $x is null, so the property is never accessed.
+            // The same goes for the rest of a chain of dereferences such as `$x?->method()->prop` or `$x?->method()::$prop`.
+            // A possibly undefined variable is still reported: the nullsafe operator checks for null, not for undefined.
+            throw new NullsafeShortCircuitException(
+                $node,
+                "Nullsafe access of $property_name on null never accesses the property"
+            );
+        }
         try {
             $expected_type_categories = $is_static ? self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME : self::CLASS_LIST_ACCEPT_OBJECT;
             $expected_issue = $is_static ? Issue::TypeExpectedObjectStaticPropAccess : Issue::TypeExpectedObjectPropAccess;
-            $class_list = (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $node->children['expr'] ??
-                    $node->children['class']
-            ))->getClassList(false, $expected_type_categories, $expected_issue);
+            $class_list = $class_node_context->getClassList(false, $expected_type_categories, $expected_issue);
         } catch (CodeBaseException $exception) {
             $exception_fqsen = $exception->getFQSEN();
             if ($exception_fqsen instanceof FullyQualifiedClassName) {
@@ -1780,7 +1924,8 @@ class ContextNode
                     );
                 }
 
-                if (!($class->isInterface() && $expr_is_this && $expr_has_static_type)) {
+                if (!($class->isInterface() && $expr_is_this && $expr_has_static_type)
+                    && !$class_node_context->isInterfaceWithUnknownStaticMembers($class)) {
                     $class_without_property = $class;
                 }
                 continue;
@@ -1897,6 +2042,17 @@ class ContextNode
             }
             if ($properties) {
                 return $properties;
+            }
+        } else {
+            // Report the static property as undeclared on the last class known to lack it - not
+            // on an interface named only by a `class-string<I>`, whose implementing class may
+            // declare it. If there is no such class, whether the property exists is unknown.
+            $class_fqsen = null;
+            foreach ($class_list as $candidate_class) {
+                if (!$class_node_context->isInterfaceWithUnknownStaticMembers($candidate_class)) {
+                    $class = $candidate_class;
+                    $class_fqsen = $candidate_class->getFQSEN();
+                }
             }
         }
 
@@ -2367,12 +2523,13 @@ class ContextNode
 
         $class_fqsen = null;
 
+        $class_node_context = new ContextNode(
+            $this->code_base,
+            $this->context,
+            $node->children['class']
+        );
         try {
-            $class_list = (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $node->children['class']
-            ))->getClassList(false, self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
+            $class_list = $class_node_context->getClassList(false, self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
         } catch (CodeBaseException $exception) {
             $exception_fqsen = $exception->getFQSEN();
             if ($constant_name === 'class') {
@@ -2397,14 +2554,17 @@ class ContextNode
 
         $constants = [];
         foreach ($class_list as $class) {
-            // Remember the last analyzed class for the next issue message
-            $class_fqsen = $class->getFQSEN();
-
             // Check to see if the class has the constant
             if (!$class->hasConstantWithName(
                 $this->code_base,
                 $constant_name
             )) {
+                // Remember the last class lacking the constant for the next issue message - but
+                // not an interface named only by a `class-string<I>`, whose implementing class
+                // may declare it.
+                if (!$class_node_context->isInterfaceWithUnknownStaticMembers($class)) {
+                    $class_fqsen = $class->getFQSEN();
+                }
                 continue;
             }
 

@@ -1875,6 +1875,11 @@ class UnionTypeVisitor extends AnalysisVisitor
         if ($union_type->isEmpty()) {
             return UnionType::empty();
         }
+        if (ContextNode::isDefinitelyNull($union_type)
+            && (new ContextNode($code_base, $context, $node))->isShortCircuitedNullsafeChain($node->children['expr'])) {
+            // e.g. `$x?->method()[0]` when $x is null: PHP short-circuits the whole chain to null without accessing an offset.
+            return NullType::instance(false)->asRealUnionType();
+        }
 
         // If none of the types we found were arrays with elements,
         // then check for ArrayAccess
@@ -2572,7 +2577,15 @@ class UnionTypeVisitor extends AnalysisVisitor
                 }
             }
         }
-        if (!$resulting_element_type->containsNullableOrUndefined() && $union_type->containsNullableOrUndefined()) {
+        if (!$resulting_element_type->containsNullableOrUndefined()
+            && ($union_type->isPossiblyUndefined() || $union_type->hasTypeMatchingCallback(static function (Type $type): bool {
+                // A plain `mixed` says nothing about the array: e.g. `$g[$k]['tax'] = $v;` on an `array $g` with an unknown key $k
+                // makes $g `array|non-empty-array<string,array{tax:int}>`, and `$g[$k]` is `array{tax:int}|mixed`; the shape decides
+                // the type of `$g[$k]['tax']` (int), the `mixed` alternative must not add null to it.
+                // Every other nullable type (`null`, `?array{...}`, `?mixed`, an unbounded template type T, ...) may make the array null.
+                return $type->isNullable() && !($type instanceof MixedType && !$type->isNullableLabeled());
+            }))) {
+            // The array itself may be null (or undefined), so the offset read may evaluate to null.
             // Here, this uses Foo|null instead of ?Foo to only warn when strict types are used.
             $resulting_element_type = $resulting_element_type->withType(NullType::instance(false));
         }
@@ -3129,13 +3142,19 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitNullsafeProp(Node $node): UnionType
     {
-        $expr_type = UnionTypeVisitor::unionTypeFromNode(
+        $full_expr_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
             $node->children['expr'],
             $this->should_catch_issue_exception
-        )->getRealUnionType();
+        );
+        $expr_type = $full_expr_type->getRealUnionType();
         $result = $this->analyzeProp($node, false);
+        if (ContextNode::isDefinitelyNull($full_expr_type)) {
+            // The property is never accessed (and ContextNode::getProperty() does not report it),
+            // including when the receiver is only known to be null from phpdoc (an empty real type).
+            return NullType::instance(false)->asRealUnionType();
+        }
         if ($expr_type->isEmpty()) {
             return $result->nullableClone();
         }
@@ -3356,6 +3375,12 @@ class UnionTypeVisitor extends AnalysisVisitor
         if ($stdclass_shape_union !== null && !$stdclass_shape_union->isEmpty()) {
             return $stdclass_shape_union;
         }
+        $receiver_node = $expr_node ?? $node->children['class'] ?? null;
+        if ($receiver_node instanceof Node && (new ContextNode($this->code_base, $this->context, $node))->isShortCircuitedNullsafeChain($receiver_node)) {
+            // e.g. `->prop` in `$x?->method()->prop` when $x is null: PHP short-circuits the whole chain to null
+            // (and ContextNode::getProperty() does not report it).
+            return NullType::instance(false)->asRealUnionType();
+        }
 
         return UnionType::empty();
     }
@@ -3562,6 +3587,10 @@ class UnionTypeVisitor extends AnalysisVisitor
             $this->should_catch_issue_exception
         );
         $result = $this->visitMethodCall($node);
+        if (ContextNode::isDefinitelyNull($expr_type)) {
+            // The method is never called (and ContextNode::getMethod() does not report it)
+            return NullType::instance(false)->asRealUnionType();
+        }
         if ($result->isEmpty()) {
             return $result->nullableClone();
         }
@@ -3912,7 +3941,18 @@ class UnionTypeVisitor extends AnalysisVisitor
             );
         }
 
-        return $combined_union_type ?? UnionType::empty();
+        // ($combined_union_type is undefined if the lookup threw before the loop)
+        $result = $combined_union_type ?? null;
+        if ($result === null) {
+            $class_node = $node->children['class'] ?? $node->children['expr'];
+            if ($class_node instanceof Node && (new ContextNode($this->code_base, $this->context, $node))->isShortCircuitedNullsafeChain($class_node)) {
+                // e.g. `->other()` in `$x?->method()->other()` when $x is null: PHP short-circuits the whole chain to null
+                // (and ContextNode::getMethod() does not report it).
+                return NullType::instance(false)->asRealUnionType();
+            }
+            return UnionType::empty();
+        }
+        return $result;
     }
 
     /**
@@ -4182,6 +4222,11 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $result = $result->withType($fqsen->asType());
             } elseif (\get_class($sub_type) === Type::class || $sub_type instanceof ClosureType || $sub_type instanceof StaticType) {
                 $result = $result->withType($sub_type);
+            } elseif ($sub_type instanceof ObjectType) {
+                // `new $obj()` creates an instance of the class of $obj (see #1926). With a plain
+                // `object` (e.g. a value narrowed by method_exists()) that class is unknown, but
+                // the expression is valid and creates an object.
+                $result = $result->withType($sub_type->withIsNullable(false));
             } else {
                 if ($sub_type instanceof StringType) {
                     if ($sub_type instanceof ClassStringType) {

@@ -82,7 +82,7 @@ if (is_string($grapheme_strstr_chunk)) {
     echo $grapheme_strstr_chunk;
 }
 
-// Directory resource-object interop
+// The dir handle functions still take only a resource (or null, deprecated) in PHP 8.5, not a Directory object: these throw a TypeError
 $directory = dir(__DIR__);
 $entry = readdir($directory);
 if ($entry !== false) {

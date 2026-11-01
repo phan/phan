@@ -1,0 +1,18 @@
+src/326_trait_private_dead_code.php:5 PhanCompatibleTraitConstant Trait \Trait5526 declares constant UNUSED_CONST which is only allowed in 8.2+
+src/326_trait_private_dead_code.php:5 PhanUnreferencedPrivateTraitClassConstant Possibly zero references to private class constant \Trait5526::UNUSED_CONST of a trait (it can be referenced by classes using the trait)
+src/326_trait_private_dead_code.php:6 PhanCompatibleTraitConstant Trait \Trait5526 declares constant USED_CONST which is only allowed in 8.2+
+src/326_trait_private_dead_code.php:8 PhanCompatibleTraitConstant Trait \Trait5526 declares constant SUPPRESSED_CONST which is only allowed in 8.2+
+src/326_trait_private_dead_code.php:9 PhanUnreferencedPrivateTraitProperty Possibly zero references to private property \Trait5526->unusedProp of a trait (it can be referenced by classes using the trait)
+src/326_trait_private_dead_code.php:10 PhanReadOnlyPrivateTraitProperty Possibly zero write references to private property \Trait5526->readOnlyProp of a trait (it can be written by classes using the trait)
+src/326_trait_private_dead_code.php:11 PhanWriteOnlyPrivateTraitProperty Possibly zero read references to private property \Trait5526->writeOnlyProp of a trait (it can be read by classes using the trait)
+src/326_trait_private_dead_code.php:21 PhanPluginUseReturnValueNoopVoid The function/method \Trait5526::unusedMethod() is declared to return void and it has no side effects
+src/326_trait_private_dead_code.php:21 PhanUnreferencedPrivateTraitMethod Possibly zero references to private method \Trait5526::unusedMethod() of a trait (it can be referenced by classes using the trait)
+src/326_trait_private_dead_code.php:23 PhanPluginUseReturnValueNoopVoid The function/method \Trait5526::suppressedMethod() is declared to return void and it has no side effects
+src/326_trait_private_dead_code.php:24 PhanPluginUseReturnValueNoopVoid The function/method \Trait5526::unusedProtected() is declared to return void and it has no side effects
+src/326_trait_private_dead_code.php:24 PhanUnreferencedProtectedMethod Possibly zero references to protected method \Trait5526::unusedProtected()
+src/326_trait_private_dead_code.php:39 PhanUnreferencedPrivateClassConstant Possibly zero references to private class constant \Plain5526::UNUSED_CONST
+src/326_trait_private_dead_code.php:40 PhanUnreferencedPrivateProperty Possibly zero references to private property \Plain5526->unusedProp
+src/326_trait_private_dead_code.php:41 PhanReadOnlyPrivateProperty Possibly zero write references to private property \Plain5526->readOnlyProp
+src/326_trait_private_dead_code.php:42 PhanWriteOnlyPrivateProperty Possibly zero read references to private property \Plain5526->writeOnlyProp
+src/326_trait_private_dead_code.php:43 PhanPluginUseReturnValueNoopVoid The function/method \Plain5526::unusedMethod() is declared to return void and it has no side effects
+src/326_trait_private_dead_code.php:43 PhanUnreferencedPrivateMethod Possibly zero references to private method \Plain5526::unusedMethod()

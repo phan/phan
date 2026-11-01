@@ -81,6 +81,7 @@ use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
 use Phan\Library\StringUtil;
 use Phan\Library\Tuple5;
+use ReflectionMethod;
 use Stringable;
 
 use function count;
@@ -507,9 +508,11 @@ class Type implements Stringable
         $key = ($is_nullable ? '?' : '') . static::KEY_PREFIX . $namespace . '\\' . $type_name;
 
         if ($template_parameter_type_list) {
-            $key .= '<' . \implode(',', \array_map(static function (UnionType $union_type): string {
-                return $union_type->__toString();
-            }, $template_parameter_type_list)) . '>';
+            $template_parameter_strings = [];
+            foreach ($template_parameter_type_list as $union_type) {
+                $template_parameter_strings[] = $union_type->__toString();
+            }
+            $key .= '<' . \implode(',', $template_parameter_strings) . '>';
         }
 
         $key = strtolower($key);
@@ -695,6 +698,24 @@ class Type implements Stringable
         }
 
         return $this->memoized_data[$key];
+    }
+
+    /**
+     * Returns the value memoized for $key in the current progress state, or null if there is none.
+     *
+     * If the progress state changed since the values were memoized, they are discarded first,
+     * so the caller can compute the value and store it with `$this->memoized_data[$key] = $value`.
+     * This is equivalent to memoize() without allocating a closure,
+     * and must only be used for values that are never null.
+     *
+     * @phan-hardcode-return-type
+     */
+    final protected function getMemoizedForCurrentState(string $key): mixed
+    {
+        if (($this->memoized_data['current_progress_state'] ?? null) !== self::$current_progress_state) {
+            $this->memoized_data = ['current_progress_state' => self::$current_progress_state];
+        }
+        return $this->memoized_data[$key] ?? null;
     }
 
     /**
@@ -1533,10 +1554,11 @@ class Type implements Stringable
 
         // Map the names of the types to actual types in the
         // template parameter type list
-        $template_parameter_type_list =
+        // (Most types have no template parameters, so skip creating the closure for those)
+        $template_parameter_type_list = $template_parameter_type_name_list ?
             \array_map(static function (string $type_name) use ($code_base, $context, $source): UnionType {
                 return UnionType::fromStringInContext($type_name, $context, $source, $code_base);
-            }, $template_parameter_type_name_list);
+            }, $template_parameter_type_name_list) : [];
 
         // @var bool
         // True if this type name if of the form 'C[]'
@@ -1908,6 +1930,18 @@ class Type implements Stringable
     {
         // Note: some subclasses, such as CallableType, return different subtypes of FQSEN
         return FullyQualifiedClassName::fromType($this);
+    }
+
+    /**
+     * Implementation of FullyQualifiedClassName::fromType(), memoized on $type for the current progress state.
+     * (The preferred name used by asFQSENString() only differs in case, so it always maps to the same FQSEN)
+     *
+     * @throws FQSENException if $type->asFQSENString() is not a valid class name
+     */
+    final public static function fullyQualifiedClassNameFromType(Type $type): FullyQualifiedClassName
+    {
+        return $type->getMemoizedForCurrentState(__METHOD__)
+            ?? ($type->memoized_data[__METHOD__] = FullyQualifiedClassName::fromFullyQualifiedString($type->asFQSENString()));
     }
 
     /**
@@ -2838,32 +2872,39 @@ class Type implements Stringable
     public function getTemplateParameterTypeMap(CodeBase $code_base, bool $omit_missing = false): array
     {
         $key = __METHOD__ . ($omit_missing ? '!' : '');
-        return $this->memoize($key, /** @return array<string,UnionType> */ function () use ($code_base, $omit_missing): array {
-            if (!$this->isObjectWithKnownFQSEN()) {
-                return [];
+        return $this->getMemoizedForCurrentState($key) ?? ($this->memoized_data[$key] = $this->computeTemplateParameterTypeMap($code_base, $omit_missing));
+    }
+
+    /**
+     * @return array<string,UnionType>
+     * A map from template type identifier to a concrete type (see getTemplateParameterTypeMap())
+     */
+    private function computeTemplateParameterTypeMap(CodeBase $code_base, bool $omit_missing): array
+    {
+        if (!$this->isObjectWithKnownFQSEN()) {
+            return [];
+        }
+        $fqsen = FullyQualifiedClassName::fromType($this);
+
+        if (!$code_base->hasClassWithFQSEN($fqsen)) {
+            return [];
+        }
+
+        $class = $code_base->getClassByFQSEN($fqsen);
+
+        $template_parameter_type_list =
+            $this->template_parameter_type_list;
+
+        $map = [];
+        foreach (\array_keys($class->getTemplateTypeMap()) as $i => $identifier) {
+            if (isset($template_parameter_type_list[$i])) {
+                $map[$identifier] = $template_parameter_type_list[$i];
+            } elseif (!$omit_missing) {
+                $map[$identifier] = MixedType::instance(false)->asPHPDocUnionType();
             }
-            $fqsen = FullyQualifiedClassName::fromType($this);
+        }
 
-            if (!$code_base->hasClassWithFQSEN($fqsen)) {
-                return [];
-            }
-
-            $class = $code_base->getClassByFQSEN($fqsen);
-
-            $template_parameter_type_list =
-                $this->template_parameter_type_list;
-
-            $map = [];
-            foreach (\array_keys($class->getTemplateTypeMap()) as $i => $identifier) {
-                if (isset($template_parameter_type_list[$i])) {
-                    $map[$identifier] = $template_parameter_type_list[$i];
-                } elseif (!$omit_missing) {
-                    $map[$identifier] = MixedType::instance(false)->asPHPDocUnionType();
-                }
-            }
-
-            return $map;
-        });
+        return $map;
     }
 
     /**
@@ -3571,6 +3612,27 @@ class Type implements Stringable
         return $this;
     }
 
+    /**
+     * @var array<string,bool> maps subclasses of Type to whether they inherit Type::withStaticResolvedInContext() unchanged
+     */
+    private static $inherits_static_resolution_in_context = [];
+
+    /**
+     * Returns true if withStaticResolvedInContext() returns $this for every Context.
+     *
+     * This is the case when this has no template parameter types
+     * and its class does not override withStaticResolvedInContext().
+     * (Subclasses that override withStaticResolvedInContext() may override this to return false directly.)
+     */
+    public function isStaticResolutionNoOp(): bool
+    {
+        if ($this->template_parameter_type_list) {
+            return false;
+        }
+        return self::$inherits_static_resolution_in_context[static::class] ??=
+            (new ReflectionMethod(static::class, 'withStaticResolvedInContext'))->getDeclaringClass()->getName() === self::class;
+    }
+
     private function withStaticResolvedInContextTemplate(
         Context $context
     ): Type {
@@ -3640,7 +3702,8 @@ class Type implements Stringable
      */
     public function __toString(): string
     {
-        return $this->memoize(__METHOD__, function (): string {
+        $string = $this->getMemoizedForCurrentState(__METHOD__);
+        if ($string === null) {
             $string = $this->asFQSENString();
 
             if (count($this->template_parameter_type_list) > 0) {
@@ -3651,8 +3714,9 @@ class Type implements Stringable
                 $string = '?' . $string;
             }
 
-            return $string;
-        });
+            $this->memoized_data[__METHOD__] = $string;
+        }
+        return $string;
     }
 
     /**
@@ -3671,10 +3735,11 @@ class Type implements Stringable
      */
     final protected function templateParameterTypeListAsString(): string
     {
-        return '<' .
-            \implode(',', \array_map(static function (UnionType $type): string {
-                return $type->__toString();
-            }, $this->template_parameter_type_list)) . '>';
+        $parts = [];
+        foreach ($this->template_parameter_type_list as $type) {
+            $parts[] = $type->__toString();
+        }
+        return '<' . \implode(',', $parts) . '>';
     }
 
     private const CANONICAL_NAME_MAP = [

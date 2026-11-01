@@ -13,6 +13,7 @@ use Phan\Language\Element\Variable;
 use Phan\Language\Scope;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
+use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 use Phan\Plugin\ConfigPluginSet;
@@ -216,6 +217,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
                 $was_possibly_undefined = !$was_definitely_undefined && $merged_union_type->isPossiblyUndefined();
                 $catch_defines_variable = !$catch_union_type->isPossiblyUndefined() && !$catch_union_type->isDefinitelyUndefined();
 
+                $try_side_union_type = $catch_defines_variable ? $raw_union_type : $merged_union_type;
                 if ($catch_defines_variable) {
                     $new_union_type = $raw_union_type->withUnionType($catch_union_type);
                     if (!$raw_union_type->containsNullableOrUndefined() && !$catch_union_type->containsNullableOrUndefined()) {
@@ -232,7 +234,16 @@ class ContextMergeVisitor extends KindVisitorImplementation
                         $new_union_type = $new_union_type->nonNullableClone();
                     }
                 }
+                $new_union_type = self::withMixedIfPartiallyUnknown(
+                    $new_union_type,
+                    self::isUnknownType($try_side_union_type) || self::isUnknownType($catch_union_type),
+                    self::isKnownType($try_side_union_type) || self::isKnownType($catch_union_type)
+                );
+                // Clone the variable: the shallow clone of the scope shares Variable instances with the scope before the try statement
+                // (and its parent scopes), which other branches may still use (e.g. the `else` of an `if` containing this try statement).
+                $merged_variable = clone($merged_variable);
                 $merged_variable->setUnionType($new_union_type);
+                $merged_try_scope->addVariable($merged_variable);
             }
         }
 
@@ -353,6 +364,41 @@ class ContextMergeVisitor extends KindVisitorImplementation
     }
 
     /**
+     * Whether the type of a variable on a branch is unknown: an empty union type
+     * (the variable exists on that branch, but nothing is known about its value).
+     * A definitely undefined variable is not an unknown type: it does not exist on that branch at all.
+     * Neither is a variable narrowed to no possible type by an impossible condition (UnionType::impossible()):
+     * that branch is dead and contributes nothing.
+     */
+    private static function isUnknownType(UnionType $union_type): bool
+    {
+        return $union_type->isEmpty() && !$union_type->isDefinitelyUndefined() && $union_type !== UnionType::impossible();
+    }
+
+    /**
+     * Whether the type of a variable on a branch is known: a non-empty union type of a variable that exists on that branch.
+     */
+    private static function isKnownType(UnionType $union_type): bool
+    {
+        return !$union_type->isEmpty() && !$union_type->isDefinitelyUndefined();
+    }
+
+    /**
+     * Adds `mixed` to the merged type of a variable when its type is unknown on some branches and known on others.
+     *
+     * An unknown type contributes nothing to a union, so without this `$x = null; if ($c) { $x = unknown(); }`
+     * would make `$x` exactly `null`, and `PhanTypeMismatchArgument` etc. would be reported with certainty for a value
+     * that may be anything. `mixed` records that (and is what the ternary operator infers in the same situation).
+     */
+    private static function withMixedIfPartiallyUnknown(UnionType $merged, bool $saw_unknown, bool $saw_known): UnionType
+    {
+        if ($saw_unknown && $saw_known) {
+            return $merged->withType(MixedType::instance(false));
+        }
+        return $merged;
+    }
+
+    /**
      * Returns a new scope which combines the parent scope with a list of 2 or more child scopes
      * (one of those scopes is permitted to be the parent scope)
      * @param list<Scope> $scope_list
@@ -402,6 +448,8 @@ class ContextMergeVisitor extends KindVisitorImplementation
         $compute_union_type = static function (string $variable_name, array $scopes): UnionType {
             $previous_type = null;
             $type_list = [];
+            $saw_unknown = false;
+            $saw_known = false;
                 // Get a list of all variables with the given name from
                 // each scope
                 foreach ($scopes as $scope) {
@@ -411,6 +459,11 @@ class ContextMergeVisitor extends KindVisitorImplementation
                     }
 
                     $type = $variable->getUnionType();
+                    if (self::isUnknownType($type)) {
+                        $saw_unknown = true;
+                    } elseif (self::isKnownType($type)) {
+                        $saw_known = true;
+                    }
                     // Frequently, a branch won't even modify a variable's type.
                     // The immutable UnionType might have the exact same instance
                     if ($type !== $previous_type) {
@@ -425,6 +478,11 @@ class ContextMergeVisitor extends KindVisitorImplementation
                 } else {
                     // compute the un-normalized types
                     $result = UnionType::merge($type_list, $variable_name !== Context::VAR_NAME_THIS_PROPERTIES);
+                }
+                if ($variable_name !== Context::VAR_NAME_THIS_PROPERTIES) {
+                    // (The pseudo-variable for `$this` property overrides holds array shapes; an empty one means
+                    // "no overrides" on that branch, not an unknown type.)
+                    $result = self::withMixedIfPartiallyUnknown($result, $saw_unknown, $saw_known);
                 }
 
                 $result_count = $result->typeCount();

@@ -1,0 +1,7 @@
+%s:10 PhanTypeUnsetStaticProperty Cannot unset static property self::$arr: PHP throws an Error at runtime (Attempt to unset static property)
+%s:11 PhanTypeUnsetStaticProperty Cannot unset static property static::$counter: PHP throws an Error at runtime (Attempt to unset static property)
+%s:12 PhanTypeUnsetStaticProperty Cannot unset static property UnsetStatic5953::$obj: PHP throws an Error at runtime (Attempt to unset static property)
+%s:13 PhanTypeUnsetStaticProperty Cannot unset static property $other::$arr: PHP throws an Error at runtime (Attempt to unset static property)
+%s:14 PhanTypeUnsetStaticProperty Cannot unset static property self::$undeclared: PHP throws an Error at runtime (Attempt to unset static property)
+%s:14 PhanUndeclaredStaticProperty Static property 'undeclared' on \UnsetStatic5953 is undeclared
+%s:18 PhanTypeObjectUnsetDeclaredProperty Suspicious attempt to unset class \UnsetStatic5953's property $instance declared at %s:7 (This can be done, but is more commonly done for dynamic properties and Phan does not expect this)

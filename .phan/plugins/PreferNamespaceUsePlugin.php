@@ -15,6 +15,7 @@ use Phan\Plugin\Internal\IssueFixingPlugin\FileEditSet;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCapability;
 use Phan\PluginV3\AnalyzeMethodCapability;
+use Phan\PluginV3\AnalyzeMethodSkipsInheritedCopiesCapability;
 use Phan\PluginV3\AutomaticFixCapability;
 use PreferNamespaceUsePlugin\Fixers;
 use const ast\AST_TYPE;
@@ -26,6 +27,7 @@ use const ast\AST_TYPE;
 class PreferNamespaceUsePlugin extends PluginV3 implements
     AnalyzeFunctionCapability,
     AnalyzeMethodCapability,
+    AnalyzeMethodSkipsInheritedCopiesCapability,
     AutomaticFixCapability
 {
     private const PreferNamespaceUseParamType = 'PhanPluginPreferNamespaceUseParamType';

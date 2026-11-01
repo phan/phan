@@ -17,6 +17,7 @@ use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeClassCapability;
 use Phan\PluginV3\AnalyzeFunctionCapability;
 use Phan\PluginV3\AnalyzeMethodCapability;
+use Phan\PluginV3\AnalyzeMethodSkipsInheritedCopiesCapability;
 use Phan\PluginV3\AnalyzePropertyCapability;
 use Phan\PluginV3\FinalizeProcessCapability;
 
@@ -31,6 +32,7 @@ final class DumpPHPDocPlugin extends PluginV3 implements
     AnalyzeClassCapability,
     AnalyzeFunctionCapability,
     AnalyzeMethodCapability,
+    AnalyzeMethodSkipsInheritedCopiesCapability,
     AnalyzePropertyCapability,
     FinalizeProcessCapability
 {

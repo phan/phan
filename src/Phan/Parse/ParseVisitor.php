@@ -877,6 +877,17 @@ class ParseVisitor extends ScopeVisitor
     }
 
     /**
+     * Returns true if $union_type refers to any class (including in generics, array shapes, closures, etc.)
+     */
+    private static function referencesClasses(UnionType $union_type): bool
+    {
+        foreach ($union_type->getReferencedClasses() as $_) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * @param Node|string|float|int|null $default_node
      * @param list<Attribute> $attributes
      */
@@ -1063,21 +1074,31 @@ class ParseVisitor extends ScopeVisitor
                 }
             }
 
-            // XXX during the parse phase, parent classes may be missing.
             if ($default_node !== null &&
                 !$original_union_type->isType(NullType::instance(false)) &&
                 !$variable->getUnionType()->canCastToUnionType($original_union_type, $this->code_base) &&
-                !$original_union_type->canCastToUnionType($variable->getUnionType(), $this->code_base) &&
-                !$property->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchPropertyDefault)
+                !$original_union_type->canCastToUnionType($variable->getUnionType(), $this->code_base)
             ) {
-                $this->emitIssue(
-                    Issue::TypeMismatchPropertyDefault,
-                    $lineno,
-                    (string)$variable->getUnionType(),
-                    $property->getName(),
-                    ASTReverter::toShortString($default_node),
-                    (string)$original_union_type
-                );
+                if (self::referencesClasses($original_union_type) || self::referencesClasses($variable->getUnionType())) {
+                    // During the parse phase, classes referenced by either type (and their parents, interfaces
+                    // and __invoke methods) may not have been parsed yet, so the failed check is repeated by
+                    // PropertyTypesAnalyzer once all classes are known (issue #5578).
+                    $property->setPendingDefaultTypeCheck(
+                        $variable->getUnionType(),
+                        $original_union_type,
+                        ASTReverter::toShortString($default_node),
+                        $lineno
+                    );
+                } elseif (!$property->checkHasSuppressIssueAndIncrementCount(Issue::TypeMismatchPropertyDefault)) {
+                    $this->emitIssue(
+                        Issue::TypeMismatchPropertyDefault,
+                        $lineno,
+                        (string)$variable->getUnionType(),
+                        $property->getName(),
+                        ASTReverter::toShortString($default_node),
+                        (string)$original_union_type
+                    );
+                }
             }
 
             $original_property_type = $property->getUnionType();
@@ -1129,7 +1150,10 @@ class ParseVisitor extends ScopeVisitor
                         // Don't let dropping this type silently drop nullability that the
                         // doc-comment type doesn't otherwise account for,
                         // e.g. `/** @var Box<A> */ private ?Box $b = null;` should stay nullable.
-                        if ($type->isNullable() && !$doc_contains_nullable) {
+                        // Only an explicitly nullable native type (`?Box`) counts: `mixed` includes null
+                        // but says nothing about the property, so `/** @var int */ public mixed $x;`
+                        // is `int`, like `/** @var int */ public $x;`, not `?int`.
+                        if ($type->isNullableLabeled() && !$doc_contains_nullable) {
                             $lost_nullable = true;
                         }
                     } else {
@@ -2090,6 +2114,104 @@ class ParseVisitor extends ScopeVisitor
         $this->code_base->addParsedNamespaceMap($context->getFile(), $context->getNamespace(), $context->getNamespaceId(), $context->getNamespaceMap());
         return parent::visitNamespace($node);
     }
+
+    /**
+     * The node kinds for which the handler of ParseVisitor returns $this->context and has no side effects
+     * (the inherited KindVisitorImplementation methods that call ScopeVisitor::visit(), and the no-ops below).
+     *
+     * Analysis::parseNodeInContext() does not create a ParseVisitor for nodes of these kinds.
+     * This must be updated when a handler for one of these kinds is added or changed (ParseVisitorNoOpKindsTest checks this).
+     */
+    public const NO_OP_NODE_KINDS = [
+        ast\AST_ARG_LIST => true,
+        ast\AST_ARRAY => true,
+        ast\AST_ARRAY_ELEM => true,
+        ast\AST_ASSIGN => true,
+        ast\AST_ASSIGN_OP => true,
+        ast\AST_ASSIGN_REF => true,
+        ast\AST_ATTRIBUTE => true,
+        ast\AST_ATTRIBUTE_LIST => true,
+        ast\AST_ATTRIBUTE_GROUP => true,
+        ast\AST_BINARY_OP => true,
+        ast\AST_BREAK => true,
+        ast\AST_CALLABLE_CONVERT => true,
+        ast\AST_CAST => true,
+        ast\AST_CATCH => true,
+        ast\AST_CLASS_CONST => true,
+        ast\AST_CLASS_CONST_DECL => true,
+        ast\AST_CLASS_NAME => true,
+        ast\AST_CLOSURE_USES => true,
+        ast\AST_CLOSURE_VAR => true,
+        ast\AST_CONST => true,
+        ast\AST_CONST_ELEM => true,
+        ast\AST_DIM => true,
+        ast\AST_DO_WHILE => true,
+        ast\AST_ECHO => true,
+        ast\AST_EMPTY => true,
+        ast\AST_ENCAPS_LIST => true,
+        ast\AST_EXIT => true,
+        ast\AST_EXPR_LIST => true,
+        ast\AST_FOREACH => true,
+        ast\AST_ISSET => true,
+        ast\AST_GLOBAL => true,
+        ast\AST_IF => true,
+        ast\AST_IF_ELEM => true,
+        ast\AST_INSTANCEOF => true,
+        ast\AST_MAGIC_CONST => true,
+        ast\AST_MATCH => true,
+        ast\AST_MATCH_ARM => true,
+        ast\AST_MATCH_ARM_LIST => true,
+        ast\AST_METHOD_CALL => true,
+        ast\AST_NAME => true,
+        ast\AST_NAMED_ARG => true,
+        ast\AST_NEW => true,
+        ast\AST_NULLSAFE_METHOD_CALL => true,
+        ast\AST_NULLSAFE_PROP => true,
+        ast\AST_PARAM => true,
+        ast\AST_PARAM_LIST => true,
+        ast\AST_PRE_INC => true,
+        ast\AST_PRINT => true,
+        ast\AST_PROP => true,
+        ast\AST_PROP_DECL => true,
+        ast\AST_PROP_ELEM => true,
+        ast\AST_PROPERTY_HOOK => true,
+        ast\AST_PROPERTY_HOOK_SHORT_BODY => true,
+        ast\AST_STATIC_PROP => true,
+        ast\AST_SWITCH => true,
+        ast\AST_SWITCH_CASE => true,
+        ast\AST_SWITCH_LIST => true,
+        ast\AST_TYPE => true,
+        ast\AST_TYPE_INTERSECTION => true,
+        ast\AST_TYPE_UNION => true,
+        ast\AST_NULLABLE_TYPE => true,
+        ast\AST_UNARY_OP => true,
+        ast\AST_USE_ELEM => true,
+        ast\AST_VAR => true,
+        ast\AST_WHILE => true,
+        ast\AST_CATCH_LIST => true,
+        ast\AST_CLONE => true,
+        ast\AST_CONDITIONAL => true,
+        ast\AST_CONTINUE => true,
+        ast\AST_FOR => true,
+        ast\AST_GOTO => true,
+        ast\AST_HALT_COMPILER => true,
+        ast\AST_INCLUDE_OR_EVAL => true,
+        ast\AST_LABEL => true,
+        ast\AST_METHOD_REFERENCE => true,
+        ast\AST_NAME_LIST => true,
+        ast\AST_POST_DEC => true,
+        ast\AST_POST_INC => true,
+        ast\AST_PRE_DEC => true,
+        ast\AST_REF => true,
+        ast\AST_SHELL_EXEC => true,
+        ast\AST_THROW => true,
+        ast\AST_TRAIT_ADAPTATIONS => true,
+        ast\AST_TRAIT_ALIAS => true,
+        ast\AST_TRAIT_PRECEDENCE => true,
+        ast\AST_TRY => true,
+        ast\AST_UNPACK => true,
+        ast\AST_UNSET => true,
+    ];
 
     // common no-ops
     public function visitArrayElem(Node $node): Context

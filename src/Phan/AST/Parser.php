@@ -167,7 +167,10 @@ class Parser
             }
             // Normalize AST to handle differences between PHP versions
             // (e.g., AST 120+ represents 'clone' as AST_CALL instead of AST_CLONE)
-            ASTNormalizer::normalizeCloneNodes($root_node);
+            // php-ast only creates that call for the (case-insensitive) clone keyword, so skip walking the AST when it's absent.
+            if (\stripos($file_contents, 'clone') !== false) {
+                ASTNormalizer::normalizeCloneNodes($root_node);
+            }
             return $root_node;
         } finally {
             $__no_echo_phan_errors = false;
@@ -440,7 +443,10 @@ class Parser
         if (!$errors) {
             // Normalize AST to handle differences between PHP versions
             // (e.g., AST 120+ represents 'clone' as AST_CALL instead of AST_CLONE)
-            ASTNormalizer::normalizeCloneNodes($node);
+            // (skipped when the source can't contain the clone keyword)
+            if (\stripos($file_contents, 'clone') !== false) {
+                ASTNormalizer::normalizeCloneNodes($node);
+            }
             return $node;
         }
         $file_position_map = new FilePositionMap($file_contents);
@@ -483,7 +489,10 @@ class Parser
         }
         // Normalize AST to handle differences between PHP versions
         // (e.g., AST 120+ represents 'clone' as AST_CALL instead of AST_CLONE)
-        ASTNormalizer::normalizeCloneNodes($node);
+        // (skipped when the source can't contain the clone keyword)
+        if (\stripos($file_contents, 'clone') !== false) {
+            ASTNormalizer::normalizeCloneNodes($node);
+        }
         return $node;
     }
 

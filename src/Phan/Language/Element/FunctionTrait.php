@@ -9,6 +9,7 @@ use ast;
 use ast\Node;
 use Closure;
 use Phan\Analysis\ConditionVisitor;
+use Phan\Analysis\EmitOnlyChecks;
 use Phan\Analysis\FallbackMethodTypesVisitor;
 use Phan\Analysis\NegatedConditionVisitor;
 use Phan\Analysis\ParameterTypesAnalyzer;
@@ -20,6 +21,7 @@ use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Comment\Assertion;
+use Phan\Language\Element\Comment\ConditionalReturnType;
 use Phan\Language\FileRef;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -72,6 +74,12 @@ trait FunctionTrait
     protected $is_inner_scope_initialized  = false;
 
     /**
+     * @var int the number of times that addParamsToScopeOfFunctionOrMethod() added the parameters of a user-defined element of this class
+     * to its scope (the part of ensureScopeInitialized() that the rest of the analysis reads)
+     */
+    private static $scope_initialization_count = 0;
+
+    /**
      * @var ?int set by (at)phan-mandatory-param comments
      */
     protected $last_mandatory_phpdoc_param_offset  = null;
@@ -83,6 +91,11 @@ trait FunctionTrait
     abstract public function getPhanFlagsHasState(int $bits): bool;
 
     abstract public function setPhanFlags(int $phan_flags): void;
+
+    /**
+     * Records a change of the state owned by this element (TypedElement::bumpStateVersion())
+     */
+    abstract protected function bumpStateVersion(): void;
 
     /**
      * @return string
@@ -229,6 +242,13 @@ trait FunctionTrait
     private $return_type_callback = null;
 
     /**
+     * @var ?ConditionalReturnType
+     * The conditional return type from phpdoc (e.g. `(at)return ($x is null ? A : B)`), if any.
+     * Resolved per call site in getDependentReturnType() unless a plugin/template closure takes priority.
+     */
+    private $conditional_return_type = null;
+
+    /**
      * @var ?Closure(CodeBase, Context, FunctionInterface, list<Node|int|string|float>, ?Node):void
      */
     private $function_call_analyzer_callback = null;
@@ -282,6 +302,7 @@ trait FunctionTrait
      */
     public function setNumberOfOptionalParameters(int $number): void
     {
+        $this->bumpStateVersion();
         $this->number_of_optional_parameters = $number;
     }
 
@@ -332,6 +353,7 @@ trait FunctionTrait
      */
     public function setNumberOfRequiredParameters(int $number): void
     {
+        $this->bumpStateVersion();
         $this->number_of_required_parameters = $number;
     }
 
@@ -504,7 +526,13 @@ trait FunctionTrait
      */
     public function needsRecursiveAnalysis(): bool
     {
-        return $this->needs_recursive_analysis ?? ($this->needs_recursive_analysis = $this->computeNeedsRecursiveAnalysis());
+        return $this->needs_recursive_analysis ?? $this->fillNeedsRecursiveAnalysis();
+    }
+
+    private function fillNeedsRecursiveAnalysis(): bool
+    {
+        $this->bumpStateVersion();
+        return $this->needs_recursive_analysis = $this->computeNeedsRecursiveAnalysis();
     }
 
     private function computeNeedsRecursiveAnalysis(): bool
@@ -586,6 +614,7 @@ trait FunctionTrait
      */
     public function setParameterList(array $parameter_list): void
     {
+        $this->bumpStateVersion();
         $this->parameter_list = $parameter_list;
         if (\is_null($this->parameter_list_hash)) {
             $this->initParameterListInfo();
@@ -655,6 +684,7 @@ trait FunctionTrait
      */
     public function setRealParameterList(array $parameter_list): void
     {
+        $this->bumpStateVersion();
         $this->real_parameter_list = \array_map(static function (Parameter $param): Parameter {
             return clone($param);
         }, $parameter_list);
@@ -666,10 +696,24 @@ trait FunctionTrait
     }
 
     /**
+     * Returns the real parameters of this function-like without cloning them (unlike getRealParameterList()).
+     * The caller must not modify them.
+     *
+     * @return list<Parameter>
+     * @internal
+     */
+    public function getRealParameterListWithoutCloning(): array
+    {
+        return $this->real_parameter_list;
+    }
+
+    /**
      * @internal - moves real parameter defaults to the inferred phpdoc parameters
      */
     public function inheritRealParameterDefaults(): void
     {
+        // The parameters record their own changes; this records that this method's parameters changed.
+        $this->bumpStateVersion();
         foreach ($this->real_parameter_list as $i => $real_parameter) {
             $parameter = $this->parameter_list[$i] ?? null;
             if (!$parameter || $parameter->isVariadic() || $real_parameter->isVariadic()) {
@@ -713,6 +757,7 @@ trait FunctionTrait
     public function setRealReturnType(UnionType $union_type): void
     {
         // TODO: was `self` properly resolved already? What about in subclasses?
+        $this->bumpStateVersion();
         $this->real_return_type = $union_type;
     }
 
@@ -738,6 +783,7 @@ trait FunctionTrait
      */
     public function appendParameter(Parameter $parameter): void
     {
+        $this->bumpStateVersion();
         $this->parameter_list[] = $parameter;
     }
 
@@ -749,6 +795,7 @@ trait FunctionTrait
      */
     public function clearParameterList(): void
     {
+        $this->bumpStateVersion();
         $this->parameter_list = [];
         $this->parameter_list_hash = null;
     }
@@ -779,6 +826,7 @@ trait FunctionTrait
         if ($function->isPHPInternal()) {
             return;
         }
+        ++self::$scope_initialization_count;
         $parameter_offset = 0;
         $function_parameter_list = $function->getParameterList();
         $real_parameter_name_map = [];
@@ -883,15 +931,21 @@ trait FunctionTrait
         // annotation does not occur anywhere in the parsed codebase - in that case it cannot
         // find anything. Parsing is complete before this runs, so the flag is final here.
         if (!$is_mandatory_in_phpdoc && $function instanceof Method && $code_base->sawMandatoryParamAnnotation()) {
-            foreach ($function->getOverriddenMethods($code_base) as $overridden_method) {
-                $overridden_comment = $overridden_method->getComment();
-                if ($overridden_comment && $overridden_comment->hasParameterWithNameOrOffset($parameter_name, $parameter_offset)) {
-                    $overridden_param = $overridden_comment->getParameterWithNameOrOffset($parameter_name, $parameter_offset);
-                    if ($overridden_param->isMandatoryInPHPDoc()) {
-                        $is_mandatory_in_phpdoc = true;
-                        break;
+            if ($function !== EmitOnlyChecks::$method_with_skippable_mandatory_param_walk) {
+                $is_mandatory_in_phpdoc = self::isParameterMandatoryInOverriddenMethod($code_base, $function, $parameter_name, $parameter_offset);
+            } elseif (EmitOnlyChecks::$verify_skipped_ancestor_walks) {
+                // PHAN_VERIFY_SKIPPED_CHECKS=1: run the walk, and verify that it found nothing and had no side effects.
+                $is_mandatory_in_phpdoc = EmitOnlyChecks::verifySkippedAncestorWalk(
+                    $code_base,
+                    $function,
+                    EmitOnlyChecks::MANDATORY_PARAM_WALK,
+                    static function () use ($code_base, $function, $parameter_name, $parameter_offset): bool {
+                        return self::isParameterMandatoryInOverriddenMethod($code_base, $function, $parameter_name, $parameter_offset);
                     }
-                }
+                );
+            } else {
+                // Skipped: no method with this name has a parameter marked (at)phan-mandatory-param (see EmitOnlyChecks::beginAnalyzingMethod())
+                EmitOnlyChecks::$skipped_ancestor_walk_count[EmitOnlyChecks::MANDATORY_PARAM_WALK]++;
             }
         }
 
@@ -996,6 +1050,28 @@ trait FunctionTrait
         $parameter->setUnionType($new_parameter_type);
     }
 
+    /**
+     * Returns true if the doc comment of a method that $method overrides marks the parameter $parameter_name
+     * (or the parameter at $parameter_offset) as `@phan-mandatory-param`.
+     */
+    private static function isParameterMandatoryInOverriddenMethod(
+        CodeBase $code_base,
+        Method $method,
+        string $parameter_name,
+        int $parameter_offset
+    ): bool {
+        foreach ($method->getOverriddenMethods($code_base) as $overridden_method) {
+            $overridden_comment = $overridden_method->getComment();
+            if ($overridden_comment && $overridden_comment->hasParameterWithNameOrOffset($parameter_name, $parameter_offset)) {
+                $overridden_param = $overridden_comment->getParameterWithNameOrOffset($parameter_name, $parameter_offset);
+                if ($overridden_param->isMandatoryInPHPDoc()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private static function inferNormalizedTypesOfDefault(UnionType $default_type): UnionType
     {
         $type_set = $default_type->getTypeSet();
@@ -1024,6 +1100,7 @@ trait FunctionTrait
      */
     public function setPHPDocParameterTypeMap(array $parameter_map): void
     {
+        $this->bumpStateVersion();
         $this->phpdoc_parameter_type_map = $parameter_map;
     }
 
@@ -1035,6 +1112,7 @@ trait FunctionTrait
      */
     public function recordOutputReferenceParamName(string $parameter_name): void
     {
+        $this->bumpStateVersion();
         $this->phpdoc_output_references[] = $parameter_name;
     }
 
@@ -1059,6 +1137,7 @@ trait FunctionTrait
      */
     public function setPHPDocReturnType(?UnionType $type): void
     {
+        $this->bumpStateVersion();
         $this->phpdoc_return_type = $type;
     }
 
@@ -1126,6 +1205,7 @@ trait FunctionTrait
         }
         // Record the fact that it has already been analyzed,
         // along with the depth of recursion so far.
+        $this->bumpStateVersion();
         $this->checked_parameter_list_hashes[$hash] = $new_recursion_depth_for_hash;
         return $this->analyze($context, $code_base);
     }
@@ -1152,7 +1232,7 @@ trait FunctionTrait
      */
     public function hasDependentReturnType(): bool
     {
-        return $this->return_type_callback !== null;
+        return $this->return_type_callback !== null || $this->conditional_return_type !== null;
     }
 
     /**
@@ -1164,8 +1244,14 @@ trait FunctionTrait
      */
     public function getDependentReturnType(CodeBase $code_base, Context $context, array $args): UnionType
     {
-        // @phan-suppress-next-line PhanTypeMismatchArgument, PhanTypePossiblyInvalidCallable - Callers should check hasDependentReturnType
-        $result = ($this->return_type_callback)($code_base, $context, $this, $args);
+        $callback = $this->return_type_callback;
+        if ($callback) {
+            // @phan-suppress-next-line PhanTypeMismatchArgument
+            $result = $callback($code_base, $context, $this, $args);
+        } else {
+            // Callers should check hasDependentReturnType
+            $result = $this->resolveConditionalReturnType($code_base, $context, $args) ?? $this->getUnionType();
+        }
         if (!$result->hasRealTypeSet()) {
             $real_return_type = $this->getRealReturnType();
             if (!$real_return_type->isEmpty()) {
@@ -1177,7 +1263,166 @@ trait FunctionTrait
 
     public function setDependentReturnTypeClosure(Closure $closure): void
     {
+        $this->bumpStateVersion();
         $this->return_type_callback = $closure;
+    }
+
+    /**
+     * @return ?ConditionalReturnType the phpdoc conditional return type (e.g. `(at)return ($x is null ? A : B)`), if any
+     */
+    public function getConditionalReturnType(): ?ConditionalReturnType
+    {
+        return $this->conditional_return_type;
+    }
+
+    /**
+     * Sets the phpdoc conditional return type (or removes it, with null)
+     */
+    public function setConditionalReturnType(?ConditionalReturnType $conditional): void
+    {
+        $this->bumpStateVersion();
+        $this->conditional_return_type = $conditional;
+    }
+
+    /**
+     * Emits an issue for every parameter named in the conditional return type that this function doesn't declare.
+     */
+    public function warnAboutUndeclaredConditionalReturnParams(CodeBase $code_base, Context $context): void
+    {
+        $conditional = $this->conditional_return_type;
+        if (!$conditional) {
+            return;
+        }
+        foreach ($conditional->getParamNames() as $param_name) {
+            if ($this->getParamIndexForName($param_name) === null) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::CommentReturnConditionalWithoutRealParam,
+                    $conditional->getLineno() ?: $context->getLineNumberStart(),
+                    $param_name,
+                    $this->getRepresentationForIssue()
+                );
+            }
+        }
+    }
+
+    /**
+     * Resolves the phpdoc conditional return type for a call with the given arguments.
+     *
+     * @param list<Node|int|string|float|UnionType> $args the arguments in declaration order (see ArgumentType::normalizeNamedArgs)
+     * @param array<string,UnionType> $template_type_map the template types inferred for this call, substituted into the
+     *        conditional (including the condition itself, e.g. `$x is T`) before resolving it.
+     * @return ?UnionType null if this function has no conditional return type
+     */
+    public function resolveConditionalReturnType(CodeBase $code_base, Context $context, array $args, array $template_type_map = []): ?UnionType
+    {
+        $conditional = $this->conditional_return_type;
+        if (!$conditional) {
+            return null;
+        }
+        if ($template_type_map && $conditional->hasTemplateTypeRecursive()) {
+            $conditional = $conditional->mapTypes(static function (UnionType $type) use ($template_type_map): UnionType {
+                return $type->withTemplateParameterTypeMap($template_type_map);
+            });
+        }
+        $arg_type_cache = [];
+        $lookup = function (string $param_name) use ($code_base, $context, $args, &$arg_type_cache): ?UnionType {
+            if (!\array_key_exists($param_name, $arg_type_cache)) {
+                $arg_type_cache[$param_name] = $this->computeArgumentTypeForConditionalReturn($code_base, $context, $args, $param_name);
+            }
+            return $arg_type_cache[$param_name];
+        };
+        $result = $this->withoutTypesIncompatibleWithRealReturnType($code_base, $conditional->resolve($code_base, $lookup));
+        if ($result->isEmpty()) {
+            // Nothing in the chosen branch is compatible with the real signature, which is what a successful call returns.
+            $real_return_type = $this->getRealReturnType();
+            $result = $real_return_type->isEmpty() ? $this->getUnionType() : $real_return_type;
+        }
+        if ($this instanceof Method) {
+            $result = $this->withStaticExpandedToDeclaringClass($result);
+        }
+        if (!$result->hasRealTypeSet()) {
+            // Keep the real types of the signature or of (at)phan-real-return, the same as a plain (at)return would.
+            $real_type_set = $this->getUnionType()->getRealTypeSet();
+            if ($real_type_set) {
+                $result = $result->withRealTypeSet($real_type_set);
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Drops every type of $union_type that can't be returned by the real (signature) return type,
+     * the same way Method::computeNewTypeForComment() filters a plain phpdoc (at)return.
+     * `static` is allowed to satisfy a real return type of the declaring class.
+     */
+    private function withoutTypesIncompatibleWithRealReturnType(CodeBase $code_base, UnionType $union_type): UnionType
+    {
+        $real_return_type = $this->getRealReturnType();
+        if ($real_return_type->isEmpty() || $union_type->isEmpty()) {
+            return $union_type;
+        }
+        $context = $this instanceof Method ? $this->getDeclaringClassContext() : $this->getContext();
+        return self::withoutTypesNotCastableToSignatureType($code_base, $context, $real_return_type, $union_type);
+    }
+
+    /**
+     * Returns $union_type without the types that can't be cast to $signature_union_type.
+     * `static` is resolved in $context first, so that `(at)return static` can override a real type of MyClass
+     * (php8 may add a real type of static).
+     */
+    protected static function withoutTypesNotCastableToSignatureType(CodeBase $code_base, Context $context, UnionType $signature_union_type, UnionType $union_type): UnionType
+    {
+        $new_type = $union_type;
+        foreach ($union_type->getTypeSet() as $type) {
+            if ($type->asPHPDocUnionType()->canAnyTypeStrictCastToUnionType($code_base, $signature_union_type)) {
+                continue;
+            }
+            $resolved_type = $type->withStaticResolvedInContext($context);
+            if ($resolved_type === $type || !$resolved_type->asPHPDocUnionType()->canAnyTypeStrictCastToUnionType($code_base, $signature_union_type)) {
+                $new_type = $new_type->withoutType($type);
+            }
+        }
+        return $new_type;
+    }
+
+    /**
+     * @param list<Node|int|string|float|UnionType> $args
+     * @return ?UnionType the type of the argument passed for $param_name, or null if it can't be determined
+     */
+    private function computeArgumentTypeForConditionalReturn(CodeBase $code_base, Context $context, array $args, string $param_name): ?UnionType
+    {
+        $i = $this->getParamIndexForName($param_name);
+        if ($i === null) {
+            return null;
+        }
+        $parameter = $this->parameter_list[$i];
+        if ($parameter->isVariadic()) {
+            return null;
+        }
+        if (\array_key_exists($i, $args)) {
+            $arg = $args[$i];
+            if ($arg instanceof UnionType) {
+                return $arg;
+            }
+            if ($arg instanceof Node && ($arg->kind === ast\AST_UNPACK || $arg->kind === ast\AST_NAMED_ARG)) {
+                // Argument unpacking (or a named argument that didn't match a parameter) at this position:
+                // it's unknown which argument ends up in this parameter.
+                return null;
+            }
+            return UnionTypeVisitor::unionTypeFromNode($code_base, $context, $arg);
+        }
+        foreach ($args as $arg) {
+            if ($arg instanceof Node && $arg->kind === ast\AST_UNPACK) {
+                // No explicit argument for this position, but an unpacked array may fill it.
+                return null;
+            }
+        }
+        if ($parameter->hasDefaultValue()) {
+            return $parameter->getDefaultValueLiteralType();
+        }
+        return null;
     }
 
     /**
@@ -1210,10 +1455,41 @@ trait FunctionTrait
     public function setFunctionCallAnalyzer(Closure $closure): void
     {
         $closure_id = spl_object_id($closure);
+        $this->bumpStateVersion();
         $this->function_call_analyzer_callback_set = [
             $closure_id => true
         ];
         $this->function_call_analyzer_callback = $closure;
+    }
+
+    /**
+     * @return list<int> the spl_object_id() of the plugins (or of the closures added without a plugin) whose function call
+     * analyzers this has, in the order they were added (for PHAN_DUMP_METHOD_STATE_DIGEST_EXTENDED=1)
+     * @internal
+     */
+    public function getFunctionCallAnalyzerOwnerIds(): array
+    {
+        return \array_keys($this->function_call_analyzer_callback_set);
+    }
+
+    /**
+     * @return bool true if a plugin's return type override closure was set (see setDependentReturnTypeClosure())
+     * (for PHAN_DUMP_METHOD_STATE_DIGEST_EXTENDED=1)
+     * @internal
+     */
+    public function hasReturnTypeCallback(): bool
+    {
+        return $this->return_type_callback !== null;
+    }
+
+    /**
+     * @return bool true if analyzeReturnTypes() ran for this function or method
+     * (for PHAN_DUMP_METHOD_STATE_DIGEST_EXTENDED=1)
+     * @internal
+     */
+    public function didAnalyzeReturnTypes(): bool
+    {
+        return $this->did_analyze_return_types;
     }
 
     /**
@@ -1226,6 +1502,7 @@ trait FunctionTrait
         if (isset($this->function_call_analyzer_callback_set[$closure_id])) {
             return;
         }
+        $this->bumpStateVersion();
         $this->function_call_analyzer_callback_set[$closure_id] = true;
         $old_closure = $this->function_call_analyzer_callback;
         if ($old_closure) {
@@ -1244,6 +1521,7 @@ trait FunctionTrait
 
     public function setComment(Comment $comment): void
     {
+        $this->bumpStateVersion();
         $this->comment = $comment;
     }
 
@@ -1269,40 +1547,14 @@ trait FunctionTrait
             return;
         }
         $this->is_inner_scope_initialized = true;
+        $this->bumpStateVersion();
 
         // Add $this variable for non-static methods in generic classes
         // This must run for ALL methods, not just those with docblocks
         if ($this instanceof Method && !$this->isStatic()) {
-            $context = $this->getContext();
-            if ($context->isInClassScope()) {
-                $class_fqsen = $context->getClassFQSEN();
-                $class = $code_base->getClassByFQSEN($class_fqsen);
-                $template_type_map = $class->getTemplateTypeMap();
-
-                if ($template_type_map) {
-                    // Create template parameter type list for the class type
-                    $template_parameter_type_list = [];
-                    foreach ($template_type_map as $template_type) {
-                        $template_parameter_type_list[] = $template_type->asPHPDocUnionType();
-                    }
-
-                    // Create static type with template parameters (e.g., static<T>)
-                    // This preserves late-static binding while maintaining template parameter info
-                    $static_type = \Phan\Language\Type\StaticType::instanceWithTemplateTypeList(
-                        false,  // not nullable
-                        $template_parameter_type_list
-                    );
-                    $this_type = $static_type->asRealUnionType();
-
-                    // Add the $this variable to the method's scope
-                    $this_variable = new Variable(
-                        $context,
-                        'this',
-                        $this_type,
-                        0  // flags
-                    );
-                    $this->getInternalScope()->addVariable($this_variable);
-                }
+            $this_variable = $this->createThisVariableOfGenericClass($code_base);
+            if ($this_variable) {
+                $this->getInternalScope()->addVariable($this_variable);
             }
         }
 
@@ -1314,6 +1566,54 @@ trait FunctionTrait
             }
             self::addParamsToScopeOfFunctionOrMethod($this->getContext(), $code_base, $this, $comment);
         }
+    }
+
+    /**
+     * If this non-static method is declared in a generic class, create the variable `$this` (of type `static<T...>`)
+     * to add to its scope. (Part of ensureScopeInitialized())
+     */
+    private function createThisVariableOfGenericClass(CodeBase $code_base): ?Variable
+    {
+        $context = $this->getContext();
+        if (!$context->isInClassScope()) {
+            return null;
+        }
+        $class_fqsen = $context->getClassFQSEN();
+        $class = $code_base->getClassByFQSEN($class_fqsen);
+        $template_type_map = $class->getTemplateTypeMap();
+        if (!$template_type_map) {
+            return null;
+        }
+        // Create template parameter type list for the class type
+        $template_parameter_type_list = [];
+        foreach ($template_type_map as $template_type) {
+            $template_parameter_type_list[] = $template_type->asPHPDocUnionType();
+        }
+
+        // Create static type with template parameters (e.g., static<T>)
+        // This preserves late-static binding while maintaining template parameter info
+        $static_type = \Phan\Language\Type\StaticType::instanceWithTemplateTypeList(
+            false,  // not nullable
+            $template_parameter_type_list
+        );
+        $this_type = $static_type->asRealUnionType();
+
+        // The $this variable to add to the method's scope
+        return new Variable(
+            $context,
+            'this',
+            $this_type,
+            0  // flags
+        );
+    }
+
+    /**
+     * @return int the number of times that ensureScopeInitialized() added the parameters of a user-defined element of the class
+     * that uses this trait to its scope (for PHAN_VERIFY_SKIPPED_CHECKS=1)
+     */
+    public static function getScopeInitializationCount(): int
+    {
+        return self::$scope_initialization_count;
     }
 
     /**
@@ -1390,7 +1690,13 @@ trait FunctionTrait
      */
     public function asFunctionLikeDeclarationType(): FunctionLikeDeclarationType
     {
-        return $this->as_closure_declaration_type ?? ($this->as_closure_declaration_type = $this->createFunctionLikeDeclarationType());
+        return $this->as_closure_declaration_type ?? $this->fillFunctionLikeDeclarationType();
+    }
+
+    private function fillFunctionLikeDeclarationType(): FunctionLikeDeclarationType
+    {
+        $this->bumpStateVersion();
+        return $this->as_closure_declaration_type = $this->createFunctionLikeDeclarationType();
     }
 
     /**
@@ -1453,7 +1759,13 @@ trait FunctionTrait
      */
     public function getReturnTypeAsGeneratorTemplateType(): Type
     {
-        return $this->as_generator_template_type ?? ($this->as_generator_template_type = $this->getUnionType()->asGeneratorTemplateType());
+        return $this->as_generator_template_type ?? $this->fillReturnTypeAsGeneratorTemplateType();
+    }
+
+    private function fillReturnTypeAsGeneratorTemplateType(): Type
+    {
+        $this->bumpStateVersion();
+        return $this->as_generator_template_type = $this->getUnionType()->asGeneratorTemplateType();
     }
 
     /**
@@ -1464,15 +1776,19 @@ trait FunctionTrait
     /**
      * Check this method's return types (phpdoc and real) to make sure they're valid,
      * and infer a return type from the combination of the signature and phpdoc return types.
+     *
+     * @param int $emit_only_checks EmitOnlyChecks::SKIP to only look up the classes of a return type the first time it is seen
+     *                              (for elements declared in files excluded from analysis, see EmitOnlyChecks::modeForClassLookup()).
      */
-    public function analyzeReturnTypes(CodeBase $code_base): void
+    public function analyzeReturnTypes(CodeBase $code_base, int $emit_only_checks = EmitOnlyChecks::RUN): void
     {
         if ($this->did_analyze_return_types) {
             return;
         }
         $this->did_analyze_return_types = true;
+        $this->bumpStateVersion();
         try {
-            $this->analyzeReturnTypesInner($code_base);
+            $this->analyzeReturnTypesInner($code_base, $emit_only_checks);
         } catch (RecursionDepthException) {
         }
     }
@@ -1487,7 +1803,7 @@ trait FunctionTrait
      */
     abstract public function getUnionTypeWithUnmodifiedStatic(): UnionType;
 
-    private function analyzeReturnTypesInner(CodeBase $code_base): void
+    private function analyzeReturnTypesInner(CodeBase $code_base, int $emit_only_checks): void
     {
         if ($this->isPHPInternal()) {
             // nothing to do, no known Node
@@ -1499,9 +1815,107 @@ trait FunctionTrait
         $context = $this->getContext();
         // TODO: use method->getPHPDocReturnType() and getRealReturnType() to check compatibility, like analyzeParameterTypesDocblockSignaturesMatch
 
-        // Look at each parameter to make sure their types
-        // are valid
+        $lookup = EmitOnlyChecks::modeForClassLookup($emit_only_checks, $this instanceof Method ? 'method return' : 'function return', $return_type);
+        if ($lookup === EmitOnlyChecks::RUN) {
+            $this->checkReturnTypeClassesExist($code_base, $return_type);
+        } elseif ($lookup === EmitOnlyChecks::VERIFY) {
+            // @phan-suppress-next-line PhanTypeMismatchArgument TODO: Support inferring this is FunctionInterface
+            EmitOnlyChecks::verify($this, 'FunctionTrait::checkReturnTypeClassesExist()', function () use ($code_base, $return_type): void {
+                $this->checkReturnTypeClassesExist($code_base, $return_type);
+            });
+        }
+        // This narrows the return type to the phpdoc return type (and emits issues if they're incompatible)
+        if (Config::getValue('check_docblock_signature_return_type_match') && !$real_return_type->isEmpty() && ($phpdoc_return_type instanceof UnionType) && !$phpdoc_return_type->isEmpty()) {
+            $resolved_real_return_type = $real_return_type->withStaticResolvedInContext($context);
+            foreach ($phpdoc_return_type->getTypeSet() as $phpdoc_type) {
+                $is_exclusively_narrowed = $phpdoc_type->isExclusivelyNarrowedFormOrEquivalentTo(
+                    $resolved_real_return_type,
+                    $context,
+                    $code_base
+                );
+                // Make sure that the commented type is a narrowed
+                // or equivalent form of the syntax-level declared
+                // return type.
+                if (!$is_exclusively_narrowed) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::TypeMismatchDeclaredReturn,
+                        // @phan-suppress-next-line PhanAccessMethodInternal, PhanTypeMismatchArgument TODO: Support inferring this is FunctionInterface
+                        ParameterTypesAnalyzer::guessCommentReturnLineNumber($this) ?? $context->getLineNumberStart(),
+                        $this->getName(),
+                        $phpdoc_type->__toString(),
+                        $real_return_type->__toString()
+                    );
+                }
+                if ($is_exclusively_narrowed && Config::getValue('prefer_narrowed_phpdoc_return_type') && !$phpdoc_return_type->isNeverType()) {
+                    $normalized_phpdoc_return_type = ParameterTypesAnalyzer::normalizeNarrowedParamType($phpdoc_return_type, $real_return_type);
+                    if ($normalized_phpdoc_return_type) {
+                        // TODO: How does this currently work when there are multiple types in the union type that are compatible?
+                        $real_type_set = $real_return_type->getTypeSet();
+                        $new_return_type = $normalized_phpdoc_return_type->withRealTypeSet($real_type_set);
+                        if ($real_type_set) {
+                            $new_return_type = $new_return_type->asNormalizedTypes();
+                        }
+                        $this->setUnionType($new_return_type);
+                    } else {
+                        // This check isn't urgent to fix, and is specific to nullable casting rules,
+                        // so use a different issue type.
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::TypeMismatchDeclaredReturnNullable,
+                            // @phan-suppress-next-line PhanAccessMethodInternal, PhanTypeMismatchArgument TODO: Support inferring this is FunctionInterface
+                            ParameterTypesAnalyzer::guessCommentReturnLineNumber($this) ?? $context->getLineNumberStart(),
+                            $this->getName(),
+                            $phpdoc_type->__toString(),
+                            $real_return_type->__toString()
+                        );
+                    }
+                }
+            }
+        }
+        if ($return_type->isEmpty()) {
+            if ($this->hasReturn()) {
+                if ($this instanceof Method) {
+                    $union_type = $this->getUnionTypeOfMagicIfKnown();
+                    if ($union_type) {
+                        $this->setUnionType($union_type);
+                    }
+                }
+            } else {
+                if ($this instanceof Func || ($this instanceof Method && ($this->isPrivate() || $this->isEffectivelyFinal() || $this->isMagicAndVoid() || $this->getClass($code_base)->isFinal()))) {
+                    $this->setUnionType(VoidType::instance(false)->asPHPDocUnionType());
+                }
+            }
+        }
+        $lookup = EmitOnlyChecks::modeForClassLookup($emit_only_checks, 'real return', $real_return_type);
+        if ($lookup === EmitOnlyChecks::RUN) {
+            $this->checkRealReturnTypeIsNotTrait($code_base, $real_return_type);
+        } elseif ($lookup === EmitOnlyChecks::VERIFY) {
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument TODO: Support inferring this is FunctionInterface
+            EmitOnlyChecks::verify($this, 'FunctionTrait::checkRealReturnTypeIsNotTrait()', function () use ($code_base, $real_return_type): void {
+                $this->checkRealReturnTypeIsNotTrait($code_base, $real_return_type);
+            });
+        }
+        if ($this->comment) {
+            // Add plugins **after** the phpdoc and real comment types were merged.
+            // Plugins affecting return types (for template in (at)return)
+            $template_type_list = $this->comment->getTemplateTypeList();
+            if ($template_type_list) {
+                $this->addClosureForDependentTemplateType($code_base, $context, $template_type_list);
+            }
+        }
+    }
 
+    /**
+     * Emit issues about the classes in the declared return type of this function-like (before phpdoc narrowing):
+     * undeclared classes, template types of static methods, and classes that are defined more than once.
+     * (Looking up the classes loads internal classes, see EmitOnlyChecks::modeForClassLookup())
+     */
+    private function checkReturnTypeClassesExist(CodeBase $code_base, UnionType $return_type): void
+    {
+        $context = $this->getContext();
         // Look at each type in the function's return union type
         foreach ($return_type->withFlattenedArrayShapeOrLiteralTypeInstances()->getTypeSet() as $outer_type) {
             foreach ($outer_type->getReferencedClasses() as $type) {
@@ -1535,7 +1949,7 @@ trait FunctionTrait
                         [$this->getNameForIssue(), (string)$outer_type],
                         IssueFixSuggester::suggestSimilarClass($code_base, $this->getContext(), $type_fqsen, null, 'Did you mean', IssueFixSuggester::CLASS_SUGGEST_CLASSES_AND_TYPES_AND_VOID)
                     );
-                } elseif ($code_base->hasClassWithFQSEN($type_fqsen->withAlternateId(1))) {
+                } elseif ($code_base->mayHaveAlternatesOfClass($type_fqsen) && $code_base->hasClassWithFQSEN($type_fqsen->withAlternateId(1))) {
                     UnionType::emitRedefinedClassReferenceWarning(
                         $code_base,
                         $this->getContext(),
@@ -1544,70 +1958,13 @@ trait FunctionTrait
                 }
             }
         }
-        if (Config::getValue('check_docblock_signature_return_type_match') && !$real_return_type->isEmpty() && ($phpdoc_return_type instanceof UnionType) && !$phpdoc_return_type->isEmpty()) {
-            $resolved_real_return_type = $real_return_type->withStaticResolvedInContext($context);
-            foreach ($phpdoc_return_type->getTypeSet() as $phpdoc_type) {
-                $is_exclusively_narrowed = $phpdoc_type->isExclusivelyNarrowedFormOrEquivalentTo(
-                    $resolved_real_return_type,
-                    $context,
-                    $code_base
-                );
-                // Make sure that the commented type is a narrowed
-                // or equivalent form of the syntax-level declared
-                // return type.
-                if (!$is_exclusively_narrowed) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::TypeMismatchDeclaredReturn,
-                        // @phan-suppress-next-line PhanAccessMethodInternal, PhanPartialTypeMismatchArgument TODO: Support inferring this is FunctionInterface
-                        ParameterTypesAnalyzer::guessCommentReturnLineNumber($this) ?? $context->getLineNumberStart(),
-                        $this->getName(),
-                        $phpdoc_type->__toString(),
-                        $real_return_type->__toString()
-                    );
-                }
-                if ($is_exclusively_narrowed && Config::getValue('prefer_narrowed_phpdoc_return_type') && !$phpdoc_return_type->isNeverType()) {
-                    $normalized_phpdoc_return_type = ParameterTypesAnalyzer::normalizeNarrowedParamType($phpdoc_return_type, $real_return_type);
-                    if ($normalized_phpdoc_return_type) {
-                        // TODO: How does this currently work when there are multiple types in the union type that are compatible?
-                        $real_type_set = $real_return_type->getTypeSet();
-                        $new_return_type = $normalized_phpdoc_return_type->withRealTypeSet($real_type_set);
-                        if ($real_type_set) {
-                            $new_return_type = $new_return_type->asNormalizedTypes();
-                        }
-                        $this->setUnionType($new_return_type);
-                    } else {
-                        // This check isn't urgent to fix, and is specific to nullable casting rules,
-                        // so use a different issue type.
-                        Issue::maybeEmit(
-                            $code_base,
-                            $context,
-                            Issue::TypeMismatchDeclaredReturnNullable,
-                            // @phan-suppress-next-line PhanAccessMethodInternal, PhanPartialTypeMismatchArgument TODO: Support inferring this is FunctionInterface
-                            ParameterTypesAnalyzer::guessCommentReturnLineNumber($this) ?? $context->getLineNumberStart(),
-                            $this->getName(),
-                            $phpdoc_type->__toString(),
-                            $real_return_type->__toString()
-                        );
-                    }
-                }
-            }
-        }
-        if ($return_type->isEmpty()) {
-            if ($this->hasReturn()) {
-                if ($this instanceof Method) {
-                    $union_type = $this->getUnionTypeOfMagicIfKnown();
-                    if ($union_type) {
-                        $this->setUnionType($union_type);
-                    }
-                }
-            } else {
-                if ($this instanceof Func || ($this instanceof Method && ($this->isPrivate() || $this->isEffectivelyFinal() || $this->isMagicAndVoid() || $this->getClass($code_base)->isFinal()))) {
-                    $this->setUnionType(VoidType::instance(false)->asPHPDocUnionType());
-                }
-            }
-        }
+    }
+
+    /**
+     * Emit an issue if the real return type of this function-like is a trait
+     */
+    private function checkRealReturnTypeIsNotTrait(CodeBase $code_base, UnionType $real_return_type): void
+    {
         foreach ($real_return_type->getUniqueFlattenedTypeSet() as $type) {
             if (!$type->isObjectWithKnownFQSEN()) {
                 continue;
@@ -1621,20 +1978,12 @@ trait FunctionTrait
             if ($class->isTrait()) {
                 Issue::maybeEmit(
                     $code_base,
-                    $context,
+                    $this->getContext(),
                     Issue::TypeInvalidTraitReturn,
                     $this->getFileRef()->getLineNumberStart(),
                     $this->getNameForIssue(),
                     $type_fqsen->__toString()
                 );
-            }
-        }
-        if ($this->comment) {
-            // Add plugins **after** the phpdoc and real comment types were merged.
-            // Plugins affecting return types (for template in (at)return)
-            $template_type_list = $this->comment->getTemplateTypeList();
-            if ($template_type_list) {
-                $this->addClosureForDependentTemplateType($code_base, $context, $template_type_list);
             }
         }
     }
@@ -1657,6 +2006,10 @@ trait FunctionTrait
             // used in `@return`
             return true;
         }
+        if ($this->conditional_return_type?->usesTemplateType($type)) {
+            // used in the condition of `@return ($x is T ? ... : ...)` (the branches are part of getUnionType())
+            return true;
+        }
 
         if ($this->comment) {
             foreach ($this->comment->getParamAssertionMap() as $assertion) {
@@ -1675,8 +2028,9 @@ trait FunctionTrait
      */
     private function addClosureForDependentTemplateType(CodeBase $code_base, Context $context, array $template_type_list): void
     {
-        if ($this->hasDependentReturnType()) {
+        if ($this->return_type_callback !== null) {
             // We already added this or this conflicts with a plugin.
+            // (A conditional return type alone doesn't block this: it's composed into the closure below)
             return;
         }
         if (!$template_type_list) {
@@ -1787,7 +2141,11 @@ trait FunctionTrait
             foreach ($parameter_extractor_map as $name => $closure) {
                 $template_type_map[$name] = $closure($args_types, $context);
             }
-            return $function->getUnionType()->withTemplateParameterTypeMap($template_type_map);
+            // A conditional return type (`(at)return ($x is null ? T : int)`) picks the branch first (with the inferred
+            // templates substituted into the condition), then templates are substituted into the result.
+            // Pass the raw $args so that argument unpacking is still detected.
+            $base_type = $function->resolveConditionalReturnType($code_base, $context, $args, $template_type_map) ?? $function->getUnionType();
+            return $base_type->withTemplateParameterTypeMap($template_type_map);
         };
         $this->setDependentReturnTypeClosure($analyzer);
     }
@@ -2322,7 +2680,13 @@ trait FunctionTrait
      */
     public function getOriginalReturnType(): UnionType
     {
-        return $this->original_return_type ?? ($this->original_return_type = $this->getUnionType());
+        return $this->original_return_type ?? $this->fillOriginalReturnType();
+    }
+
+    private function fillOriginalReturnType(): UnionType
+    {
+        $this->bumpStateVersion();
+        return $this->original_return_type = $this->getUnionType();
     }
 
     /**
@@ -2332,6 +2696,7 @@ trait FunctionTrait
      */
     public function setOriginalReturnType(): void
     {
+        $this->bumpStateVersion();
         $this->original_return_type = $this->getUnionType();
     }
 
@@ -2340,6 +2705,7 @@ trait FunctionTrait
         if (isset($this->last_mandatory_phpdoc_param_offset) && $parameter_offset <= $this->last_mandatory_phpdoc_param_offset) {
             return;
         }
+        $this->bumpStateVersion();
         $this->last_mandatory_phpdoc_param_offset = $parameter_offset;
     }
 

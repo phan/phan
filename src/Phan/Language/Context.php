@@ -27,6 +27,7 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
+use Phan\Language\Scope\BranchScope;
 use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Library\StringUtil;
@@ -507,8 +508,29 @@ class Context extends FileRef
     public function withScopeVariable(
         Variable $variable
     ): Context {
+        $scope = $this->scope;
+        $new_type = $variable->getUnionType();
+        if ($new_type->isEmpty() && !$new_type->isDefinitelyUndefined() && $new_type !== UnionType::impossible()) {
+            // The condition visitors narrow a variable with this method. When no type of the variable can satisfy the
+            // condition (e.g. `!is_string($s)` on a string, `$array <= 1`, `!in_array($x, [...], true)` removing every
+            // literal), the branch is impossible. Mark that with a distinct empty type: an empty type is otherwise
+            // indistinguishable from an unknown one (e.g. an assignment with no inferable type), and ContextMergeVisitor
+            // must let a dead branch contribute nothing to the merged type while an unknown branch contributes `mixed`.
+            $previous = $scope->getVariableByNameOrNull($variable->getName());
+            if ($previous && !$previous->getUnionType()->isEmpty()) {
+                $variable->setUnionType(UnionType::impossible());
+            }
+        }
+        if ($scope instanceof GlobalScope) {
+            // GlobalScope::withVariable() adds the variable to the global scope itself, which every statement of the file
+            // (and every function using `global`) shares. The condition visitors use this method to narrow a variable
+            // within one branch, e.g. the condition of a ternary used as an argument (ArgumentType) or in a return expression,
+            // so narrow in a BranchScope on top of the global scope instead (BlockAnalysisVisitor already does this for
+            // statements, and folds the result back into the global scope after the statement).
+            $scope = new BranchScope($scope);
+        }
         return $this->withScope(
-            $this->scope->withVariable($variable)
+            $scope->withVariable($variable)
         );
     }
 
@@ -793,8 +815,13 @@ class Context extends FileRef
 
     private static function normalizeBaselineSymbol(string $symbol): string
     {
-        $symbol = \preg_replace('/anonymous_class_[0-9a-f]+/i', 'anonymous_class', $symbol) ?? $symbol;
-        $symbol = \preg_replace('/\\\\closure_[0-9a-f]+/i', '\\closure', $symbol) ?? $symbol;
+        // The regexes can only match if these substrings occur, and most symbols contain neither.
+        if (\stripos($symbol, 'anonymous_class_') !== false) {
+            $symbol = \preg_replace('/anonymous_class_[0-9a-f]+/i', 'anonymous_class', $symbol) ?? $symbol;
+        }
+        if (\stripos($symbol, '\\closure_') !== false) {
+            $symbol = \preg_replace('/\\\\closure_[0-9a-f]+/i', '\\closure', $symbol) ?? $symbol;
+        }
         return $symbol;
     }
 
@@ -875,6 +902,7 @@ class Context extends FileRef
         CodeBase $code_base,
         string $issue_name
     ): bool {
+        ++Issue::$emit_attempt_count;
         if ($code_base->hasFileLevelSuppression($this->file, $issue_name)) {
             return true;
         }

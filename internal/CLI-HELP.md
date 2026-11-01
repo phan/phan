@@ -346,6 +346,16 @@ Extended help:
   Prints a summary of memory usage and maximum memory usage.
   This is accurate when there is one analysis process.
 
+ --dump-phase-timings
+  Prints the wall clock time, CPU time and memory usage of each phase
+  of the analysis (and of each analysis worker) to stderr when Phan exits,
+  along with per-file parse/analysis time statistics.
+
+ --phase-timings-json <path>
+  Writes the same phase timings as `--dump-phase-timings` to <path> as JSON.
+  Relative paths are resolved against the working directory
+  (after `--project-root-directory` is applied).
+
  --markdown-issue-messages
   Emit issue messages with markdown formatting.
 

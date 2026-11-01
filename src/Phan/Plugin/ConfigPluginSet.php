@@ -62,6 +62,7 @@ use Phan\PluginV3\AnalyzeFunctionCallCapability;
 use Phan\PluginV3\AnalyzeFunctionCapability;
 use Phan\PluginV3\AnalyzeLiteralStatementCapability;
 use Phan\PluginV3\AnalyzeMethodCapability;
+use Phan\PluginV3\AnalyzeMethodSkipsInheritedCopiesCapability;
 use Phan\PluginV3\AnalyzePropertyCapability;
 use Phan\PluginV3\AutomaticFixCapability;
 use Phan\PluginV3\BeforeAnalyzeCapability;
@@ -71,6 +72,7 @@ use Phan\PluginV3\BeforeLoopBodyAnalysisCapability;
 use Phan\PluginV3\BeforeLoopBodyAnalysisVisitor;
 use Phan\PluginV3\FinalizeProcessCapability;
 use Phan\PluginV3\HandleLazyLoadInternalFunctionCapability;
+use Phan\PluginV3\HandleLazyLoadInternalMethodCapability;
 use Phan\PluginV3\MergeVariableInfoCapability;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
 use Phan\PluginV3\PluginAwarePreAnalysisVisitor;
@@ -186,6 +188,9 @@ final class ConfigPluginSet extends PluginV3 implements
 
     /** @var list<HandleLazyLoadInternalFunctionCapability>|null - plugins to modify Phan's information about internal Funcs when loaded for the first time */
     private $handle_lazy_load_internal_function_plugin_set;
+
+    /** @var list<HandleLazyLoadInternalMethodCapability>|null - plugins to modify Phan's information about the Methods of internal classes when loaded for the first time */
+    private $handle_lazy_load_internal_method_plugin_set;
 
 
     /** @var list<FinalizeProcessCapability>|null - plugins to call finalize() on after analysis is finished. */
@@ -737,6 +742,24 @@ final class ConfigPluginSet extends PluginV3 implements
     }
 
     /**
+     * Returns the class names of the loaded plugins implementing AnalyzeMethodCapability that do not implement
+     * AnalyzeMethodSkipsInheritedCopiesCapability (lazy_inherited_methods is disabled if there are any).
+     *
+     * @return list<string>
+     * @internal
+     */
+    public function getAnalyzeMethodPluginClassesWithoutLazyMarker(): array
+    {
+        $result = [];
+        foreach ($this->analyze_method_plugin_set ?? [] as $plugin) {
+            if (!$plugin instanceof AnalyzeMethodSkipsInheritedCopiesCapability) {
+                $result[] = \get_class($plugin);
+            }
+        }
+        return $result;
+    }
+
+    /**
      * @return list<PluginV3&AnalyzeCallableArgumentCapability>
      * @internal
      */
@@ -770,13 +793,15 @@ final class ConfigPluginSet extends PluginV3 implements
      */
     public static function getCallableParamIndices(FunctionInterface $function): array
     {
+        // This runs for every parameter of every function and method: create the (stateless) type matcher once.
+        static $is_callable_type = null;
         $result = [];
         foreach ($function->getParameterList() as $i => $param) {
             $union_type = $param->getUnionType();
             if ($union_type->isEmpty()) {
                 continue;
             }
-            if ($union_type->hasTypeMatchingCallback(static function (Type $type): bool {
+            if ($union_type->hasTypeMatchingCallback($is_callable_type ??= static function (Type $type): bool {
                 return $type instanceof CallableInterface || $type instanceof ClosureType;
             })) {
                 $result[$i] = true;
@@ -1148,6 +1173,7 @@ final class ConfigPluginSet extends PluginV3 implements
         $this->analyze_function_call_plugin_set     = self::filterByClass($plugin_set, AnalyzeFunctionCallCapability::class);
         $this->analyze_callable_argument_plugin_set = self::filterByClass($plugin_set, AnalyzeCallableArgumentCapability::class);
         $this->handle_lazy_load_internal_function_plugin_set = self::filterByClass($plugin_set, HandleLazyLoadInternalFunctionCapability::class);
+        $this->handle_lazy_load_internal_method_plugin_set = self::filterByClass($plugin_set, HandleLazyLoadInternalMethodCapability::class);
         $this->unused_suppression_plugin        = self::findUnusedSuppressionPlugin($plugin_set);
         self::registerIssueFixerClosures($plugin_set);
         self::registerMergeVariableInfoClosure($plugin_set);
@@ -1575,6 +1601,34 @@ final class ConfigPluginSet extends PluginV3 implements
             $closure = self::buildCallableArgumentAnalyzer($function, $plugin_closures);
             if ($closure) {
                 $function->addFunctionCallAnalyzer($closure, $this);
+            }
+        }
+    }
+
+    /**
+     * If an internal class is loaded after the start of the analysis phase, give its methods what
+     * Analysis::loadMethodPlugins() gave the methods of the classes loaded before it: the HandleLazyLoadInternalMethodCapability
+     * plugins (e.g. the callable parameter checks of CallableParamPlugin) and the analyzers of the
+     * AnalyzeCallableArgumentCapability plugins. The copies of these methods that classes inherit later are clones, which keep them.
+     */
+    public function handleLazyLoadInternalClass(CodeBase $code_base, Clazz $class): void
+    {
+        if (!$this->did_analyze_phase_start) {
+            return;
+        }
+        if (!$this->handle_lazy_load_internal_method_plugin_set && !$this->analyze_callable_argument_plugin_set) {
+            return;
+        }
+        $plugin_closures = $this->analyze_callable_argument_plugin_set ? $this->getOrCreateCallableArgumentClosures($code_base) : [];
+        foreach ($code_base->getMethodMapByFullyQualifiedClassName($class->getFQSEN()) as $method) {
+            foreach ($this->handle_lazy_load_internal_method_plugin_set as $plugin) {
+                $plugin->handleLazyLoadInternalMethod($code_base, $method);
+            }
+            if ($plugin_closures) {
+                $closure = self::buildCallableArgumentAnalyzer($method, $plugin_closures);
+                if ($closure) {
+                    $method->addFunctionCallAnalyzer($closure, $this);
+                }
             }
         }
     }

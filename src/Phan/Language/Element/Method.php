@@ -8,8 +8,10 @@ namespace Phan\Language\Element;
 use ast;
 use ast\Node;
 use Phan\Analysis\Analyzable;
+use Phan\Analysis\CloneReplaySnapshot;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
+use Phan\CodeBase\InheritedMethodLink;
 use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Context;
@@ -60,6 +62,7 @@ class Method extends ClassElement implements FunctionInterface
 
     /**
      * @var Set<FullyQualifiedMethodName> FQSENs of methods potentially overriding this one.
+     * (This Set is shared with clones, so adding to it does not change the state version.)
      */
     private $method_overrides;
 
@@ -70,8 +73,36 @@ class Method extends ClassElement implements FunctionInterface
 
     /**
      * @var ?array<int,Method> cache of overridden methods (abstract before concrete)
+     * (Filling it does not change the state version: clones reset it.)
      */
     private $overridden_methods_cache = null;
+
+    /**
+     * @var ?Method the method that Clazz::addMethod() cloned to create this inherited method, if it was created that way.
+     *              Used by Analysis\CloneReplay during the method analysis phase - do not use this.
+     */
+    private $clone_source = null;
+
+    /**
+     * @var int the rank of this method in the order in which methods were added to the code base
+     * (set by CodeBase::addMethod(), 0 if it was not added). Clones keep it until they are added themselves.
+     * A later change that creates inherited method copies lazily uses it to process those copies in the order
+     * in which they would have been added.
+     */
+    private $eager_ordinal = 0;
+
+    /**
+     * @var bool whether this is a clone whose parameter or return types were specialized by template substitution
+     * (cloneWithTemplateParameterTypeMap()), e.g. the copy of `Base<T>::run(T $x)` in a class extending `Base<callable>`.
+     * Kept by further clones of such a clone.
+     */
+    private $is_template_specialized = false;
+
+    /**
+     * The phan flags that the declaration analysis replayed by Analysis\CloneReplay does not read
+     * (IS_OVERRIDE and IS_OVERRIDDEN_BY_ANOTHER are set for each clone, HAS_TEMPLATE_TYPE is overwritten)
+     */
+    private const CLONE_REPLAY_IGNORED_PHAN_FLAGS = Flags::IS_OVERRIDE | Flags::IS_OVERRIDDEN_BY_ANOTHER | Flags::HAS_TEMPLATE_TYPE;
 
     /**
      * @var array<string,UnionType> map of static property names to the union types assigned within this method.
@@ -145,8 +176,11 @@ class Method extends ClassElement implements FunctionInterface
 
     public function __clone()
     {
-        $this->setInternalScope(clone($this->getInternalScope()));
+        // (Not setInternalScope(): a clone starts with the state version of the method it was cloned from.)
+        $this->internal_scope = clone($this->internal_scope);
         $this->overridden_methods_cache = null;
+        // Only Clazz::addMethod() records the method that a clone was created from
+        $this->clone_source = null;
     }
 
     /**
@@ -186,6 +220,10 @@ class Method extends ClassElement implements FunctionInterface
                 $this->recordHasTemplateType(true);
                 return;
             }
+        }
+        if ($this->conditional_return_type?->hasTemplateTypeRecursive()) {
+            $this->recordHasTemplateType(true);
+            return;
         }
         $this->recordHasTemplateType(false);
     }
@@ -455,6 +493,8 @@ class Method extends ClassElement implements FunctionInterface
             $this->getParameterList()
         );
         $method->setPhanFlags($this->getPhanFlags() & ~(Flags::IS_OVERRIDE | Flags::IS_OVERRIDDEN_BY_ANOTHER));
+        // A trait method specialized with `@use T<...>` keeps its parameters of its own when adapted into the using class.
+        $method->is_template_specialized = $this->is_template_specialized;
         switch ($new_visibility_flags) {
             case ast\flags\MODIFIER_PUBLIC:
             case ast\flags\MODIFIER_PROTECTED:
@@ -486,6 +526,7 @@ class Method extends ClassElement implements FunctionInterface
         $method->setNumberOfOptionalParameters($this->getNumberOfOptionalParameters());
         // Copy the comment so that features such as templates will work
         $method->comment = $this->comment;
+        $method->conditional_return_type = $this->conditional_return_type;
 
         return $method;
     }
@@ -684,6 +725,16 @@ class Method extends ClassElement implements FunctionInterface
             $method->setUnionType($new_type);
             $method->setPHPDocReturnType($comment_return_union_type);
         }
+        $conditional_return_type = $comment->getConditionalReturnType();
+        if ($conditional_return_type) {
+            if (!$is_trait) {
+                $conditional_return_type = $conditional_return_type->mapTypes(static function (UnionType $type) use ($context): UnionType {
+                    return $type->withSelfResolvedInContext($context);
+                });
+            }
+            $method->setConditionalReturnType($conditional_return_type);
+            $method->warnAboutUndeclaredConditionalReturnParams($code_base, $element_context);
+        }
         $element_context->freeElementReference();
         // Populate the original return type.
         $method->setOriginalReturnType();
@@ -697,17 +748,7 @@ class Method extends ClassElement implements FunctionInterface
 
     private static function computeNewTypeForComment(CodeBase $code_base, Context $context, UnionType $signature_union_type, UnionType $comment_return_union_type): UnionType
     {
-        $new_type = $comment_return_union_type;
-        foreach ($comment_return_union_type->getTypeSet() as $type) {
-            if (!$type->asPHPDocUnionType()->canAnyTypeStrictCastToUnionType($code_base, $signature_union_type)) {
-                // Allow `@return static` to override a real type of MyClass.
-                // php8 may add a real type of static.
-                $resolved_type = $type->withStaticResolvedInContext($context);
-                if ($resolved_type === $type || !$resolved_type->asPHPDocUnionType()->canAnyTypeStrictCastToUnionType($code_base, $signature_union_type)) {
-                    $new_type = $new_type->withoutType($type);
-                }
-            }
-        }
+        $new_type = self::withoutTypesNotCastableToSignatureType($code_base, $context, $signature_union_type, $comment_return_union_type);
 
         if ($new_type !== $comment_return_union_type) {
             $new_type = $signature_union_type->withUnionType($new_type)->withRealTypeSet($signature_union_type->getRealTypeSet());
@@ -728,24 +769,291 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function ensureClonesReturnType(Method $original_method): void
     {
-        if ($this->defining_method_for_type_fetching) {
-            return;
+        if (!$this->defining_method_for_type_fetching) {
+            $link_target = $original_method->getReturnTypeLinkTargetForClone();
+            if ($link_target) {
+                $this->bumpStateVersion();
+                $this->defining_method_for_type_fetching = $link_target;
+            }
         }
+    }
+
+    /**
+     * Returns the method whose return type a clone of this method would use (what ensureClonesReturnType($this) would
+     * record in a clone that has none yet), or null if a clone of this method would use its own return type.
+     * This has no side effects.
+     * @internal
+     */
+    public function getReturnTypeLinkTargetForClone(): ?Method
+    {
         // Get the real ancestor of C::method() if C extends B and B extends A
-        $original_method = $original_method->defining_method_for_type_fetching ?? $original_method;
+        $original_method = $this->defining_method_for_type_fetching ?? $this;
 
         // Don't bother with methods that can't have types inferred recursively
         if ($original_method->isAbstract() || $original_method->isFromPHPDoc() || $original_method->isPHPInternal()) {
-            return;
+            return null;
         }
 
         if (!$original_method->getUnionType()->isEmpty() || !$original_method->getRealReturnType()->isEmpty()) {
             // This heuristic is used as little as possible.
             // It will only use this fallback of directly using the (possibly modified)
             // parent's type if the parent method declaration had no phpdoc return type and no real return type (and nothing was guessed such as `void`).
-            return;
+            return null;
         }
-        $this->defining_method_for_type_fetching = $original_method;
+        return $original_method;
+    }
+
+    /**
+     * Returns the method whose return type a clone of this method created now would use
+     * (Clazz::addMethod() clones this method, which keeps its link, then calls ensureClonesReturnType()),
+     * or null if such a clone would use its own return type. This has no side effects.
+     * @internal
+     */
+    public function getReturnTypeLinkOfClone(): ?Method
+    {
+        return $this->defining_method_for_type_fetching ?: $this->getReturnTypeLinkTargetForClone();
+    }
+
+    /**
+     * Records that Clazz::addMethod() created this inherited method by cloning $source.
+     * @internal
+     */
+    public function setCloneSource(Method $source): void
+    {
+        // This does not change the state version: Clazz::addMethod() sets this on every copy, and clones reset it.
+        $this->clone_source = $source;
+    }
+
+    /**
+     * Sets the method whose return type this copy uses, as ensureClonesReturnType() would have when the copy was cloned
+     * from the method that $link_target was computed for (getReturnTypeLinkOfClone()). Used for copies of inherited methods
+     * created lazily (Analysis\LazyInheritedMethods), which take that decision when the copy would have been created.
+     * @internal
+     */
+    public function setReturnTypeLinkForLazyCopy(?Method $link_target): void
+    {
+        if ($link_target && !$this->defining_method_for_type_fetching) {
+            $this->bumpStateVersion();
+            $this->defining_method_for_type_fetching = $link_target;
+        }
+    }
+
+    /**
+     * Records the rank of this method in the order in which methods were added to the code base.
+     * This does not change the state version: CodeBase::addMethod() sets it on every method it adds.
+     * @internal
+     */
+    public function setEagerOrdinal(int $eager_ordinal): void
+    {
+        $this->eager_ordinal = $eager_ordinal;
+    }
+
+    /**
+     * Returns the rank of this method in the order in which methods were added to the code base
+     * (CodeBase::nextEagerOrdinal()), or 0 if it was not added.
+     * @internal
+     */
+    public function getEagerOrdinal(): int
+    {
+        return $this->eager_ordinal;
+    }
+
+    /**
+     * Whether this is a clone whose parameter or return types were specialized by template substitution
+     * (see cloneWithTemplateParameterTypeMap()), so that its parameters are not those of the method it was copied from.
+     */
+    public function isTemplateSpecialized(): bool
+    {
+        return $this->is_template_specialized;
+    }
+
+    /**
+     * @return ?Method the method that Clazz::addMethod() cloned to create this inherited method, if any
+     * (used by Analysis\CloneReplay)
+     */
+    public function getCloneSource(): ?Method
+    {
+        return $this->clone_source;
+    }
+
+    /**
+     * @return ?Method the method whose return type this inherited method uses (see ensureClonesReturnType()), if any
+     * (for PHAN_DUMP_METHOD_STATE_DIGEST_EXTENDED=1)
+     * @internal
+     */
+    public function getReturnTypeLink(): ?Method
+    {
+        return $this->defining_method_for_type_fetching;
+    }
+
+    /**
+     * @return ?UnionType the (at)throws types that this method inherits (see setInheritedThrowsUnionType()), if set
+     * (for PHAN_DUMP_METHOD_STATE_DIGEST_EXTENDED=1)
+     * @internal
+     */
+    public function getInheritedThrowsUnionType(): ?UnionType
+    {
+        return $this->inherited_throws_union_type;
+    }
+
+    /**
+     * @return bool true if ensureScopeInitialized() was called (or replayed) for this method
+     */
+    public function isScopeInitialized(): bool
+    {
+        return $this->is_inner_scope_initialized;
+    }
+
+    /**
+     * Returns everything that the declaration analysis of this method reads from it (Analysis\CloneReplay):
+     * the parameters part of ensureScopeInitialized() and ParameterTypesAnalyzer::analyzeParameterTypesOfDeclaration().
+     * Objects are compared by identity: they are either immutable (Comment, UnionType, FutureUnionType, ast\Node),
+     * shared on purpose (Context), or not modified during the method analysis phase (the real parameters).
+     * (The return type is only read by checkForTemplateTypes(), which CloneReplay handles separately.)
+     *
+     * @return list<mixed>
+     */
+    public function getCloneReplayFingerprint(): array
+    {
+        $fingerprint = [
+            $this->comment,
+            $this->getContext(),
+            $this->name,
+            $this->getFlags(),
+            $this->getPhanFlags() & ~self::CLONE_REPLAY_IGNORED_PHAN_FLAGS,
+            $this->last_mandatory_phpdoc_param_offset,
+            $this->conditional_return_type,
+            $this->real_parameter_list,
+        ];
+        foreach ($this->parameter_list as $parameter) {
+            $fingerprint[] = $parameter->getCloneReplayFingerprint();
+        }
+        return $fingerprint;
+    }
+
+    /**
+     * Returns true if getCloneReplayFingerprint() would return $fingerprint (without creating it)
+     *
+     * @param list<mixed> $fingerprint
+     */
+    public function matchesCloneReplayFingerprint(array $fingerprint): bool
+    {
+        $parameter_list = $this->parameter_list;
+        if (\count($fingerprint) !== 8 + \count($parameter_list) ||
+            $fingerprint[0] !== $this->comment ||
+            $fingerprint[1] !== $this->getContext() ||
+            $fingerprint[2] !== $this->name ||
+            $fingerprint[3] !== $this->getFlags() ||
+            $fingerprint[4] !== ($this->getPhanFlags() & ~self::CLONE_REPLAY_IGNORED_PHAN_FLAGS) ||
+            $fingerprint[5] !== $this->last_mandatory_phpdoc_param_offset ||
+            $fingerprint[6] !== $this->conditional_return_type ||
+            $fingerprint[7] !== $this->real_parameter_list) {
+            return false;
+        }
+        foreach ($parameter_list as $i => $parameter) {
+            $parameter_fingerprint = $fingerprint[8 + $i];
+            if (!\is_array($parameter_fingerprint) || !$parameter->matchesCloneReplayFingerprint($parameter_fingerprint)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns everything that the declaration analysis of this method wrote to it (see Analysis\CloneReplay).
+     * This is called right after it, if it found no template type.
+     */
+    public function getCloneReplaySnapshot(CodeBase $code_base): CloneReplaySnapshot
+    {
+        $parameter_states = [];
+        foreach ($this->parameter_list as $parameter) {
+            $parameter_states[] = $parameter->getCloneReplayState();
+        }
+        $return_type = $this->getUnionTypeBeforeStaticResolution();
+        return new CloneReplaySnapshot(
+            $this->phpdoc_parameter_type_map,
+            $this->last_mandatory_phpdoc_param_offset,
+            $parameter_states,
+            $this->addsThisVariableOfGenericClass($code_base),
+            $return_type->isStaticResolutionNoOp() ? $return_type : null
+        );
+    }
+
+    /**
+     * Returns true if ensureScopeInitialized() adds the variable `$this` of a generic class to the scope
+     * (it called getClassByFQSEN() for the same class, so this does not hydrate it)
+     */
+    private function addsThisVariableOfGenericClass(CodeBase $code_base): bool
+    {
+        if ($this->isStatic()) {
+            return false;
+        }
+        $context = $this->getContext();
+        return $context->isInClassScope() && (bool)$code_base->getClassByFQSENWithoutHydrating($context->getClassFQSEN())->getTemplateTypeMap();
+    }
+
+    /**
+     * The union type that getUnionType() resolves `static` in
+     */
+    private function getUnionTypeBeforeStaticResolution(): UnionType
+    {
+        if ($this->defining_method_for_type_fetching) {
+            return $this->defining_method_for_type_fetching->getUnionTypeWithStatic();
+        }
+        return parent::getUnionType();
+    }
+
+    /**
+     * Instead of ensureScopeInitialized() and ParameterTypesAnalyzer::analyzeParameterTypesOfDeclaration(),
+     * make the changes to this method that they would make, given that the method it was cloned from had the same
+     * fingerprint before its declaration analysis and $snapshot after it (see Analysis\CloneReplay).
+     */
+    public function replayDeclarationAnalysis(CodeBase $code_base, CloneReplaySnapshot $snapshot): void
+    {
+        $this->is_inner_scope_initialized = true;
+        $this->bumpStateVersion();
+        if ($snapshot->adds_this_variable) {
+            $this_variable = $this->createThisVariableOfGenericClass($code_base);
+            if ($this_variable) {
+                $this->getInternalScope()->addVariable($this_variable);
+            }
+        }
+        ++self::$scope_initialization_count;
+        $this->applyCloneReplaySnapshot($snapshot);
+        $this->recordHasTemplateType($this->hasTemplateTypeAfterCloneReplay($snapshot));
+    }
+
+    /**
+     * Returns the result of checkForTemplateTypes() for this clone, given that its source had $snapshot.
+     *
+     * checkForTemplateTypes() found no template type in the parameters, the comment and the conditional return type
+     * of the source method, which are the same here. The return type can differ: it may be linked to the
+     * return type of the source method, and `static` resolves to the class of this method.
+     * If the type that getUnionType() resolves `static` in is the one that the source had, and resolving `static`
+     * does not change it, it has no template type either.
+     */
+    public function hasTemplateTypeAfterCloneReplay(CloneReplaySnapshot $snapshot): bool
+    {
+        if ($snapshot->return_type !== null && $snapshot->return_type === $this->getUnionTypeBeforeStaticResolution()) {
+            return false;
+        }
+        return $this->getUnionType()->hasTemplateTypeRecursive();
+    }
+
+    /**
+     * Set the state that the declaration analysis writes (except for the scope and HAS_TEMPLATE_TYPE) to $snapshot.
+     * (Analysis\CloneReplay also calls this after verifying that the declaration analysis produced the same state,
+     * so that the following methods see the same objects as when it is replayed)
+     */
+    public function applyCloneReplaySnapshot(CloneReplaySnapshot $snapshot): void
+    {
+        $this->bumpStateVersion();
+        $this->phpdoc_parameter_type_map = $snapshot->phpdoc_parameter_type_map;
+        $this->last_mandatory_phpdoc_param_offset = $snapshot->last_mandatory_phpdoc_param_offset;
+        $parameter_states = $snapshot->parameter_states;
+        foreach ($this->parameter_list as $i => $parameter) {
+            $parameter->setCloneReplayState($parameter_states[$i]);
+        }
     }
 
     public function setUnionType(UnionType $union_type): void
@@ -771,15 +1079,33 @@ class Method extends ClassElement implements FunctionInterface
             $union_type = parent::getUnionType();
         }
 
-        // If the type contains 'static', add this method's class
-        // to the return type.
-        $scope = new ClassScope(new GlobalScope(), $this->fqsen->getFullyQualifiedClassName(), 0);
-        $new_union_type = $union_type->withStaticResolvedInContext((clone $this->getContext())->withScope($scope));
+        return $this->withStaticExpandedToDeclaringClass($union_type);
+    }
+
+    /**
+     * If $union_type contains 'static', add this method's class to it (keeping 'static').
+     */
+    public function withStaticExpandedToDeclaringClass(UnionType $union_type): UnionType
+    {
+        if ($union_type->isStaticResolutionNoOp()) {
+            // withStaticResolvedInContext() would return $union_type, so skip creating the Context.
+            return $union_type;
+        }
+        $new_union_type = $union_type->withStaticResolvedInContext($this->getDeclaringClassContext());
         if ($new_union_type !== $union_type) {
             $union_type = $union_type->withUnionType($new_union_type);
         }
 
         return $union_type;
+    }
+
+    /**
+     * A context whose scope is the class declaring this method (used to resolve `static`)
+     */
+    public function getDeclaringClassContext(): Context
+    {
+        $scope = new ClassScope(new GlobalScope(), $this->fqsen->getFullyQualifiedClassName(), 0);
+        return (clone $this->getContext())->withScope($scope);
     }
 
     public function getUnionTypeWithUnmodifiedStatic(): UnionType
@@ -823,9 +1149,18 @@ class Method extends ClassElement implements FunctionInterface
     public function getOverriddenMethods(
         CodeBase $code_base
     ): array {
-        if ($this->overridden_methods_cache !== null) {
-            return $this->overridden_methods_cache;
-        }
+        return $this->overridden_methods_cache ??= $this->computeOverriddenMethods($code_base);
+    }
+
+    /**
+     * getOverriddenMethods() without the cache.
+     * (PHAN_VERIFY_SKIPPED_CHECKS=1 also calls this to check that the result did not change)
+     *
+     * @return list<Method>
+     */
+    public function computeOverriddenMethods(
+        CodeBase $code_base
+    ): array {
         // Get the class that defines this method
         $class = $this->getClass($code_base);
 
@@ -837,6 +1172,8 @@ class Method extends ClassElement implements FunctionInterface
         );
 
         $defining_fqsen = $this->getDefiningFQSEN();
+        // The class map key of a method with alternate id 0 (same lookup as Clazz->hasMethodWithName($code_base, $this->name, true))
+        $lowercase_name = \strtolower($this->name);
 
         $method_list = [];
         $abstract_method_list = [];
@@ -846,31 +1183,48 @@ class Method extends ClassElement implements FunctionInterface
             // TODO: Handle edge cases in traits.
             // A trait may be earlier in $ancestor_class_list than the parent, but the parent may define abstract classes.
             // TODO: What about trait aliasing rules?
-            if ($ancestor_class->hasMethodWithName($code_base, $this->name, true)) {
-                $method = $ancestor_class->getMethodByName(
-                    $code_base,
-                    $this->name
-                );
-                if ($method->getDefiningFQSEN() === $defining_fqsen) {
-                    // Skip it, this method **is** the one which defined this.
+            $ancestor_fqsen = $ancestor_class->getFQSEN();
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $method = $code_base->getMethodEntryByClassAndLowercaseName($ancestor_fqsen, $lowercase_name);
+            if (!$method) {
+                // Same as Clazz->hasMethodWithName(): hydrate the ancestor if this is the first time, then check again.
+                if (!$ancestor_class->hydrateIndicatingFirstTime($code_base)) {
                     continue;
                 }
-                // We initialize the overridden method's scope to ensure that
-                // analyzers are aware of the full param/return types of the overridden method.
-                $method->ensureScopeInitialized($code_base);
-                if ($method->isAbstract()) {
-                    // TODO: check for trait conflicts, etc.
-                    $abstract_method_list[] = $method;
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                $method = $code_base->getMethodEntryByClassAndLowercaseName($ancestor_fqsen, $lowercase_name);
+                if (!$method) {
                     continue;
                 }
-                $method_list[] = $method;
             }
+            if ($method instanceof InheritedMethodLink) {
+                // A copy of an inherited method that was not created yet (see LazyInheritedMethods):
+                // skip it without creating it if it is a copy of the same method, otherwise create it.
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                if ($method->registry->templateOf($method, $lowercase_name)->getDefiningFQSEN() === $defining_fqsen) {
+                    continue;
+                }
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                $method = $method->registry->materialize($method->class_map, $lowercase_name, $method, 'override_walk');
+            }
+            if ($method->getDefiningFQSEN() === $defining_fqsen) {
+                // Skip it, this method **is** the one which defined this.
+                continue;
+            }
+            // We initialize the overridden method's scope to ensure that
+            // analyzers are aware of the full param/return types of the overridden method.
+            $method->ensureScopeInitialized($code_base);
+            if ($method->isAbstract()) {
+                // TODO: check for trait conflicts, etc.
+                $abstract_method_list[] = $method;
+                continue;
+            }
+            $method_list[] = $method;
         }
         // Return abstract methods before concrete methods, in order to best check method compatibility.
-        $method_list = \array_merge($abstract_method_list, $method_list);
         // Give up on throwing exceptions if this method doesn't override anything.
         // Mixins and traits result in too many edge cases: https://github.com/phan/phan/issues/3796
-        return $this->overridden_methods_cache = $method_list;
+        return \array_merge($abstract_method_list, $method_list);
     }
 
     /**
@@ -1116,6 +1470,10 @@ class Method extends ClassElement implements FunctionInterface
             }
         }
 
+        if (!$has_template_types && $this->conditional_return_type?->hasTemplateTypeRecursive()) {
+            $has_template_types = true;
+        }
+
         if (!$has_template_types && ($comment = $this->comment)) {
             if ($comment->hasReturnUnionType() &&
                 $comment->getReturnType()->hasTemplateTypeRecursive()) {
@@ -1136,12 +1494,19 @@ class Method extends ClassElement implements FunctionInterface
         if (!$has_template_types) {
             return $method;
         }
+        $method->is_template_specialized = true;
 
         // Map the method's return type
         if ($method->getUnionType()->hasTemplateTypeRecursive()) {
             $method->setUnionType(
                 $method->getUnionType()->withTemplateParameterTypeMap($template_type_map)
             );
+        }
+        $map_template_types = static function (UnionType $type) use ($template_type_map): UnionType {
+            return $type->withTemplateParameterTypeMap($template_type_map);
+        };
+        if ($method->conditional_return_type?->hasTemplateTypeRecursive()) {
+            $method->conditional_return_type = $method->conditional_return_type->mapTypes($map_template_types);
         }
 
         // Map each method parameter
@@ -1202,9 +1567,14 @@ class Method extends ClassElement implements FunctionInterface
                 if (!($old_return_comment instanceof \Phan\Language\Element\Comment\ReturnComment)) {
                     throw new \AssertionError('Expected ReturnComment when hasReturnUnionType is true');
                 }
+                $old_conditional = $old_return_comment->getConditional();
+                if ($old_conditional && $old_conditional->hasTemplateTypeRecursive()) {
+                    $old_conditional = $old_conditional->mapTypes($map_template_types);
+                }
                 $new_return_comment = new \Phan\Language\Element\Comment\ReturnComment(
                     $return_type,
-                    $old_return_comment->getLineno()
+                    $old_return_comment->getLineno(),
+                    $old_conditional
                 );
                 $reflection->setValue($comment, $new_return_comment);
 
@@ -1238,6 +1608,7 @@ class Method extends ClassElement implements FunctionInterface
                 // Don't track methods calling themselves
                 return;
             }
+            $this->bumpStateVersion();
             $this->reference_list[$file_ref->__toString()] = $file_ref;
         }
     }
@@ -1256,6 +1627,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function setInheritedThrowsUnionType(UnionType $type): void
     {
+        $this->bumpStateVersion();
         $this->inherited_throws_union_type = $type;
     }
 
@@ -1267,6 +1639,7 @@ class Method extends ClassElement implements FunctionInterface
         if ($union_type->isEmpty()) {
             return;
         }
+        $this->bumpStateVersion();
         $class_key = $class_fqsen->__toString();
         if (!isset($this->static_property_set_types[$class_key])) {
             $this->static_property_set_types[$class_key] = [

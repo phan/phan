@@ -10,6 +10,7 @@ require_once(__DIR__ . '/Phan/Bootstrap.php');
 use Phan\CLI;
 use Phan\Config;
 use Phan\Language\Scope\GlobalScope;
+use Phan\Library\PhaseTimer;
 use Phan\Phan;
 
 // Create our CLI interface and load arguments
@@ -19,6 +20,7 @@ $cli = CLI::fromArgv();
 // so that included_extension_subset will work.
 //
 // Phan filters out user-defined functions/classes/constants.
+PhaseTimer::begin('codebase');
 $code_base = require(__DIR__ . '/codebase.php');
 
 // Initialize GlobalScope with CodeBase reference for incremental analysis undo tracking
@@ -36,6 +38,9 @@ $is_issue_found =
             return $cli->getFileList();
         }  // Daemon mode will reload the file list.
     );
+
+// Emit --dump-phase-timings and --phase-timings-json reports, if requested
+PhaseTimer::finish();
 
 // Provide an exit status code based on if
 // issues were found

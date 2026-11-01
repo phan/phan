@@ -1,0 +1,5 @@
+src/015_private_static.php:6 PhanAccessMethodPrivate Cannot access private method \C015::secret defined at external/015.php:4
+src/015_private_static.php:7 PhanTypeMismatchArgument Argument 1 ($i) is self::helper('x') of type string but \expect_int_015() takes int defined at src/015_private_static.php:12
+src/015_private_static.php:8 PhanTypeMismatchArgumentReal Argument 1 ($i) is static::create() of type \C015|\V015Base but \expect_int_015() takes int defined at src/015_private_static.php:12
+src/015_private_static.php:16 PhanAccessMethodProtected Cannot access protected method \C015::helper defined at external/015.php:6
+src/015_private_static.php:17 PhanTypeMismatchArgumentReal Argument 1 ($i) is C015::create() of type \C015|\V015Base but \expect_int_015() takes int defined at src/015_private_static.php:12

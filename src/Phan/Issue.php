@@ -33,6 +33,8 @@ class Issue
     public const InvalidConstantExpression      = 'PhanInvalidConstantExpression';
     public const InvalidNode                    = 'PhanInvalidNode';
     public const InvalidWriteToTemporaryExpression = 'PhanInvalidWriteToTemporaryExpression';
+    public const InvalidWriteToNullsafeChain    = 'PhanInvalidWriteToNullsafeChain';
+    public const InvalidReferenceToNullsafeChain = 'PhanInvalidReferenceToNullsafeChain';
     public const InvalidTraitUse                = 'PhanInvalidTraitUse';
     public const ContinueTargetingSwitch        = 'PhanContinueTargetingSwitch';
     public const ContinueOrBreakNotInLoop       = 'PhanContinueOrBreakNotInLoop';
@@ -125,6 +127,7 @@ class Issue
     public const TypeArraySuspiciousNull           = 'PhanTypeArraySuspiciousNull';
     public const TypeSuspiciousIndirectVariable    = 'PhanTypeSuspiciousIndirectVariable';
     public const TypeObjectUnsetDeclaredProperty   = 'PhanTypeObjectUnsetDeclaredProperty';
+    public const TypeUnsetStaticProperty           = 'PhanTypeUnsetStaticProperty';
     public const TypeModifyImmutableObjectProperty            = 'PhanTypeModifyImmutableObjectProperty';
     public const TypeComparisonFromArray   = 'PhanTypeComparisonFromArray';
     public const TypeComparisonToArray     = 'PhanTypeComparisonToArray';
@@ -454,22 +457,27 @@ class Issue
     public const UnreferencedPublicMethod      = 'PhanUnreferencedPublicMethod';
     public const UnreferencedProtectedMethod   = 'PhanUnreferencedProtectedMethod';
     public const UnreferencedPrivateMethod     = 'PhanUnreferencedPrivateMethod';
+    public const UnreferencedPrivateTraitMethod = 'PhanUnreferencedPrivateTraitMethod';
     public const UnreferencedPublicProperty    = 'PhanUnreferencedPublicProperty';
     public const UnreferencedProtectedProperty = 'PhanUnreferencedProtectedProperty';
     public const UnreferencedPrivateProperty   = 'PhanUnreferencedPrivateProperty';
+    public const UnreferencedPrivateTraitProperty = 'PhanUnreferencedPrivateTraitProperty';
     public const UnreferencedPHPDocProperty    = 'PhanUnreferencedPHPDocProperty';
     public const ReadOnlyPublicProperty        = 'PhanReadOnlyPublicProperty';
     public const ReadOnlyProtectedProperty     = 'PhanReadOnlyProtectedProperty';
     public const ReadOnlyPrivateProperty       = 'PhanReadOnlyPrivateProperty';
+    public const ReadOnlyPrivateTraitProperty  = 'PhanReadOnlyPrivateTraitProperty';
     public const ReadOnlyPHPDocProperty        = 'PhanReadOnlyPHPDocProperty';
     public const WriteOnlyPublicProperty       = 'PhanWriteOnlyPublicProperty';
     public const WriteOnlyProtectedProperty    = 'PhanWriteOnlyProtectedProperty';
     public const WriteOnlyPrivateProperty      = 'PhanWriteOnlyPrivateProperty';
+    public const WriteOnlyPrivateTraitProperty = 'PhanWriteOnlyPrivateTraitProperty';
     public const WriteOnlyPHPDocProperty       = 'PhanWriteOnlyPHPDocProperty';
     public const UnreferencedConstant          = 'PhanUnreferencedConstant';
     public const UnreferencedPublicClassConstant = 'PhanUnreferencedPublicClassConstant';
     public const UnreferencedProtectedClassConstant = 'PhanUnreferencedProtectedClassConstant';
     public const UnreferencedPrivateClassConstant = 'PhanUnreferencedPrivateClassConstant';
+    public const UnreferencedPrivateTraitClassConstant = 'PhanUnreferencedPrivateTraitClassConstant';
     public const UnreferencedEnumCase          = 'PhanUnreferencedEnumCase';
     public const UnreferencedClosure           = 'PhanUnreferencedClosure';
     public const UnreferencedUseNormal         = 'PhanUnreferencedUseNormal';
@@ -648,6 +656,7 @@ class Issue
     public const UnextractableAnnotationElementName = 'PhanUnextractableAnnotationElementName';
     public const CommentParamWithoutRealParam     = 'PhanCommentParamWithoutRealParam';
     public const CommentParamAssertionWithoutRealParam = 'PhanCommentParamAssertionWithoutRealParam';
+    public const CommentReturnConditionalWithoutRealParam = 'PhanCommentReturnConditionalWithoutRealParam';
     public const CommentParamOnEmptyParamList     = 'PhanCommentParamOnEmptyParamList';
     public const CommentOverrideOnNonOverrideMethod = 'PhanCommentOverrideOnNonOverrideMethod';
     public const CommentInheritDocOnNonOverrideMethod = 'PhanCommentInheritDocOnNonOverrideMethod';
@@ -915,6 +924,22 @@ class Issue
                 "Cannot use temporary expression ({CODE} of type {TYPE}) in write context",
                 self::REMEDIATION_A,
                 17003
+            ),
+            new Issue(
+                self::InvalidWriteToNullsafeChain,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_CRITICAL,
+                "Cannot use nullsafe operator in write context ({CODE}): PHP refuses to compile this",
+                self::REMEDIATION_A,
+                17024
+            ),
+            new Issue(
+                self::InvalidReferenceToNullsafeChain,
+                self::CATEGORY_SYNTAX,
+                self::SEVERITY_CRITICAL,
+                "Cannot take reference of a nullsafe chain ({CODE}): PHP refuses to compile this",
+                self::REMEDIATION_A,
+                17025
             ),
             new Issue(
                 self::InvalidTraitUse,
@@ -2476,6 +2501,14 @@ class Issue
                 "Suspicious attempt to unset class {TYPE}'s property \${PROPERTY} declared at {FILE}:{LINE} (This can be done, but is more commonly done for dynamic properties and Phan does not expect this)",
                 self::REMEDIATION_B,
                 10081
+            ),
+            new Issue(
+                self::TypeUnsetStaticProperty,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                "Cannot unset static property {CODE}: PHP throws an Error at runtime (Attempt to unset static property)",
+                self::REMEDIATION_B,
+                10213
             ),
             new Issue(
                 self::TypeModifyImmutableObjectProperty,
@@ -4106,6 +4139,14 @@ class Issue
                 6013
             ),
             new Issue(
+                self::UnreferencedPrivateTraitMethod,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to private method {METHOD} of a trait (it can be referenced by classes using the trait)",
+                self::REMEDIATION_B,
+                6100
+            ),
+            new Issue(
                 self::UnreferencedPublicProperty,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
@@ -4138,6 +4179,14 @@ class Issue
                 6016
             ),
             new Issue(
+                self::UnreferencedPrivateTraitProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to private property {PROPERTY} of a trait (it can be referenced by classes using the trait)",
+                self::REMEDIATION_B,
+                6101
+            ),
+            new Issue(
                 self::ReadOnlyPublicProperty,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
@@ -4160,6 +4209,14 @@ class Issue
                 "Possibly zero write references to private property {PROPERTY}",
                 self::REMEDIATION_B,
                 6034
+            ),
+            new Issue(
+                self::ReadOnlyPrivateTraitProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero write references to private property {PROPERTY} of a trait (it can be written by classes using the trait)",
+                self::REMEDIATION_B,
+                6102
             ),
             new Issue(
                 self::ReadOnlyPHPDocProperty,
@@ -4194,6 +4251,14 @@ class Issue
                 6027
             ),
             new Issue(
+                self::WriteOnlyPrivateTraitProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero read references to private property {PROPERTY} of a trait (it can be read by classes using the trait)",
+                self::REMEDIATION_B,
+                6103
+            ),
+            new Issue(
                 self::WriteOnlyPHPDocProperty,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
@@ -4224,6 +4289,14 @@ class Issue
                 "Possibly zero references to private class constant {CONST}",
                 self::REMEDIATION_B,
                 6019
+            ),
+            new Issue(
+                self::UnreferencedPrivateTraitClassConstant,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to private class constant {CONST} of a trait (it can be referenced by classes using the trait)",
+                self::REMEDIATION_B,
+                6104
             ),
             new Issue(
                 self::UnreferencedUseNormal,
@@ -5593,6 +5666,14 @@ class Issue
                 16031
             ),
             new Issue(
+                self::CommentReturnConditionalWithoutRealParam,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                'Saw a conditional @return referring to ${PARAMETER}, but it was not found in the param list of {FUNCTIONLIKE}',
+                self::REMEDIATION_B,
+                16032
+            ),
+            new Issue(
                 self::CommentOverrideOnNonOverrideConstant,
                 self::CATEGORY_COMMENT,
                 self::SEVERITY_LOW,
@@ -6036,12 +6117,20 @@ class Issue
     public const TRACE_VERBOSE = 'verbose';
 
     /**
+     * @var int the number of times an issue was checked for suppression or emitted, or a suppression count was incremented
+     * (Context::hasSuppressIssue(), TypedElement::incrementSuppressIssueCount()).
+     * Analysis\CloneReplay compares it before and after a group of checks to see whether they could have had an observable effect.
+     */
+    public static $emit_attempt_count = 0;
+
+    /**
      * @param IssueInstance $issue_instance
      * An issue instance to emit
      */
     public static function emitInstance(
         IssueInstance $issue_instance
     ): void {
+        ++self::$emit_attempt_count;
         if (Phan::isExcludedAnalysisFile($issue_instance->getFile())) {
             return;
         }
@@ -6158,23 +6247,23 @@ class Issue
         }
 
         $issue = self::fromType($issue_type);
-        $normalized_parameters = \array_map(
-            /**
-             * @return mixed
-             */
-            static function (mixed $param): mixed {
-                if (\is_bool($param)) {
-                    return $param ? 'true' : 'false';
-                }
-                return $param;
-            },
-            $parameters
-        );
+        $file = $context->getFile();
+        if (Phan::isExcludedAnalysisFile($file)) {
+            // emitInstance() would discard this issue, so don't bother formatting the message.
+            return;
+        }
+        // Render booleans as 'true'/'false' (modifies the local copy only if there are booleans)
+        foreach ($parameters as $i => $param) {
+            if (\is_bool($param)) {
+                $parameters[$i] = $param ? 'true' : 'false';
+            }
+        }
         $issue_instance = new IssueInstance(
             $issue,
-            $context->getFile(),
+            $file,
             $lineno,
-            $normalized_parameters,
+            // @phan-suppress-next-line PhanPartialTypeMismatchArgument the booleans were replaced with strings above
+            $parameters,
             $suggestion,
             $column
         );
@@ -6193,6 +6282,7 @@ class Issue
         array $parameters,
         ?Suggestion $suggestion = null
     ): bool {
+        ++self::$emit_attempt_count;
         if (Config::getValue('disable_suppression')) {
             return false;
         }

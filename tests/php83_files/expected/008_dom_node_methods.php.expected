@@ -1,0 +1,2 @@
+%s:4 PhanUnreferencedFunction Possibly zero references to function \domNodes008()
+%s:11 PhanParamTooManyInternal Call with 2 arg(s) to \DOMText::getRootNode(array $options = null) which only takes 1 arg(s). This would throw an ArgumentCountError.

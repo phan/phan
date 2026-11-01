@@ -1,0 +1,25 @@
+%s:26 PhanDebugAnnotation @phan-debug-var requested for variable $user - it has union type ?\User5946(real=?\User5946)
+%s:26 PhanUnusedVariableCaughtException Unused definition of variable $e as a caught exception
+%s:34 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type null(real=null)
+%s:36 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type null(real=null)
+%s:41 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type ?int(real=?int)
+%s:43 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type ?int(real=?int)
+%s:49 PhanNonClassMethodCall Call to method id on non-class type 'str'
+%s:51 PhanNonClassMethodCall Call to method id on non-class type 1|null
+%s:52 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression $s with type string
+%s:59 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type null(real=?0)
+%s:61 PhanNonClassMethodCall Call to method id on non-class type null
+%s:62 PhanTypeExpectedObjectPropAccessButGotNull Expected an object instance when accessing an instance property, but saw an expression $x with type null
+%s:94 PhanTypeExpectedObjectOrClassName Expected an object instance or the name of a class but saw expression $n?->next() with type null
+%s:95 PhanTypeInvalidCallable Saw type null which cannot be a callable
+%s:96 PhanTypeInvalidCallable Saw type null which cannot be a callable
+%s:98 PhanNonClassMethodCall Call to method next on non-class type null
+%s:99 PhanTypeExpectedObjectPropAccessButGotNull Expected an object instance when accessing an instance property, but saw an expression $c?->nothing() with type null
+%s:100 PhanNonClassMethodCall Call to method create on non-class type null
+%s:101 PhanTypeArraySuspiciousNull Suspicious array access to $c?->nothing() of type null
+%s:106 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type null(real=null)
+%s:108 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type null(real=null)
+%s:110 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type null(real=null)
+%s:112 PhanDebugAnnotation @phan-debug-var requested for variable $e - it has union type null(real=null)
+%s:115 PhanTypeMismatchReturnReal Returning $n?->next()->next() of type null but chain_value5946() is declared to return int
+%s:123 PhanTypeMismatchReturnReal Returning $n?->id of type null but doc_null5946() is declared to return int

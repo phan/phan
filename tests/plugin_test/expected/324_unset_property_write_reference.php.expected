@@ -1,0 +1,2 @@
+src/324_unset_property_write_reference.php:11 PhanReadOnlyPrivateProperty Possibly zero write references to private property \UnsetWriteReference324->only_read
+src/324_unset_property_write_reference.php:19 PhanTypeObjectUnsetDeclaredProperty Suspicious attempt to unset class \UnsetWriteReference324's property $whole declared at src/324_unset_property_write_reference.php:10 (This can be done, but is more commonly done for dynamic properties and Phan does not expect this)

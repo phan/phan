@@ -56,9 +56,8 @@ final class GenericIterableType extends IterableType
      */
     public function getKeyType(): int
     {
-        return $this->memoize(__METHOD__, function (): int {
-            return GenericArrayType::keyTypeFromUnionTypeValues($this->key_union_type);
-        });
+        return $this->getMemoizedForCurrentState(__METHOD__)
+            ?? ($this->memoized_data[__METHOD__] = GenericArrayType::keyTypeFromUnionTypeValues($this->key_union_type));
     }
 
     /**
@@ -240,14 +239,18 @@ final class GenericIterableType extends IterableType
      */
     public function withErasedUnionTypes(): Type
     {
-        return $this->memoize(__METHOD__, function (): Type {
-            $erased_element_union_type = $this->element_union_type->eraseRealTypeSetRecursively();
-            $erased_key_union_type = $this->key_union_type->eraseRealTypeSetRecursively();
-            if ($erased_key_union_type === $this->key_union_type && $erased_element_union_type === $this->element_union_type) {
-                return $this;
-            }
-            return self::fromKeyAndValueTypes($this->key_union_type, $erased_element_union_type, $this->is_nullable);
-        });
+        return $this->getMemoizedForCurrentState(__METHOD__)
+            ?? ($this->memoized_data[__METHOD__] = $this->computeWithErasedUnionTypes());
+    }
+
+    private function computeWithErasedUnionTypes(): Type
+    {
+        $erased_element_union_type = $this->element_union_type->eraseRealTypeSetRecursively();
+        $erased_key_union_type = $this->key_union_type->eraseRealTypeSetRecursively();
+        if ($erased_key_union_type === $this->key_union_type && $erased_element_union_type === $this->element_union_type) {
+            return $this;
+        }
+        return self::fromKeyAndValueTypes($this->key_union_type, $erased_element_union_type, $this->is_nullable);
     }
 
     /**

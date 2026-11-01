@@ -868,6 +868,35 @@ final class UnionTypeTest extends TestBase
         $this->assertInstanceOf(IntersectionType::class, $type->getTypeSet()[1]);
     }
 
+    /**
+     * __toString() and toErrorMessageString() sort the type strings with asort() (SORT_REGULAR),
+     * so numeric literal types are ordered by value and numerically equal strings keep their order.
+     * Intersection types are parenthesized only when there is more than one type.
+     */
+    public function testToStringOrdering(): void
+    {
+        $cases = [
+            // union type => [__toString(), toErrorMessageString()]
+            '10|9' => ['9|10', 'int (value: 10)|int (value: 9)'],
+            'int|10|9|2' => ['2|9|10|int', 'int|int (value: 10)|int (value: 2)|int (value: 9)'],
+            '-1|-10|3' => ['-10|-1|3', 'int (value: -1)|int (value: -10)|int (value: 3)'],
+            '10|9.5|9' => ['9|9.5|10', 'float (value: 9.5)|int (value: 10)|int (value: 9)'],
+            '1|1.0' => ['1|1.0', 'float (value: 1.0)|int (value: 1)'],
+            "'b'|'a'|'10'|'9'" => ["'10'|'9'|'a'|'b'", 'string|string|string|string'],
+            'int' => ['int', 'int'],
+            '?int' => ['?int', '?int'],
+            'MyClass&MyInterfaceUTT' => ['\MyClass&\MyInterfaceUTT', '\MyClass&\MyInterfaceUTT'],
+            'MyClass&MyInterfaceUTT|10|9' => ['(\MyClass&\MyInterfaceUTT)|9|10', '(\MyClass&\MyInterfaceUTT)|int (value: 10)|int (value: 9)'],
+        ];
+        foreach ($cases as $union_type_string => [$expected_string, $expected_error_message_string]) {
+            $type = self::makePHPDocUnionType($union_type_string);
+            $this->assertSame($expected_string, $type->__toString(), "__toString() of $union_type_string");
+            $this->assertSame($expected_error_message_string, $type->toErrorMessageString(), "toErrorMessageString() of $union_type_string");
+        }
+        $this->assertSame('', UnionType::empty()->__toString());
+        $this->assertSame('', UnionType::empty()->toErrorMessageString());
+    }
+
     public function testIntersectionTypeInArrayFallback(): void
     {
         $type = self::makePHPDocUnionType('(MyClass&MyInterfaceUTT)[]');

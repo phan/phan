@@ -37,6 +37,7 @@ class ClosureScope extends FunctionLikeScope
     {
         // If there is an FQSEN override, then this is in a class scope.
         // If there is no override, then this inherits the class of the parent
+        $this->bumpStateVersion();
         if ($fqsen) {
             $this->flags |= Scope::IN_CLASS_SCOPE;
         } else {
@@ -46,6 +47,30 @@ class ClosureScope extends FunctionLikeScope
             }
         }
         $this->override_class_fqsen = $fqsen;
+    }
+
+    /**
+     * Whether a `$this` is available inside the overridden scope.
+     * False when the closure was bound with `Closure::bind($closure, null, SomeClass::class)`: the scope of
+     * SomeClass applies, but there is no object.
+     * @var bool
+     */
+    private $override_has_this = true;
+
+    /**
+     * Record whether a `$this` is available inside the overridden scope.
+     */
+    public function setOverrideHasThis(bool $has_this): void
+    {
+        $this->override_has_this = $has_this;
+    }
+
+    /**
+     * Whether a `$this` is available inside the overridden scope (true unless the closure was bound to null).
+     */
+    public function hasOverrideThis(): bool
+    {
+        return $this->override_has_this;
     }
 
     /**

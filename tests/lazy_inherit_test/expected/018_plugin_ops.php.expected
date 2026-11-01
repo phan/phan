@@ -1,0 +1,9 @@
+src/018_plugin_ops.php:5 LazyOpsTestPluginMethod Analyzed the declaration of \C018Child::reportedByLazyOpsTestPlugin
+src/018_plugin_ops.php:14 PhanTypeMismatchArgumentReal Argument 1 ($s) is $c->make() of type array<int,string> (real type array) but \expect_string_018() takes string defined at src/018_plugin_ops.php:10
+src/018_plugin_ops.php:15 PhanTypeMismatchArgumentReal Argument 1 ($s) is $o->make() of type array<int,int> (real type array) but \expect_string_018() takes string defined at src/018_plugin_ops.php:10
+src/018_plugin_ops.php:16 PhanTypeMismatchArgumentReal Argument 1 ($s) is $g->make() of type array<int,int> (real type array) but \expect_string_018() takes string defined at src/018_plugin_ops.php:10
+src/018_plugin_ops.php:17 PhanTypeMismatchArgumentReal Argument 1 ($s) is $b->make() of type array<int,int> (real type array) but \expect_string_018() takes string defined at src/018_plugin_ops.php:10
+src/018_plugin_ops.php:18 LazyOpsTestPluginCallChild The closure for C018Child::run saw a call to \C018Child::run with 2 argument(s)
+src/018_plugin_ops.php:19 LazyOpsTestPluginCallRoot The closure for V018Base::run saw a call to \C018Other::run with 0 argument(s)
+src/018_plugin_ops.php:20 LazyOpsTestPluginCallRoot The closure for V018Base::run saw a call to \C018Grand::run with 1 argument(s)
+src/018_plugin_ops.php:21 PhanTypeMismatchArgumentSuperType Argument 1 ($cb) is (fn) of type Closure(string):string but \C018Child::map() takes callable(int):string defined at external/018.php:5 (expected type to be the same or a subtype, but saw a supertype instead)

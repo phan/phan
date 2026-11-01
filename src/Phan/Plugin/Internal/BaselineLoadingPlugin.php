@@ -201,8 +201,13 @@ final class BaselineLoadingPlugin extends PluginV3 implements
 
     private static function normalizeSymbol(string $symbol): string
     {
-        $symbol = \preg_replace('/anonymous_class_[0-9a-f]+/i', 'anonymous_class', $symbol) ?? $symbol;
-        $symbol = \preg_replace('/\\\\closure_[0-9a-f]+/i', '\\closure', $symbol) ?? $symbol;
+        // The regexes can only match if these substrings occur, and most symbols contain neither.
+        if (\stripos($symbol, 'anonymous_class_') !== false) {
+            $symbol = \preg_replace('/anonymous_class_[0-9a-f]+/i', 'anonymous_class', $symbol) ?? $symbol;
+        }
+        if (\stripos($symbol, '\\closure_') !== false) {
+            $symbol = \preg_replace('/\\\\closure_[0-9a-f]+/i', '\\closure', $symbol) ?? $symbol;
+        }
         return $symbol;
     }
 }

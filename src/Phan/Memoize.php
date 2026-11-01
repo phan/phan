@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan;
 
 use Closure;
+use Phan\Language\Element\TypedElement;
 
 /**
  * A utility trait to memoize (cache) the result of instance methods and static methods.
@@ -19,6 +20,17 @@ trait Memoize
      * @internal
      */
     protected $memoized_data = [];
+
+    /**
+     * The memoized data is state owned by elements (see TypedElement::getStateVersion()):
+     * record its changes.
+     */
+    private function recordMemoizedDataChange(): void
+    {
+        if ($this instanceof TypedElement) {
+            $this->bumpStateVersion();
+        }
+    }
 
     /**
      * Memoize the result of $fn(), saving the result
@@ -41,6 +53,7 @@ trait Memoize
     {
         if (!\array_key_exists($key, $this->memoized_data)) {
             $this->memoized_data[$key] = $fn();
+            $this->recordMemoizedDataChange();
         }
 
         return $this->memoized_data[$key];
@@ -58,6 +71,7 @@ trait Memoize
     {
         if (!\array_key_exists($key, $this->memoized_data)) {
             $this->memoized_data[$key] = true;
+            $this->recordMemoizedDataChange();
             return true;
         }
 
@@ -99,5 +113,6 @@ trait Memoize
     protected function memoizeFlushAll(): void
     {
         $this->memoized_data = [];
+        $this->recordMemoizedDataChange();
     }
 }

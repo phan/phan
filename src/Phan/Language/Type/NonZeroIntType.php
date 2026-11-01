@@ -51,6 +51,12 @@ class NonZeroIntType extends IntType
         return !$this->is_nullable;
     }
 
+    /** @override */
+    public function getIntBounds(): array
+    {
+        return [null, null, true];
+    }
+
     /**
      * @return bool
      * True if this Type can be cast to the given Type

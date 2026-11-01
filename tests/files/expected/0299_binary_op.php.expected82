@@ -48,8 +48,8 @@
 %s:47 PhanTypeMismatchArgumentReal Argument 1 ($x) is ($intVar **= 2) of type float but \expect_string_298() takes string defined at %s:3
 %s:48 PhanTypeMismatchArgumentReal Argument 1 ($x) is ($intVar %= 5) of type int but \expect_string_298() takes string defined at %s:3
 %s:48 PhanUnusedVariable Unused definition of variable $intVar
-%s:50 PhanTypeMismatchArgumentReal Argument 1 ($x) is ($intVar += 2) of type int (real type array|float|int) but \expect_string_298() takes string defined at %s:3
-%s:51 PhanTypeMismatchArgumentReal Argument 1 ($x) is ($intVar -= 5) of type int (real type float) but \expect_string_298() takes string defined at %s:3
+%s:50 PhanTypeMismatchArgumentReal Argument 1 ($x) is ($intVar += 2) of type positive-int (real type array|float|int) but \expect_string_298() takes string defined at %s:3
+%s:51 PhanTypeMismatchArgumentReal Argument 1 ($x) is ($intVar -= 5) of type positive-int (real type float) but \expect_string_298() takes string defined at %s:3
 %s:52 PhanTypeMismatchArgumentReal Argument 1 ($x) is ($intVar <<= 1) of type int but \expect_string_298() takes string defined at %s:3
 %s:53 PhanTypeMismatchArgumentReal Argument 1 ($x) is ($intVar >>= 1) of type int but \expect_string_298() takes string defined at %s:3
 %s:55 PhanTypeMismatchArgument Argument 1 ($x) is ('0' | '1') of type string but \expect_int_298() takes int defined at %s:4

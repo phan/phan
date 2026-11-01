@@ -18,6 +18,10 @@ class Writer
 {
     public const TYPE_ISSUE_LIST = 'issue-list';
     public const TYPE_PROGRESS   = 'progress';
+    /** Only sent when phase timings are enabled (--dump-phase-timings or --phase-timings-json) */
+    public const TYPE_PHASE_TIMINGS = 'phase-timings';
+    /** Counts that the parent adds up over the workers (see ForkPool::getWorkerCount()) */
+    public const TYPE_COUNTS = 'counts';
 
     /** @var resource */
     private static $output;
@@ -51,6 +55,24 @@ class Writer
     public static function emitIssues(array $issues): void
     {
         self::writeNotification(self::TYPE_ISSUE_LIST, \serialize($issues));
+    }
+
+    /**
+     * Report the phase timings collected by this analysis worker.
+     * @param array<string,mixed> $payload from PhaseTimer::finishWorker()
+     */
+    public static function emitPhaseTimings(array $payload): void
+    {
+        self::writeNotification(self::TYPE_PHASE_TIMINGS, \serialize($payload));
+    }
+
+    /**
+     * Report counts that the parent adds up over the workers (e.g. the violations found by PHAN_LAZY_INHERIT_VERIFY=1).
+     * @param array<string,int> $counts
+     */
+    public static function emitCounts(array $counts): void
+    {
+        self::writeNotification(self::TYPE_COUNTS, \serialize($counts));
     }
 
     /**

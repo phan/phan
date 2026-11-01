@@ -130,10 +130,17 @@ class UnionType implements Serializable, Stringable
 
     private function clampLargeTypeSets(): void
     {
-        if (\count($this->type_set) > self::getMaxTypeSetSize()) {
+        $type_set_count = \count($this->type_set);
+        $real_type_set_count = \count($this->real_type_set);
+        if ($type_set_count <= 1 && $real_type_set_count <= 1) {
+            // getMaxTypeSetSize() is always at least 1, so there is nothing to clamp.
+            return;
+        }
+        $max_size = self::getMaxTypeSetSize();
+        if ($type_set_count > $max_size) {
             [$this->type_set] = self::summarizeLargeTypeSet($this->type_set);
         }
-        if (\count($this->real_type_set) > self::getMaxTypeSetSize()) {
+        if ($real_type_set_count > $max_size) {
             [$this->real_type_set] = self::summarizeLargeTypeSet($this->real_type_set);
         }
     }
@@ -229,7 +236,10 @@ class UnionType implements Serializable, Stringable
         if ($n === 0) {
             if ($real_type_set) {
                 if (\count($real_type_set) === 1) {
-                    return \reset($real_type_set)->asRealUnionType();
+                    // Use foreach instead of reset() to avoid copying the shared array.
+                    foreach ($real_type_set as $type) {
+                        return $type->asRealUnionType();
+                    }
                 }
                 return new self($real_type_set, false, $real_type_set);
             }
@@ -237,11 +247,13 @@ class UnionType implements Serializable, Stringable
         }
         if ($n === 1 && \count($real_type_set) <= 1) {
             if (!$real_type_set) {
-                // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
-                return \reset($type_list)->asPHPDocUnionType();
+                foreach ($type_list as $type) {
+                    return $type->asPHPDocUnionType();
+                }
             } elseif ($real_type_set === $type_list) {
-                // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
-                return \reset($type_list)->asRealUnionType();
+                foreach ($type_list as $type) {
+                    return $type->asRealUnionType();
+                }
             }
             return new self($type_list, true, $real_type_set);
         } else {
@@ -260,7 +272,10 @@ class UnionType implements Serializable, Stringable
         if ($n === 0) {
             if ($real_type_set) {
                 if (\count($real_type_set) === 1) {
-                    return \reset($real_type_set)->asRealUnionType();
+                    // Use foreach instead of reset() to avoid copying the shared array.
+                    foreach ($real_type_set as $type) {
+                        return $type->asRealUnionType();
+                    }
                 }
                 return new self($real_type_set, true, $real_type_set);
             }
@@ -268,11 +283,13 @@ class UnionType implements Serializable, Stringable
         }
         if ($n === 1 && \count($real_type_set) <= 1) {
             if (!$real_type_set) {
-                // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
-                return \reset($type_list)->asPHPDocUnionType();
+                foreach ($type_list as $type) {
+                    return $type->asPHPDocUnionType();
+                }
             } elseif ($real_type_set === $type_list) {
-                // @phan-suppress-next-line PhanPossiblyNonClassMethodCall
-                return \reset($type_list)->asRealUnionType();
+                foreach ($type_list as $type) {
+                    return $type->asRealUnionType();
+                }
             }
         }
         return new self($type_list, true, $real_type_set);
@@ -290,12 +307,31 @@ class UnionType implements Serializable, Stringable
     }
 
     /**
+     * @var EmptyUnionType an empty union type that marks a variable narrowed to no possible type by an impossible condition
+     * (see Context::withScopeVariable()). It behaves like UnionType::empty() everywhere; only ContextMergeVisitor
+     * tells the two apart, so that a dead branch contributes nothing to the merged type of a variable
+     * while a branch where the type is unknown contributes `mixed`.
+     */
+    private static $impossible_instance;
+
+    /**
+     * The empty union type of a variable narrowed by an impossible condition (e.g. `!is_string($s)` on a string).
+     * Distinguishable from UnionType::empty() by identity only.
+     * @return EmptyUnionType (Real return type omitted for performance)
+     */
+    public static function impossible(): EmptyUnionType
+    {
+        return self::$impossible_instance;
+    }
+
+    /**
      * @internal
      */
     public static function init(): void
     {
         if (\is_null(self::$empty_instance)) {
             self::$empty_instance = EmptyUnionType::instance();
+            self::$impossible_instance = new EmptyUnionType();
         }
     }
 
@@ -972,7 +1008,9 @@ class UnionType implements Serializable, Stringable
     {
         if ($this->real_type_set) {
             if (\count($this->type_set) === 1) {
-                return \reset($this->type_set)->asPHPDocUnionType();
+                foreach ($this->type_set as $type) {
+                    return $type->asPHPDocUnionType();
+                }
             }
             return new UnionType($this->type_set, true, []);
         }
@@ -1282,9 +1320,34 @@ class UnionType implements Serializable, Stringable
         if (!$context->isInClassScope()) {
             return $this;
         }
+        if ($this->isStaticResolutionNoOp()) {
+            // Same result as mapping every type to itself below, without allocating a closure.
+            return $this;
+        }
         return $this->asMappedUnionType(static function (Type $type) use ($context): Type {
             return $type->withStaticResolvedInContext($context);
         });
+    }
+
+    /**
+     * Returns true if withStaticResolvedInContext() returns $this for every Context,
+     * i.e. if every type in this union type (and its real type set) is a static resolution no-op.
+     *
+     * @see Type::isStaticResolutionNoOp()
+     */
+    public function isStaticResolutionNoOp(): bool
+    {
+        foreach ($this->type_set as $type) {
+            if (!$type->isStaticResolutionNoOp()) {
+                return false;
+            }
+        }
+        foreach ($this->real_type_set as $type) {
+            if (!$type->isStaticResolutionNoOp()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -1307,6 +1370,10 @@ class UnionType implements Serializable, Stringable
     public function withStaticResolvedInFunctionLike(
         FunctionInterface $function
     ): UnionType {
+        if ($this->isStaticResolutionNoOp()) {
+            // withStaticResolvedInContext() would return $this, so skip creating the Context and Scope.
+            return $this;
+        }
         $context = $function->getContext();
         if ($function instanceof Method) {
             // Gets the context of the method *after* inheritance
@@ -1394,7 +1461,10 @@ class UnionType implements Serializable, Stringable
             return false;
         }
 
-        return \reset($type_set) === $type;
+        foreach ($type_set as $only_type) {
+            return $only_type === $type;
+        }
+        return false;
     }
 
     /**
@@ -1414,6 +1484,12 @@ class UnionType implements Serializable, Stringable
     }
 
     /**
+     * isEqualTo() and isIdenticalTo() compare type sets with in_array() up to this size,
+     * which is faster than building a hash set of spl_object_id() for small sets.
+     */
+    private const MAX_TYPE_SET_SIZE_FOR_LINEAR_SEARCH = 32;
+
+    /**
      * @return bool
      * True iff this union contains the exact set of types
      * represented in the given union type.
@@ -1428,17 +1504,26 @@ class UnionType implements Serializable, Stringable
         }
         $type_set = $this->type_set;
         $other_type_set = $union_type->type_set;
-        if (\count($type_set) !== \count($other_type_set)) {
+        $n = \count($type_set);
+        if ($n !== \count($other_type_set)) {
             return false;
         }
-        // Use O(n) hash-based lookup instead of O(n^2) in_array for larger type sets
-        $other_set_ids = [];
-        foreach ($other_type_set as $type) {
-            $other_set_ids[\spl_object_id($type)] = true;
-        }
-        foreach ($type_set as $type) {
-            if (!isset($other_set_ids[\spl_object_id($type)])) {
-                return false;
+        if ($n <= self::MAX_TYPE_SET_SIZE_FOR_LINEAR_SEARCH) {
+            foreach ($type_set as $type) {
+                if (!\in_array($type, $other_type_set, true)) {
+                    return false;
+                }
+            }
+        } else {
+            // Use O(n) hash-based lookup instead of O(n^2) in_array for larger type sets
+            $other_set_ids = [];
+            foreach ($other_type_set as $type) {
+                $other_set_ids[\spl_object_id($type)] = true;
+            }
+            foreach ($type_set as $type) {
+                if (!isset($other_set_ids[\spl_object_id($type)])) {
+                    return false;
+                }
             }
         }
         return !$this->isPossiblyUndefined() && !$union_type->isPossiblyUndefined();
@@ -1459,32 +1544,50 @@ class UnionType implements Serializable, Stringable
         }
         $type_set = $this->type_set;
         $other_type_set = $union_type->type_set;
-        if (\count($type_set) !== \count($other_type_set)) {
+        $n = \count($type_set);
+        if ($n !== \count($other_type_set)) {
             return false;
         }
-        // Use O(n) hash-based lookup instead of O(n^2) in_array for larger type sets
-        $other_set_ids = [];
-        foreach ($other_type_set as $type) {
-            $other_set_ids[\spl_object_id($type)] = true;
-        }
-        foreach ($type_set as $type) {
-            if (!isset($other_set_ids[\spl_object_id($type)])) {
-                return false;
+        if ($n <= self::MAX_TYPE_SET_SIZE_FOR_LINEAR_SEARCH) {
+            foreach ($type_set as $type) {
+                if (!\in_array($type, $other_type_set, true)) {
+                    return false;
+                }
+            }
+        } else {
+            // Use O(n) hash-based lookup instead of O(n^2) in_array for larger type sets
+            $other_set_ids = [];
+            foreach ($other_type_set as $type) {
+                $other_set_ids[\spl_object_id($type)] = true;
+            }
+            foreach ($type_set as $type) {
+                if (!isset($other_set_ids[\spl_object_id($type)])) {
+                    return false;
+                }
             }
         }
         $real_type_set = $this->real_type_set;
         $other_real_type_set = $union_type->real_type_set;
-        if (\count($real_type_set) !== \count($other_real_type_set)) {
+        $n = \count($real_type_set);
+        if ($n !== \count($other_real_type_set)) {
             return false;
         }
-        // Also optimize the real type set comparison
-        $other_real_set_ids = [];
-        foreach ($other_real_type_set as $type) {
-            $other_real_set_ids[\spl_object_id($type)] = true;
-        }
-        foreach ($real_type_set as $type) {
-            if (!isset($other_real_set_ids[\spl_object_id($type)])) {
-                return false;
+        if ($n <= self::MAX_TYPE_SET_SIZE_FOR_LINEAR_SEARCH) {
+            foreach ($real_type_set as $type) {
+                if (!\in_array($type, $other_real_type_set, true)) {
+                    return false;
+                }
+            }
+        } else {
+            // Also optimize the real type set comparison
+            $other_real_set_ids = [];
+            foreach ($other_real_type_set as $type) {
+                $other_real_set_ids[\spl_object_id($type)] = true;
+            }
+            foreach ($real_type_set as $type) {
+                if (!isset($other_real_set_ids[\spl_object_id($type)])) {
+                    return false;
+                }
             }
         }
         return !$this->isPossiblyUndefined() && !$union_type->isPossiblyUndefined();
@@ -2832,7 +2935,6 @@ class UnionType implements Serializable, Stringable
      * (e.g. mixed <-> string, etc.)
      *
      * TODO: Make this work for callable <-> string, etc.
-     * @suppress PhanUnreferencedPublicMethod
      */
     public function hasAnyTypeOverlap(CodeBase $code_base, UnionType $other): bool
     {
@@ -3225,7 +3327,7 @@ class UnionType implements Serializable, Stringable
                 );
             }
             $class = $code_base->getClassByFQSEN($class_fqsen);
-            if (!$class->isPHPInternal() && $code_base->hasClassWithFQSEN($class_fqsen->withAlternateId(1))) {
+            if (!$class->isPHPInternal() && $code_base->mayHaveAlternatesOfClass($class_fqsen) && $code_base->hasClassWithFQSEN($class_fqsen->withAlternateId(1))) {
                 self::emitRedefinedClassReferenceWarning($code_base, $context, $class_fqsen);
             }
 
@@ -4669,11 +4771,13 @@ class UnionType implements Serializable, Stringable
         if (\count($type_set) === 0) {
             return self::$empty_instance;
         } elseif (\count($type_set) === 1) {
-            return \reset($type_set)->asExpandedTypes(
-                $code_base,
-                $recursion_depth + 1,
-                $preserving_template
-            )->withRealTypeSet($this->real_type_set);
+            foreach ($type_set as $type) {
+                return $type->asExpandedTypes(
+                    $code_base,
+                    $recursion_depth + 1,
+                    $preserving_template
+                )->withRealTypeSet($this->real_type_set);
+            }
         }
         // 2 or more union types to merge
 
@@ -4811,20 +4915,29 @@ class UnionType implements Serializable, Stringable
      */
     public function __toString(): string
     {
+        $types = $this->type_set;
+        if (\count($types) <= 1) {
+            // A single type is never wrapped in parentheses
+            foreach ($types as $type) {
+                return $type->__toString();
+            }
+            return '';
+        }
         // Create a new array containing the string
         // representations of each type
-        $types = $this->type_set;
-        $type_name_list =
-            \array_map(static function (Type $type) use ($types): string {
-                if (count($types) > 1 && $type instanceof IntersectionType) {
-                    // Avoid ambiguity such as (Closure():A&B)
-                    return '(' . $type->__toString() . ')';
-                }
-                return $type->__toString();
-            }, $types);
+        $type_name_list = [];
+        foreach ($types as $type) {
+            if ($type instanceof IntersectionType) {
+                // Avoid ambiguity such as (Closure():A&B)
+                $type_name_list[] = '(' . $type->__toString() . ')';
+            } else {
+                $type_name_list[] = $type->__toString();
+            }
+        }
 
         // Sort the types so that we get a stable
-        // representation
+        // representation.
+        // (SORT_REGULAR is deliberate: it orders numeric literal types such as `9|10` by value)
         \asort($type_name_list);
 
         // Join them with a pipe
@@ -4839,14 +4952,20 @@ class UnionType implements Serializable, Stringable
     public function toErrorMessageString(): string
     {
         $types = $this->type_set;
-        $type_name_list =
-            \array_map(static function (Type $type) use ($types): string {
-                $error_str = $type->toErrorMessageString();
-                if (count($types) > 1 && $type instanceof IntersectionType) {
-                    return '(' . $error_str . ')';
-                }
-                return $error_str;
-            }, $types);
+        if (\count($types) <= 1) {
+            foreach ($types as $type) {
+                return $type->toErrorMessageString();
+            }
+            return '';
+        }
+        $type_name_list = [];
+        foreach ($types as $type) {
+            if ($type instanceof IntersectionType) {
+                $type_name_list[] = '(' . $type->toErrorMessageString() . ')';
+            } else {
+                $type_name_list[] = $type->toErrorMessageString();
+            }
+        }
 
         \asort($type_name_list);
         return \implode('|', $type_name_list);
@@ -5175,7 +5294,10 @@ class UnionType implements Serializable, Stringable
     {
         $n = \count($union_types);
         if ($n < 2) {
-            return \reset($union_types) ?: UnionType::$empty_instance;
+            foreach ($union_types as $union_type) {
+                return $union_type;
+            }
+            return UnionType::$empty_instance;
         }
         $new_type_set = [];
         $array_shape_types = [];
@@ -6011,6 +6133,9 @@ class UnionType implements Serializable, Stringable
             }
             // -INT_MIN is a float.
             return LiteralFloatType::instanceForValue($result, false);
+        }, static function (IntType $type): IntType {
+            // e.g. -positive-int is negative-int
+            return IntType::computeNegatedType($type);
         });
     }
 
@@ -6176,20 +6301,21 @@ class UnionType implements Serializable, Stringable
     /**
      * @param Closure(int|float): ScalarType $operation
      */
-    private function applyNumericOperation(Closure $operation): UnionType
+    private function applyNumericOperation(Closure $operation, ?Closure $int_type_operation = null): UnionType
     {
         return UnionType::of(
-            self::applyNumericOperationToList($this->type_set, $operation),
-            self::applyNumericOperationToList($this->real_type_set, $operation)
+            self::applyNumericOperationToList($this->type_set, $operation, $int_type_operation),
+            self::applyNumericOperationToList($this->real_type_set, $operation, $int_type_operation)
         );
     }
 
     /**
      * @param List<Type> $type_set
      * @param Closure(int|float): ScalarType $operation
+     * @param ?Closure(IntType): IntType $int_type_operation the result for non-literal int types (e.g. positive-int), if known
      * @return list<ScalarType>
      */
-    private static function applyNumericOperationToList(array $type_set, Closure $operation): array
+    private static function applyNumericOperationToList(array $type_set, Closure $operation, ?Closure $int_type_operation = null): array
     {
         $result = [];
         $needs_int_fallback = false;
@@ -6211,7 +6337,11 @@ class UnionType implements Serializable, Stringable
                     continue;
                 }
                 if ($type instanceof IntType) {
-                    $needs_int_fallback = true;
+                    if ($int_type_operation !== null) {
+                        $result[] = $int_type_operation($type);
+                    } else {
+                        $needs_int_fallback = true;
+                    }
                     continue;
                 }
                 if ($type instanceof FloatType) {
@@ -6549,7 +6679,10 @@ class UnionType implements Serializable, Stringable
         if (\count($type_set) !== 1) {
             return false;
         }
-        return \reset($type_set) instanceof VoidType;
+        foreach ($type_set as $type) {
+            return $type instanceof VoidType;
+        }
+        return false;
     }
 
     /**
@@ -6562,7 +6695,10 @@ class UnionType implements Serializable, Stringable
         if (\count($type_set) !== 1) {
             return false;
         }
-        return \reset($type_set) instanceof NeverType;
+        foreach ($type_set as $type) {
+            return $type instanceof NeverType;
+        }
+        return false;
     }
 
     /**
@@ -6618,7 +6754,9 @@ class UnionType implements Serializable, Stringable
         if (!$real_type_set) {
             return UnionType::empty();
         } elseif (\count($real_type_set) === 1) {
-            return \reset($real_type_set)->asRealUnionType();
+            foreach ($real_type_set as $type) {
+                return $type->asRealUnionType();
+            }
         }
         return new UnionType($real_type_set, true, $real_type_set);
     }

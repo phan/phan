@@ -1178,16 +1178,20 @@ final class ArgumentType
         $alternate_parameter_type = null;  // TODO: Properly merge "possibly undefined" union types - without this, undefined is inferred instead of possibly undefined
 
         // Check ArrayObject and ArrayIterator
-        // @phan-suppress-next-line PhanThrowTypeAbsentForCall
-        $arrayObj = FullyQualifiedClassName::make('', 'ArrayObject');
-        // @phan-suppress-next-line PhanThrowTypeAbsentForCall
-        $arrayIter = FullyQualifiedClassName::make('', 'ArrayIterator');
-        $deprecatedParam = false;
-        if ($method->getFQSEN() === FullyQualifiedMethodName::make($arrayObj, '__construct')
-            || $method->getFQSEN() === FullyQualifiedMethodName::make($arrayIter, '__construct')
-        ) {
-            $deprecatedParam = true;
+        // (The FQSEN factories always return the same instances, so these are only created once)
+        static $array_object_constructor_fqsen = null;
+        static $array_iterator_constructor_fqsen = null;
+        if ($array_object_constructor_fqsen === null) {
+            // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+            $arrayObj = FullyQualifiedClassName::make('', 'ArrayObject');
+            // @phan-suppress-next-line PhanThrowTypeAbsentForCall
+            $arrayIter = FullyQualifiedClassName::make('', 'ArrayIterator');
+            $array_object_constructor_fqsen = FullyQualifiedMethodName::make($arrayObj, '__construct');
+            $array_iterator_constructor_fqsen = FullyQualifiedMethodName::make($arrayIter, '__construct');
         }
+        $method_fqsen = $method->getFQSEN();
+        $deprecatedParam = $method_fqsen === $array_object_constructor_fqsen
+            || $method_fqsen === $array_iterator_constructor_fqsen;
 
         $arg_count_info = null;
         foreach ($method->alternateGenerator($code_base) as $alternate_method) {
@@ -1386,7 +1390,9 @@ final class ArgumentType
             }
             $argument_fragment = $argument_fragment_cache[$name] ?? null;
             if ($argument_fragment === null) {
-                $extractor = $parameter_union_type->getTemplateTypeExtractorClosure($code_base, $type);
+                // Look up the extractor for the non-nullable template type, so that for `@param ?T $x`
+                // the extractor strips null from the argument instead of treating null as T.
+                $extractor = $parameter_union_type->getTemplateTypeExtractorClosure($code_base, $type->withIsNullable(false));
                 if ($extractor) {
                     $argument_fragment = $extractor($argument_union_type, $context);
                 } else {
@@ -2004,6 +2010,8 @@ final class ArgumentType
      * For purely positional calls this returns the input unchanged (fast path).
      * Gaps for unspecified optional parameters are left absent — callers
      * should continue using `$args[$i] ?? null`.
+     * Unmatched named arguments, and an `...$unpack` that a named argument replaced,
+     * are appended after the matched positions.
      *
      * @param list<Node|int|string|float> $args Raw argument nodes from $node->children['args']->children
      * @param FunctionInterface $method The function/method being called
@@ -2035,7 +2043,15 @@ final class ArgumentType
             if ($arg instanceof Node && $arg->kind === ast\AST_NAMED_ARG) {
                 $name = $arg->children['name'];
                 if (isset($name_to_position[$name])) {
-                    $result[$name_to_position[$name]] = $arg->children['expr'];
+                    $position = $name_to_position[$name];
+                    $existing = $result[$position] ?? null;
+                    if ($existing instanceof Node && $existing->kind === ast\AST_UNPACK) {
+                        // `f(...$args, x: 1)`: any call that doesn't throw passes `1` for `x` (an `x` in the unpacked
+                        // array would be an error), but the unpack may still fill the later parameters.
+                        // Keep the unpack node (after the matched positions) so callers know that.
+                        $unmatched[] = $existing;
+                    }
+                    $result[$position] = $arg->children['expr'];
                 } else {
                     // Keep unmatched named args (e.g. forwarded via variadic) as-is
                     $unmatched[] = $arg;

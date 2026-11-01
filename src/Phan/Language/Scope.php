@@ -74,6 +74,12 @@ abstract class Scope
     private $template_type_map = [];
 
     /**
+     * @var int
+     * The version of the state owned by this scope, see getStateVersion().
+     */
+    private $state_version = 0;
+
+    /**
      * @param Scope $parent_scope
      * @param ?FQSEN $fqsen
      * @param int $flags
@@ -86,6 +92,28 @@ abstract class Scope
         $this->parent_scope = $parent_scope;
         $this->fqsen = $fqsen;
         $this->flags = $flags;
+    }
+
+    /**
+     * Returns the version of the state that this scope owns (its variable map, template types and flags).
+     *
+     * The version is incremented by every in-place change of that state (addVariable(), unsetVariable(),
+     * addGlobalVariable(), addTemplateType(), ...), so "has this scope changed since version X" is a cheap check
+     * (see TypedElement::getStateVersion()). Changes of a Variable in the map are recorded by the Variable's own version.
+     * Methods that return a modified clone (withVariable(), withUnsetVariable()) do not change the version of
+     * this scope. A clone starts with the version of the scope it was cloned from.
+     */
+    public function getStateVersion(): int
+    {
+        return $this->state_version;
+    }
+
+    /**
+     * Records a change of the state owned by this scope (see getStateVersion()).
+     */
+    protected function bumpStateVersion(): void
+    {
+        ++$this->state_version;
     }
 
     /**
@@ -333,6 +361,7 @@ abstract class Scope
      */
     public function unsetVariable(string $variable_name): void
     {
+        ++$this->state_version;
         unset($this->variable_map[$variable_name]);
     }
 
@@ -349,6 +378,7 @@ abstract class Scope
             throw new \Error("Bad variable {$variable->getName()}\n");
         }
          */
+        ++$this->state_version;
         $this->variable_map[$variable->getName()] = $variable;
     }
 
@@ -360,6 +390,7 @@ abstract class Scope
      */
     public function addGlobalVariable(Variable $variable): void
     {
+        ++$this->state_version;
         $this->parent_scope->addGlobalVariable($variable);
     }
 
@@ -436,6 +467,7 @@ abstract class Scope
      */
     public function addTemplateType(TemplateType $template_type): void
     {
+        ++$this->state_version;
         $this->template_type_map[$template_type->getName()] = $template_type;
     }
 

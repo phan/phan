@@ -74,11 +74,11 @@ final class TemplateType extends Type
      * Set to true if the type should be nullable, else pass
      * false
      *
-     * @return Type
+     * @return TemplateType
      * A new type that is a copy of this type but with the
      * given nullability value.
      */
-    public function withIsNullable(bool $is_nullable): Type
+    public function withIsNullable(bool $is_nullable): TemplateType
     {
         if ($is_nullable === $this->is_nullable) {
             return $this;
@@ -435,6 +435,10 @@ final class TemplateType extends Type
         if (!$this->bound_union_type || $this->bound_union_type->isEmpty()) {
             return parent::canCastToAnyTypeInSet($target_type_set, $code_base);
         }
+        // T (of Bound) can always be passed where the same T is expected, e.g. T to ?T.
+        if ($this->canCastToSameTemplateInSet($target_type_set, $code_base, false)) {
+            return true;
+        }
         // A nullable bounded template cannot cast to a set of non-null-accepting targets.
         if ($this->is_nullable && !NullType::instance(false)->canCastToAnyTypeInSet($target_type_set, $code_base)) {
             return false;
@@ -459,6 +463,10 @@ final class TemplateType extends Type
             // templates with no declared bound are treated as acceptable, matching earlier Phan releases.
             return true;
         }
+        // T (of Bound) can always be passed where the same T is expected, e.g. T to ?T.
+        if ($this->canCastToSameTemplateInSet($target_type_set, $code_base, true)) {
+            return true;
+        }
         // A nullable bounded template cannot cast to a set of non-null-accepting targets.
         if ($this->is_nullable && !NullType::instance(false)->canCastToAnyTypeInSetWithoutConfig($target_type_set, $code_base)) {
             return false;
@@ -471,6 +479,34 @@ final class TemplateType extends Type
             }
         }
         return true;
+    }
+
+    /**
+     * Returns true if $target_type_set contains this same template type (ignoring nullability)
+     * and this type's nullability is accepted by that target.
+     *
+     * Without this, a bounded `T` would be compared bound-by-bound against the target set,
+     * and `T of Foo` would fail to cast to `?T` because `Foo` cannot cast to a TemplateType.
+     *
+     * @param list<Type> $target_type_set
+     */
+    private function canCastToSameTemplateInSet(array $target_type_set, CodeBase $code_base, bool $without_config): bool
+    {
+        foreach ($target_type_set as $target_type) {
+            if (!($target_type instanceof self) || $target_type->template_type_identifier !== $this->template_type_identifier) {
+                continue;
+            }
+            if ($target_type->withIsNullable(false) !== $this->withIsNullable(false)) {
+                // Same name but a different bound or variance (e.g. a shadowing method-level template).
+                continue;
+            }
+            // Type::canCastToType() handles nullability (including null_casts_as_any_type) and
+            // returns true once the non-nullable instances are identical.
+            if ($without_config ? parent::canCastToTypeWithoutConfig($target_type, $code_base) : parent::canCastToType($target_type, $code_base)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function isPossiblyFalsey(): bool

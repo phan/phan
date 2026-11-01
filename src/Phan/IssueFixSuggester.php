@@ -273,10 +273,14 @@ class IssueFixSuggester
      */
     public static function suggestSimilarMethodMap(CodeBase $code_base, Context $context, Clazz $class, string $wanted_method_name, bool $is_static): array
     {
-        $methods = $class->getMethodMap($code_base);
-        if (count($methods) > Config::getValue('suggestion_check_limit')) {
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        if (count($class->getMethodEntryMap($code_base)) > Config::getValue('suggestion_check_limit')) {
             return [];
         }
+        // With lazy_inherited_methods, this creates the copies of the lazily inherited methods of $class
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        $code_base->getLazyInherited()?->materializeAllOfClass($class->getFQSEN(), 'suggester');
+        $methods = $class->getMethodMap($code_base);
         $usable_methods = self::filterSimilarMethods($code_base, $context, $methods, $is_static);
         return self::getSuggestionsForStringSet($wanted_method_name, $usable_methods);
     }

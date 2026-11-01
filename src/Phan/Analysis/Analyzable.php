@@ -35,6 +35,11 @@ trait Analyzable
     private static $recursion_depth = 0;
 
     /**
+     * Records a change of the state owned by this element (TypedElement::bumpStateVersion())
+     */
+    abstract protected function bumpStateVersion(): void;
+
+    /**
      * Keep a reference to the Node which declared this analyzable object so that we can use it later.
      *
      * @param Node $node
@@ -47,6 +52,7 @@ trait Analyzable
             return;
         }
 
+        $this->bumpStateVersion();
         $this->node = $node;
     }
 
@@ -76,6 +82,7 @@ trait Analyzable
      */
     protected function clearNode(): void
     {
+        $this->bumpStateVersion();
         $this->node = null;
     }
 

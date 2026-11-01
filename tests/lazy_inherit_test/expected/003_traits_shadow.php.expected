@@ -1,0 +1,10 @@
+src/003_traits_shadow.php:15 PhanParamSignatureMismatch Declaration of function bye() : int should be compatible with function bye() : string defined in external/003.php:9
+src/003_traits_shadow.php:15 PhanParamSignatureRealMismatchReturnType Declaration of function bye() : int should be compatible with function bye() : string (method where the return type in the real signature is 'int' cannot override method where the return type in the real signature is 'string') defined in external/003.php:9
+src/003_traits_shadow.php:37 PhanTypeMismatchArgument Argument 1 ($values) is ['x'] of type array{0:'x'} but \D003::setUp() takes int[] defined at src/003_traits_shadow.php:9
+src/003_traits_shadow.php:38 PhanTypeMismatchArgument Argument 1 ($i) is $d->hello() of type string but \expect_int_003() takes int defined at src/003_traits_shadow.php:33
+src/003_traits_shadow.php:39 PhanTypeMismatchArgument Argument 1 ($i) is $d->helloB() of type string but \expect_int_003() takes int defined at src/003_traits_shadow.php:33
+src/003_traits_shadow.php:40 PhanTypeMismatchArgument Argument 1 ($i) is $d->stay() of type string but \expect_int_003() takes int defined at src/003_traits_shadow.php:33
+src/003_traits_shadow.php:41 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression $d->bye() with type int
+src/003_traits_shadow.php:46 PhanTypeMismatchArgument Argument 1 ($values) is ['x'] of type array{0:'x'} but \D003Deep::setUp() takes int[] defined at src/003_traits_shadow.php:9
+src/003_traits_shadow.php:47 PhanTypeMismatchArgument Argument 1 ($i) is $d->hello() of type string but \expect_int_003() takes int defined at src/003_traits_shadow.php:33
+src/003_traits_shadow.php:48 PhanTypeMismatchArgument Argument 1 ($i) is $d->bye() of type string but \expect_int_003() takes int defined at src/003_traits_shadow.php:33

@@ -9,13 +9,18 @@ use Closure;
 use Exception;
 use InvalidArgumentException;
 use Phan\Analysis\ConvergenceWorklist;
+use Phan\Analysis\EmitOnlyChecks;
+use Phan\Analysis\LazyInheritedMethods;
+use Phan\Analysis\LazyInheritedMethodsEligibility;
 use Phan\AST\TolerantASTConverter\Shim;
 use Phan\Daemon\Request;
+use Phan\ForkPool\Writer;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Type;
 use Phan\LanguageServer\LanguageServer;
 use Phan\LanguageServer\Logger as LanguageServerLogger;
 use Phan\Library\FileCache;
+use Phan\Library\PhaseTimer;
 use Phan\Library\StringUtil;
 use Phan\Output\BufferedPrinterInterface;
 use Phan\Output\Collector\NullCollector;
@@ -31,11 +36,9 @@ use function array_flip;
 use function array_merge;
 use function array_values;
 use function count;
-use function file_exists;
 use function file_put_contents;
 use function fprintf;
 use function fwrite;
-use function gc_enable;
 use function getmypid;
 use function in_array;
 use function is_array;
@@ -281,24 +284,17 @@ class Phan implements IgnoredFilesFilterInterface
             echo \implode("\n", $file_path_list) . (count($file_path_list) > 0 ? "\n" : "");
             exit(EXIT_SUCCESS);
         }
-        if (CLI::isDaemonOrLanguageServer()) {
-            // The PCNTL fallback generates cyclic references (to the CodeBase instance which references many other things) in createRestorePoint,
-            // so we need to garbage collect that.
-            //
-            // 1. Phan clones the old codebase to restore it, and cyclic references exist as a side effect.
-            //
-            //    This causes memory usage to increase while typing.
-            //
-            //    Memory inspection/profiling would help with creating a better fix.
-            // 2. It's possible that some plugins may benefit from garbage collection.
-            //
-            // This fix works in PHP 7.3, which has an improved garbage collector.
-            // It might not work as well in earlier PHP versions on large codebases.
-            //
-            // Other parts of the code also generate reference cycles even with PCNTL enabled.
-            gc_enable();
-        }
+        // The cycle collector stays disabled (Bootstrap.php) in daemon mode and the language server as well.
+        // It used to be re-enabled here because the fallback without pcntl creates reference cycles when it
+        // clones the CodeBase for a restore point, but that fallback collects them itself with
+        // gc_collect_cycles() once per request (Daemon::runWithoutPcntl(),
+        // LanguageServer::finishAnalyzingURIsWithoutPcntl()), which works with automatic collection off,
+        // and the forked analysis processes exit after one request. With automatic collection on, every
+        // run walked the millions of possible roots the parse phase leaves behind to free a few thousand
+        // cycles: on a local benchmark the daemon took 56 s instead of 24 s to start listening and 26 s
+        // instead of 6.7 s per request, at the same peak memory.
 
+        PhaseTimer::begin('stubs');
         Shim::load();
         FileCache::setMaxCacheSize(FileCache::MINIMUM_CACHE_SIZE);
         self::checkForSlowPHPOptions();
@@ -371,6 +367,7 @@ class Phan implements IgnoredFilesFilterInterface
         // === END INCREMENTAL ANALYSIS ===
 
         $file_count = count($file_path_list);
+        PhaseTimer::note('parsed_files', $file_count);
         if ($file_count === 0) {
             fprintf(STDERR, "Phan did not parse any files in the project %s - This may be an issue with the Phan config or CLI options.\n", StringUtil::jsonEncode(Config::getProjectRootDirectory()));
         }
@@ -395,6 +392,7 @@ class Phan implements IgnoredFilesFilterInterface
         // This first pass parses code and populates the
         // global state we'll need for doing a second
         // analysis after.
+        PhaseTimer::begin('parse');
         CLI::progress('parse', 0.0, null, 0, $file_count);
         $code_base->setCurrentParsedFile(null);
 
@@ -415,8 +413,9 @@ class Phan implements IgnoredFilesFilterInterface
             $code_base->flushDependenciesForFile($file_path);
 
             // If the file is gone, no need to continue
-            $real = realpath($file_path);
-            if ($real === false || !file_exists($real)) {
+            // (realpath() returns false for paths that don't exist.
+            // For a non-empty local path, file_exists() gives the same answer without resolving each component of the path.)
+            if (($file_path === '' || str_contains($file_path, '://')) ? realpath($file_path) === false : !\file_exists($file_path)) {
                 CLI::printWarningToStderr("Could not find file '$file_path'\n");
                 continue;
             }
@@ -428,7 +427,13 @@ class Phan implements IgnoredFilesFilterInterface
                 // === END INCREMENTAL ANALYSIS ===
 
                 // Parse the file
-                Analysis::parseFile($code_base, $file_path);
+                if (PhaseTimer::$enabled) {
+                    $parse_start_ns = \hrtime(true);
+                    Analysis::parseFile($code_base, $file_path);
+                    PhaseTimer::recordFile(PhaseTimer::FILE_PARSE, $file_path, \hrtime(true) - $parse_start_ns);
+                } else {
+                    Analysis::parseFile($code_base, $file_path);
+                }
 
                 // === INCREMENTAL ANALYSIS: Integration Point 2 - Update manifest with file metadata ===
                 if ($incremental_manifest !== null) {
@@ -461,6 +466,7 @@ class Phan implements IgnoredFilesFilterInterface
             }
         }
         $code_base->setCurrentParsedFile(null);
+        PhaseTimer::begin('before_analyze');
         ConfigPluginSet::instance()->beforeAnalyze($code_base);
         if ($is_undoable_request) {
             $code_base->setExpectChangesToFileContents();
@@ -571,9 +577,6 @@ class Phan implements IgnoredFilesFilterInterface
         foreach ($method_set as $method) {  // iterate, ignoring $fqsen
             $preload_function_state($method);
         }
-        // Calling getMethodsMapGroupedByDefiningFQSEN takes around 11 milliseconds for Phan self-analysis
-        // Preload this - it's high latency to generate the map in a forked analysis worker process.
-        $code_base->getMethodsMapGroupedByDefiningFQSEN();
     }
 
     private static function checkForOptionsConflictingWithServerModes(): void
@@ -618,17 +621,25 @@ class Phan implements IgnoredFilesFilterInterface
             // hydrating all classes, we only hydrate the things we
             // actually need. When running as multiple processes this
             // lets us only need to do hydrate a subset of classes.
-            $code_base->setShouldHydrateRequestedElements(true);
-
-            // This is only needed when `pcntl` *isn't* used.
-            // This object (if non-null) removes the temporary plugins added to implement "Go To Definition", etc.
-            $raii = ConfigPluginSet::instance()->addTemporaryAnalysisPlugin($code_base, $request);
-
+            PhaseTimer::begin('class_aliases');
             // TODO: consider filtering if Config::getValue('include_analysis_file_list') is set
             // most of what needs considering is that Analysis::analyzeClasses() and Analysis:analyzeFunctions() have side effects
             // these side effects don't matter in daemon mode, but they do matter with this other form of incremental analysis
             // other parts of these analysis steps could be skipped, which would reduce the overall execution time
             $path_filter = isset($request) ? array_flip($analyze_file_path_list) : null;
+            // Decide whether the copies of inherited methods are created lazily (lazy_inherited_methods):
+            // lazy entries can be created from here until the end of Analysis::analyzeClasses()
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            LazyInheritedMethods::activate($code_base, $request, $path_filter, $incremental_manifest !== null);
+            $code_base->setShouldHydrateRequestedElements(true);
+            // Inherited method copies could be created lazily from here until the end of Analysis::analyzeClasses()
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            LazyInheritedMethodsEligibility::setCreationWindowOpen(true);
+
+            // This is only needed when `pcntl` *isn't* used.
+            // This object (if non-null) removes the temporary plugins added to implement "Go To Definition", etc.
+            $raii = ConfigPluginSet::instance()->addTemporaryAnalysisPlugin($code_base, $request);
+
 
             // Tie class aliases together with the source class
             if (Config::getValue('enable_class_alias_support')) {
@@ -638,20 +649,33 @@ class Phan implements IgnoredFilesFilterInterface
             // Take a pass over all classes verifying
             // various states now that we have the whole
             // state in memory
+            PhaseTimer::begin('analyze_classes');
             Analysis::analyzeClasses($code_base, $path_filter);
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            LazyInheritedMethodsEligibility::setCreationWindowOpen(false);
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $code_base->getLazyInherited()?->closeCreationWindow();
 
             // Take a pass over all functions verifying
             // various states now that we have the whole
             // state in memory
+            // (Analysis::analyzeFunctions() starts the 'analyze_methods' phase after analyzing global functions.)
+            PhaseTimer::begin('analyze_functions');
             Analysis::analyzeFunctions($code_base, $path_filter);
 
             if (Config::getValue('dump_matching_functions')) {
                 exit(EXIT_SUCCESS);
             }
 
+            PhaseTimer::begin('load_method_plugins');
             Analysis::loadMethodPlugins($code_base);
 
+            PhaseTimer::begin('before_analyze_phase');
             ConfigPluginSet::instance()->beforeAnalyzePhase($code_base);
+            // PHAN_DUMP_METHOD_STATE_DIGEST=<path> (debugging aid for skipping the emit-only checks of excluded files)
+            EmitOnlyChecks::maybeDumpStateDigest($code_base);
+
+            PhaseTimer::begin('ordering');
 
             // Filter out any files that are to be excluded from
             // analysis
@@ -668,6 +692,7 @@ class Phan implements IgnoredFilesFilterInterface
 
             // Get the count of all files we're going to analyze
             $file_count = count($analyze_file_path_list);
+            PhaseTimer::note('analyzed_files', $file_count);
 
             // Prevent an ugly failure if we have no files to
             // analyze.
@@ -682,12 +707,21 @@ class Phan implements IgnoredFilesFilterInterface
                     Config::getValue('processes'),
                     $analyze_file_path_list
                 );
+            if (PhaseTimer::$enabled) {
+                self::recordOrderingStats($code_base, $process_file_list_map);
+            }
 
             /**
              * This worker takes a file and analyzes it
              */
             $analysis_worker = static function (int $i, string $file_path, int $file_count) use ($code_base, $temporary_file_mapping, $request): void {
                 CLI::progress('analyze', ($i + 1) / $file_count, $file_path, $i + 1, $file_count);
+                if (PhaseTimer::$enabled) {
+                    $analyze_start_ns = \hrtime(true);
+                    Analysis::analyzeFile($code_base, $file_path, $request, $temporary_file_mapping[$file_path] ?? null);
+                    PhaseTimer::recordFile(PhaseTimer::FILE_ANALYZE, $file_path, \hrtime(true) - $analyze_start_ns);
+                    return;
+                }
                 Analysis::analyzeFile($code_base, $file_path, $request, $temporary_file_mapping[$file_path] ?? null);
             };
 
@@ -717,6 +751,7 @@ class Phan implements IgnoredFilesFilterInterface
                 }
                 // Run analysis one file at a time, splitting the set of
                 // files up among a given number of child processes.
+                PhaseTimer::begin('fork');
                 $pool = new ForkPool(
                     $process_file_list_map,
                     static function (): void {
@@ -731,7 +766,23 @@ class Phan implements IgnoredFilesFilterInterface
                     static function () use ($code_base): array {
                         // This closure is run once, after running analysis_worker on each input.
                         // If there are any plugins defining finalizeProcess(), run those.
+                        $lazy = $code_base->getLazyInherited();
+                        // @phan-suppress-next-line PhanAccessMethodInternal
+                        $lazy?->beginFinalize();
                         ConfigPluginSet::instance()->finalizeProcess($code_base);
+                        if ($lazy !== null) {
+                            // @phan-suppress-next-line PhanAccessMethodInternal
+                            $lazy->endAnalysisPhase();
+                            // @phan-suppress-next-line PhanAccessMethodInternal
+                            $lazy->recordNotes();
+                            // @phan-suppress-next-line PhanAccessPropertyInternal
+                            if ($lazy->verify) {
+                                // Violations of PHAN_LAZY_INHERIT_VERIFY=1 are printed when found; the parent prints the summary
+                                // and exits with an error if any process found one.
+                                // @phan-suppress-next-line PhanAccessMethodInternal, PhanAccessClassConstantInternal
+                                Writer::emitCounts([LazyInheritedMethods::NOTE_PREFIX . 'verify_violations' => $lazy->getViolationCount()]);
+                            }
+                        }
 
                         // Return the collected issues to be serialized.
                         return self::getIssueCollector()->getCollectedIssues();
@@ -739,12 +790,18 @@ class Phan implements IgnoredFilesFilterInterface
                 );
 
                 // Wait for all tasks to complete and collect the results.
-                self::collectSerializedResults($pool->wait());
+                PhaseTimer::begin('analyze_wait');
+                $issues = $pool->wait();
+                PhaseTimer::begin('collect_results');
+                self::collectSerializedResults($issues);
+                // @phan-suppress-next-line PhanAccessMethodInternal, PhanAccessClassConstantInternal
+                $code_base->getLazyInherited()?->addWorkerViolations($pool->getWorkerCount(LazyInheritedMethods::NOTE_PREFIX . 'verify_violations'));
                 $did_fork_pool_have_error = $pool->didHaveError();
             } else {
                 // Get the task data from the 0th processor
                 $analyze_file_path_list = array_values($process_file_list_map)[0];
 
+                PhaseTimer::begin('analyze');
                 if ($analyze_twice) {
                     self::analyzeMultiplePasses($code_base, $analyze_file_path_list, $file_count, $analysis_worker);
                 } else {
@@ -757,14 +814,24 @@ class Phan implements IgnoredFilesFilterInterface
                 // Scan through all globally accessible elements
                 // in the code base and emit errors for dead
                 // code.
+                PhaseTimer::begin('dead_code');
                 Analysis::analyzeDeadCode($code_base);
 
                 // If there are any plugins defining finalizeProcess(), run those.
+                PhaseTimer::begin('finalize');
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                $code_base->getLazyInherited()?->beginFinalize();
                 ConfigPluginSet::instance()->finalizeProcess($code_base);
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                $code_base->getLazyInherited()?->endAnalysisPhase();
             }
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $code_base->getLazyInherited()?->recordNotes();
 
             // Get a count of the number of issues that were found
+            PhaseTimer::begin('display');
             $issue_count = count((self::$issue_collector)->getCollectedIssues());
+            PhaseTimer::note('issues', $issue_count);
             $is_issue_found =
                 0 !== $issue_count;
 
@@ -787,6 +854,12 @@ class Phan implements IgnoredFilesFilterInterface
 
             // Collect all issues, blocking
             self::display();
+
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            if ($code_base->getLazyInherited()?->reportVerifyResults()) {
+                // PHAN_LAZY_INHERIT_VERIFY=1 found violations
+                exit(EXIT_FAILURE);
+            }
 
             // === INCREMENTAL ANALYSIS: Integration Point 3b - Save manifest ===
             if ($incremental_manifest !== null) {
@@ -892,6 +965,21 @@ class Phan implements IgnoredFilesFilterInterface
     }
 
     /**
+     * @var array<string,bool> caches the results of isExcludedAnalysisFile() for the config values below
+     */
+    private static $is_excluded_analysis_file_cache = [];
+
+    /**
+     * @var mixed the value of 'include_analysis_file_list' that $is_excluded_analysis_file_cache was computed for
+     */
+    private static $is_excluded_analysis_file_cache_include_list = [];
+
+    /**
+     * @var mixed the value of '__exclude_analysis_regex' that $is_excluded_analysis_file_cache was computed for
+     */
+    private static $is_excluded_analysis_file_cache_regex = null;
+
+    /**
      * @return bool
      * True if this file is a member of a third party directory as
      * configured via the CLI flag '-3 [paths]'.
@@ -900,12 +988,32 @@ class Phan implements IgnoredFilesFilterInterface
         string $file_path
     ): bool {
         $include_analysis_file_list = Config::getValue('include_analysis_file_list');
+        $exclude_analysis_regex = Config::getValue('__exclude_analysis_regex');
+        if ($include_analysis_file_list !== self::$is_excluded_analysis_file_cache_include_list
+            || $exclude_analysis_regex !== self::$is_excluded_analysis_file_cache_regex) {
+            // The settings changed (e.g. in unit tests or in daemon mode), so discard the cached results.
+            self::$is_excluded_analysis_file_cache = [];
+            self::$is_excluded_analysis_file_cache_include_list = $include_analysis_file_list;
+            self::$is_excluded_analysis_file_cache_regex = $exclude_analysis_regex;
+        }
+        return self::$is_excluded_analysis_file_cache[$file_path]
+            ??= self::computeIsExcludedAnalysisFile($file_path, $include_analysis_file_list, $exclude_analysis_regex);
+    }
+
+    /**
+     * @param mixed $include_analysis_file_list the value of Config::getValue('include_analysis_file_list')
+     * @param mixed $exclude_analysis_regex the value of Config::getValue('__exclude_analysis_regex')
+     */
+    private static function computeIsExcludedAnalysisFile(
+        string $file_path,
+        mixed $include_analysis_file_list,
+        mixed $exclude_analysis_regex
+    ): bool {
         if ($include_analysis_file_list) {
             return !in_array($file_path, $include_analysis_file_list, true);
         }
 
         $file_path = str_replace('\\', '/', $file_path);
-        $exclude_analysis_regex = Config::getValue('__exclude_analysis_regex');
         if ($exclude_analysis_regex) {
             if (preg_match($exclude_analysis_regex, $file_path)) {
                 return true;
@@ -950,6 +1058,76 @@ class Phan implements IgnoredFilesFilterInterface
             return EXIT_FAILURE;
         }
         return EXIT_SUCCESS;
+    }
+
+    /**
+     * Record how Ordering distributed the files among analysis processes (for --dump-phase-timings).
+     * Workers are numbered in the same way as ForkPool (in the iteration order of $process_file_list_map).
+     *
+     * @param array<int,list<string>> $process_file_list_map
+     */
+    private static function recordOrderingStats(CodeBase $code_base, array $process_file_list_map): void
+    {
+        $file_info = [];
+        foreach (array_values($process_file_list_map) as $process_id => $file_list) {
+            $bytes = 0;
+            foreach ($file_list as $file_path) {
+                $size = \is_file($file_path) ? \filesize($file_path) : false;
+                $size = \is_int($size) ? $size : 0;
+                $file_info[$file_path] = [$process_id, $size];
+                $bytes += $size;
+            }
+            PhaseTimer::note("ordering_worker{$process_id}_files", count($file_list));
+            PhaseTimer::note("ordering_worker{$process_id}_bytes", $bytes);
+        }
+        PhaseTimer::note('ordering_assignment', Config::getValue('randomize_file_order') ? 'random' : (string)Config::getValue('process_file_assignment'));
+        if (Config::getValue('randomize_file_order')) {
+            // Ordering does not group files by class hierarchy in this mode,
+            // and computing the hierarchy roots of other classes could hydrate them.
+            return;
+        }
+        // Group files the same way as the default assignment of Ordering::orderForProcessCount(): by the root of the class hierarchy
+        // of the first class declared in each file. Ordering has already resolved these roots.
+        // (With process_file_assignment = 'balanced', the files of one root may be spread over several workers.
+        // The reported worker is the worker of the first file of the root that was seen.)
+        $remaining = $file_info;
+        $buckets = [];
+        foreach ($code_base->getUserDefinedClassMap() as $class) {
+            $file_path = $class->getContext()->getFile();
+            if (!isset($remaining[$file_path])) {
+                continue;
+            }
+            [$process_id, $size] = $remaining[$file_path];
+            unset($remaining[$file_path]);
+            $root = (string)$class->getHierarchyRootFQSEN($code_base);
+            $bucket = $buckets[$root] ?? ['files' => 0, 'bytes' => 0, 'worker' => $process_id];
+            $bucket['files']++;
+            $bucket['bytes'] += $size;
+            $buckets[$root] = $bucket;
+        }
+        \uasort(
+            $buckets,
+            /**
+             * Sort by descending file count
+             * @param array{files:int,bytes:int,worker:int} $a
+             * @param array{files:int,bytes:int,worker:int} $b
+             */
+            static function (array $a, array $b): int {
+                return $b['files'] <=> $a['files'];
+            }
+        );
+        PhaseTimer::note('ordering_buckets', count($buckets));
+        PhaseTimer::note('ordering_classless_files', count($remaining));
+        $rank = 0;
+        foreach ($buckets as $root => $bucket) {
+            if (++$rank > 10) {
+                break;
+            }
+            PhaseTimer::note("ordering_bucket{$rank}_root", (string)$root);
+            PhaseTimer::note("ordering_bucket{$rank}_files", $bucket['files']);
+            PhaseTimer::note("ordering_bucket{$rank}_bytes", $bucket['bytes']);
+            PhaseTimer::note("ordering_bucket{$rank}_worker", (int)$bucket['worker']);
+        }
     }
 
     private static function printMemoryUsageSummary(): void

@@ -1,0 +1,6 @@
+%s:6 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type object(real=object)
+%s:13 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type class-string(real=class-string)
+%s:23 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type class-string|object(real=class-string|object)
+%s:25 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type object(real=object)
+%s:34 PhanNonClassMethodCall Call to method __construct on non-class type int
+%s:34 PhanTypeExpectedObjectOrClassName Expected an object instance or the name of a class but saw expression $i with type int

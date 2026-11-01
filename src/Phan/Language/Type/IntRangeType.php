@@ -67,6 +67,12 @@ final class IntRangeType extends IntType
         return $this->upper_bound;
     }
 
+    /** @override */
+    public function getIntBounds(): array
+    {
+        return [$this->lower_bound, $this->upper_bound, $this->lower_bound > 0 || $this->upper_bound < 0];
+    }
+
     /**
      * Checks whether a literal value is within this range.
      */
@@ -141,7 +147,8 @@ final class IntRangeType extends IntType
      */
     public function __toString(): string
     {
-        return $this->memoize(__METHOD__, function (): string {
+        $string = $this->getMemoizedForCurrentState(__METHOD__);
+        if ($string === null) {
             $string = $this->asFQSENString();
 
             // Include the range bounds in the string representation for clearer error messages
@@ -155,8 +162,9 @@ final class IntRangeType extends IntType
                 $string = '?' . $string;
             }
 
-            return $string;
-        });
+            $this->memoized_data[__METHOD__] = $string;
+        }
+        return $string;
     }
 
     /**

@@ -12,6 +12,7 @@ use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Comment\Assertion;
 use Phan\Language\Element\Comment\Builder;
+use Phan\Language\Element\Comment\ConditionalReturnType;
 use Phan\Language\Element\Comment\Method as CommentMethod;
 use Phan\Language\Element\Comment\NullComment;
 use Phan\Language\Element\Comment\Parameter as CommentParameter;
@@ -103,6 +104,11 @@ class Comment
      * param declarations
      */
     protected $parameter_map = [];
+
+    /**
+     * @var ?bool the cached result of hasParameterMarkedMandatoryInPHPDoc()
+     */
+    private $has_parameter_marked_mandatory_in_phpdoc = null;
 
     /**
      * @var list<TemplateType>
@@ -354,7 +360,7 @@ class Comment
             return;
         }
         $return_type = $old_comment->getType()->withRealTypeSet($real_return_comment->getType()->getRealTypeSet());
-        $this->return_comment = new ReturnComment($return_type, $old_comment->getLineno());
+        $this->return_comment = $old_comment->withType($return_type);
     }
 
     private function applyOverride(string $key, mixed $value): void
@@ -646,6 +652,15 @@ class Comment
     }
 
     /**
+     * @return ?ConditionalReturnType
+     * The conditional return type (e.g. `@return ($x is null ? A : B)`), if the (at)return directive was one.
+     */
+    public function getConditionalReturnType(): ?ConditionalReturnType
+    {
+        return $this->return_comment?->getConditional();
+    }
+
+    /**
      * @return Option<Type>
      * An optional Type defined by a (at)phan-closure-scope
      * directive specifying a single type.
@@ -680,6 +695,7 @@ class Comment
      */
     public function &getAndMutateParameters(): Generator
     {
+        $this->has_parameter_marked_mandatory_in_phpdoc = null;
         foreach ($this->parameter_list as &$parameter) {
             yield $parameter;
         }
@@ -759,6 +775,30 @@ class Comment
     public function getSuppressIssueSet(): array
     {
         return $this->suppress_issue_set;
+    }
+
+    /**
+     * Does any parameter of this doc comment (named or not) use `@phan-mandatory-param`?
+     * (i.e. can getParameterWithNameOrOffset() return a parameter for which isMandatoryInPHPDoc() is true)
+     */
+    public function hasParameterMarkedMandatoryInPHPDoc(): bool
+    {
+        return $this->has_parameter_marked_mandatory_in_phpdoc ??= $this->computeHasParameterMarkedMandatoryInPHPDoc();
+    }
+
+    private function computeHasParameterMarkedMandatoryInPHPDoc(): bool
+    {
+        foreach ($this->parameter_map as $parameter) {
+            if ($parameter->isMandatoryInPHPDoc()) {
+                return true;
+            }
+        }
+        foreach ($this->parameter_list as $parameter) {
+            if ($parameter->isMandatoryInPHPDoc()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

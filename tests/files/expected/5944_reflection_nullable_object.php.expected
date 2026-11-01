@@ -1,0 +1,2 @@
+%s:27 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($objectOrValue) is 'holder' of type string but \ReflectionProperty::setValue() takes ?object
+%s:34 PhanTypeMismatchArgumentInternalReal Argument 1 ($object) is 'holder' of type string but \ReflectionMethod::getClosure() takes ?object

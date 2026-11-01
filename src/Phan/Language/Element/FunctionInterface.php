@@ -8,6 +8,7 @@ use ast\Node;
 use Closure;
 use Phan\CodeBase;
 use Phan\Language\Context;
+use Phan\Language\Element\Comment\ConditionalReturnType;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\ClosedScope;
@@ -341,6 +342,23 @@ interface FunctionInterface extends AddressableElementInterface
      * Make calculation of the return type of this function/method use $closure
      */
     public function setDependentReturnTypeClosure(Closure $closure): void;
+
+    /**
+     * @return ?ConditionalReturnType the phpdoc conditional return type (e.g. `(at)return ($x is null ? A : B)`), if any
+     */
+    public function getConditionalReturnType(): ?ConditionalReturnType;
+
+    /**
+     * Sets the phpdoc conditional return type (or removes it, with null)
+     */
+    public function setConditionalReturnType(?ConditionalReturnType $conditional): void;
+
+    /**
+     * Resolves the phpdoc conditional return type for a call with $args, or returns null if there is none.
+     * @param list<Node|int|string|float|UnionType> $args
+     * @param array<string,UnionType> $template_type_map template types inferred for this call, substituted before resolving
+     */
+    public function resolveConditionalReturnType(CodeBase $code_base, Context $context, array $args, array $template_type_map = []): ?UnionType;
 
     /**
      * Returns true if this function or method has additional analysis logic for invocations (From internal and user defined plugins)

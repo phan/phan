@@ -62,3 +62,31 @@ interface Marker322 {
 function test_class_string_intersection_bound_322($class): void {
     $class::sharedIface();
 }
+
+// A `class-string<I>` for an interface I names some class implementing I, which may declare
+// static methods that I doesn't, so such an alternative doesn't count as lacking the method.
+// An object alternative that lacks the method still does.
+
+/**
+ * Must warn: LacksMethod322 doesn't declare the method.
+ * @param LacksMethod322|class-string<HasShared322> $receiver
+ */
+function test_object_alternative_with_interface_class_string_322($receiver): void {
+    $receiver::sharedIface();
+}
+
+/**
+ * Must NOT warn: the class implementing Marker322 may declare the method.
+ * @param class-string<Marker322>|class-string<HasMethod322> $class
+ */
+function test_interface_class_string_alternative_322($class): void {
+    $class::shared();
+}
+
+/**
+ * Must NOT warn, for the same reason.
+ * @param class-string<Marker322|HasMethod322> $class
+ */
+function test_interface_class_string_inner_union_322($class): void {
+    $class::shared();
+}

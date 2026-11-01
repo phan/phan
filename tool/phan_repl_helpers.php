@@ -337,7 +337,6 @@ class PhanPhpShellUtils
         // TODO: Make some of these case insensitive?
 
         $constant_candidates = ['class'];
-        // @phan-suppress-next-line PhanParamTooManyInternal TODO Why?
         foreach ($reflection_class->getReflectionConstants(ReflectionClassConstant::IS_PUBLIC) as $reflection_constant) {
             $constant_candidates[] = $reflection_constant->getName();
         }

@@ -564,6 +564,19 @@ class Config
         // Currently, this just affects inferring that methods without return statements have type `void`
         'assume_no_external_class_overrides' => false,
 
+        // Create the copies of inherited methods only when they are needed.
+        // Classes inherit the methods of their parent classes as copies; a class extending a large base class
+        // from a file excluded from analysis (e.g. a test framework) holds a copy of every method of that class.
+        // With this option, such copies are created when a method is first looked up in that class,
+        // which reduces memory and time on projects with many such classes. The output is unchanged.
+        //
+        // This is disabled automatically in daemon mode and the language server, with dead code detection
+        // or reference tracking, with --analyze-twice or --analyze-until-convergence, and when a plugin
+        // implementing AnalyzeMethodCapability does not implement AnalyzeMethodSkipsInheritedCopiesCapability.
+        // Phan says why on stderr only when this was set to true explicitly (here or with
+        // PHAN_LAZY_INHERITED_METHODS=1). Set this to false to turn the option off.
+        'lazy_inherited_methods' => true,
+
         // Set to true in order to force tracking references to elements
         // (functions/methods/consts/protected).
         //
@@ -838,6 +851,43 @@ class Config
         // that they were provided in this config, don't use this.
         // See [this note in Phan's wiki](https://github.com/phan/phan/wiki/Different-Issue-Sets-On-Different-Numbers-of-CPUs).
         'consistent_hashing_file_order' => false,
+
+        // Controls how the files to analyze are divided among the analysis processes
+        // when `processes` (`--processes N`) is greater than 1.
+        // This can only be set in the config file (there is no CLI flag).
+        //
+        // - `'hierarchy'` (default): each file is grouped with the other files whose first class
+        //   has the same hierarchy root (the topmost parent class, which may be an unanalyzed vendor class).
+        //   Whole groups are assigned to processes round-robin,
+        //   or by consistent hashing if `consistent_hashing_file_order` is true.
+        //   Files without classes are assigned one by one the same way.
+        //   The size of a group is not taken into account, so one dominant hierarchy
+        //   (e.g. thousands of test classes whose hierarchy root is a vendor class) lands on one process,
+        //   which then finishes long after the others.
+        // - `'balanced'`: files are grouped by the topmost ancestor class (of their first class) whose file is analyzed,
+        //   so subclasses of an unanalyzed vendor class are not grouped together because of that class.
+        //   Files without classes are groups of their own.
+        //   Files are weighted by size. A group weighing more than an even share (total size / process count)
+        //   is split into the subtrees of its root class's child classes, recursively;
+        //   the root class's file joins the heaviest part. The same is tried with half and a quarter of a share,
+        //   and the partition whose assignment has the lowest predicted maximum load is used. Groups are assigned heaviest first
+        //   to the least loaded process, or, if `consistent_hashing_file_order` is true, to the first process
+        //   on the consistent hash ring whose load stays within 15% of an even share.
+        //   Each process analyzes its files in the same relative order as with `'hierarchy'`
+        //   (parent classes before their subclasses).
+        //   File size is only an estimate of analysis time, so this helps most
+        //   when one hierarchy holds a large share of the analyzed files.
+        //
+        // Both settings are deterministic: `'hierarchy'` depends on the file list, the class hierarchy
+        // and the process count, and `'balanced'` additionally on the file sizes
+        // (so editing a file can move groups to other processes).
+        // With a single process, both settings analyze files in the same order.
+        //
+        // NOTE: Return types that Phan infers while analyzing a file are visible to the files
+        // that the same process analyzes later, so changing the assignment can change
+        // a small number of reported issues.
+        // Projects that use a baseline should regenerate it once after changing this setting.
+        'process_file_assignment' => 'hierarchy',
 
         // Set by `--print-memory-usage-summary`. Prints a memory usage summary to stderr after analysis.
         'print_memory_usage_summary' => false,
@@ -1265,6 +1315,26 @@ class Config
         return self::$closest_minimum_target_php_version_id;
     }
     // phpcs:enable PSR1.Methods.CamelCapsMethodName.NotCamelCaps
+
+    /** @var array<string,true> the keys the project's config file (.phan/config.php) set, as opposed to defaults and CLI flags */
+    private static array $project_config_keys = [];
+
+    /**
+     * Records the keys the project's config file set (called once after that file is applied).
+     * @param list<string> $keys
+     */
+    public static function setProjectConfigKeys(array $keys): void
+    {
+        self::$project_config_keys = \array_fill_keys($keys, true);
+    }
+
+    /**
+     * Whether the project's config file set $name (regardless of CLI flags), i.e. the value is not Phan's default.
+     */
+    public static function isConfiguredByProject(string $name): bool
+    {
+        return isset(self::$project_config_keys[$name]);
+    }
 
     /**
      * @phan-hardcode-return-type
@@ -1820,6 +1890,7 @@ class Config
             'language_server_enable_hover' => $is_bool,
             'language_server_hide_category_of_issues' => $is_bool,
             'language_server_use_pcntl_fallback' => $is_bool,
+            'lazy_inherited_methods' => $is_bool,
             'long_progress_bar' => $is_bool,
             'markdown_issue_messages' => $is_bool,
             'max_literal_string_type_length' => $is_int_strict,
@@ -1837,6 +1908,12 @@ class Config
             'pretend_newer_core_methods_exist' => $is_bool,
             'print_memory_usage_summary' => $is_bool,
             'processes' => $is_int_strict,
+            'process_file_assignment' => static function (mixed $value): ?string {
+                if ($value === 'hierarchy' || $value === 'balanced') {
+                    return null;
+                }
+                return "Expected 'hierarchy' or 'balanced'" . (is_string($value) ? ", but got '$value'" : self::errSuffixGotType($value));
+            },
             'profiler_enabled' => $is_bool,
             'progress_bar' => $is_bool,
             'progress_bar_sample_interval' => $is_scalar,

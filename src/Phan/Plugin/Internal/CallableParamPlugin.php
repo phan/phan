@@ -13,6 +13,7 @@ use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
+use Phan\Language\Element\Method;
 use Phan\Language\Type;
 use Phan\Language\Type\CallableInterface;
 use Phan\Language\Type\ClassStringType;
@@ -21,6 +22,7 @@ use Phan\Plugin\ConfigPluginSet;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCallCapability;
 use Phan\PluginV3\HandleLazyLoadInternalFunctionCapability;
+use Phan\PluginV3\HandleLazyLoadInternalMethodCapability;
 
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
@@ -30,7 +32,8 @@ use Phan\PluginV3\HandleLazyLoadInternalFunctionCapability;
  */
 final class CallableParamPlugin extends PluginV3 implements
     AnalyzeFunctionCallCapability,
-    HandleLazyLoadInternalFunctionCapability
+    HandleLazyLoadInternalFunctionCapability,
+    HandleLazyLoadInternalMethodCapability
 {
 
     public const PARAM_HAS_CALLABLE = (1 << 0);
@@ -162,6 +165,9 @@ final class CallableParamPlugin extends PluginV3 implements
             return null;
         }
 
+        // This runs for every parameter of every function and method: create the (stateless) type matchers once.
+        static $is_callable_type = null;
+        static $is_class_string_type = null;
         $params = [];
         foreach ($parameter_list as $i => $param) {
             $union_type = $param->getUnionType();
@@ -172,14 +178,14 @@ final class CallableParamPlugin extends PluginV3 implements
             $flags = 0;
             // If there's a type such as Closure|string|int, don't automatically assume that any string or array passed in is meant to be a callable.
             // Explicitly require at least one type to be `callable`
-            if ($union_type->hasTypeMatchingCallback(static function (Type $type): bool {
+            if ($union_type->hasTypeMatchingCallback($is_callable_type ??= static function (Type $type): bool {
                 // TODO: More specific closure for CallableDeclarationType
                 // TODO: Use `Type::isCallable`? It might be slower though.
                 return $type instanceof CallableInterface || $type instanceof ClosureType;
             })) {
                 $flags |= self::PARAM_HAS_CALLABLE;
             }
-            if ($union_type->hasTypeMatchingCallback(static function (Type $type): bool {
+            if ($union_type->hasTypeMatchingCallback($is_class_string_type ??= static function (Type $type): bool {
                 return $type instanceof ClassStringType;
             })) {
                 $flags |= self::PARAM_HAS_CLASSSTRING;
@@ -231,7 +237,15 @@ final class CallableParamPlugin extends PluginV3 implements
         foreach ($code_base->getFunctionMap() as $function) {
             $add_misc_closures($function);
         }
-        foreach ($code_base->getMethodSet() as $function) {
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        foreach ($code_base->getMethodSetWithoutLazyEntries() as $function) {
+            // An inherited copy of a method that still has its parameters and comment gets the closure generated for the
+            // method it was inherited from, attached by Analysis::loadMethodPlugins() (CodeBase::getMethodsInheritedFrom()).
+            // Such copies are ~90 % of the methods of a large project with deep hierarchies, so skip them here.
+            // (A copy whose parameter types were specialized by template substitution is checked on its own.)
+            if ($function instanceof Method && $code_base->isInheritedCopyWithSameSignature($function)) {
+                continue;
+            }
             $add_misc_closures($function);
         }
 
@@ -263,6 +277,22 @@ final class CallableParamPlugin extends PluginV3 implements
         $closure = self::generateClosureForFunctionInterface($function);
         if ($closure) {
             $function->addFunctionCallAnalyzer($closure, $this);
+        }
+    }
+
+    /**
+     * When an internal class is loaded during the analysis phase (e.g. Closure for `Closure::fromCallable()`),
+     * this is called to conditionally add any checkers for callable/closure/class-string parameters of its methods.
+     * @unused-param $code_base
+     * @override
+     */
+    public function handleLazyLoadInternalMethod(
+        CodeBase $code_base,
+        Method $method
+    ): void {
+        $closure = self::generateClosureForFunctionInterface($method);
+        if ($closure) {
+            $method->addFunctionCallAnalyzer($closure, $this);
         }
     }
 

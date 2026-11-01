@@ -13,12 +13,14 @@ use Phan\Analysis\ClassConstantTypesAnalyzer;
 use Phan\Analysis\ClassInheritanceAnalyzer;
 use Phan\Analysis\CompositionAnalyzer;
 use Phan\Analysis\DuplicateClassAnalyzer;
+use Phan\Analysis\LazyInheritedMethodsEligibility;
 use Phan\Analysis\ParentConstructorCalledAnalyzer;
 use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\Analysis\PropertyTypesAnalyzer;
 use Phan\AST\ASTReverter;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
+use Phan\CodeBase\InheritedMethodLink;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
@@ -158,6 +160,16 @@ class Clazz extends AddressableElement
      * @var bool - hydrate() will check for this to avoid prematurely hydrating while looking for values of class constants.
      */
     private $did_finish_parsing = true;
+
+    /**
+     * @var bool true while hydrateOnce() runs (it imports the constants, properties and methods of the ancestors)
+     */
+    private $is_hydrating = false;
+
+    /**
+     * @var int the number of times that classes were hydrated (for PHAN_VERIFY_SKIPPED_CHECKS=1)
+     */
+    private static $hydration_count = 0;
 
     /**
      * @var ?UnionType for Type->asExpandedTypes()
@@ -670,6 +682,14 @@ class Clazz extends AddressableElement
     public function setMixinTypes(array $mixin_types): void
     {
         $this->mixin_types = $mixin_types;
+    }
+
+    /**
+     * @return list<Type> the class types this class was declared to mix in with `@mixin`
+     */
+    public function getMixinTypes(): array
+    {
+        return $this->mixin_types;
     }
 
     /**
@@ -1444,7 +1464,11 @@ class Clazz extends AddressableElement
                     return [];
                 }
                 $setters = [];
-                foreach ($this->getMethodMap($code_base) as $method) {
+                foreach ($this->getMethodEntryMap($code_base) as $lowercase_name => $entry) {
+                    // A lazily inherited method (see LazyInheritedMethods) is checked on its template (the node and parameters
+                    // are those of the copy), and created only if it is a setter.
+                    // @phan-suppress-next-line PhanAccessMethodInternal
+                    $method = $entry instanceof Method ? $entry : $entry->registry->templateOf($entry, (string)$lowercase_name);
                     if ($method->isStatic()) {
                         continue;
                     }
@@ -1462,7 +1486,8 @@ class Clazz extends AddressableElement
                     }
                     $fetched_property_name = self::computeSetPropertyName($node, $first_parameter->getName());
                     if (is_string($fetched_property_name)) {
-                        $setters[$fetched_property_name][] = $method;
+                        // @phan-suppress-next-line PhanAccessMethodInternal
+                        $setters[$fetched_property_name][] = $entry instanceof Method ? $entry : $entry->registry->materialize($entry->class_map, (string)$lowercase_name, $entry, 'getters');
                     }
                 }
                 return $setters;
@@ -1511,7 +1536,11 @@ class Clazz extends AddressableElement
                 // Hydrate the class so that getters from ancestor classes will also be accessible
                 $this->hydrate($code_base);
                 $getters = [];
-                foreach ($this->getMethodMap($code_base) as $method) {
+                foreach ($this->getMethodEntryMap($code_base) as $lowercase_name => $entry) {
+                    // A lazily inherited method (see LazyInheritedMethods) is checked on its template (the node is that of the copy),
+                    // and created only if it is a getter.
+                    // @phan-suppress-next-line PhanAccessMethodInternal
+                    $method = $entry instanceof Method ? $entry : $entry->registry->templateOf($entry, (string)$lowercase_name);
                     if ($method->isStatic()) {
                         // TODO support static getters for static properties
                         continue;
@@ -1522,7 +1551,8 @@ class Clazz extends AddressableElement
                     }
                     $fetched_property_name = self::computeFetchedPropertyName($node);
                     if (is_string($fetched_property_name)) {
-                        $getters[$fetched_property_name][] = $method;
+                        // @phan-suppress-next-line PhanAccessMethodInternal
+                        $getters[$fetched_property_name][] = $entry instanceof Method ? $entry : $entry->registry->materialize($entry->class_map, (string)$lowercase_name, $entry, 'getters');
                     }
                 }
                 return $getters;
@@ -1976,11 +2006,17 @@ class Clazz extends AddressableElement
      * @param Option<Type> $type_option
      * A possibly defined type used to define template
      * parameter types when importing the method
+     *
+     * @param ?array<string,UnionType> $template_parameter_type_map
+     * If non-null, the result of `$type_option->get()->getTemplateParameterTypeMap($code_base)`.
+     * If null and that is needed, it is computed and stored here,
+     * so that callers adding several methods with the same $type_option compute it once.
      */
     public function addMethod(
         CodeBase $code_base,
         Method $method,
-        Option $type_option
+        Option $type_option,
+        ?array &$template_parameter_type_map = null
     ): void {
         $method_fqsen = FullyQualifiedMethodName::make(
             $this->fqsen,
@@ -2032,7 +2068,7 @@ class Clazz extends AddressableElement
             // return type and parameter types through it
             if ($type_option->isDefined()) {
                 $method = $method->cloneWithTemplateParameterTypeMap(
-                    $type_option->get()->getTemplateParameterTypeMap($code_base)
+                    $template_parameter_type_map ??= $type_option->get()->getTemplateParameterTypeMap($code_base)
                 );
             } else {
                 $method = clone($method);
@@ -2046,6 +2082,8 @@ class Clazz extends AddressableElement
 
             // Make inferred return type for a method affect inherited methods
             $method->ensureClonesReturnType($original_method);
+            // Analysis\CloneReplay may replay the declaration analysis of $original_method for this clone
+            $method->setCloneSource($original_method);
         }
         if ($method->hasYield()) {
             // There's no phpdoc standard for template types of Generators at the moment.
@@ -2147,6 +2185,23 @@ class Clazz extends AddressableElement
     public function getMethodMap(CodeBase $code_base): array
     {
         return $code_base->getMethodMapByFullyQualifiedClassName(
+            $this->fqsen
+        );
+    }
+
+    /**
+     * Returns the entries of the methods of this class, by lowercase name (including any alternate id suffix).
+     *
+     * An entry is a Method, or an InheritedMethodLink for an inherited method whose copy is created on the first lookup
+     * by name (lazy_inherited_methods, see LazyInheritedMethods); this accessor never creates those copies.
+     *
+     * @return array<string,Method|InheritedMethodLink>
+     * @internal
+     */
+    public function getMethodEntryMap(CodeBase $code_base): array
+    {
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        return $code_base->getMethodEntryMapByFullyQualifiedClassName(
             $this->fqsen
         );
     }
@@ -2712,28 +2767,30 @@ class Clazz extends AddressableElement
      */
     public function getAncestorClassListRecursive(CodeBase $code_base): array
     {
-        return $this->memoize(__METHOD__, /** @return list<Clazz> */ function () use ($code_base): array {
-            $result = [];
-            $seen = [];
-            $queue = [$this];
+        // Same as memoize(), without allocating a closure on every call (this is called for every method in getOverriddenMethods())
+        if (\array_key_exists(__METHOD__, $this->memoized_data)) {
+            return $this->memoized_data[__METHOD__];
+        }
+        $result = [];
+        $seen = [];
+        $queue = [$this];
 
-            while ($queue) {
-                $current = \array_shift($queue);
+        while ($queue) {
+            $current = \array_shift($queue);
 
-                // Get immediate ancestors of current class
-                foreach ($current->getAncestorClassList($code_base) as $ancestor) {
-                    $ancestor_fqsen = $ancestor->getFQSEN()->__toString();
-                    if (isset($seen[$ancestor_fqsen])) {
-                        continue;
-                    }
-                    $seen[$ancestor_fqsen] = true;
-                    $result[] = $ancestor;
-                    $queue[] = $ancestor;
+            // Get immediate ancestors of current class
+            foreach ($current->getAncestorClassList($code_base) as $ancestor) {
+                $ancestor_fqsen = $ancestor->getFQSEN()->__toString();
+                if (isset($seen[$ancestor_fqsen])) {
+                    continue;
                 }
+                $seen[$ancestor_fqsen] = true;
+                $result[] = $ancestor;
+                $queue[] = $ancestor;
             }
+        }
 
-            return $result;
-        });
+        return $this->memoized_data[__METHOD__] = $result;
     }
 
     /**
@@ -2931,13 +2988,21 @@ class Clazz extends AddressableElement
             return;
         }
         $class = $code_base->getClassByFQSEN($fqsen);
-        foreach ($class->getMethodMap($code_base) as $name => $method) {
+        foreach ($class->getMethodEntryMap($code_base) as $name => $entry) {
+            // A lazily inherited method (see LazyInheritedMethods) is checked on its template, and created only if it is used:
+            // asPHPDocMethod() shares the parameters of the copy.
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $method = $entry instanceof Method ? $entry : $entry->registry->templateOf($entry, (string)$name);
             if ($method->isMagic() || !$method->isPublic()) {
                 // Skip __invoke, and private/protected methods
                 continue;
             }
             if ($this->hasMethodWithName($code_base, $name, true)) {
                 continue;
+            }
+            if ($entry instanceof InheritedMethodLink) {
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                $method = $entry->registry->materialize($entry->class_map, (string)$name, $entry, 'mixin');
             }
             // Treat it as if all of the methods were added, with their real and phpdoc union types.
             $this->addMethod($code_base, $method->asPHPDocMethod($this), None::instance());
@@ -3071,7 +3136,8 @@ class Clazz extends AddressableElement
         $this->importAncestorClass(
             $code_base,
             $parent,
-            $this->getParentTypeOption()
+            $this->getParentTypeOption(),
+            true
         );
     }
 
@@ -3375,11 +3441,15 @@ class Clazz extends AddressableElement
      * A possibly defined ancestor type used to define template
      * parameter types when importing ancestor properties and
      * methods
+     *
+     * @param bool $is_parent_import
+     * True if $class is the parent class of this class (only passed by importParentClass())
      */
     public function importAncestorClass(
         CodeBase $code_base,
         Clazz $class,
-        Option $type_option
+        Option $type_option,
+        bool $is_parent_import = false
     ): void {
         $class_fqsen = $class->getFQSEN();
         $key = \strtolower($class_fqsen->__toString());
@@ -3388,9 +3458,11 @@ class Clazz extends AddressableElement
         )) {
             return;
         }
-        $next_class_fqsen = $class_fqsen->withAlternateId($class_fqsen->getAlternateId() + 1);
-        if (!$this->isPHPInternal() && $code_base->hasClassWithFQSEN($next_class_fqsen)) {
-            $this->warnAboutAmbiguousInheritance($code_base, $class, $next_class_fqsen);
+        if (!$this->isPHPInternal() && $code_base->mayHaveAlternatesOfClass($class_fqsen)) {
+            $next_class_fqsen = $class_fqsen->withAlternateId($class_fqsen->getAlternateId() + 1);
+            if ($code_base->hasClassWithFQSEN($next_class_fqsen)) {
+                $this->warnAboutAmbiguousInheritance($code_base, $class, $next_class_fqsen);
+            }
         }
 
         if ($attribute_list = $class->getAttributeList()) {
@@ -3439,8 +3511,58 @@ class Clazz extends AddressableElement
             );
         }
 
-        // Copy methods
-        foreach ($class->getMethodMap($code_base) as $method) {
+        // Copy methods.
+        // The template parameter type map of $type_option is computed when first needed, then reused for the remaining methods.
+        $template_parameter_type_map = null;
+        // With PHAN_COUNT_LAZY_INHERITED_METHODS=1 and --dump-phase-timings, count the inherited copies that could be
+        // created lazily (LazyInheritedMethodsEligibility).
+        $lazy = $code_base->getLazyInherited();
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        $count_lazy_eligibility = $is_parent_import && $lazy === null && LazyInheritedMethodsEligibility::isCountingEnabled();
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        $lazy_import_reason = $count_lazy_eligibility ? LazyInheritedMethodsEligibility::getReasonForImport($code_base, $this, $class) : null;
+        $method_entries = $class->getMethodEntryMap($code_base);
+        // With lazy_inherited_methods, the copies that a class inherits from its parent class may be created
+        // when they are first looked up (see LazyInheritedMethods): this adds a lazy entry instead.
+        $lazy_link = null;
+        $lazy_seq = 0;
+        $this_class_map = null;
+        $parent_class_map = null;
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        if ($lazy !== null && $is_parent_import && $lazy->canCreateLinksFor($this, $class, count($method_entries))) {
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $this_class_map = $code_base->getClassMapForLazyInheritance($this->fqsen);
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $parent_class_map = $code_base->getClassMapForLazyInheritance($class->getFQSEN());
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $lazy_seq = $code_base->nextLazySeq();
+        } else {
+            $lazy = null;
+        }
+        foreach ($method_entries as $lowercase_name => $method) {
+            if ($lazy !== null && $this_class_map !== null && $parent_class_map !== null) {
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                if ($lazy->eligibility($this_class_map, $parent_class_map, (string)$lowercase_name, $method, $lazy_seq) === null) {
+                    // @phan-suppress-next-line PhanAccessMethodInternal
+                    $lazy_link ??= $lazy->newLink($this, $this_class_map, $parent_class_map, $class, $lazy_seq);
+                    if ($type_option->isDefined()) {
+                        // As Clazz::addMethod() would (this is memoized by the type)
+                        $template_parameter_type_map ??= $type_option->get()->getTemplateParameterTypeMap($code_base);
+                    }
+                    // @phan-suppress-next-line PhanAccessMethodInternal
+                    $lazy->addLazySlot($lazy_link, (string)$lowercase_name, $method);
+                    continue;
+                }
+            }
+            if ($method instanceof InheritedMethodLink) {
+                // The ancestor inherited this method lazily, but this import is eager: create the ancestor's copy first.
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                $method = $method->registry->materialize($method->class_map, (string)$lowercase_name, $method, 'pin');
+            }
+            if ($count_lazy_eligibility) {
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                LazyInheritedMethodsEligibility::countParentImportEntry($code_base, $this, $class, $lazy_import_reason, (string)$lowercase_name, $method);
+            }
             if (!\is_null($trait_adaptations) && count($trait_adaptations->hidden_methods) > 0) {
                 $method_name_key = \strtolower($method->getName());
                 if (isset($trait_adaptations->hidden_methods[$method_name_key])) {
@@ -3457,7 +3579,7 @@ class Clazz extends AddressableElement
                 // which would prevent template resolution in addMethod
                 if ($type_option->isDefined()) {
                     $method = $method->cloneWithTemplateParameterTypeMap(
-                        $type_option->get()->getTemplateParameterTypeMap($code_base)
+                        $template_parameter_type_map ??= $type_option->get()->getTemplateParameterTypeMap($code_base)
                     );
                 }
                 $method = $this->adaptInheritedMethodFromTrait($method);
@@ -3465,7 +3587,8 @@ class Clazz extends AddressableElement
             $this->addMethod(
                 $code_base,
                 $method,
-                $is_trait ? None::instance() : $type_option
+                $is_trait ? None::instance() : $type_option,
+                $template_parameter_type_map
             );
         }
 
@@ -3491,6 +3614,12 @@ class Clazz extends AddressableElement
         $method->setRealReturnType(
             $method->getRealReturnType()->withSelfResolvedInContext($context)
         );
+        $conditional_return_type = $method->getConditionalReturnType();
+        if ($conditional_return_type) {
+            $method->setConditionalReturnType($conditional_return_type->mapTypes(static function (UnionType $type) use ($context): UnionType {
+                return $type->withSelfResolvedInContext($context);
+            }));
+        }
         $parameter_list = $method->getParameterList();
         $changed = false;
         foreach ($parameter_list as $i => $parameter) {
@@ -3947,9 +4076,14 @@ class Clazz extends AddressableElement
 
         foreach ($this->getAncestorFQSENList() as $fqsen) {
             if ($code_base->hasClassWithFQSEN($fqsen)) {
-                $code_base->getClassByFQSENWithoutHydrating(
-                    $fqsen
-                )->hydrate($code_base);
+                $ancestor = $code_base->getClassByFQSENWithoutHydrating($fqsen);
+                $ancestor->hydrate($code_base);
+                if ($ancestor->is_hydrating) {
+                    // The hydration of this ancestor is not finished (an inheritance cycle, or this class is hydrated
+                    // as a side effect of hydrating the ancestor), so the ancestor may add methods to its class map
+                    // after this class imported its methods.
+                    $code_base->recordClassHydratedBeforeAncestor();
+                }
             }
         }
 
@@ -4080,8 +4214,13 @@ class Clazz extends AddressableElement
             return;
         }
 
-        foreach ($this->getMethodMap($code_base) as $method) {
-            if ($method->getRealDefiningFQSEN() === $method->getFQSEN()) {
+        foreach ($this->getMethodEntryMap($code_base) as $lowercase_name => $method) {
+            if ($method instanceof InheritedMethodLink) {
+                // A lazily inherited method is never the defining method: check its template, which has the same
+                // flags, defining FQSEN and context as the copy (see LazyInheritedMethods)
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                $method = $method->registry->templateOf($method, (string)$lowercase_name);
+            } elseif ($method->getRealDefiningFQSEN() === $method->getFQSEN()) {
                 continue;
             }
             if ($method->isPHPDocAbstract() && !$method->isPrivate()) {
@@ -4429,7 +4568,11 @@ class Clazz extends AddressableElement
         }
         $this->is_hydrated = true;
 
+        // (If hydrateOnce() throws, is_hydrating stays true, which only makes CodeBase::sawClassHydratedBeforeAncestor() more likely to be true.)
+        $this->is_hydrating = true;
+        ++self::$hydration_count;
         $this->hydrateOnce($code_base);
+        $this->is_hydrating = false;
     }
 
     /**
@@ -4450,8 +4593,29 @@ class Clazz extends AddressableElement
         }
         $this->is_hydrated = true;
 
+        $this->is_hydrating = true;
+        ++self::$hydration_count;
         $this->hydrateOnce($code_base);
+        $this->is_hydrating = false;
         return true;
+    }
+
+    /**
+     * @return int the number of times that classes were hydrated so far (any class, for PHAN_VERIFY_SKIPPED_CHECKS=1)
+     */
+    public static function getHydrationCount(): int
+    {
+        return self::$hydration_count;
+    }
+
+    /**
+     * Returns true while this class is being hydrated (hydrateOnce() imports the constants, properties and methods
+     * of its ancestors). A class hydrated while this is true for one of its ancestors was reached through an
+     * inheritance cycle or from the hydration of that ancestor.
+     */
+    public function isHydrating(): bool
+    {
+        return $this->is_hydrating;
     }
 
     /**
@@ -4916,6 +5080,7 @@ class Clazz extends AddressableElement
         }
         $cases = array_merge(array_values($this->enum_case_map), $this->enum_case_map_unknown, $this->enum_case_list);
         if (!$cases) {
+            // (An enum has no parent class, so none of its methods are inherited lazily: this creates no copies)
             foreach ($this->getMethodMap($code_base) as $method) {
                 $method_name_lc = strtolower($method->getName());
                 $context = $method->getRealDefiningFQSEN()->getFullyQualifiedClassName() === $fqsen ? $method->getContext() : $this->getContext();

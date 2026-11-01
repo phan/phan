@@ -343,6 +343,18 @@ class AssignmentVisitor extends AnalysisVisitor
     }
 
     /**
+     * `$c?->m() = 1` is as invalid as `$c->m() = 1`
+     *
+     * @param Node $node a node of kind ast\AST_NULLSAFE_METHOD_CALL
+     *
+     * @throws UnanalyzableException for first-class callable conversion
+     */
+    public function visitNullsafeMethodCall(Node $node): Context
+    {
+        return $this->visitMethodCall($node);
+    }
+
+    /**
      * This happens for code like the following
      * ```
      * list($a) = [1, 2, 3];
@@ -521,6 +533,75 @@ class AssignmentVisitor extends AnalysisVisitor
         return $inferred_type->withRealTypeSet($real_inferred_type->getTypeSet());
     }
 
+    /**
+     * Returns true if $node is a nullsafe chain, i.e. a variable expression that PHP can short-circuit.
+     * PHP refuses to compile a write (unset, assignment, foreach target, increment/decrement) to such a chain,
+     * or a reference to it (`$x = &$c?->p`), so this mirrors zend_ast_is_short_circuited() in zend_compile.c.
+     *
+     * @param bool $is_write_target true for the target of a write, false for the source of a reference assignment.
+     */
+    public static function isShortCircuitedChain(Node $node, bool $is_write_target = true): bool
+    {
+        if ($is_write_target) {
+            switch ($node->kind) {
+                case \ast\AST_METHOD_CALL:
+                case \ast\AST_NULLSAFE_METHOD_CALL:
+                case \ast\AST_STATIC_CALL:
+                    // `$c?->m() = 1` fails for a different reason ("Can't use method return value in write context"),
+                    // and would still fail with `->`. Leave that to the existing call-target analysis.
+                    return false;
+            }
+        }
+        while (true) {
+            switch ($node->kind) {
+                case \ast\AST_NULLSAFE_PROP:
+                case \ast\AST_NULLSAFE_METHOD_CALL:
+                    return true;
+                case \ast\AST_DIM:
+                case \ast\AST_PROP:
+                case \ast\AST_METHOD_CALL:
+                    $node = $node->children['expr'];
+                    break;
+                case \ast\AST_STATIC_PROP:
+                case \ast\AST_STATIC_CALL:
+                    $node = $node->children['class'];
+                    break;
+                case \ast\AST_REF:
+                    // foreach ($x as &$c?->p)
+                    $node = $node->children['var'];
+                    break;
+                default:
+                    return false;
+            }
+            if (!$node instanceof Node) {
+                return false;
+            }
+        }
+    }
+
+    /**
+     * Emits PhanInvalidWriteToNullsafeChain if $node (the target of a write) is a nullsafe chain,
+     * which PHP refuses to compile ("Can't use nullsafe operator in write context").
+     *
+     * @param Node $node the target of unset(), an assignment, a foreach key/value, or an increment/decrement
+     * @return bool true if the issue was emitted and the write should not be analyzed further
+     */
+    public static function checkWriteToNullsafeChain(CodeBase $code_base, Context $context, Node $node): bool
+    {
+        if (!self::isShortCircuitedChain($node)) {
+            return false;
+        }
+        $target = $node->kind === \ast\AST_REF ? $node->children['var'] : $node;
+        Issue::maybeEmit(
+            $code_base,
+            $context,
+            Issue::InvalidWriteToNullsafeChain,
+            $node->lineno,
+            ASTReverter::toShortString($target)
+        );
+        return true;
+    }
+
     private function analyzeValueNodeOfShapedArray(
         UnionType $element_type,
         Node|float|int|string $value_node
@@ -535,6 +616,9 @@ class AssignmentVisitor extends AnalysisVisitor
                 return;
             }
             // TODO: Infer that this is creating or copying a reference [&$a] = [&$b]
+        }
+        if (self::checkWriteToNullsafeChain($this->code_base, $this->context, $value_node)) {
+            return;
         }
         if ($kind === \ast\AST_VAR) {
             $variable = Variable::fromNodeInContext(
@@ -777,6 +861,8 @@ class AssignmentVisitor extends AnalysisVisitor
             if (!($value_node instanceof Node)) {
                 // Skip non-nodes to avoid crash
                 // TODO: Emit a new issue type for https://github.com/phan/phan/issues/1693
+            } elseif (self::checkWriteToNullsafeChain($this->code_base, $this->context, $value_node)) {
+                // Already warned, nothing to assign to.
             } elseif ($value_node->kind === \ast\AST_VAR) {
                 $variable = Variable::fromNodeInContext(
                     $value_node,
@@ -2286,12 +2372,13 @@ class AssignmentVisitor extends AnalysisVisitor
             }
         }
 
+        $class_node_context = new ContextNode(
+            $this->code_base,
+            $this->context,
+            $class_node
+        );
         try {
-            $class_list = (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $class_node
-            ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME, Issue::TypeExpectedObjectStaticPropAccess);
+            $class_list = $class_node_context->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME, Issue::TypeExpectedObjectStaticPropAccess);
         } catch (\Exception) {
             // If we can't figure out what kind of a class
             // this is, don't worry about it
@@ -2332,17 +2419,22 @@ class AssignmentVisitor extends AnalysisVisitor
             }
         }
 
-        if (\count($class_list) > 0) {
+        foreach ($class_list as $clazz) {
+            // Don't report the property as undeclared on an interface named only by a
+            // `class-string<I>`, whose implementing class may declare it.
+            if ($class_node_context->isInterfaceWithUnknownStaticMembers($clazz)) {
+                continue;
+            }
             $this->emitIssue(
                 Issue::UndeclaredStaticProperty,
                 $node->lineno ?? 0,
                 $property_name,
-                (string)$class_list[0]->getFQSEN()
+                (string)$clazz->getFQSEN()
             );
-        } else {
-            // If we hit this part, we couldn't figure out
-            // the class, so we ignore the issue
+            break;
         }
+        // If we hit this part without emitting, we couldn't figure out
+        // the class (or whether it declares the property), so we ignore the issue
 
         return $this->context;
     }

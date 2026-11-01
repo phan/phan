@@ -30,6 +30,9 @@ use Phan\PluginV3\IssueEmitter;
  *  3. public function analyzeMethod(CodeBase $code_base, Method $method)
  *     Analyze (and modify) a method definition, after parsing and before analyzing.
  *     (implement \Phan\PluginV3\AnalyzeMethodCapability)
+ *     Plugins whose analyzeMethod() has no effect on inherited copies of methods beyond state read back
+ *     when that copy is used can also implement \Phan\PluginV3\AnalyzeMethodSkipsInheritedCopiesCapability,
+ *     which allows the copies to be created lazily (config lazy_inherited_methods).
  *
  *  4. public static function getPostAnalyzeNodeVisitorClassName() : string
  *     Returns the name of a class extending PluginAwarePostAnalysisVisitor, which will be used to analyze nodes in the analysis phase.
@@ -137,6 +140,12 @@ use Phan\PluginV3\IssueEmitter;
  *     with callable parameters and handles lazy loading. Plugins may resolve callables themselves
  *     via UnionTypeVisitor::functionLikeListFromNodeAndContext().
  *     (implement \Phan\PluginV3\AnalyzeCallableArgumentCapability)
+ * 22. public function handleLazyLoadInternalMethod(CodeBase $code_base, Method $method)
+ *
+ *     This method is called for each method of an internal class after Phan lazily loads that class during analysis.
+ *     The counterpart of handleLazyLoadInternalFunction() for methods.
+ *
+ *     (implement \Phan\PluginV3\HandleLazyLoadInternalMethodCapability)
  */
 abstract class PluginV3
 {

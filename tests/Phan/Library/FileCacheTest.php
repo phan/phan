@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan\Tests\Library;
 
 use Phan\Library\FileCache;
+use Phan\Library\FileCacheEntry;
 use Phan\Tests\TestBase;
 
 /**
@@ -38,6 +39,24 @@ final class FileCacheTest extends TestBase
         $this->assertSame("Other lines\n", $entry->getLine(2));
         $this->assertNull($entry->getLine(3));
         $this->assertNull($entry->getLine(0));
+    }
+
+    /**
+     * getLinesWithoutNewlines() has the lines of getLines() without the "\n" at the end.
+     */
+    public function testGetLinesWithoutNewlines(): void
+    {
+        foreach (['', "\n", "\n\n", 'a', "a\n", "a\nb", "a\nb\n", "a\r\nb\r\n", "a\rb", "x\n\n y \n"] as $contents) {
+            $entry = new FileCacheEntry($contents);
+            $expected = [];
+            foreach ($entry->getLines() as $i => $line) {
+                $expected[$i] = \str_ends_with($line, "\n") ? \substr($line, 0, -1) : $line;
+            }
+            if (\str_ends_with($contents, "\n")) {
+                $expected[] = '';
+            }
+            $this->assertSame($expected, $entry->getLinesWithoutNewlines(), \json_encode($contents) ?: '');
+        }
     }
 
     public function testLRU(): void

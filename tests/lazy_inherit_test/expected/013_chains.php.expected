@@ -1,0 +1,8 @@
+src/013_chains.php:18 PhanTypeMismatchArgument Argument 1 ($i) is $b->beta() of type string but \expect_int_013() takes int defined at src/013_chains.php:14
+src/013_chains.php:19 PhanTypeMismatchArgument Argument 1 ($i) is $a->beta() of type string but \expect_int_013() takes int defined at src/013_chains.php:14
+src/013_chains.php:20 PhanTypeMismatchArgument Argument 1 ($i) is $l->beta() of type string but \expect_int_013() takes int defined at src/013_chains.php:14
+src/013_chains.php:21 PhanTypeMismatchArgument Argument 1 ($i) is $m->beta() of type string but \expect_int_013() takes int defined at src/013_chains.php:14
+src/013_chains.php:22 PhanTypeMismatchArgument Argument 1 ($i) is $p->beta() of type string but \expect_int_013() takes int defined at src/013_chains.php:14
+src/013_chains.php:23 PhanTypeMismatchArgument Argument 1 ($i) is $l->gamma() of type float but \expect_int_013() takes int defined at src/013_chains.php:14
+src/013_chains.php:24 PhanTypeMismatchArgument Argument 1 ($i) is $m->gamma() of type float but \expect_int_013() takes int defined at src/013_chains.php:14
+src/013_chains.php:25 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression $l->alpha() with type int

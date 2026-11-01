@@ -57,6 +57,20 @@ final class ConfigTest extends TestBase
         ];
     }
 
+    public function testWarnsInvalidProcessFileAssignment(): void
+    {
+        $this->assertSame([], Config::getConfigErrors(['process_file_assignment' => 'hierarchy']));
+        $this->assertSame([], Config::getConfigErrors(['process_file_assignment' => 'balanced']));
+        $this->assertSame(
+            ["Invalid config value for 'process_file_assignment': Expected 'hierarchy' or 'balanced', but got 'balance'"],
+            Config::getConfigErrors(['process_file_assignment' => 'balance'])
+        );
+        $this->assertSame(
+            ["Invalid config value for 'process_file_assignment': Expected 'hierarchy' or 'balanced', but got type 'boolean'"],
+            Config::getConfigErrors(['process_file_assignment' => true])
+        );
+    }
+
     public function testScalarImplicitPartial(): void
     {
         Config::setValue('scalar_implicit_partial', ['null' => ['int', 'string', 'false'], 'int' => ['string', 'null']]);
