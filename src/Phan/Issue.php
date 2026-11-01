@@ -456,22 +456,27 @@ class Issue
     public const UnreferencedPublicMethod      = 'PhanUnreferencedPublicMethod';
     public const UnreferencedProtectedMethod   = 'PhanUnreferencedProtectedMethod';
     public const UnreferencedPrivateMethod     = 'PhanUnreferencedPrivateMethod';
+    public const UnreferencedPrivateTraitMethod = 'PhanUnreferencedPrivateTraitMethod';
     public const UnreferencedPublicProperty    = 'PhanUnreferencedPublicProperty';
     public const UnreferencedProtectedProperty = 'PhanUnreferencedProtectedProperty';
     public const UnreferencedPrivateProperty   = 'PhanUnreferencedPrivateProperty';
+    public const UnreferencedPrivateTraitProperty = 'PhanUnreferencedPrivateTraitProperty';
     public const UnreferencedPHPDocProperty    = 'PhanUnreferencedPHPDocProperty';
     public const ReadOnlyPublicProperty        = 'PhanReadOnlyPublicProperty';
     public const ReadOnlyProtectedProperty     = 'PhanReadOnlyProtectedProperty';
     public const ReadOnlyPrivateProperty       = 'PhanReadOnlyPrivateProperty';
+    public const ReadOnlyPrivateTraitProperty  = 'PhanReadOnlyPrivateTraitProperty';
     public const ReadOnlyPHPDocProperty        = 'PhanReadOnlyPHPDocProperty';
     public const WriteOnlyPublicProperty       = 'PhanWriteOnlyPublicProperty';
     public const WriteOnlyProtectedProperty    = 'PhanWriteOnlyProtectedProperty';
     public const WriteOnlyPrivateProperty      = 'PhanWriteOnlyPrivateProperty';
+    public const WriteOnlyPrivateTraitProperty = 'PhanWriteOnlyPrivateTraitProperty';
     public const WriteOnlyPHPDocProperty       = 'PhanWriteOnlyPHPDocProperty';
     public const UnreferencedConstant          = 'PhanUnreferencedConstant';
     public const UnreferencedPublicClassConstant = 'PhanUnreferencedPublicClassConstant';
     public const UnreferencedProtectedClassConstant = 'PhanUnreferencedProtectedClassConstant';
     public const UnreferencedPrivateClassConstant = 'PhanUnreferencedPrivateClassConstant';
+    public const UnreferencedPrivateTraitClassConstant = 'PhanUnreferencedPrivateTraitClassConstant';
     public const UnreferencedEnumCase          = 'PhanUnreferencedEnumCase';
     public const UnreferencedClosure           = 'PhanUnreferencedClosure';
     public const UnreferencedUseNormal         = 'PhanUnreferencedUseNormal';
@@ -4125,6 +4130,14 @@ class Issue
                 6013
             ),
             new Issue(
+                self::UnreferencedPrivateTraitMethod,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to private method {METHOD} of a trait (it can be referenced by classes using the trait)",
+                self::REMEDIATION_B,
+                6100
+            ),
+            new Issue(
                 self::UnreferencedPublicProperty,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
@@ -4157,6 +4170,14 @@ class Issue
                 6016
             ),
             new Issue(
+                self::UnreferencedPrivateTraitProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to private property {PROPERTY} of a trait (it can be referenced by classes using the trait)",
+                self::REMEDIATION_B,
+                6101
+            ),
+            new Issue(
                 self::ReadOnlyPublicProperty,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
@@ -4179,6 +4200,14 @@ class Issue
                 "Possibly zero write references to private property {PROPERTY}",
                 self::REMEDIATION_B,
                 6034
+            ),
+            new Issue(
+                self::ReadOnlyPrivateTraitProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero write references to private property {PROPERTY} of a trait (it can be written by classes using the trait)",
+                self::REMEDIATION_B,
+                6102
             ),
             new Issue(
                 self::ReadOnlyPHPDocProperty,
@@ -4213,6 +4242,14 @@ class Issue
                 6027
             ),
             new Issue(
+                self::WriteOnlyPrivateTraitProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero read references to private property {PROPERTY} of a trait (it can be read by classes using the trait)",
+                self::REMEDIATION_B,
+                6103
+            ),
+            new Issue(
                 self::WriteOnlyPHPDocProperty,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
@@ -4243,6 +4280,14 @@ class Issue
                 "Possibly zero references to private class constant {CONST}",
                 self::REMEDIATION_B,
                 6019
+            ),
+            new Issue(
+                self::UnreferencedPrivateTraitClassConstant,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to private class constant {CONST} of a trait (it can be referenced by classes using the trait)",
+                self::REMEDIATION_B,
+                6104
             ),
             new Issue(
                 self::UnreferencedUseNormal,
