@@ -1,3 +1,4 @@
+%s:12 PhanUnusedVariable Unused definition of variable $pa
 %s:14 PhanPossiblyUndeclaredVariable Variable $arr is possibly undeclared
 %s:15 PhanPossiblyUndeclaredVariable Variable $arr is possibly undeclared
 %s:15 PhanTypeConversionFromArray array to string conversion
@@ -13,5 +14,7 @@
 %s:24 PhanPossiblyUndeclaredVariable Variable $str is possibly undeclared
 %s:25 PhanPossiblyUndeclaredVariable Variable $str is possibly undeclared
 %s:26 PhanPossiblyUndeclaredVariable Variable $arr is possibly undeclared
-%s:37 PhanUnusedVariable Unused definition of variable $c
-%s:44 PhanPossiblyUndeclaredGlobalVariable Global variable $global_arr is possibly undeclared
+%s:27 PhanPossiblyUndeclaredVariable Variable $pb is possibly undeclared
+%s:27 PhanUnusedVariable Unused definition of variable $pb
+%s:39 PhanUnusedVariable Unused definition of variable $c
+%s:46 PhanPossiblyUndeclaredGlobalVariable Global variable $global_arr is possibly undeclared
