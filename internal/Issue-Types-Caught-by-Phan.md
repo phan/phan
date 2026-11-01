@@ -5278,6 +5278,14 @@ Invalid trait use: {DETAILS}
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/misc/fallback_test/expected/056_trait_use.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/misc/fallback_test/src/056_trait_use.php#L11).
 
+## PhanInvalidWriteToNullsafeChain
+
+```
+Cannot use nullsafe operator in write context ({CODE}): PHP refuses to compile this
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/5954_nullsafe_write_context.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/5954_nullsafe_write_context.php#L11).
+
 ## PhanInvalidWriteToTemporaryExpression
 
 ```
