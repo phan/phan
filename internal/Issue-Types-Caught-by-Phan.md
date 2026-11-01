@@ -1109,6 +1109,14 @@ Possibly zero write references to private property {PROPERTY}
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/plugin_test/expected/084_read_only_property.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/plugin_test/src/084_read_only_property.php#L4).
 
+## PhanReadOnlyPrivateTraitProperty
+
+```
+Possibly zero write references to private property {PROPERTY} of a trait (it can be written by classes using the trait)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/plugin_test/expected/084_read_only_property.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/plugin_test/src/084_read_only_property.php#L37).
+
 ## PhanReadOnlyProtectedProperty
 
 ```
@@ -1278,6 +1286,30 @@ Possibly zero references to private property {PROPERTY}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/plugin_test/expected/070_suggest_global_constant.php.expected#L12) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/plugin_test/src/070_suggest_global_constant.php#L22).
+
+## PhanUnreferencedPrivateTraitClassConstant
+
+```
+Possibly zero references to private class constant {CONST} of a trait (it can be referenced by classes using the trait)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/plugin_test/expected/325_trait_private_constant_references.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/plugin_test/src/325_trait_private_constant_references.php#L7).
+
+## PhanUnreferencedPrivateTraitMethod
+
+```
+Possibly zero references to private method {METHOD} of a trait (it can be referenced by classes using the trait)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/plugin_test/expected/326_trait_private_dead_code.php.expected#L10) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/plugin_test/src/326_trait_private_dead_code.php#L19).
+
+## PhanUnreferencedPrivateTraitProperty
+
+```
+Possibly zero references to private property {PROPERTY} of a trait (it can be referenced by classes using the trait)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/plugin_test/expected/325_trait_private_constant_references.php.expected#L9) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/plugin_test/src/325_trait_private_constant_references.php#L13).
 
 ## PhanUnreferencedProtectedClassConstant
 
@@ -1635,6 +1667,14 @@ Possibly zero read references to private property {PROPERTY}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/plugin_test/expected/024_strict_property_assignment.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/plugin_test/src/024_strict_property_assignment.php#L5).
+
+## PhanWriteOnlyPrivateTraitProperty
+
+```
+Possibly zero read references to private property {PROPERTY} of a trait (it can be read by classes using the trait)
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/plugin_test/expected/326_trait_private_dead_code.php.expected#L8) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/plugin_test/src/326_trait_private_dead_code.php#L11).
 
 ## PhanWriteOnlyProtectedProperty
 
