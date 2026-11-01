@@ -286,6 +286,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitAssignRef(Node $node): Context
     {
+        $expr_node = $node->children['expr'];
+        if ($expr_node instanceof Node && AssignmentVisitor::isShortCircuitedChain($expr_node, false)) {
+            // `$x = &$c?->p` is a compile error ("Cannot take reference of a nullsafe chain"), for a bare `$c?->m()` as well.
+            // Still analyze it as an assignment so that the target variable is declared.
+            $this->emitIssue(
+                Issue::InvalidReferenceToNullsafeChain,
+                $expr_node->lineno,
+                ASTReverter::toShortString($expr_node)
+            );
+        }
         return $this->visitAssign($node);
     }
 

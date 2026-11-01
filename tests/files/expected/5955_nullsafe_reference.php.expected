@@ -1,0 +1,7 @@
+%s:10 PhanInvalidReferenceToNullsafeChain Cannot take reference of a nullsafe chain ($c?->p): PHP refuses to compile this
+%s:11 PhanInvalidReferenceToNullsafeChain Cannot take reference of a nullsafe chain ($c?->items[$k]): PHP refuses to compile this
+%s:11 PhanTypeArraySuspiciousNullable Suspicious array access to $c?->items of nullable type ?array|?array{}
+%s:12 PhanInvalidReferenceToNullsafeChain Cannot take reference of a nullsafe chain ($c?->m()->p): PHP refuses to compile this
+%s:13 PhanInvalidReferenceToNullsafeChain Cannot take reference of a nullsafe chain ($c?->m()): PHP refuses to compile this
+%s:14 PhanInvalidReferenceToNullsafeChain Cannot take reference of a nullsafe chain ($c->m()?->p): PHP refuses to compile this
+%s:15 PhanInvalidReferenceToNullsafeChain Cannot take reference of a nullsafe chain ($c?->child->items): PHP refuses to compile this
