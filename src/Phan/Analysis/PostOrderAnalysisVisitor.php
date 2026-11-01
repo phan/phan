@@ -4577,6 +4577,22 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 continue;
             }
 
+            if ($argument->kind === ast\AST_NAMED_ARG) {
+                // visitDim() leaves `name: $var[...]` to this check as well: the parameter is found by name here.
+                // (An unknown name is reported by ArgumentType::analyze().)
+                $argument_expression = $argument->children['expr'];
+                if ($argument_expression instanceof Node && $argument_expression->kind === ast\AST_DIM) {
+                    foreach ($method->getRealParameterList() as $parameter) {
+                        if ($parameter->getName() === $argument->children['name']) {
+                            if (!$parameter->isPassByReference()) {
+                                $this->checkForPossiblyUndeclaredVariableOfDimRead($argument_expression);
+                            }
+                            break;
+                        }
+                    }
+                }
+                continue;
+            }
             $parameter = $method->getParameterForCaller($i);
             if (!$parameter) {
                 if ($argument->kind === ast\AST_DIM) {
