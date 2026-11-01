@@ -770,10 +770,28 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     private function checkForPossiblyUndeclaredVariableOfDimRead(Node $node): void
     {
         $issue_type = $this->getIssueTypeForPossiblyUndeclaredVariableOfDimRead($node);
-        $var_node = $node->children['expr'];
-        if ($issue_type !== null && $var_node instanceof Node) {
-            $this->emitIssue($issue_type, $var_node->lineno, $var_node->children['name']);
+        if ($issue_type !== null) {
+            $var_node = self::getBaseVariableNodeOfDim($node);
+            if ($var_node) {
+                $this->emitIssue($issue_type, $var_node->lineno, $var_node->children['name']);
+            }
         }
+    }
+
+    /**
+     * Returns the `$var` node of `$var[...]`, `$var[...][...]`, etc., or null if the chain does not start with a variable.
+     *
+     * @param Node $node a node of kind ast\AST_DIM
+     */
+    private static function getBaseVariableNodeOfDim(Node $node): ?Node
+    {
+        do {
+            $node = $node->children['expr'];
+            if (!($node instanceof Node)) {
+                return null;
+            }
+        } while ($node->kind === ast\AST_DIM);
+        return $node->kind === ast\AST_VAR ? $node : null;
     }
 
     /**
@@ -786,9 +804,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     {
         // @phan-suppress-next-line PhanUndeclaredProperty this is added by visitDim()
         $issue_type = $node->possibly_undeclared_variable_issue ?? null;
-        $var_node = $node->children['expr'];
-        if (\is_string($issue_type) && $var_node instanceof Node) {
-            $this->emitIssue($issue_type, $var_node->lineno, $var_node->children['name']);
+        if (\is_string($issue_type)) {
+            $var_node = self::getBaseVariableNodeOfDim($node);
+            if ($var_node) {
+                $this->emitIssue($issue_type, $var_node->lineno, $var_node->children['name']);
+            }
         }
     }
 
@@ -809,8 +829,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($node->flags & PhanAnnotationAdder::FLAG_IGNORE_NULLABLE_AND_UNDEF) {
             return null;
         }
-        $var_node = $node->children['expr'];
-        if (!($var_node instanceof Node) || $var_node->kind !== ast\AST_VAR || ($var_node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF)) {
+        $var_node = self::getBaseVariableNodeOfDim($node);
+        if (!$var_node || ($var_node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF)) {
             return null;
         }
         $variable_name = $var_node->children['name'];
@@ -4009,8 +4029,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($flags & PhanAnnotationAdder::FLAG_IGNORE_NULLABLE_AND_UNDEF) {
             return $context;
         }
-        $parent_kind = (\end($this->parent_node_list)->kind ?? null);
-        if (!isset(self::SKIP_DIM_VAR_CHECK_TYPES[$parent_kind])) {
+        $parent_node = \end($this->parent_node_list);
+        $parent_kind = $parent_node->kind ?? null;
+        if ($parent_kind === ast\AST_DIM && $parent_node instanceof Node && $parent_node->children['expr'] === $node) {
+            // `$var[...][...]`: the outermost dimension checks the chain, since its parent decides whether `$var` is read
+            // (`byref($var[0][1])` and `$x = &$var[0][1]` create `$var`).
+        } elseif (!isset(self::SKIP_DIM_VAR_CHECK_TYPES[$parent_kind])) {
             $this->checkForPossiblyUndeclaredVariableOfDimRead($node);
         } elseif ($parent_kind !== ast\AST_ASSIGN_REF) {
             // An argument: analyzeCallToFunctionLike() decides once it knows whether the parameter is by reference,

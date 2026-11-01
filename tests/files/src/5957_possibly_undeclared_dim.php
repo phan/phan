@@ -14,6 +14,7 @@ function test5957(bool $b, array $src): void {
     if ($b) {
         $arr = [1, [2]]; $str = 'abc'; $obj = new stdClass(); $obj->p = 1;
         $w = []; $inc = [1]; $cat = ['a']; $r = [1]; $q = [[1], [2]]; $m = [[1]]; $n = [1]; $u = [1]; $c = [1]; $e = [1, 2]; $d = [1]; $pa = [1]; $pb = [1];
+        $nested = [[1, [2]]]; $idx = [0]; $nest2 = [[1]];
     }
     echo $arr[0];
     echo $arr;
@@ -31,6 +32,9 @@ function test5957(bool $b, array $src): void {
     sink5957($pb[0], count($pb = [1]));
     (new Magic5957)->missing(foo: $arr[0]);
     Magic5957::missing(bar: $arr[0]);
+    echo $nested[0][1][0], $src[$idx[0]];
+    sink5957($nested[0][0], count($nested[0][1]));
+    $nested[0][0]++;
 
     // Not warned about: PHP does not read the variable (or does so silently)
     $w[0] = 1;
@@ -39,11 +43,16 @@ function test5957(bool $b, array $src): void {
     byref5957($q[0]);
     byref5957(a: $q[1]);
     refs5957(item: $q[0]);
+    byref5957($nested[0][1]);
+    byref5957(a: $nested[0][1]);
+    refs5957(item: $nested[0][1]);
+    $ref2 = &$nested[0][1];
+    preg_match('/a/', 'a', $nested[0][1]);
     sink5957(count($pa = [1]), $pa[0]);
     preg_match('/a/', 'a', $n[0]);
     unset($u[0]);
     $c[0] ??= 1;
-    var_dump($ref, isset($e[0]), empty($e[1]), $e[0] ?? null, $d[0] ?? $src);
+    var_dump($ref, $ref2, isset($e[0]), empty($e[1]), $e[0] ?? null, $d[0] ?? $src, isset($nest2[0][1]), $nest2[0][1] ?? null);
 }
 
 if (rand(0, 1)) {
