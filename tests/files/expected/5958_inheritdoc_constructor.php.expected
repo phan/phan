@@ -1,0 +1,21 @@
+%s:10 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type string
+%s:10 PhanDebugAnnotation @phan-debug-var requested for variable $items - it has union type list<string>(real=array)
+%s:19 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type string
+%s:19 PhanDebugAnnotation @phan-debug-var requested for variable $items - it has union type list<string>(real=array)
+%s:27 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type (empty union type)
+%s:27 PhanDebugAnnotation @phan-debug-var requested for variable $items - it has union type array(real=array)
+%s:36 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type string
+%s:36 PhanDebugAnnotation @phan-debug-var requested for variable $extra - it has union type (empty union type)
+%s:36 PhanDebugAnnotation @phan-debug-var requested for variable $items - it has union type list<string>
+%s:49 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type int|string
+%s:49 PhanDebugAnnotation @phan-debug-var requested for variable $items - it has union type int(real=int)
+%s:58 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type string
+%s:64 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type string
+%s:64 PhanDebugAnnotation @phan-debug-var requested for variable $items - it has union type list<string>(real=array)
+%s:73 PhanCommentInheritDocOnNonOverrideMethod Saw an @inheritDoc annotation for method \CNoParent5958::__construct, but could not find an overridden method and it is not a magic method
+%s:73 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type (empty union type)
+%s:83 PhanCommentInheritDocOnNonOverrideMethod Saw an @inheritDoc annotation for method \CSubOfNoConstructor5958::__construct, but could not find an overridden method and it is not a magic method
+%s:83 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type (empty union type)
+%s:97 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type (empty union type)
+%s:105 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type T
+%s:114 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type int
