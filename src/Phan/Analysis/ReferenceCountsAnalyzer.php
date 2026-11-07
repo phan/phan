@@ -350,7 +350,8 @@ class ReferenceCountsAnalyzer
      * @return \Generator<array{0:ClassElement,1:ClassElement}>
      * Pairs of a property, constant or method that a user-defined class (or trait) declares itself
      * and the element of the same kind and name of a trait the class uses (directly or through other traits).
-     * A magic `@property` or dynamic property of the class is not merged with a property of a trait.
+     * A magic `@property` or dynamic property of the class is not merged with a property of a trait,
+     * and a static property is not paired with a non-static one.
      */
     private static function getSameNamedTraitElements(CodeBase $code_base): \Generator
     {
@@ -368,9 +369,16 @@ class ReferenceCountsAnalyzer
                 }
                 foreach ($trait_fqsen_list as $trait_fqsen) {
                     $trait_property_fqsen = FullyQualifiedPropertyName::make($trait_fqsen, $property->getName());
-                    if ($code_base->hasPropertyWithFQSEN($trait_property_fqsen)) {
-                        yield [$property, $code_base->getPropertyByFQSEN($trait_property_fqsen)];
+                    if (!$code_base->hasPropertyWithFQSEN($trait_property_fqsen)) {
+                        continue;
                     }
+                    $trait_property = $code_base->getPropertyByFQSEN($trait_property_fqsen);
+                    if ($trait_property->isStatic() !== $property->isStatic()) {
+                        // A static property of the class is not the instance property that a `@property` of the trait describes
+                        // (and PHP rejects a static and a non-static declaration of the same real property).
+                        continue;
+                    }
+                    yield [$property, $trait_property];
                 }
             }
             foreach ($class->getConstantMap($code_base) as $constant) {

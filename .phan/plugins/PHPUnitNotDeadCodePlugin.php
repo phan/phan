@@ -112,10 +112,12 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
         $class->addReference($context->withScope(new GlobalScope()));
         // Mark all test cases as referenced
         foreach ($class->getMethodMap($code_base) as $method) {
-            if (static::isTestCase($method)) {
+            // The copy of a method imported from a trait has neither the attributes nor the doc comment of the trait's method.
+            $declaring_method = $this->getDeclaringMethod($method);
+            if (static::isTestCase($declaring_method)) {
                 $method->addReference($context);
-                $this->markDataProvidersAsReferenced($class, $method);
-            } elseif (static::isHookMethod($method)) {
+                $this->markDataProvidersAsReferenced($class, $declaring_method);
+            } elseif (static::isHookMethod($declaring_method)) {
                 // PHPUnit calls this before or after the tests
                 $method->addReference($context);
             }
@@ -165,6 +167,20 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
                 }
             }
         }
+    }
+
+    /**
+     * @return Method the method declaring $method: the trait's method for a copy imported from a trait
+     * (Method::createUseAlias() does not copy the attributes or the doc comment), the parent class's method
+     * for an inherited copy, or $method itself.
+     */
+    private function getDeclaringMethod(Method $method): Method
+    {
+        $real_defining_fqsen = $method->getRealDefiningFQSEN();
+        if ($real_defining_fqsen !== $method->getFQSEN() && $this->code_base->hasMethodWithFQSEN($real_defining_fqsen)) {
+            return $this->code_base->getMethodByFQSEN($real_defining_fqsen);
+        }
+        return $method;
     }
 
     private function markMethodAsReferenced(Clazz $class, string $method_name): void

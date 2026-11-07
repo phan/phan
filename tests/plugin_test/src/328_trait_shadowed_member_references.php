@@ -173,3 +173,23 @@ $child->increment();
 $other_child = new ChildLast5630();
 $other_child->increment();
 echo $child->getCount() + $other_child->getCount();
+
+// A static property of the class is not the instance property that a trait's @property describes.
+/** @property-read string $value */
+trait MagicValue5630 {
+    public function __get(string $name): string {
+        return $name;
+    }
+    public function show(): string {
+        return $this->value;
+    }
+}
+class StaticValue5630 {
+    use MagicValue5630;
+    private static string $value = 'a';  // write-only: the trait reads the magic instance property
+    public static function set(): void {
+        self::$value = 'b';
+    }
+}
+echo (new StaticValue5630())->show();
+StaticValue5630::set();

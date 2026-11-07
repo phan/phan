@@ -12,3 +12,4 @@ src/328_trait_shadowed_member_references.php:126 PhanReadOnlyPrivateProperty Pos
 src/328_trait_shadowed_member_references.php:127 PhanUnreferencedPrivateMethod Possibly zero references to private method \RedeclareOnly5630::helper()
 src/328_trait_shadowed_member_references.php:133 PhanReadOnlyPrivateProperty Possibly zero write references to private property \RedeclareOnlyAgain5630->counter
 src/328_trait_shadowed_member_references.php:134 PhanUnreferencedPrivateMethod Possibly zero references to private method \RedeclareOnlyAgain5630::helper()
+src/328_trait_shadowed_member_references.php:189 PhanWriteOnlyPrivateProperty Possibly zero read references to private property \StaticValue5630::$value
