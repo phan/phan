@@ -1,0 +1,6 @@
+src/329_phpunit_not_dead_code.php:41 PhanUnreferencedPublicMethod Possibly zero references to public method \App5629\Providers5629::provideUnused()
+src/329_phpunit_not_dead_code.php:73 PhanUnreferencedPublicMethod Possibly zero references to public method \App5629\AnnotationsTest::provideUnused()
+src/329_phpunit_not_dead_code.php:77 PhanUnreferencedPrivateMethod Possibly zero references to private method \App5629\AnnotationsTest::helperUnused()
+src/329_phpunit_not_dead_code.php:113 PhanUnreferencedPublicMethod Possibly zero references to public method \App5629\AttributesTest::provideUnused()
+src/329_phpunit_not_dead_code.php:118 PhanUnreferencedClass Possibly zero references to class \App5629\NotATest
+src/329_phpunit_not_dead_code.php:119 PhanUnreferencedPublicMethod Possibly zero references to public method \App5629\NotATest::testThing()

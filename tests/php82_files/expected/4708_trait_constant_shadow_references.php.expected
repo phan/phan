@@ -1,0 +1,2 @@
+%s:6 PhanUnreferencedPrivateTraitClassConstant Possibly zero references to private class constant \ConstTrait4708::UNUSED of a trait (it can be referenced by classes using the trait)
+%s:14 PhanUnreferencedPrivateClassConstant Possibly zero references to private class constant \UsesConstTrait4708::UNUSED

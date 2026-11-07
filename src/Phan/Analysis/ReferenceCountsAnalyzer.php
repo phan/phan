@@ -83,6 +83,12 @@ class ReferenceCountsAnalyzer
             $i
         );
 
+        // A class using a trait can declare a property, constant or method with the same name as the trait's:
+        // uses of the trait's element inside the trait are then also references to the class's declaration.
+        // This must run before the loop below merges the references of the imported copies of other classes using the trait
+        // into the trait's element, and after the classes were checked (a reference from inside the trait is not a reference to the class).
+        self::copyReferencesFromSameNamedTraitElements($code_base);
+
         // Class Maps
         $elements_to_analyze = [];
         foreach ($code_base->getClassMapMap() as $class_map) {
@@ -95,6 +101,10 @@ class ReferenceCountsAnalyzer
                 $elements_to_analyze[] = $element;
             }
         }
+
+        // The reverse: uses of the class's declaration of a property or constant are uses of the trait's.
+        // This runs after the loop above, so that the references of the subclasses of the class were merged into the class's declaration.
+        self::copyReferencesToSameNamedTraitElements($code_base);
 
         static $issue_types = [
             ClassConstant::class => Issue::UnreferencedPublicClassConstant,  // This is overridden
@@ -270,8 +280,6 @@ class ReferenceCountsAnalyzer
                 if ($element->isDynamicProperty()) {
                     continue;
                 }
-                // Copy references from trait magic properties with same name (Issue #5391)
-                self::copyReferencesFromTraitMagicProperties($code_base, $element);
                 // TODO: may want to continue to skip `if ($defining_class->hasGetOrSetMethod($code_base)) {`
                 // E.g. a __get() method that is implemented as `return $this->"_$name"`.
                 // (at)phan-file-suppress is an easy enough workaround, though
@@ -281,57 +289,134 @@ class ReferenceCountsAnalyzer
     }
 
     /**
-     * For classes that use traits, copy references from the trait's magic properties
-     * (defined via @property) to the class's real properties with the same name.
-     * This handles the case where a trait method accesses $this->prop and the class
-     * defines its own property with the same name. (Issue #5391)
+     * A class using a trait can declare a property, a class constant (PHP 8.2+) or a method with the same name
+     * as an element of the trait. The class's declaration is then not an imported copy of the trait's element
+     * (see ClassElement::getRealDefiningFQSEN()), but `$this->prop`, `self::X` or `$this->method()` in the methods
+     * of the trait refer to the trait's element, so the class's declaration would seem to be unreferenced.
+     * (Issues #5391, #5630)
+     *
+     * This copies the references of the trait's element to the class's declaration:
+     *
+     * - The class's method replaces the trait's method (abstract or not, or declared with `@method`) in that class,
+     *   so the trait's calls of its own method are calls of the class's method.
+     *   The reverse does not hold: the trait's method is not called for instances of that class.
+     * - PHP requires the declarations of a property (or of a constant) in the trait and in the class to be compatible,
+     *   and in that class they are the same property (constant). The references of the trait's declaration
+     *   (a magic `@property` included) are copied here, and the references of the class's declaration are copied
+     *   to the trait's declaration in copyReferencesToSameNamedTraitElements().
+     *
+     * This runs before getElementsFromElementListForDeferredAnalysis() merges the references of the imported copies
+     * of other classes using the trait into the trait's element, so that only the uses inside the trait are copied:
+     * a use of the trait's element by another class is not a use of this class's declaration.
      */
-    private static function copyReferencesFromTraitMagicProperties(
-        CodeBase $code_base,
-        Property $class_property
-    ): void {
-        // Only process real instance properties (not magic/dynamic/static properties)
-        // @property annotations only apply to instance properties accessed via $this->prop
-        if ($class_property->isFromPHPDoc() || $class_property->isDynamicProperty() || $class_property->isStatic()) {
-            return;
-        }
-
-        $class_fqsen = $class_property->getClassFQSEN();
-        if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
-            return;
-        }
-
-        $clazz = $code_base->getClassByFQSEN($class_fqsen);
-        $property_name = $class_property->getName();
-
-        // Iterate through traits used by this class
-        foreach ($clazz->getTraitFQSENList() as $trait_fqsen) {
-            if (!$code_base->hasClassWithFQSEN($trait_fqsen)) {
+    private static function copyReferencesFromSameNamedTraitElements(CodeBase $code_base): void
+    {
+        foreach (self::getSameNamedTraitElements($code_base) as [$element, $trait_element]) {
+            if ($element instanceof Method && $element->isFromPHPDoc()) {
+                // A magic `@method` of the class does not replace a method of the trait.
                 continue;
             }
-
-            // Check if the trait has a magic property with the same name
-            $trait_property_fqsen = FullyQualifiedPropertyName::make(
-                $trait_fqsen,
-                $property_name
-            );
-
-            if (!$code_base->hasPropertyWithFQSEN($trait_property_fqsen)) {
-                continue;
-            }
-
-            $trait_property = $code_base->getPropertyByFQSEN($trait_property_fqsen);
-
-            // Only copy from magic properties (those defined via @property)
-            if (!$trait_property->isFromPHPDoc()) {
-                continue;
-            }
-
-            // Copy references from the trait's magic property to the class's real property
-            if ($trait_property->getReferenceCount($code_base) > 0) {
-                $class_property->copyReferencesFrom($trait_property);
+            if ($trait_element->getReferenceCount($code_base) > 0) {
+                $element->copyReferencesFrom($trait_element);
             }
         }
+    }
+
+    /**
+     * Copies the references of a property or constant that a class declares with the same name as a property or constant
+     * of a trait it uses to the trait's declaration, as they are the same property or constant in that class.
+     * A class declaring the property the trait declares with `@property` does not reference that annotation.
+     *
+     * This runs after getElementsFromElementListForDeferredAnalysis() merged the references of the copies
+     * inherited by subclasses into the class's declaration.
+     * @see copyReferencesFromSameNamedTraitElements()
+     */
+    private static function copyReferencesToSameNamedTraitElements(CodeBase $code_base): void
+    {
+        foreach (self::getSameNamedTraitElements($code_base) as [$element, $trait_element]) {
+            if ($element instanceof Method) {
+                continue;
+            }
+            if ($trait_element instanceof Property && $trait_element->isFromPHPDoc()) {
+                continue;
+            }
+            if ($element->getReferenceCount($code_base) > 0) {
+                $trait_element->copyReferencesFrom($element);
+            }
+        }
+    }
+
+    /**
+     * @return \Generator<array{0:ClassElement,1:ClassElement}>
+     * Pairs of a property, constant or method that a user-defined class (or trait) declares itself
+     * and the element of the same kind and name of a trait the class uses (directly or through other traits).
+     * A magic `@property` or dynamic property of the class is not merged with a property of a trait.
+     */
+    private static function getSameNamedTraitElements(CodeBase $code_base): \Generator
+    {
+        foreach ($code_base->getUserDefinedClassMap() as $class) {
+            if (!$class->getTraitFQSENList()) {
+                continue;
+            }
+            $trait_fqsen_list = self::getTraitFQSENListRecursively($code_base, $class);
+            if (!$trait_fqsen_list) {
+                continue;
+            }
+            foreach ($class->getPropertyMap($code_base) as $property) {
+                if ($property->getFQSEN() !== $property->getRealDefiningFQSEN() || $property->isDynamicOrFromPHPDoc()) {
+                    continue;
+                }
+                foreach ($trait_fqsen_list as $trait_fqsen) {
+                    $trait_property_fqsen = FullyQualifiedPropertyName::make($trait_fqsen, $property->getName());
+                    if ($code_base->hasPropertyWithFQSEN($trait_property_fqsen)) {
+                        yield [$property, $code_base->getPropertyByFQSEN($trait_property_fqsen)];
+                    }
+                }
+            }
+            foreach ($class->getConstantMap($code_base) as $constant) {
+                if ($constant->getFQSEN() !== $constant->getRealDefiningFQSEN()) {
+                    continue;
+                }
+                foreach ($trait_fqsen_list as $trait_fqsen) {
+                    $trait_constant_fqsen = FullyQualifiedClassConstantName::make($trait_fqsen, $constant->getName());
+                    if ($code_base->hasClassConstantWithFQSEN($trait_constant_fqsen)) {
+                        yield [$constant, $code_base->getClassConstantByFQSEN($trait_constant_fqsen)];
+                    }
+                }
+            }
+            foreach ($class->getMethodMap($code_base) as $method) {
+                if ($method->getFQSEN() !== $method->getRealDefiningFQSEN()) {
+                    continue;
+                }
+                foreach ($trait_fqsen_list as $trait_fqsen) {
+                    $trait_method_fqsen = FullyQualifiedMethodName::make($trait_fqsen, $method->getName());
+                    if ($code_base->hasMethodWithFQSEN($trait_method_fqsen)) {
+                        yield [$method, $code_base->getMethodByFQSEN($trait_method_fqsen)];
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * @return list<FullyQualifiedClassName> the traits used by $class, directly or through other traits
+     */
+    private static function getTraitFQSENListRecursively(CodeBase $code_base, Clazz $class): array
+    {
+        $result = [];
+        $pending = $class->getTraitFQSENList();
+        while ($pending) {
+            $trait_fqsen = \array_pop($pending);
+            $key = \strtolower($trait_fqsen->__toString());
+            if (isset($result[$key]) || !$code_base->hasClassWithFQSEN($trait_fqsen)) {
+                continue;
+            }
+            $result[$key] = $trait_fqsen;
+            foreach ($code_base->getClassByFQSEN($trait_fqsen)->getTraitFQSENList() as $nested_trait_fqsen) {
+                $pending[] = $nested_trait_fqsen;
+            }
+        }
+        return \array_values($result);
     }
 
     /**
