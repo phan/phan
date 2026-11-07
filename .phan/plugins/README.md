@@ -402,7 +402,9 @@ Also see [`StrictComparisonPlugin`](#StrictComparisonPlugin.php) and [`Numerical
 
 #### PHPUnitNotDeadCodePlugin.php
 
-Marks unit tests and dataProviders of subclasses of PHPUnit\Framework\TestCase as referenced.
+Marks subclasses of PHPUnit\Framework\TestCase, their unit tests (methods starting with `test`, or with `@test` or `#[Test]`),
+their data providers (`@dataProvider`, `#[DataProvider]` and `#[DataProviderExternal]`)
+and their hook methods (`@before`, `@after`, `@beforeClass`, `@afterClass`, `@preCondition`, `@postCondition` or the corresponding attributes) as referenced.
 Avoids false positives when `--dead-code-detection` is enabled.
 
 (Does not emit any issue types)

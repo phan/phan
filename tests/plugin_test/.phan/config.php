@@ -145,6 +145,7 @@ return [
         'LoopVariableReusePlugin',
         'RedundantAssignmentPlugin',
         'UnknownClassElementAccessPlugin',
+        'PHPUnitNotDeadCodePlugin',
         'DuplicateConstantPlugin',
         'ConstantVariablePlugin',
         'ShortArrayPlugin',

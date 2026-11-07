@@ -518,7 +518,10 @@ class Method extends ClassElement implements FunctionInterface
         if ($method->isPublic()) {
             $method->setDefiningFQSEN($defining_fqsen);
         }
-        $method->real_defining_fqsen = $defining_fqsen;
+        // The original declaration, also for a trait used through another trait: for a protected or private method,
+        // $defining_fqsen is the trait the method is imported from. Dead code detection merges the references
+        // to the copies into the original declaration, and must not depend on the order of the class declarations.
+        $method->real_defining_fqsen = $this->getRealDefiningFQSEN();
 
         $method->setRealParameterList($this->getRealParameterList());
         $method->setRealReturnType($this->getRealReturnType());

@@ -3,10 +3,13 @@
 declare(strict_types=1);
 
 use ast\Node;
+use Phan\AST\UnionTypeVisitor;
 use Phan\Config;
+use Phan\Language\Element\Attribute;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Type;
 use Phan\PluginV3;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
@@ -51,6 +54,31 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
     /** @var bool did this plugin already warn that TestCase was missing? */
     private static $did_warn_missing_class = false;
 
+    /** The attribute marking a public method as a test (PHPUnit 10+), like the `@test` annotation */
+    private const TEST_ATTRIBUTE = '\PHPUnit\Framework\Attributes\Test';
+
+    /** The attribute naming a data provider method of the same class (PHPUnit 10+), like the `@dataProvider` annotation */
+    private const DATA_PROVIDER_ATTRIBUTE = '\PHPUnit\Framework\Attributes\DataProvider';
+
+    /** The attribute naming a data provider method of another class (PHPUnit 10+) */
+    private const DATA_PROVIDER_EXTERNAL_ATTRIBUTE = '\PHPUnit\Framework\Attributes\DataProviderExternal';
+
+    /**
+     * PHPUnit calls the methods with these attributes before or after the tests of a test case (PHPUnit 10+).
+     * The methods can have any visibility. (Keys are lowercase)
+     */
+    private const HOOK_ATTRIBUTES = [
+        '\phpunit\framework\attributes\before' => true,
+        '\phpunit\framework\attributes\after' => true,
+        '\phpunit\framework\attributes\beforeclass' => true,
+        '\phpunit\framework\attributes\afterclass' => true,
+        '\phpunit\framework\attributes\precondition' => true,
+        '\phpunit\framework\attributes\postcondition' => true,
+    ];
+
+    /** The annotations corresponding to HOOK_ATTRIBUTES */
+    private const HOOK_ANNOTATION_REGEX = '/@(before|after|beforeClass|afterClass|preCondition|postCondition)\b/';
+
     /**
      * This is called after the parse phase is completely finished, so $this->code_base contains all class definitions
      * @override
@@ -78,15 +106,20 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
             return;
         }
 
-        // Mark subclasses of TestCase as referenced
-        $class->addReference($context);
+        // Mark subclasses of TestCase as referenced.
+        // Clazz::addReference() ignores a reference made from the scope of the class itself (#2655), and $context is in that scope,
+        // so record the reference from the global scope: the test runner instantiates the test case from outside of the class (#5629).
+        $class->addReference($context->withScope(new GlobalScope()));
         // Mark all test cases as referenced
         foreach ($class->getMethodMap($code_base) as $method) {
-            if (static::isTestCase($method)) {
-                // TODO: Parse @dataProvider methodName, check for method existence,
-                // then mark method for dataProvider as referenced.
+            // The copy of a method imported from a trait has neither the attributes nor the doc comment of the trait's method.
+            $declaring_method = $this->getDeclaringMethod($method);
+            if (static::isTestCase($method, $declaring_method)) {
                 $method->addReference($context);
-                $this->markDataProvidersAsReferenced($class, $method);
+                $this->markDataProvidersAsReferenced($class, $declaring_method);
+            } elseif (static::isHookMethod($declaring_method)) {
+                // PHPUnit calls this before or after the tests
+                $method->addReference($context);
             }
         }
         // https://phpunit.de/manual/current/en/fixtures.html (PHPUnit framework checks for this override)
@@ -107,22 +140,121 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * Marks all data provider methods as being referenced
      *
-     * @param Method $method the Method representing a unit test in a test case subclass
+     * @param Clazz $class the test case
+     * @param Method $method the declaration of a unit test of $class (the trait's method, for a test provided by a trait)
      */
     private function markDataProvidersAsReferenced(Clazz $class, Method $method): void
     {
-        if (preg_match('/@dataProvider\s+' . self::WORD_REGEX . '/', $method->getNode()->children['docComment'] ?? '', $match)) {
-            $data_provider_name = $match[1];
-            if ($class->hasMethodWithName($this->code_base, $data_provider_name, true)) {
-                $class->getMethodByName($this->code_base, $data_provider_name)->addReference($this->context);
+        // A test can have several `@dataProvider` annotations
+        if (preg_match_all('/@dataProvider\s+' . self::WORD_REGEX . '/', $method->getDocComment() ?? '', $matches)) {
+            foreach ($matches[1] as $data_provider_name) {
+                $this->markMethodAsReferenced($class, $data_provider_name);
+            }
+        }
+        foreach ($method->getAttributeList() as $attribute) {
+            $attribute_name = $attribute->getFQSEN()->__toString();
+            if (strcasecmp($attribute_name, self::DATA_PROVIDER_ATTRIBUTE) === 0) {
+                // #[DataProvider('providerName')]
+                $data_provider_name = self::getAttributeArgument($attribute, 0, 'methodName');
+                if (is_string($data_provider_name)) {
+                    $this->markMethodAsReferenced($class, $data_provider_name);
+                }
+            } elseif (strcasecmp($attribute_name, self::DATA_PROVIDER_EXTERNAL_ATTRIBUTE) === 0) {
+                // #[DataProviderExternal(ProviderClass::class, 'providerName')]
+                $data_provider_name = self::getAttributeArgument($attribute, 1, 'methodName');
+                $data_provider_class = $this->getClassForAttributeArgument($class, $method, self::getAttributeArgument($attribute, 0, 'className'));
+                if (is_string($data_provider_name) && $data_provider_class) {
+                    $this->markMethodAsReferenced($data_provider_class, $data_provider_name);
+                }
             }
         }
     }
 
     /**
-     * @return bool true if $method is a PHPUnit test case
+     * @return Method the method declaring $method: the trait's method for a copy imported from a trait, directly
+     * or through other traits (Method::createUseAlias() does not copy the attributes or the doc comment),
+     * the parent class's method for an inherited copy, or $method itself.
      */
-    protected static function isTestCase(Method $method): bool
+    private function getDeclaringMethod(Method $method): Method
+    {
+        $real_defining_fqsen = $method->getRealDefiningFQSEN();
+        if ($real_defining_fqsen !== $method->getFQSEN() && $this->code_base->hasMethodWithFQSEN($real_defining_fqsen)) {
+            return $this->code_base->getMethodByFQSEN($real_defining_fqsen);
+        }
+        return $method;
+    }
+
+    private function markMethodAsReferenced(Clazz $class, string $method_name): void
+    {
+        if ($class->hasMethodWithName($this->code_base, $method_name, true)) {
+            $class->getMethodByName($this->code_base, $method_name)->addReference($this->context);
+        }
+    }
+
+    /**
+     * @param Clazz $class the test case
+     * @param Method $method the declaration of a unit test of $class, with the attribute
+     * @param Node|string|int|float|null $argument an argument of an attribute, from getAttributeArgument()
+     * @return ?Clazz the class named by `SomeClass::class` or by a class name string, if it is declared
+     */
+    private function getClassForAttributeArgument(Clazz $class, Method $method, Node|string|int|float|null $argument): ?Clazz
+    {
+        try {
+            if ($argument instanceof Node) {
+                if ($argument->kind !== \ast\AST_CLASS_NAME) {
+                    return null;
+                }
+                // The name is resolved with the namespace and the imports of the file declaring the method.
+                $context = $method->getContext();
+                if ($method->getClassFQSEN() !== $class->getFQSEN() && $method->getClass($this->code_base)->isTrait()) {
+                    // `self` in a method of a trait is the class using the trait.
+                    $context = $context->withScope($class->getInternalScope());
+                }
+                $class_name = UnionTypeVisitor::unionTypeFromClassNode($this->code_base, $context, $argument->children['class'])->__toString();
+            } elseif (is_string($argument)) {
+                $class_name = '\\' . ltrim($argument, '\\');
+            } else {
+                return null;
+            }
+            $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class_name);
+        } catch (Exception) {
+            // Not a valid class name
+            return null;
+        }
+        if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {
+            return null;
+        }
+        return $this->code_base->getClassByFQSEN($class_fqsen);
+    }
+
+    /**
+     * @return Node|string|int|float|null the positional argument $i of the attribute, or its named argument $name
+     */
+    private static function getAttributeArgument(Attribute $attribute, int $i, string $name): Node|string|int|float|null
+    {
+        $args = $attribute->getArgs();
+        if (!$args) {
+            return null;
+        }
+        foreach ($args->children as $j => $argument) {
+            if ($argument instanceof Node && $argument->kind === \ast\AST_NAMED_ARG) {
+                if ($argument->children['name'] === $name) {
+                    return $argument->children['expr'];
+                }
+            } elseif ($j === $i) {
+                return $argument;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param Method $method a method of the test case
+     * @param Method $declaring_method the declaration of $method, from getDeclaringMethod()
+     * @return bool true if $method is a PHPUnit test case: PHPUnit sees the name and the visibility of the method
+     * in the test case (`use T { helper as public testThing; }`), and the annotations and attributes of its declaration.
+     */
+    protected static function isTestCase(Method $method, Method $declaring_method): bool
     {
         if (!$method->isPublic()) {
             return false;
@@ -130,8 +262,31 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
         if (preg_match('@^test@i', $method->getName())) {
             return true;
         }
-        if (preg_match('/@test\b/', $method->getNode()->children['docComment'] ?? '')) {
+        if (preg_match('/@test\b/', $declaring_method->getDocComment() ?? '')) {
             return true;
+        }
+        return self::hasAttribute($declaring_method, self::TEST_ATTRIBUTE);
+    }
+
+    /**
+     * @return bool true if PHPUnit calls $method before or after the tests of the test case
+     */
+    protected static function isHookMethod(Method $method): bool
+    {
+        foreach ($method->getAttributeList() as $attribute) {
+            if (isset(self::HOOK_ATTRIBUTES[strtolower($attribute->getFQSEN()->__toString())])) {
+                return true;
+            }
+        }
+        return preg_match(self::HOOK_ANNOTATION_REGEX, $method->getDocComment() ?? '') > 0;
+    }
+
+    private static function hasAttribute(Method $method, string $attribute_class_name): bool
+    {
+        foreach ($method->getAttributeList() as $attribute) {
+            if (strcasecmp($attribute->getFQSEN()->__toString(), $attribute_class_name) === 0) {
+                return true;
+            }
         }
         return false;
     }
