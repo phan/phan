@@ -193,3 +193,30 @@ class StaticValue5630 {
 }
 echo (new StaticValue5630())->show();
 StaticValue5630::set();
+
+// A protected or private method of a trait used through another trait: the result does not depend on the order of the declarations
+// (the outer trait declaring a method of its own changes the order in which the classes are processed).
+trait InnerUsed5630 {
+    protected function innerHelper(): string {
+        return 'i';
+    }
+    private function innerPrivate(): string {
+        return 'p';
+    }
+    protected static function innerStatic(): string {
+        return 's';
+    }
+}
+trait OuterUsed5630 {
+    use InnerUsed5630;
+    public function outerOwn(): string {
+        return 'o';
+    }
+}
+class UsesNested5630 {
+    use OuterUsed5630;
+    public function run(): string {
+        return $this->innerHelper() . $this->innerPrivate() . self::innerStatic() . $this->outerOwn();
+    }
+}
+echo (new UsesNested5630())->run();

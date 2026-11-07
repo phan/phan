@@ -5,3 +5,4 @@ src/329_phpunit_not_dead_code.php:113 PhanUnreferencedPublicMethod Possibly zero
 src/329_phpunit_not_dead_code.php:158 PhanUnreferencedPublicMethod Possibly zero references to public method \App5629\SharedTests5629::provideSharedUnused()
 src/329_phpunit_not_dead_code.php:167 PhanUnreferencedClass Possibly zero references to class \App5629\NotATest
 src/329_phpunit_not_dead_code.php:168 PhanUnreferencedPublicMethod Possibly zero references to public method \App5629\NotATest::testThing()
+src/329_phpunit_not_dead_code.php:189 PhanUnreferencedProtectedMethod Possibly zero references to protected method \App5629\AliasedTests5629::testNotPublic()

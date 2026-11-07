@@ -169,4 +169,90 @@ namespace App5629 {
             echo "not a test\n";
         }
     }
+
+    // The test case can rename a trait method or change its visibility: PHPUnit sees the name and the visibility of the copy,
+    // and the annotations and attributes of the trait's declaration.
+    trait AliasedTests5629 {
+        protected function helper(): void {
+            echo "aliased test\n";
+        }
+
+        #[Test]
+        protected function attributed(): void {
+            echo "aliased test\n";
+        }
+
+        protected function testProtected(): void {
+            echo "aliased test\n";
+        }
+
+        protected function testNotPublic(): void {
+            echo "not a test\n";
+        }
+
+        // `self` in a method of a trait is the class using the trait
+        #[DataProviderExternal(self::class, 'provideSelf')]
+        public function testSelf(int $x): void {
+            echo $x;
+        }
+    }
+
+    final class AliasedTestsTest extends TestCase {
+        use AliasedTests5629 {
+            helper as public testHelper;
+            attributed as public;
+            testProtected as public;
+        }
+
+        public static function provideSelf(): array {
+            return [[1]];
+        }
+    }
+
+    // Hooks and tests of a trait used through another trait
+    trait InnerHooks5629 {
+        #[Before]
+        protected function prepareInner(): void {
+            echo "prepare\n";
+        }
+
+        /** @after */
+        protected function cleanUpInner(): void {
+            echo "clean up\n";
+        }
+
+        #[Test]
+        protected function innerTest(): void {
+            echo "inner test\n";
+        }
+    }
+
+    trait OuterHooks5629 {
+        use InnerHooks5629;
+
+        public function testOuter(): void {
+            echo "outer test\n";
+        }
+    }
+
+    final class NestedHooksTest extends TestCase {
+        use OuterHooks5629 {
+            innerTest as public;
+        }
+    }
+
+    // `self` in a test inherited from a parent class is the parent class
+    abstract class BaseProvidersTest extends TestCase {
+        #[DataProviderExternal(self::class, 'provideBase')]
+        public function testBase(int $x): void {
+            echo $x;
+        }
+
+        public static function provideBase(): array {
+            return [[1]];
+        }
+    }
+
+    final class ChildProvidersTest extends BaseProvidersTest {
+    }
 }

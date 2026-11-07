@@ -114,7 +114,7 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
         foreach ($class->getMethodMap($code_base) as $method) {
             // The copy of a method imported from a trait has neither the attributes nor the doc comment of the trait's method.
             $declaring_method = $this->getDeclaringMethod($method);
-            if (static::isTestCase($declaring_method)) {
+            if (static::isTestCase($method, $declaring_method)) {
                 $method->addReference($context);
                 $this->markDataProvidersAsReferenced($class, $declaring_method);
             } elseif (static::isHookMethod($declaring_method)) {
@@ -140,7 +140,8 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * Marks all data provider methods as being referenced
      *
-     * @param Method $method the Method representing a unit test in a test case subclass
+     * @param Clazz $class the test case
+     * @param Method $method the declaration of a unit test of $class (the trait's method, for a test provided by a trait)
      */
     private function markDataProvidersAsReferenced(Clazz $class, Method $method): void
     {
@@ -161,7 +162,7 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
             } elseif (strcasecmp($attribute_name, self::DATA_PROVIDER_EXTERNAL_ATTRIBUTE) === 0) {
                 // #[DataProviderExternal(ProviderClass::class, 'providerName')]
                 $data_provider_name = self::getAttributeArgument($attribute, 1, 'methodName');
-                $data_provider_class = $this->getClassForAttributeArgument($method, self::getAttributeArgument($attribute, 0, 'className'));
+                $data_provider_class = $this->getClassForAttributeArgument($class, $method, self::getAttributeArgument($attribute, 0, 'className'));
                 if (is_string($data_provider_name) && $data_provider_class) {
                     $this->markMethodAsReferenced($data_provider_class, $data_provider_name);
                 }
@@ -170,9 +171,9 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * @return Method the method declaring $method: the trait's method for a copy imported from a trait
-     * (Method::createUseAlias() does not copy the attributes or the doc comment), the parent class's method
-     * for an inherited copy, or $method itself.
+     * @return Method the method declaring $method: the trait's method for a copy imported from a trait, directly
+     * or through other traits (Method::createUseAlias() does not copy the attributes or the doc comment),
+     * the parent class's method for an inherited copy, or $method itself.
      */
     private function getDeclaringMethod(Method $method): Method
     {
@@ -191,17 +192,25 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
+     * @param Clazz $class the test case
+     * @param Method $method the declaration of a unit test of $class, with the attribute
      * @param Node|string|int|float|null $argument an argument of an attribute, from getAttributeArgument()
      * @return ?Clazz the class named by `SomeClass::class` or by a class name string, if it is declared
      */
-    private function getClassForAttributeArgument(Method $method, Node|string|int|float|null $argument): ?Clazz
+    private function getClassForAttributeArgument(Clazz $class, Method $method, Node|string|int|float|null $argument): ?Clazz
     {
         try {
             if ($argument instanceof Node) {
                 if ($argument->kind !== \ast\AST_CLASS_NAME) {
                     return null;
                 }
-                $class_name = UnionTypeVisitor::unionTypeFromClassNode($this->code_base, $method->getContext(), $argument->children['class'])->__toString();
+                // The name is resolved with the namespace and the imports of the file declaring the method.
+                $context = $method->getContext();
+                if ($method->getClassFQSEN() !== $class->getFQSEN() && $method->getClass($this->code_base)->isTrait()) {
+                    // `self` in a method of a trait is the class using the trait.
+                    $context = $context->withScope($class->getInternalScope());
+                }
+                $class_name = UnionTypeVisitor::unionTypeFromClassNode($this->code_base, $context, $argument->children['class'])->__toString();
             } elseif (is_string($argument)) {
                 $class_name = '\\' . ltrim($argument, '\\');
             } else {
@@ -240,9 +249,12 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * @return bool true if $method is a PHPUnit test case
+     * @param Method $method a method of the test case
+     * @param Method $declaring_method the declaration of $method, from getDeclaringMethod()
+     * @return bool true if $method is a PHPUnit test case: PHPUnit sees the name and the visibility of the method
+     * in the test case (`use T { helper as public testThing; }`), and the annotations and attributes of its declaration.
      */
-    protected static function isTestCase(Method $method): bool
+    protected static function isTestCase(Method $method, Method $declaring_method): bool
     {
         if (!$method->isPublic()) {
             return false;
@@ -250,10 +262,10 @@ class PHPUnitNotDeadPluginVisitor extends PluginAwarePostAnalysisVisitor
         if (preg_match('@^test@i', $method->getName())) {
             return true;
         }
-        if (preg_match('/@test\b/', $method->getDocComment() ?? '')) {
+        if (preg_match('/@test\b/', $declaring_method->getDocComment() ?? '')) {
             return true;
         }
-        return self::hasAttribute($method, self::TEST_ATTRIBUTE);
+        return self::hasAttribute($declaring_method, self::TEST_ATTRIBUTE);
     }
 
     /**
