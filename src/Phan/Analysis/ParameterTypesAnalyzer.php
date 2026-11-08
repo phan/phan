@@ -1219,7 +1219,7 @@ class ParameterTypesAnalyzer
             $interface_type_option = $class->getInterfaceType($interface_fqsen);
             $types[] = $interface_type_option->isDefined() ? $interface_type_option->get() : $interface_fqsen->asType();
         }
-        $types_by_fqsen = [];
+        $ancestors = [];
         foreach ($types as $type) {
             if ($template_parameter_type_map) {
                 // The template types of $class in `@extends Parent<T>` are the types $class is instantiated with.
@@ -1229,21 +1229,26 @@ class ParameterTypesAnalyzer
                 }
             }
             $fqsen = FullyQualifiedClassName::fromType($type);
-            if ($fqsen === $ancestor_fqsen) {
+            if (!$code_base->hasClassWithFQSEN($fqsen)) {
+                continue;
+            }
+            // The class, also for a class alias (enable_class_alias_support) in `@extends Alias<int>`.
+            $ancestor_class = $code_base->getClassByFQSEN($fqsen);
+            if ($ancestor_class->getFQSEN() === $ancestor_fqsen) {
                 // Usually the parent class or an interface of $class itself.
                 return $type;
             }
-            $types_by_fqsen[(string)$fqsen] = [$type, $fqsen];
+            $ancestors[] = [$type, $ancestor_class];
         }
-        foreach ($types_by_fqsen as [$type, $fqsen]) {
+        foreach ($ancestors as [$type, $ancestor_class]) {
             $key = $type->__toString();
-            if (isset($visited[$key]) || !$code_base->hasClassWithFQSEN($fqsen)) {
+            if (isset($visited[$key])) {
                 continue;
             }
             $visited[$key] = true;
             $ancestor_type = self::getAncestorType(
                 $code_base,
-                $code_base->getClassByFQSEN($fqsen),
+                $ancestor_class,
                 $ancestor_fqsen,
                 $type->getTemplateParameterTypeMap($code_base),
                 $visited

@@ -332,3 +332,33 @@ function assignGeneric5958(CGenericPromotedSub5958 $c): int {
     '@phan-debug-var $v';
     return $v;
 }
+
+// The parent class named by its class alias (enable_class_alias_support) in @extends (review)
+/** @template T */
+class CGenericOriginal5958 {
+    /** @param T $value */
+    public function __construct($value) {
+        '@phan-debug-var $value';
+    }
+
+    /** @param T $value */
+    public function set($value): void {
+        '@phan-debug-var $value';
+    }
+}
+
+class_alias('CGenericOriginal5958', 'CGenericAlias5958');
+
+/** @extends CGenericAlias5958<int> */
+class CSubOfAlias5958 extends CGenericAlias5958 {
+    /** @inheritDoc */
+    public function __construct($value) {
+        parent::__construct($value);
+        '@phan-debug-var $value';
+    }
+
+    /** @param int $value */
+    public function set($value): void {
+        echo $value;
+    }
+}
