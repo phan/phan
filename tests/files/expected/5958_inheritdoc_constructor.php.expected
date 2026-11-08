@@ -19,3 +19,11 @@
 %s:97 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type (empty union type)
 %s:105 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type T
 %s:114 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type int
+%s:126 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type string
+%s:140 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type int
+%s:154 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type (empty union type)
+%s:165 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type string
+%s:173 PhanDebugAnnotation @phan-debug-var requested for variable $code - it has union type int
+%s:173 PhanDebugAnnotation @phan-debug-var requested for variable $message - it has union type string
+%s:185 PhanDebugAnnotation @phan-debug-var requested for variable $items - it has union type list<string>
+%s:190 PhanDebugAnnotation @phan-debug-var requested for variable $items - it has union type list<string>

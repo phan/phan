@@ -1174,15 +1174,13 @@ class ParameterTypesAnalyzer
      */
     private static function mapOverriddenMethodToClass(CodeBase $code_base, Clazz $class, Method $overridden_method): Method
     {
-        // First check if this is from a parent class
-        $type_option = $class->getParentTypeOption();
-
-        // If not from parent, check if this is from an interface with @implements annotation
-        if (!$type_option->isDefined()) {
-            $o_class = $overridden_method->getClass($code_base);
-            if ($o_class->isInterface()) {
-                $type_option = $class->getInterfaceType($o_class->getFQSEN());
-            }
+        $o_class = $overridden_method->getClass($code_base);
+        if ($o_class->isInterface()) {
+            // The method of an interface is mapped with the @implements annotation of that interface,
+            // not with the @extends annotation of the parent class, which binds the template types of another class.
+            $type_option = $class->getInterfaceType($o_class->getFQSEN());
+        } else {
+            $type_option = $class->getParentTypeOption();
         }
 
         if ($type_option->isDefined()) {

@@ -115,3 +115,80 @@ class CGenericSub5958 extends CGeneric5958 {
         '@phan-debug-var $value';
     }
 }
+
+interface ICtor5958 {
+    /** @param string $arg */
+    public function __construct($arg);
+}
+
+class CImplements5958 implements ICtor5958 {
+    /** @inheritDoc */
+    public function __construct($arg) {
+        '@phan-debug-var $arg';
+    }
+}
+
+/** @template T */
+interface IGenericCtor5958 {
+    /** @param T $value */
+    public function __construct($value);
+}
+
+/** @implements IGenericCtor5958<int> */
+class CImplementsGeneric5958 extends CNoConstructorParent5958 implements IGenericCtor5958 {
+    /** @inheritDoc */
+    public function __construct($value) {
+        '@phan-debug-var $value';
+    }
+}
+
+class CPrivateCtor5958 {
+    /** @param string $arg */
+    private function __construct($arg) {
+        echo $arg;
+    }
+}
+
+class CSubOfPrivateCtor5958 extends CPrivateCtor5958 {
+    /** @inheritDoc */
+    public function __construct($arg) {
+        '@phan-debug-var $arg';
+    }
+}
+
+class CMiddleNoCtor5958 extends CParent5958 {
+}
+
+class CGrandChild5958 extends CMiddleNoCtor5958 {
+    /** @inheritDoc */
+    public function __construct($arg) {
+        parent::__construct($arg);
+        '@phan-debug-var $arg';
+    }
+}
+
+class CException5958 extends Exception {
+    /** @inheritDoc */
+    public function __construct($message = '', $code = 0) {
+        parent::__construct($message, $code);
+        '@phan-debug-var $message';
+        '@phan-debug-var $code';
+    }
+}
+
+abstract class CAbstractCtor5958 {
+    /** @param list<string> $items */
+    abstract public function __construct($items);
+}
+
+class CSubOfAbstractCtor5958 extends CAbstractCtor5958 {
+    public function __construct(private $items) {
+        '@phan-debug-var $items';
+    }
+
+    public function show(): string {
+        $items = $this->items;
+        '@phan-debug-var $items';
+        return implode(',', $items);
+    }
+}
