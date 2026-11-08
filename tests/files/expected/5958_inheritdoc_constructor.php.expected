@@ -27,3 +27,14 @@
 %s:173 PhanDebugAnnotation @phan-debug-var requested for variable $message - it has union type string
 %s:185 PhanDebugAnnotation @phan-debug-var requested for variable $items - it has union type list<string>
 %s:190 PhanDebugAnnotation @phan-debug-var requested for variable $items - it has union type list<string>
+%s:200 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type int|string
+%s:200 PhanDebugAnnotation @phan-debug-var requested for variable $items - it has union type array|list<int>(real=array)
+%s:207 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type int|string
+%s:207 PhanDebugAnnotation @phan-debug-var requested for variable $items - it has union type list<int>(real=array)
+%s:225 PhanTypeMismatchPropertyProbablyReal Assigning new stdClass() of type \stdClass to property but \CSubPublicPromoted5958->arg is string (no real type) (the inferred real assigned type has nothing in common with the declared phpdoc property type)
+%s:226 PhanTypeMismatchProperty Assigning [1,2] of type array{0:1,1:2} to property but \CSubPublicPromoted5958->items is list<string>
+%s:238 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type U
+%s:244 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type \CGenericChild5958<42>(real=\CGenericChild5958<42>)
+%s:260 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type int
+%s:288 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int
+%s:300 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type string

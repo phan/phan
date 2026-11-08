@@ -192,3 +192,112 @@ class CSubOfAbstractCtor5958 extends CAbstractCtor5958 {
         return implode(',', $items);
     }
 }
+
+// The inline @var of a promoted property is an explicit phpdoc type (review)
+class CSubInlineVar5958 extends CParent5958 {
+    /** @inheritDoc */
+    public function __construct(/** @var int|string */ public $arg, /** @var list<int> */ public array $items = []) {
+        parent::__construct((string)$arg, array_map('strval', $items));
+        '@phan-debug-var $arg';
+        '@phan-debug-var $items';
+    }
+
+    public function show(): string {
+        $arg = $this->arg;
+        $items = $this->items;
+        '@phan-debug-var $arg';
+        '@phan-debug-var $items';
+        return $arg . implode(',', $items);
+    }
+}
+
+echo (new CSubInlineVar5958(42, [1]))->show();
+
+// The inherited type is also the declared type of the promoted property, for assignments (review)
+class CSubPublicPromoted5958 extends CParent5958 {
+    /** @inheritDoc */
+    public function __construct(public $arg, public array $items = []) {
+        parent::__construct($arg, $items);
+    }
+}
+
+function assign5958(CSubPublicPromoted5958 $c): void {
+    $c->arg = new stdClass();
+    $c->items = [1, 2];
+    $c->items = ['a'];
+}
+
+// The template types of the class are inherited before the generic constructor is analyzed (review)
+/**
+ * @template U
+ * @extends CGeneric5958<U>
+ */
+class CGenericChild5958 extends CGeneric5958 {
+    /** @inheritDoc */
+    public function __construct($value) {
+        parent::__construct($value);
+        '@phan-debug-var $value';
+    }
+}
+
+function generic5958(): CGenericChild5958 {
+    $c = new CGenericChild5958(42);
+    '@phan-debug-var $c';
+    return $c;
+}
+
+// The template types of an interface or a grandparent class are mapped through the parent class (review)
+/**
+ * @template T
+ * @implements IGenericCtor5958<T>
+ */
+abstract class CAbstractGenericImplements5958 implements IGenericCtor5958 {
+}
+
+/** @extends CAbstractGenericImplements5958<int> */
+class CSubOfGenericImplements5958 extends CAbstractGenericImplements5958 {
+    /** @inheritDoc */
+    public function __construct($value) {
+        '@phan-debug-var $value';
+    }
+}
+
+/** @template S */
+interface IGenericSet5958 {
+    /** @param S $x */
+    public function set($x): void;
+}
+
+/**
+ * @template T
+ * @implements IGenericSet5958<T>
+ */
+abstract class CGenericSetParent5958 implements IGenericSet5958 {
+}
+
+/** @extends CGenericSetParent5958<int> */
+class CGenericSetChild5958 extends CGenericSetParent5958 {
+    /** @param int $x */
+    public function set($x): void {
+        echo $x;
+    }
+}
+
+/** @extends CGenericSetParent5958<int> */
+class CGenericSetChildInherits5958 extends CGenericSetParent5958 {
+    public function set($x): void {
+        '@phan-debug-var $x';
+    }
+}
+
+/** @extends CGeneric5958<string> */
+class CGenericMiddle5958 extends CGeneric5958 {
+}
+
+class CGenericGrandChild5958 extends CGenericMiddle5958 {
+    /** @inheritDoc */
+    public function __construct($value) {
+        parent::__construct($value);
+        '@phan-debug-var $value';
+    }
+}

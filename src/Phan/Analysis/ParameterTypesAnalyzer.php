@@ -20,6 +20,7 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\Type;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StaticOrSelfType;
@@ -124,15 +125,19 @@ class ParameterTypesAnalyzer
         int $emit_only_checks
     ): void {
         if ($method instanceof Method) {
+            $generic_class = null;
             if ($method->getName() === '__construct') {
                 $class = $method->getClass($code_base);
                 if ($class->isGeneric()) {
                     $class->hydrate($code_base);
-                    // Call this to emit any warnings about missing template params
-                    $class->getGenericConstructorBuilder($code_base);
+                    $generic_class = $class;
                 }
             }
             self::analyzeOverrideSignature($code_base, $method, $emit_only_checks);
+            // Call this to emit any warnings about missing template params.
+            // After analyzeOverrideSignature(): the parameters of the constructor may have inherited the template types
+            // of the parent constructor's parameters with (at)inheritDoc (#5631).
+            $generic_class?->getGenericConstructorBuilder($code_base);
         }
 
         if ($emit_only_checks === EmitOnlyChecks::RUN) {
@@ -1169,26 +1174,73 @@ class ParameterTypesAnalyzer
         return $comment ? $comment->getParameterMap() : [];
     }
     /**
-     * @return Method $overridden_method with the template types of the ancestor class mapped to the types used by $class
-     * (`@extends Ancestor<string>`, or `@implements Ancestor<string>` for an interface), or $overridden_method itself.
+     * @return Method $overridden_method with the template types of its class mapped to the types $class instantiates them
+     * with (`@extends Ancestor<string>`, `@implements Ancestor<string>`, also through the parent classes of $class),
+     * or $overridden_method itself.
      */
     private static function mapOverriddenMethodToClass(CodeBase $code_base, Clazz $class, Method $overridden_method): Method
     {
-        $o_class = $overridden_method->getClass($code_base);
-        if ($o_class->isInterface()) {
-            // The method of an interface is mapped with the @implements annotation of that interface,
-            // not with the @extends annotation of the parent class, which binds the template types of another class.
-            $type_option = $class->getInterfaceType($o_class->getFQSEN());
-        } else {
-            $type_option = $class->getParentTypeOption();
-        }
-
-        if ($type_option->isDefined()) {
-            return $overridden_method->cloneWithTemplateParameterTypeMap(
-                $type_option->get()->getTemplateParameterTypeMap($code_base)
-            );
+        $ancestor_type = self::getAncestorType($code_base, $class, $overridden_method->getClassFQSEN(), [], 0);
+        if ($ancestor_type) {
+            return $overridden_method->cloneWithTemplateParameterTypeMap($ancestor_type->getTemplateParameterTypeMap($code_base));
         }
         return $overridden_method;
+    }
+
+    /**
+     * @param array<string,UnionType> $template_parameter_type_map the types the template types of $class are instantiated with
+     * @return ?Type the type of the ancestor $ancestor_fqsen of $class with the template parameter types it is instantiated with:
+     * `@extends Ancestor<string>` or `@implements Ancestor<string>` on $class, or on a parent class or interface of $class
+     * with the template types of that class mapped (`@extends Parent<string>` on $class and `@implements Ancestor<T>` on Parent).
+     * null if $ancestor_fqsen is not found among the ancestors of $class.
+     */
+    private static function getAncestorType(
+        CodeBase $code_base,
+        Clazz $class,
+        FullyQualifiedClassName $ancestor_fqsen,
+        array $template_parameter_type_map,
+        int $depth
+    ): ?Type {
+        if ($depth > 16) {
+            // Invalid code: a cycle in the class hierarchy.
+            return null;
+        }
+        $types = [];
+        $parent_type_option = $class->getParentTypeOption();
+        if ($parent_type_option->isDefined()) {
+            $types[] = $parent_type_option->get();
+        }
+        foreach ($class->getInterfaceFQSENList() as $interface_fqsen) {
+            $interface_type_option = $class->getInterfaceType($interface_fqsen);
+            $types[] = $interface_type_option->isDefined() ? $interface_type_option->get() : $interface_fqsen->asType();
+        }
+        foreach ($types as $type) {
+            if ($template_parameter_type_map) {
+                // The template types of $class in `@extends Parent<T>` are the types $class is instantiated with.
+                foreach ($type->withTemplateParameterTypeMap($template_parameter_type_map)->getTypeSet() as $mapped_type) {
+                    $type = $mapped_type;
+                    break;
+                }
+            }
+            $fqsen = FullyQualifiedClassName::fromType($type);
+            if ($fqsen === $ancestor_fqsen) {
+                return $type;
+            }
+            if (!$code_base->hasClassWithFQSEN($fqsen)) {
+                continue;
+            }
+            $ancestor_type = self::getAncestorType(
+                $code_base,
+                $code_base->getClassByFQSEN($fqsen),
+                $ancestor_fqsen,
+                $type->getTemplateParameterTypeMap($code_base),
+                $depth + 1
+            );
+            if ($ancestor_type) {
+                return $ancestor_type;
+            }
+        }
+        return null;
     }
 
     /**
@@ -1228,6 +1280,7 @@ class ParameterTypesAnalyzer
             }
         }
         $comment_parameter_map = null;
+        $inherited = false;
         foreach ($phpdoc_parameter_list as $i => $parameter) {
             $parameter_type = $parameter->getNonVariadicUnionType();
             $comment_parameter_map ??= self::extractCommentParameterMap($method);
@@ -1240,6 +1293,10 @@ class ParameterTypesAnalyzer
                     if (!$comment_parameter_type->isEmpty()) {
                         continue;
                     }
+                }
+                if ($parameter->getPhanFlagsHasState(Flags::HAS_PROMOTED_PROPERTY_PHPDOC_TYPE)) {
+                    // The inline (at)var of the promoted property (`/** (at)var int|string */ public $value`) is the phpdoc type of the parameter.
+                    continue;
                 }
             }
             // There is no phpdoc parameter for this type, or it was inferred from the signature/default value
@@ -1266,6 +1323,7 @@ class ParameterTypesAnalyzer
                     if ($parameter->getFlags() & Parameter::PARAM_MODIFIER_FLAGS) {
                         self::inheritPromotedPropertyType($code_base, $method, $parameter, $parent_parameter_type);
                     }
+                    $inherited = true;
                     continue;
                 }
             }
@@ -1277,9 +1335,14 @@ class ParameterTypesAnalyzer
             if ($phpdoc_return_type->isEmpty()) {
                 $method->setUnionType($parent_phpdoc_return_type);
                 self::maybeInheritConditionalReturnType($method, $overridden_method);
+                $inherited = true;
             } else {
                 self::maybeInheritCommentReturnType($code_base, $method, $overridden_method, $parent_phpdoc_return_type);
             }
+        }
+        if ($inherited) {
+            // The inherited types may contain the template types of the class (`@extends Parent<T>`).
+            $method->checkForTemplateTypes();
         }
     }
 
@@ -1298,7 +1361,10 @@ class ParameterTypesAnalyzer
         if (!$property->getPhanFlagsHasState(Flags::IS_PROMOTED_PROPERTY) || $property->getDefiningFQSEN() !== $property->getFQSEN()) {
             return;
         }
-        $property->setUnionType($parent_parameter_type->eraseRealTypeSetRecursively()->withRealTypeSet($property->getUnionType()->getRealTypeSet()));
+        $phpdoc_type = $parent_parameter_type->eraseRealTypeSetRecursively();
+        $property->setUnionType($phpdoc_type->withRealTypeSet($property->getUnionType()->getRealTypeSet()));
+        // Also the declared type, which the checks of assignments to the property compare with (like an (at)var).
+        $property->setPHPDocUnionType($phpdoc_type);
     }
 
     /**
