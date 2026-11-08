@@ -301,3 +301,34 @@ class CGenericGrandChild5958 extends CGenericMiddle5958 {
         '@phan-debug-var $value';
     }
 }
+
+// The copies of the promoted property inherited by subclasses get the type too (review)
+class CSubOfPublicPromoted5958 extends CSubPublicPromoted5958 {
+}
+
+function assignSub5958(CSubOfPublicPromoted5958 $c): void {
+    $c->arg = new stdClass();
+    $c->items = ['a'];
+}
+
+/**
+ * @template U
+ * @extends CGeneric5958<U>
+ */
+class CGenericPromoted5958 extends CGeneric5958 {
+    /** @inheritDoc */
+    public function __construct(public $value) {
+        parent::__construct($value);
+    }
+}
+
+/** @extends CGenericPromoted5958<int> */
+class CGenericPromotedSub5958 extends CGenericPromoted5958 {
+}
+
+function assignGeneric5958(CGenericPromotedSub5958 $c): int {
+    $c->value = 'x';
+    $v = $c->value;
+    '@phan-debug-var $v';
+    return $v;
+}

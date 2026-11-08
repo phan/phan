@@ -38,3 +38,6 @@
 %s:260 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type int
 %s:288 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int
 %s:300 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type string
+%s:310 PhanTypeMismatchPropertyProbablyReal Assigning new stdClass() of type \stdClass to property but \CSubOfPublicPromoted5958->arg is string (no real type) (the inferred real assigned type has nothing in common with the declared phpdoc property type)
+%s:330 PhanTypeMismatchPropertyProbablyReal Assigning 'x' of type string to property but \CGenericPromotedSub5958->value is int (no real type) (the inferred real assigned type has nothing in common with the declared phpdoc property type)
+%s:331 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type int

@@ -19,7 +19,9 @@ use Phan\Language\Element\Flags;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
+use Phan\Language\Element\Property;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Type;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\NullType;
@@ -1180,7 +1182,8 @@ class ParameterTypesAnalyzer
      */
     private static function mapOverriddenMethodToClass(CodeBase $code_base, Clazz $class, Method $overridden_method): Method
     {
-        $ancestor_type = self::getAncestorType($code_base, $class, $overridden_method->getClassFQSEN(), [], 0);
+        $visited = [];
+        $ancestor_type = self::getAncestorType($code_base, $class, $overridden_method->getClassFQSEN(), [], $visited);
         if ($ancestor_type) {
             return $overridden_method->cloneWithTemplateParameterTypeMap($ancestor_type->getTemplateParameterTypeMap($code_base));
         }
@@ -1189,6 +1192,8 @@ class ParameterTypesAnalyzer
 
     /**
      * @param array<string,UnionType> $template_parameter_type_map the types the template types of $class are instantiated with
+     * @param array<string,true> $visited the instantiated ancestor types already searched (`\I<int>`): the ancestors of an
+     * interface or class reached through several paths (a diamond) are searched once per instantiation, not once per path.
      * @return ?Type the type of the ancestor $ancestor_fqsen of $class with the template parameter types it is instantiated with:
      * `@extends Ancestor<string>` or `@implements Ancestor<string>` on $class, or on a parent class or interface of $class
      * with the template types of that class mapped (`@extends Parent<string>` on $class and `@implements Ancestor<T>` on Parent).
@@ -1199,10 +1204,10 @@ class ParameterTypesAnalyzer
         Clazz $class,
         FullyQualifiedClassName $ancestor_fqsen,
         array $template_parameter_type_map,
-        int $depth
+        array &$visited
     ): ?Type {
-        if ($depth > 16) {
-            // Invalid code: a cycle in the class hierarchy.
+        if (\count($visited) > 1000) {
+            // Invalid code: a cycle of generic class declarations instantiating each other.
             return null;
         }
         $types = [];
@@ -1214,6 +1219,7 @@ class ParameterTypesAnalyzer
             $interface_type_option = $class->getInterfaceType($interface_fqsen);
             $types[] = $interface_type_option->isDefined() ? $interface_type_option->get() : $interface_fqsen->asType();
         }
+        $types_by_fqsen = [];
         foreach ($types as $type) {
             if ($template_parameter_type_map) {
                 // The template types of $class in `@extends Parent<T>` are the types $class is instantiated with.
@@ -1224,17 +1230,23 @@ class ParameterTypesAnalyzer
             }
             $fqsen = FullyQualifiedClassName::fromType($type);
             if ($fqsen === $ancestor_fqsen) {
+                // Usually the parent class or an interface of $class itself.
                 return $type;
             }
-            if (!$code_base->hasClassWithFQSEN($fqsen)) {
+            $types_by_fqsen[(string)$fqsen] = [$type, $fqsen];
+        }
+        foreach ($types_by_fqsen as [$type, $fqsen]) {
+            $key = $type->__toString();
+            if (isset($visited[$key]) || !$code_base->hasClassWithFQSEN($fqsen)) {
                 continue;
             }
+            $visited[$key] = true;
             $ancestor_type = self::getAncestorType(
                 $code_base,
                 $code_base->getClassByFQSEN($fqsen),
                 $ancestor_fqsen,
                 $type->getTemplateParameterTypeMap($code_base),
-                $depth + 1
+                $visited
             );
             if ($ancestor_type) {
                 return $ancestor_type;
@@ -1280,6 +1292,7 @@ class ParameterTypesAnalyzer
             }
         }
         $comment_parameter_map = null;
+        $child_class_index = null;
         $inherited = false;
         foreach ($phpdoc_parameter_list as $i => $parameter) {
             $parameter_type = $parameter->getNonVariadicUnionType();
@@ -1321,7 +1334,7 @@ class ParameterTypesAnalyzer
                         ($parameter_type->isExclusivelyArray() || self::hasInheritDocAnnotation($method)))) {
                     $parameter->setUnionType($parent_parameter_type->eraseRealTypeSetRecursively()->withRealTypeSet($parameter_type->getRealTypeSet()));
                     if ($parameter->getFlags() & Parameter::PARAM_MODIFIER_FLAGS) {
-                        self::inheritPromotedPropertyType($code_base, $method, $parameter, $parent_parameter_type);
+                        self::inheritPromotedPropertyType($code_base, $method, $parameter, $parent_parameter_type, $child_class_index);
                     }
                     $inherited = true;
                     continue;
@@ -1349,19 +1362,67 @@ class ParameterTypesAnalyzer
     /**
      * The promoted property declared by $parameter, which inherited the phpdoc type $parent_parameter_type of the
      * overridden method's parameter, has no type of its own either: it gets the same phpdoc type.
+     * So do the copies of the property in the descendants of the class, which inherited it before (Clazz::addProperty()).
+     *
+     * @param ?array<string,list<FullyQualifiedClassName>> $child_class_index CodeBase::getDirectChildClassIndex(), built on demand
      */
-    private static function inheritPromotedPropertyType(CodeBase $code_base, Method $method, Parameter $parameter, UnionType $parent_parameter_type): void
-    {
+    private static function inheritPromotedPropertyType(
+        CodeBase $code_base,
+        Method $method,
+        Parameter $parameter,
+        UnionType $parent_parameter_type,
+        ?array &$child_class_index
+    ): void {
         $class = $method->getClass($code_base);
         $name = $parameter->getName();
         if (!$class->hasPropertyWithName($code_base, $name)) {
             return;
         }
         $property = $class->getPropertyByName($code_base, $name);
-        if (!$property->getPhanFlagsHasState(Flags::IS_PROMOTED_PROPERTY) || $property->getDefiningFQSEN() !== $property->getFQSEN()) {
+        $property_fqsen = $property->getFQSEN();
+        if (!$property->getPhanFlagsHasState(Flags::IS_PROMOTED_PROPERTY) || $property->getDefiningFQSEN() !== $property_fqsen) {
             return;
         }
         $phpdoc_type = $parent_parameter_type->eraseRealTypeSetRecursively();
+        self::setInheritedPropertyType($property, $phpdoc_type);
+
+        $child_class_index ??= $code_base->getDirectChildClassIndex();
+        $class_fqsen = $class->getFQSEN();
+        $queue = [$class_fqsen];
+        $visited = [];
+        while (($fqsen = \array_pop($queue)) !== null) {
+            foreach ($child_class_index[$fqsen->__toString()] ?? [] as $child_fqsen) {
+                $child_fqsen_string = $child_fqsen->__toString();
+                if (isset($visited[$child_fqsen_string])) {
+                    continue;
+                }
+                $visited[$child_fqsen_string] = true;
+                $queue[] = $child_fqsen;
+                $copy_fqsen = FullyQualifiedPropertyName::make($child_fqsen, $name);
+                if (!$code_base->hasPropertyWithFQSEN($copy_fqsen)) {
+                    continue;
+                }
+                $copy = $code_base->getPropertyByFQSEN($copy_fqsen);
+                if ($copy->getDefiningFQSEN() !== $property_fqsen) {
+                    // The descendant redeclares the property.
+                    continue;
+                }
+                $copy_type = $phpdoc_type;
+                if ($copy_type->hasTemplateTypeRecursive() && $code_base->hasClassWithFQSEN($child_fqsen)) {
+                    // The copy has the template types of the class mapped (`@extends C<int>` on the descendant).
+                    $ancestor_visited = [];
+                    $ancestor_type = self::getAncestorType($code_base, $code_base->getClassByFQSEN($child_fqsen), $class_fqsen, [], $ancestor_visited);
+                    if ($ancestor_type) {
+                        $copy_type = $copy_type->withTemplateParameterTypeMap($ancestor_type->getTemplateParameterTypeMap($code_base));
+                    }
+                }
+                self::setInheritedPropertyType($copy, $copy_type);
+            }
+        }
+    }
+
+    private static function setInheritedPropertyType(Property $property, UnionType $phpdoc_type): void
+    {
         $property->setUnionType($phpdoc_type->withRealTypeSet($property->getUnionType()->getRealTypeSet()));
         // Also the declared type, which the checks of assignments to the property compare with (like an (at)var).
         $property->setPHPDocUnionType($phpdoc_type);
