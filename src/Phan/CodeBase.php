@@ -125,6 +125,12 @@ class CodeBase
     private $fqsen_alias_map;
 
     /**
+     * @var ?array<string,list<FullyQualifiedClassName>>
+     * The result of getDirectChildClassIndex(), until a class or a class alias is added or removed
+     */
+    private $direct_child_class_index = null;
+
+    /**
      * @var Map<FullyQualifiedGlobalConstantName,GlobalConstant>
      * A map from FQSEN to a global constant
      */
@@ -831,6 +837,7 @@ class CodeBase
 
         $this->fqsen_class_map_user_defined =
             new Map();
+        $this->direct_child_class_index = null;
 
         $this->fqsen_class_map_internal =
             new Map();
@@ -1010,11 +1017,13 @@ class CodeBase
         $this->recordClassFQSEN($fqsen);
         $this->fqsen_class_map->offsetSet($fqsen, $class);
         $this->fqsen_class_map_user_defined->offsetSet($fqsen, $class);
+        $this->direct_child_class_index = null;
         if ($this->undo_tracker) {
             $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($fqsen): void {
                 Daemon::debugf("Undoing addClass %s\n", $fqsen);
                 $inner->fqsen_class_map->offsetUnset($fqsen);
                 $inner->fqsen_class_map_user_defined->offsetUnset($fqsen);
+                $inner->direct_child_class_index = null;
                 // unset($inner->fqsen_class_map_reflection[$fqsen]);  // should not be necessary
                 $inner->class_fqsen_class_map_map->offsetUnset($fqsen);
             });
@@ -1143,6 +1152,7 @@ class CodeBase
         }
         $alias_record = new ClassAliasRecord($alias, $context, $lineno);
         $this->fqsen_alias_map->offsetGet($original)->offsetSet($alias_record);
+        $this->direct_child_class_index = null;
 
         if ($this->undo_tracker) {
             // TODO: Track a count of aliases instead? This doesn't work in daemon mode if multiple files add the same alias to the same class.
@@ -1156,6 +1166,7 @@ class CodeBase
                         unset($inner->fqsen_alias_map[$original]);
                     }
                 }
+                $inner->direct_child_class_index = null;
             });
         }
     }
@@ -1226,6 +1237,7 @@ class CodeBase
             } else {
                 $this->recordClassFQSEN($alias_fqsen);
                 $this->fqsen_class_map->offsetSet($alias_fqsen, $class);
+                $this->direct_child_class_index = null;
             }
         }
     }
@@ -1687,8 +1699,18 @@ class CodeBase
      * @return array<string,list<FullyQualifiedClassName>>
      * For each class, interface or trait (by FQSEN string; internal ones such as `\ArrayObject` can be keys),
      * the user-defined classes that directly extend, implement, use or `@mixin` it.
+     * The index is built once, and again after a class or a class alias is added or removed.
      */
     public function getDirectChildClassIndex(): array
+    {
+        return $this->direct_child_class_index ??= $this->computeDirectChildClassIndex();
+    }
+
+    /**
+     * @return array<string,list<FullyQualifiedClassName>>
+     * @see getDirectChildClassIndex()
+     */
+    private function computeDirectChildClassIndex(): array
     {
         $index = [];
         foreach ($this->fqsen_class_map_user_defined as $class) {

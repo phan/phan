@@ -575,6 +575,8 @@ class ParseVisitor extends ScopeVisitor
             $parameter->setUnionType(
                 $property_variable_comment->getUnionType()->withRealTypeSet($parameter_union_type->getRealTypeSet())
             );
+            // An explicit phpdoc type of the parameter, like an (at)param (see ParameterTypesAnalyzer::inheritPHPDoc())
+            $parameter->enablePhanFlagBits(Flags::HAS_PROMOTED_PROPERTY_PHPDOC_TYPE);
         } elseif ($variable_comment && !$variable_comment->getUnionType()->isEmpty()) {
             $parameter->setUnionType(
                 $variable_comment->getUnionType()->withRealTypeSet($parameter_union_type->getRealTypeSet())

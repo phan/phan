@@ -41,6 +41,8 @@ class Flags
     public const IS_OVERRIDE_INTENDED         = (1 << 16);
 
     public const IS_PARAM_USING_NULLABLE_SYNTAX = (1 << 17);
+    // For parameters: the phpdoc type of the parameter is the inline (at)var of the promoted property it declares
+    public const HAS_PROMOTED_PROPERTY_PHPDOC_TYPE = (1 << 18);
 
     // For dead code detection
     public const WAS_PROPERTY_READ = (1 << 18);

@@ -549,6 +549,11 @@ Set to true to enable.
 If enabled, inherit any missing phpdoc for types from
 the parent method if none is provided.
 
+A constructor does not have to be compatible with the constructor
+of the parent class, so it only inherits the phpdoc types of the
+parameters with the same name, and only when it has an `@inheritDoc`
+annotation.
+
 NOTE: This step will only be performed if [`analyze_signature_compatibility`](#analyze_signature_compatibility) is also enabled.
 
 (Default: `true`)

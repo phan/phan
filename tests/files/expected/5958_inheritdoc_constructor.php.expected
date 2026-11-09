@@ -1,0 +1,48 @@
+%s:10 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type string
+%s:10 PhanDebugAnnotation @phan-debug-var requested for variable $items - it has union type list<string>(real=array)
+%s:19 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type string
+%s:19 PhanDebugAnnotation @phan-debug-var requested for variable $items - it has union type list<string>(real=array)
+%s:27 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type (empty union type)
+%s:27 PhanDebugAnnotation @phan-debug-var requested for variable $items - it has union type array(real=array)
+%s:36 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type string
+%s:36 PhanDebugAnnotation @phan-debug-var requested for variable $extra - it has union type (empty union type)
+%s:36 PhanDebugAnnotation @phan-debug-var requested for variable $items - it has union type list<string>
+%s:49 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type int|string
+%s:49 PhanDebugAnnotation @phan-debug-var requested for variable $items - it has union type int(real=int)
+%s:58 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type string
+%s:64 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type string
+%s:64 PhanDebugAnnotation @phan-debug-var requested for variable $items - it has union type list<string>(real=array)
+%s:73 PhanCommentInheritDocOnNonOverrideMethod Saw an @inheritDoc annotation for method \CNoParent5958::__construct, but could not find an overridden method and it is not a magic method
+%s:73 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type (empty union type)
+%s:83 PhanCommentInheritDocOnNonOverrideMethod Saw an @inheritDoc annotation for method \CSubOfNoConstructor5958::__construct, but could not find an overridden method and it is not a magic method
+%s:83 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type (empty union type)
+%s:97 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type (empty union type)
+%s:105 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type T
+%s:114 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type int
+%s:126 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type string
+%s:140 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type int
+%s:154 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type (empty union type)
+%s:165 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type string
+%s:173 PhanDebugAnnotation @phan-debug-var requested for variable $code - it has union type int
+%s:173 PhanDebugAnnotation @phan-debug-var requested for variable $message - it has union type string
+%s:185 PhanDebugAnnotation @phan-debug-var requested for variable $items - it has union type list<string>
+%s:190 PhanDebugAnnotation @phan-debug-var requested for variable $items - it has union type list<string>
+%s:200 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type int|string
+%s:200 PhanDebugAnnotation @phan-debug-var requested for variable $items - it has union type array|list<int>(real=array)
+%s:207 PhanDebugAnnotation @phan-debug-var requested for variable $arg - it has union type int|string
+%s:207 PhanDebugAnnotation @phan-debug-var requested for variable $items - it has union type list<int>(real=array)
+%s:225 PhanTypeMismatchPropertyProbablyReal Assigning new stdClass() of type \stdClass to property but \CSubPublicPromoted5958->arg is string (no real type) (the inferred real assigned type has nothing in common with the declared phpdoc property type)
+%s:226 PhanTypeMismatchProperty Assigning [1,2] of type array{0:1,1:2} to property but \CSubPublicPromoted5958->items is list<string>
+%s:238 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type U
+%s:244 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type \CGenericChild5958<42>(real=\CGenericChild5958<42>)
+%s:260 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type int
+%s:288 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int
+%s:300 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type string
+%s:310 PhanTypeMismatchPropertyProbablyReal Assigning new stdClass() of type \stdClass to property but \CSubOfPublicPromoted5958->arg is string (no real type) (the inferred real assigned type has nothing in common with the declared phpdoc property type)
+%s:330 PhanTypeMismatchPropertyProbablyReal Assigning 'x' of type string to property but \CGenericPromotedSub5958->value is int (no real type) (the inferred real assigned type has nothing in common with the declared phpdoc property type)
+%s:331 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type int
+%s:340 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type T
+%s:345 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type T
+%s:356 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type int
+%s:378 PhanCommentInheritDocOnNonOverrideMethod Saw an @inheritDoc annotation for method \CSubOfAttributeNoCtor5958::__construct, but could not find an overridden method and it is not a magic method
+%s:378 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type (empty union type)
