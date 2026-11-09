@@ -362,3 +362,20 @@ class CSubOfAlias5958 extends CGenericAlias5958 {
         echo $value;
     }
 }
+
+// The placeholder constructor Phan creates for a class without one (here, when the arguments of the attribute are
+// analyzed before the subclass) is not inherited from, and does not make the subclass constructor an override (review)
+#[Attribute]
+class CAttributeNoCtor5958 {}
+
+class CUsesAttribute5958 {
+    #[CAttributeNoCtor5958]
+    public function foo(): void {}
+}
+
+class CSubOfAttributeNoCtor5958 extends CAttributeNoCtor5958 {
+    /** @inheritDoc */
+    public function __construct($value) {
+        '@phan-debug-var $value';
+    }
+}

@@ -9,6 +9,7 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\Method;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Library\FileCache;
 use Phan\Output\Collector\BufferingCollector;
@@ -189,5 +190,32 @@ PHP;
         // so the copy a subclass inherits from that class is not an unspecialized copy either.
         $this->assertStringContainsString('callable', (string)self::method($code_base, '\GUser5950::gt')->getParameterList()[0]->getUnionType());
         $this->assertFalse($code_base->isInheritedCopyWithSameSignature(self::method($code_base, '\GChild5950::gt')));
+    }
+
+    public function testDirectChildClassIndexIsResetWhenAClassIsAdded(): void
+    {
+        $code_base = self::makeCodeBase();
+        $index = $code_base->getDirectChildClassIndex();
+        $this->assertSame($index, $code_base->getDirectChildClassIndex());
+        $this->assertNotContains('\Added5950', self::classFQSENStrings($index['\Base5950']));
+
+        $code = '<?php class Added5950 extends Base5950 {}';
+        FileCache::addEntry('5950_added.php', $code);
+        FileCache::addEntry(Config::projectPath('5950_added.php'), $code);
+        Analysis::parseNodeInContext(
+            $code_base,
+            (new Context())->withFile('5950_added.php'),
+            \ast\parse_code($code, Config::AST_VERSION)
+        );
+        $this->assertContains('\Added5950', self::classFQSENStrings($code_base->getDirectChildClassIndex()['\Base5950']));
+    }
+
+    /**
+     * @param list<FullyQualifiedClassName> $fqsens
+     * @return list<string>
+     */
+    private static function classFQSENStrings(array $fqsens): array
+    {
+        return \array_map(static fn (FullyQualifiedClassName $fqsen): string => $fqsen->__toString(), $fqsens);
     }
 }

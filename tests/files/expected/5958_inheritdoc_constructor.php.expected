@@ -44,3 +44,5 @@
 %s:340 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type T
 %s:345 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type T
 %s:356 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type int
+%s:378 PhanCommentInheritDocOnNonOverrideMethod Saw an @inheritDoc annotation for method \CSubOfAttributeNoCtor5958::__construct, but could not find an overridden method and it is not a magic method
+%s:378 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type (empty union type)

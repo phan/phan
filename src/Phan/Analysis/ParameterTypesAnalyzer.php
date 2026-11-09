@@ -457,13 +457,7 @@ class ParameterTypesAnalyzer
         $is_actually_override = $method->isOverride();
 
         if (!$is_actually_override) {
-            if ($emit_only_checks === EmitOnlyChecks::RUN) {
-                self::checkNonOverrideComments($code_base, $method, $class);
-            } elseif ($emit_only_checks === EmitOnlyChecks::VERIFY) {
-                EmitOnlyChecks::verify($method, 'ParameterTypesAnalyzer::checkNonOverrideComments()', static function () use ($code_base, $method, $class): void {
-                    self::checkNonOverrideComments($code_base, $method, $class);
-                });
-            }
+            self::checkNonOverrideCommentsForMode($code_base, $method, $class, $emit_only_checks);
             // For internal methods, check if they implement interface methods that are marked as pure
             // This is a heuristic for dead-code detection: if an interface method is pure,
             // the internal implementation is likely pure as well (issue #3864)
@@ -493,6 +487,20 @@ class ParameterTypesAnalyzer
             );
             return;
         }
+        if ($method->isNewConstructor()) {
+            // Clazz::getMethodByName() creates a placeholder constructor for a class without one when something asks for it
+            // (the arguments of an attribute, the constructor of a generic class). It is not a declaration to inherit the
+            // phpdoc types from: its union type is the class type, for `new`. A constructor that only overrides placeholders
+            // overrides nothing (#5631).
+            $overridden_method_list = \array_values(\array_filter(
+                $overridden_method_list,
+                static fn (Method $overridden_method): bool => !$overridden_method->isFakeConstructor()
+            ));
+            if (!$overridden_method_list) {
+                self::checkNonOverrideCommentsForMode($code_base, $method, $class, $emit_only_checks);
+                return;
+            }
+        }
         $processed_class_override = false;
         foreach ($overridden_method_list as $overridden_method) {
             $overridden_class = $overridden_method->getClass($code_base);
@@ -512,6 +520,21 @@ class ParameterTypesAnalyzer
                 }
             }
             self::analyzeOverrideSignatureForOverriddenMethod($code_base, $method, $class, $overridden_method);
+        }
+    }
+
+    /**
+     * checkNonOverrideComments() in the mode $emit_only_checks: run it, verify that it would emit nothing, or skip it
+     * (see EmitOnlyChecks)
+     */
+    private static function checkNonOverrideCommentsForMode(CodeBase $code_base, Method $method, Clazz $class, int $emit_only_checks): void
+    {
+        if ($emit_only_checks === EmitOnlyChecks::RUN) {
+            self::checkNonOverrideComments($code_base, $method, $class);
+        } elseif ($emit_only_checks === EmitOnlyChecks::VERIFY) {
+            EmitOnlyChecks::verify($method, 'ParameterTypesAnalyzer::checkNonOverrideComments()', static function () use ($code_base, $method, $class): void {
+                self::checkNonOverrideComments($code_base, $method, $class);
+            });
         }
     }
 
@@ -1178,14 +1201,17 @@ class ParameterTypesAnalyzer
     /**
      * @return Method $overridden_method with the template types of its class mapped to the types $class instantiates them
      * with (`@extends Ancestor<string>`, `@implements Ancestor<string>`, also through the parent classes of $class),
-     * or $overridden_method itself.
+     * or $overridden_method itself when there are no template types to map.
      */
     private static function mapOverriddenMethodToClass(CodeBase $code_base, Clazz $class, Method $overridden_method): Method
     {
         $visited = [];
         $ancestor_type = self::getAncestorType($code_base, $class, $overridden_method->getClassFQSEN(), [], $visited);
         if ($ancestor_type) {
-            return $overridden_method->cloneWithTemplateParameterTypeMap($ancestor_type->getTemplateParameterTypeMap($code_base));
+            $template_parameter_type_map = $ancestor_type->getTemplateParameterTypeMap($code_base);
+            if ($template_parameter_type_map) {
+                return $overridden_method->cloneWithTemplateParameterTypeMap($template_parameter_type_map);
+            }
         }
         return $overridden_method;
     }
@@ -1298,6 +1324,7 @@ class ParameterTypesAnalyzer
         }
         $comment_parameter_map = null;
         $child_class_index = null;
+        $has_inherit_doc = null;
         $inherited = false;
         foreach ($phpdoc_parameter_list as $i => $parameter) {
             $parameter_type = $parameter->getNonVariadicUnionType();
@@ -1336,7 +1363,7 @@ class ParameterTypesAnalyzer
                 if ($parameter_type->isEmpty() ||
                         $type_is_exclusively_from_default ||
                         ($parent_parameter_type->isExclusivelyNarrowedFormOf($code_base, $parameter_type) &&
-                        ($parameter_type->isExclusivelyArray() || self::hasInheritDocAnnotation($method)))) {
+                        ($parameter_type->isExclusivelyArray() || ($has_inherit_doc ??= self::hasInheritDocAnnotation($method))))) {
                     $parameter->setUnionType($parent_parameter_type->eraseRealTypeSetRecursively()->withRealTypeSet($parameter_type->getRealTypeSet()));
                     if ($parameter->getFlags() & Parameter::PARAM_MODIFIER_FLAGS) {
                         self::inheritPromotedPropertyType($code_base, $method, $parameter, $parent_parameter_type, $child_class_index);
