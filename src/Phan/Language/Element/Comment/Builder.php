@@ -682,14 +682,8 @@ final class Builder
         if (!$this->checkCompatible('@' . $annotation_name, [Comment::ON_CLASS], $i)) {
             return;
         }
-        if (\preg_match('/@(phan-)?mixin\s+(\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)\b/', $line, $matches)) {
-            $type_string = $matches[2];
-            $type = Type::fromStringInContext(
-                $type_string,
-                $this->context,
-                Type::FROM_PHPDOC,
-                $this->code_base
-            );
+        $type = $this->typeFromCommentLine($line);
+        if ($type) {
             // TODO: Warn about invalid mixins
             if ($type->isObjectWithKnownFQSEN()) {
                 $this->phan_overrides['mixin'][] = $type;
@@ -871,7 +865,7 @@ final class Builder
         }
         // Make sure support for generic types is enabled
         if (Config::getValue('generic_types_enabled')) {
-            $type = $this->implementsFromCommentLine($line);
+            $type = $this->typeFromCommentLine($line);
             if ($type !== null) {
                 $this->implemented_types[] = $type;
             }
@@ -885,7 +879,7 @@ final class Builder
         }
         // Make sure support for generic types is enabled
         if (Config::getValue('generic_types_enabled')) {
-            $type = $this->implementsFromCommentLine($line);
+            $type = $this->typeFromCommentLine($line);
             if ($type !== null) {
                 $this->phan_overrides['implements'][] = $type;
             }
@@ -899,7 +893,7 @@ final class Builder
         }
         // Make sure support for generic types is enabled
         if (Config::getValue('generic_types_enabled')) {
-            $type = $this->useFromCommentLine($line);
+            $type = $this->typeFromCommentLine($line);
             if ($type !== null) {
                 $this->used_trait_types[] = $type;
             }
@@ -911,7 +905,7 @@ final class Builder
         if (!$this->checkCompatible('@require-extends', [Comment::ON_CLASS], $i)) {
             return;
         }
-        $type = $this->requireFromCommentLine($line, 'require-extends');
+        $type = $this->typeFromCommentLine($line);
         if ($type !== null) {
             $this->required_extends_types[] = $type;
         }
@@ -922,7 +916,7 @@ final class Builder
         if (!$this->checkCompatible('@require-implements', [Comment::ON_CLASS], $i)) {
             return;
         }
-        $type = $this->requireFromCommentLine($line, 'require-implements');
+        $type = $this->typeFromCommentLine($line);
         if ($type !== null) {
             $this->required_implements_types[] = $type;
         }
@@ -935,7 +929,7 @@ final class Builder
         }
         // Make sure support for generic types is enabled
         if (Config::getValue('generic_types_enabled')) {
-            $type = $this->useFromCommentLine($line);
+            $type = $this->typeFromCommentLine($line);
             if ($type !== null) {
                 $this->phan_overrides['use'][] = $type;
             }
@@ -970,13 +964,18 @@ final class Builder
         return new Assertion($union_type, $param_name, $assertion_type);
     }
 
-    private function requireFromCommentLine(string $line, string $tag): ?Type
+    /**
+     * @param string $line
+     * An individual line of a comment, starting with a '@' tag, assumed to have been validated already
+     *
+     * @return ?Type
+     * A type documented on this line, or null if not found
+     */
+    private function typeFromCommentLine(string $line): ?Type
     {
-        $pattern = '/@(?:psalm-)?' . \preg_quote($tag, '/') . '\s+(' . Type::type_regex . ')/';
-        if (\preg_match($pattern, $line, $match)) {
-            $type_string = $match[1];
+        if (\preg_match('/@[\w-]+\s+(' . Type::type_regex . ')/', $line, $match)) {
             return Type::fromStringInContext(
-                $type_string,
+                $match[1],
                 $this->context,
                 Type::FROM_PHPDOC,
                 $this->code_base
@@ -1495,71 +1494,11 @@ final class Builder
     private function inheritsFromCommentLine(
         string $line
     ): Option {
-        $match = [];
-        if (\preg_match('/@(?:phan-)?(?:inherits|extends)\s+(' . Type::type_regex . ')/', $line, $match)) {
-            $type_string = $match[1];
-
-            $type = new Some(Type::fromStringInContext(
-                $type_string,
-                $this->context,
-                Type::FROM_PHPDOC,
-                $this->code_base
-            ));
-
-            return $type;
+        $type = $this->typeFromCommentLine($line);
+        if ($type) {
+            return new Some($type);
         }
-
         return None::instance();
-    }
-
-    /**
-     * @param string $line
-     * An individual line of a comment
-     *
-     * @return ?Type
-     * A type for an implemented interface with template parameters, or null if not found
-     */
-    private function implementsFromCommentLine(
-        string $line
-    ): ?Type {
-        $match = [];
-        if (\preg_match('/@(?:phan-)?implements\s+(' . Type::type_regex . ')/', $line, $match)) {
-            $type_string = $match[1];
-
-            return Type::fromStringInContext(
-                $type_string,
-                $this->context,
-                Type::FROM_PHPDOC,
-                $this->code_base
-            );
-        }
-
-        return null;
-    }
-
-    /**
-     * @param string $line
-     * An individual line of a comment
-     *
-     * @return ?Type
-     * A type for a used trait with template parameters, or null if not found
-     */
-    private function useFromCommentLine(
-        string $line
-    ): ?Type {
-        $match = [];
-        if (\preg_match('/@(?:phan-)?use\s+(' . Type::type_regex . ')/', $line, $match)) {
-            $type_string = $match[1];
-
-            return Type::fromStringInContext(
-                $type_string,
-                $this->context,
-                Type::FROM_PHPDOC,
-                $this->code_base
-            );
-        }
-
-        return null;
     }
 
     /**
@@ -1871,24 +1810,15 @@ final class Builder
         string $line,
         int $comment_line_offset
     ): Option {
-        $closure_scope_union_type_string = '';
-
         // https://secure.php.net/manual/en/closure.bindto.php
         // There wasn't anything in the phpdoc standard to indicate the class to which
         // a Closure would be bound with bind() or bindTo(), so using a custom tag.
         //
         // TODO: Also add a version which forbids using $this in the closure?
-        if (\preg_match('/@(PhanClosureScope|phan-closure-scope)\s+(' . Type::type_regex . ')/', $line, $match)) {
-            $closure_scope_union_type_string = $match[2];
-        }
 
-        if ($closure_scope_union_type_string !== '') {
-            return new Some(Type::fromStringInContext(
-                $closure_scope_union_type_string,
-                $this->context,
-                Type::FROM_PHPDOC,
-                $this->code_base
-            ));
+        $type = $this->typeFromCommentLine($line);
+        if ($type !== null) {
+            return new Some($type);
         }
         $this->emitIssue(
             Issue::UnextractableAnnotation,
