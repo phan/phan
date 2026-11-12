@@ -2951,7 +2951,13 @@ class Clazz extends AddressableElement
         $this->importParentClass($code_base);
 
         foreach ($this->mixin_types as $type) {
-            $this->importMixin($code_base, $type);
+            $this->importMixin($code_base, FullyQualifiedClassName::fromType($type));
+        }
+        foreach ($this->required_extends_fqsen_list as $fqsen) {
+            $this->importMixin($code_base, $fqsen, false);
+        }
+        foreach ($this->required_implements_fqsen_list as $fqsen) {
+            $this->importMixin($code_base, $fqsen, false);
         }
     }
 
@@ -2974,17 +2980,18 @@ class Clazz extends AddressableElement
     /**
      * Import all methods of the other type as magic methods.
      */
-    private function importMixin(CodeBase $code_base, Type $type): void
+    private function importMixin(CodeBase $code_base, FullyQualifiedClassName $fqsen, bool $mixin = true): void
     {
-        $fqsen = FullyQualifiedClassName::fromType($type);
         if (!$code_base->hasClassWithFQSEN($fqsen) || $fqsen === $this->fqsen) {
-            Issue::maybeEmit(
-                $code_base,
-                $this->internal_context,
-                Issue::InvalidMixin,
-                $this->internal_context->getLineNumberStart(),
-                $type
-            );
+            if ($mixin) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $this->internal_context,
+                    Issue::InvalidMixin,
+                    $this->internal_context->getLineNumberStart(),
+                    (string)$fqsen
+                );
+            }
             return;
         }
         $class = $code_base->getClassByFQSEN($fqsen);
@@ -2993,24 +3000,33 @@ class Clazz extends AddressableElement
             // asPHPDocMethod() shares the parameters of the copy.
             // @phan-suppress-next-line PhanAccessMethodInternal
             $method = $entry instanceof Method ? $entry : $entry->registry->templateOf($entry, (string)$name);
-            if ($method->isMagic() || !$method->isPublic()) {
-                // Skip __invoke, and private/protected methods
-                continue;
+            if ($mixin) {
+                if ($method->isMagic() || !$method->isPublic()) {
+                    // Skip __invoke, and private/protected methods
+                    continue;
+                }
             }
             if ($this->hasMethodWithName($code_base, $name, true)) {
                 continue;
             }
             if ($entry instanceof InheritedMethodLink) {
                 // @phan-suppress-next-line PhanAccessMethodInternal
-                $method = $entry->registry->materialize($entry->class_map, (string)$name, $entry, 'mixin');
+                $method = $entry->registry->materialize($entry->class_map, (string)$name, $entry, $mixin ? 'mixin' : 'require');
             }
             // Treat it as if all of the methods were added, with their real and phpdoc union types.
-            $this->addMethod($code_base, $method->asPHPDocMethod($this), None::instance());
+            if ($mixin) {
+                $method = $method->asPHPDocMethod($this);
+            } else {
+                $method->setPhanFlags($method->getPhanFlags() | Flags::IS_FROM_REQUIRE_ANNOTATION);
+            }
+            $this->addMethod($code_base, $method, None::instance());
         }
         foreach ($class->getPropertyMap($code_base) as $name => $property) {
-            if (!$property->isPublic() || $property->isStatic()) {
-                // Skip private/protected/static properties. There's no __getStatic().
-                continue;
+            if ($mixin) {
+                if (!$property->isPublic() || $property->isStatic()) {
+                    // Skip private/protected/static properties. There's no __getStatic().
+                    continue;
+                }
             }
             if ($property->isDynamicProperty()) {
                 continue;
@@ -3022,7 +3038,11 @@ class Clazz extends AddressableElement
             // TODO: Finalize behavior for edge cases such as `static` and templates in union types
             $new_property = clone($property);
             $new_property->setFQSEN(FullyQualifiedPropertyName::make($this->fqsen, $name));
-            $new_property->setPhanFlags($new_property->getPhanFlags() | Flags::IS_FROM_PHPDOC);
+            if ($mixin) {
+                $new_property->setPhanFlags($new_property->getPhanFlags() | Flags::IS_FROM_PHPDOC);
+            } else {
+                $new_property->setPhanFlags($new_property->getPhanFlags() | Flags::IS_FROM_REQUIRE_ANNOTATION);
+            }
             $this->addProperty($code_base, $new_property, None::instance());
         }
     }
@@ -3500,6 +3520,12 @@ class Clazz extends AddressableElement
                     '@abstract'
                 );
             }
+            if ($is_trait) {
+                if ($property->getFlags() & Flags::IS_FROM_REQUIRE_ANNOTATION) {
+                    // Do not copy this fake property to children
+                    continue;
+                }
+            }
 
             // TODO: check for conflicts in visibility and default values for traits.
             // TODO: Check for ancestor classes with the same private property?
@@ -3574,6 +3600,10 @@ class Clazz extends AddressableElement
             // If you import a trait's private method, it becomes private **to the class which used the trait** in PHP code.
             // (But preserving the defining FQSEN is fine for this)
             if ($is_trait) {
+                if ($method->getFlags() & Flags::IS_FROM_REQUIRE_ANNOTATION) {
+                    // Do not copy this fake method to children
+                    continue;
+                }
                 // Apply template resolution BEFORE adapting the method from the trait
                 // This is necessary because adaptInheritedMethodFromTrait changes the FQSEN,
                 // which would prevent template resolution in addMethod

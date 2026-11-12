@@ -2,16 +2,23 @@
 
 namespace NS5372;
 
-class BaseClass {}
+class BaseClass {
+    public string $baseProperty;
+    public function baseMethod(string $param): void {}
+}
 
-interface FooInterface {}
+interface FooInterface {
+    public function interfaceMethod(): void;
+}
 
 /**
  * @require-extends BaseClass
  */
 trait RequiresBase
 {
-    public function mustExtendBase(): void {}
+    public function mustExtendBase(): void {
+        $this->baseMethod($this->baseProperty);
+    }
 }
 
 trait RequiresBaseViaTrait
@@ -24,7 +31,9 @@ trait RequiresBaseViaTrait
  */
 trait RequiresInterface
 {
-    public function mustImplementInterface(): void {}
+    public function mustImplementInterface(): void {
+        $this->interfaceMethod();
+    }
 }
 
 class ValidChild extends BaseClass
@@ -32,7 +41,7 @@ class ValidChild extends BaseClass
     use RequiresBase;
 }
 
-class ValidImplementation implements FooInterface
+abstract class ValidImplementation implements FooInterface
 {
     use RequiresInterface;
 }
@@ -52,7 +61,7 @@ class IndirectInvalidChild
     use RequiresBaseViaTrait;
 }
 
-class InvalidImplementation
+abstract class InvalidImplementation
 {
     use RequiresInterface;
 }
