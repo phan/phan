@@ -1090,6 +1090,8 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
         };
         return [
             // Gets the element types of the first
+            'array_first' => $get_element_type_of_first_arg_check_nonempty_null,
+            'array_last'  => $get_element_type_of_first_arg_check_nonempty_null,
             'array_pop'   => $get_element_type_of_first_arg_check_nonempty_null,
             'array_shift' => $get_element_type_of_first_arg_check_nonempty_null,
             'current'     => $get_element_type_of_first_arg,

@@ -1,0 +1,24 @@
+%s:15 PhanPluginUnknownArrayFunctionParamType Function test() has a parameter type of array for $plain, but does not specify any key types or value types (Types inferred after analysis: array)
+%s:16 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type null|string(real=mixed)
+%s:16 PhanUnusedVariable Unused definition of variable $a
+%s:18 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type null|string(real=mixed)
+%s:18 PhanUnusedVariable Unused definition of variable $b
+%s:22 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type string(real=mixed)
+%s:22 PhanUnusedVariable Unused definition of variable $c
+%s:24 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type string(real=mixed)
+%s:24 PhanUnusedVariable Unused definition of variable $d
+%s:27 PhanDebugAnnotation @phan-debug-var requested for variable $e - it has union type string(real=mixed)
+%s:27 PhanUnusedVariable Unused definition of variable $e
+%s:31 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type int|string(real=mixed)
+%s:31 PhanUnusedVariable Unused definition of variable $f
+%s:33 PhanDebugAnnotation @phan-debug-var requested for variable $g - it has union type int|string(real=mixed)
+%s:33 PhanUnusedVariable Unused definition of variable $g
+%s:36 PhanDebugAnnotation @phan-debug-var requested for variable $h - it has union type \stdClass|null(real=mixed)
+%s:38 PhanDebugAnnotation @phan-debug-var requested for variable $i - it has union type \stdClass|null(real=mixed)
+%s:41 PhanDebugAnnotation @phan-debug-var requested for variable $j - it has union type 1|2|3(real=?1|?2|?3)
+%s:41 PhanUnusedVariable Unused definition of variable $j
+%s:45 PhanDebugAnnotation @phan-debug-var requested for variable $k - it has union type mixed|null(real=mixed)
+%s:45 PhanUnusedVariable Unused definition of variable $k
+%s:49 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $h of type \stdClass|null but \strlen() takes string
+%s:50 PhanTypeMismatchArgumentInternal Argument 1 ($value) is array_last($list) of type null|string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:51 PhanUndeclaredMethod Call to undeclared method \stdClass::undeclaredMethod
