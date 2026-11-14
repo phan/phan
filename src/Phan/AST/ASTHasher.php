@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan\AST;
 
 use ast\Node;
+use WeakMap;
 
 use function is_float;
 use function is_int;
@@ -21,6 +22,17 @@ use function is_string;
  */
 class ASTHasher
 {
+    /**
+     * The hashes of the nodes that were hashed, which are removed when the node is freed.
+     *
+     * This is not a dynamic property of the node: PHP allocates a property table of 376 bytes for the first
+     * dynamic property of an object, and an entry of a WeakMap takes 105 bytes.
+     * Most of the nodes that get hashed have no other dynamic property (https://github.com/phan/phan/issues/5638)
+     *
+     * @var ?WeakMap<Node,string>
+     */
+    private static $node_hashes = null;
+
     /**
      * @param Node|string|int|float|null $node
      * @return string a 16-byte binary key for the Node which is unlikely to overlap for ordinary code
@@ -49,8 +61,9 @@ class ASTHasher
             }
         }
 
-        // Cache the hash on the node object to avoid recomputing
-        // @phan-suppress-next-line PhanUndeclaredProperty
-        return $node->hash ?? ($node->hash = \phan_ast_hash($node));
+        // Cache the hash of the node to avoid recomputing it.
+        // A clone of a node is a different key, so it does not inherit the hash of the node it was cloned from.
+        $node_hashes = self::$node_hashes ??= new WeakMap();
+        return $node_hashes[$node] ??= \phan_ast_hash($node);
     }
 }
