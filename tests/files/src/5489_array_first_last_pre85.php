@@ -12,7 +12,7 @@ $last = array_last($array);
 $first = array_first($array);
 '@phan-debug-var $first';
 
-// Should NOT warn PhanTypeArraySuspiciousNullable - $last is not TValue|mixed|null
+// Should NOT warn PhanTypeArraySuspiciousNullable - $last is not TValue|mixed|null. On PHP 8.5+, where the function exists, $last is an int (#5634)
 if ($last) {
     echo $last['test'];
 }

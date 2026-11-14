@@ -1,2 +1,3 @@
-%s:10 PhanDebugAnnotation @phan-debug-var requested for variable $last - it has union type (empty union type)
-%s:12 PhanDebugAnnotation @phan-debug-var requested for variable $first - it has union type (empty union type)
+%s:10 PhanDebugAnnotation @phan-debug-var requested for variable $last - it has union type 1|2|3(real=?1|?2|?3)
+%s:12 PhanDebugAnnotation @phan-debug-var requested for variable $first - it has union type 1|2|3(real=?1|?2|?3)
+%s:17 PhanTypeArraySuspicious Suspicious array access to $last of type 1|2|3
