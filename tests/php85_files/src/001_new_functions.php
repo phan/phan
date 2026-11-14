@@ -96,7 +96,7 @@ try {
 } catch (\ValueError $e) {
     echo $e->getMessage();
 }
-
+// Type checks. $first is known to be an int, because $arr is a non-empty array of ints (#5634)
 // Type checks - these should not produce warnings
 if (is_int($first)) {
     echo $first;

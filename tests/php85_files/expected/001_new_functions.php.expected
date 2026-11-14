@@ -1,3 +1,4 @@
 %s:87 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($dir_handle) is $directory of type \Directory|false but \readdir() takes ?resource
 %s:91 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($dir_handle) is $directory of type \Directory|false but \rewinddir() takes ?resource
 %s:92 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($dir_handle) is $directory of type \Directory|false but \closedir() takes ?resource
+%s:101 PhanRedundantConditionInGlobalScope Redundant attempt to cast $first of type 1|2|3 to int in the global scope (likely a false positive)
