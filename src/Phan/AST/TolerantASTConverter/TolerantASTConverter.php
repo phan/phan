@@ -1227,20 +1227,23 @@ class TolerantASTConverter
                     if ($as_int !== false) {
                         return $as_int;
                     }
-                    if (\preg_match('/^0[0-7]+$/D', $text)) {
-                        // this is octal - FILTER_VALIDATE_FLOAT would treat it like decimal
-                        return \intval($text, 8);
-                    }
                 }
-                if ($text[0] === '0' && !\preg_match('/[.eE]/', $text)) {
-                    $c = $text[1];
+                if ($text[0] === '0') {
+                    // This may be a binary, hexadecimal or octal literal (FILTER_VALIDATE_FLOAT would treat octal like decimal)
+                    $c = $text[1] ?? '';
                     if ($c === 'b' || $c === 'B') {
-                        return \bindec($text);
+                        return self::integerLiteralDigitsToNumber(\substr($text, 2), 2);
                     }
                     if ($c === 'x' || $c === 'X') {
-                        return \hexdec($text);
+                        // NOTE: 'e' is a digit of a hexadecimal literal, not an exponent.
+                        return self::integerLiteralDigitsToNumber(\substr($text, 2), 16);
                     }
-                    return \octdec(substr($text, 0, \strcspn($text, '89')));
+                    if ($c === 'o' || $c === 'O') {
+                        return self::integerLiteralDigitsToNumber(\substr($text, 2), 8);
+                    }
+                    if (!\preg_match('/[.eE]/', $text)) {
+                        return self::integerLiteralDigitsToNumber($text, 8);
+                    }
                 }
                 return (float)$text;
             },
@@ -3499,6 +3502,45 @@ class TolerantASTConverter
         '__CLASS__' => flags\MAGIC_CLASS,
         '__TRAIT__' => flags\MAGIC_TRAIT,
     ];
+
+    /**
+     * Converts the digits of a binary, octal or hexadecimal integer literal to an int, or to a float if it does not fit in an int,
+     * the way php's lexer does (zend_bin_strtod(), zend_oct_strtod() and zend_hex_strtod() for the floats):
+     * a float is accumulated from the first digit, and the conversion stops at the first character that is not a digit of the base.
+     *
+     * bindec(), hexdec() and octdec() are not used for this: they emit a notice for a number that does not fit in an int in php 8.6+,
+     * and bindec() rounds differently from php's lexer.
+     *
+     * @param string $digits the digits of the literal, without the prefix `0b`, `0x` or `0o`
+     * @param 2|8|16 $base
+     */
+    private static function integerLiteralDigitsToNumber(string $digits, int $base): float|int
+    {
+        $digits = \strtolower(\substr($digits, 0, \strspn($digits, $base === 16 ? '0123456789abcdefABCDEF' : ($base === 8 ? '01234567' : '01'))));
+        $significant_digits = \ltrim($digits, '0');
+        if ($significant_digits === '') {
+            return 0;
+        }
+        // The number of bits needed for the value: the bits of the first digit, and 1, 3 or 4 bits for each of the other digits.
+        $bit_count = \strlen(\decbin((int)\hexdec($significant_digits[0])))
+            + (\strlen($significant_digits) - 1) * ($base === 16 ? 4 : ($base === 8 ? 3 : 1));
+        if ($bit_count < \PHP_INT_SIZE * 8) {
+            return \intval($significant_digits, $base);
+        }
+        $value = 0.0;
+        $length = \strlen($significant_digits);
+        for ($i = 0; $i < $length; $i++) {
+            $digit = (int)\hexdec($significant_digits[$i]);
+            if ($base === 16) {
+                $value = $value * 16 + $digit;
+            } else {
+                // php computes `value * base + c - '0'` for these two bases: the character code is added before '0' is subtracted.
+                // That rounds differently from adding the digit once the value no longer fits in the mantissa of a float.
+                $value = $value * $base + (48 + $digit) - 48;
+            }
+        }
+        return $value;
+    }
 
     // FIXME don't use in places expecting non-strings.
     /**
