@@ -16,6 +16,11 @@ function by_ref(string $s, array &$out): bool
     return true;
 }
 
+function named_like_element(int $nums1, int $nums0, int ...$nums): int
+{
+    return $nums0 + $nums1 + \array_sum($nums);
+}
+
 function variadic(string $format, int ...$nums): string
 {
     return $format . \implode(',', $nums);
@@ -70,6 +75,10 @@ function types(Point $p): void
     '@phan-debug-var $ref';
     $two = variadic('x', ?, ?);
     '@phan-debug-var $two';
+    // The names for the elements of a variadic parameter skip the names of the other parameters: $nums2 and $nums3 here.
+    $skipped = named_like_element(?, ?, ?, ?);
+    '@phan-debug-var $skipped';
+    echo $skipped(nums1: 1, nums0: 2, nums2: 3, nums3: 4);
     $out = [];
     echo $ref($out), $two(1, 2);
 

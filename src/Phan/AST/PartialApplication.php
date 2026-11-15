@@ -152,7 +152,10 @@ final class PartialApplication
         $closure_params = [];
         $has_variadic_placeholder = false;
         $position = 0;
-        $variadic_element_count = 0;
+        /** @var list<int> $variadic_element_indexes the indexes in $closure_params of the placeholders for elements of the variadic parameter */
+        $variadic_element_indexes = [];
+        /** @var array<string,true> $used_names the names of the other parameters of the closure */
+        $used_names = [];
         foreach (self::getArgs($node) as $arg) {
             if ($arg instanceof Node) {
                 if ($arg->kind === ast\AST_UNPACK) {
@@ -169,6 +172,7 @@ final class PartialApplication
                     $index = $index_of_name[$name];
                     if (self::isPlaceholder($arg->children['expr']) && !isset($handled[$index])) {
                         $closure_params[] = self::asClosureParameter($parameter_list[$index], true);
+                        $used_names[$name] = true;
                     }
                     $handled[$index] = true;
                     continue;
@@ -184,11 +188,13 @@ final class PartialApplication
             if ($index < $parameter_count && !$parameter_list[$index]->isVariadic()) {
                 if ($is_placeholder) {
                     $closure_params[] = self::asClosureParameter($parameter_list[$index], true);
+                    $used_names[$parameter_list[$index]->getName()] = true;
                 }
                 $handled[$index] = true;
             } elseif ($is_placeholder && $variadic_parameter) {
-                // `?` for an element of the variadic parameter is a required parameter of the closure, named e.g. $nums0, $nums1.
-                $closure_params[] = self::asRequiredElementOfVariadic($variadic_parameter, $variadic_element_count++);
+                // `?` for an element of the variadic parameter is a required parameter of the closure. It is named below.
+                $variadic_element_indexes[] = \count($closure_params);
+                $closure_params[] = self::asRequiredElementOfVariadic($variadic_parameter, $variadic_parameter->getName());
             }
             // else there are too many arguments, which is reported when the bound arguments are analyzed.
         }
@@ -196,7 +202,20 @@ final class PartialApplication
             foreach ($parameter_list as $index => $parameter) {
                 if (!isset($handled[$index])) {
                     $closure_params[] = self::asClosureParameter($parameter, false);
+                    $used_names[$parameter->getName()] = true;
                 }
+            }
+        }
+        if ($variadic_element_indexes && $variadic_parameter) {
+            // The elements of the variadic parameter are named e.g. $nums0, $nums1, skipping the names that other parameters of the closure have:
+            // for `function f(int $nums0, int ...$nums)`, the parameters of `f(?, ?)` are $nums0 and $nums1.
+            $n = 0;
+            foreach ($variadic_element_indexes as $i) {
+                do {
+                    $name = $variadic_parameter->getName() . $n++;
+                } while (isset($used_names[$name]));
+                $used_names[$name] = true;
+                $closure_params[$i] = self::asRequiredElementOfVariadic($variadic_parameter, $name);
             }
         }
 
@@ -236,13 +255,13 @@ final class PartialApplication
         );
     }
 
-    private static function asRequiredElementOfVariadic(Parameter $parameter, int $element_index): ClosureDeclarationParameter
+    private static function asRequiredElementOfVariadic(Parameter $parameter, string $name): ClosureDeclarationParameter
     {
         $type = $parameter->getNonVariadicUnionType();
         if ($type->isEmpty()) {
             $type = MixedType::instance(false)->asPHPDocUnionType();
         }
-        return new ClosureDeclarationParameter($type, false, $parameter->isPassByReference(), false, $parameter->getName() . $element_index);
+        return new ClosureDeclarationParameter($type, false, $parameter->isPassByReference(), false, $name);
     }
 
     /**
