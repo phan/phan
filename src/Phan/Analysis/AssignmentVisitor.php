@@ -1842,8 +1842,8 @@ class AssignmentVisitor extends AnalysisVisitor
                     if ($property->hasDefaultValue() && strtolower($method->getName()) === '__construct') {
                         // PHP 8.6+: the default value of a readonly property is its initialization, so the constructor cannot assign to it.
                         // (__clone() may still reinitialize it once)
-                        if ($this->is_coalesce_assign && !$property->getRealUnionType()->containsNullableOrUndefined()) {
-                            // `$this->prop ??= $x` does not assign: the default value of a property with a non-nullable type is not null.
+                        if ($this->is_coalesce_assign && self::mayReadonlyDefaultBeNonNull($property)) {
+                            // `$this->prop ??= $x` does not assign when the default value is not null.
                             return;
                         }
                         $this->emitIssue(
@@ -1882,6 +1882,20 @@ class AssignmentVisitor extends AnalysisVisitor
             $context->getFile(),
             $context->getLineNumberStart()
         );
+    }
+
+    /**
+     * @return bool whether the default value of this property may be something other than null:
+     * its declared type is not nullable, or the default value is not known to be null.
+     * (The type of a default that is a constant expression such as `self::X` is not known when the property is declared)
+     */
+    private static function mayReadonlyDefaultBeNonNull(Property $property): bool
+    {
+        if (!$property->getRealUnionType()->containsNullableOrUndefined()) {
+            return true;
+        }
+        $default_type = $property->getDefaultType();
+        return $default_type === null || $default_type->isEmpty() || !$default_type->isNull();
     }
 
     /**

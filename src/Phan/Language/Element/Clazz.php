@@ -4099,14 +4099,15 @@ class Clazz extends AddressableElement
                 if (!$constant->isOverrideIntended() || isset($checked_names[$name]) || !self::isConstantOfTrait($code_base, $constant)) {
                     continue;
                 }
-                $checked_names[$name] = true;
                 $constant_fqsen = FullyQualifiedClassConstantName::make($this->fqsen, (string)$name);
                 if (!$code_base->hasClassConstantWithFQSEN($constant_fqsen)
-                    || !self::isConstantOfTrait($code_base, $code_base->getClassConstantByFQSEN($constant_fqsen))) {
-                    // This class declares a constant with this name itself, which replaces the constant of the trait:
-                    // php does not check the attribute of the trait's constant for this class.
+                    || $code_base->getClassConstantByFQSEN($constant_fqsen)->getRealDefiningFQSEN() !== $constant->getRealDefiningFQSEN()) {
+                    // The constant of this class with this name is not this declaration: the class declares the constant itself,
+                    // or it got a compatible constant with the same name from a trait it uses earlier.
+                    // php keeps that constant, and does not check the attribute of this one for the class.
                     continue;
                 }
+                $checked_names[$name] = true;
                 if ($this->hasConstantToOverrideWithName($code_base, (string)$name)) {
                     continue;
                 }

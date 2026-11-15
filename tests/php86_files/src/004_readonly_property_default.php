@@ -45,17 +45,19 @@ final class Coalesce
 {
     public readonly int $id = 1;
     public readonly ?int $nullable = null;
+    public readonly ?int $nullable_with_default = 3;
 
     public function __construct()
     {
         // Does not assign: the default value is not null
         $this->id ??= 2;
+        $this->nullable_with_default ??= 2;
         // Error: this assigns, because the default value is null
         $this->nullable ??= 2;
     }
 }
 
-echo (new Coalesce())->id;
+echo (new Coalesce())->id, (new Coalesce())->nullable, (new Coalesce())->nullable_with_default;
 $example = new Example(1);
 echo $example->kind, $example->id, count($example->tags), $example->promoted;
 $example->kind = 'outside';

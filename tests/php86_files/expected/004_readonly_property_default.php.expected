@@ -2,7 +2,6 @@
 %s:26 PhanUnreferencedPublicMethod Possibly zero references to public method \NS86ReadonlyDefault\Example::modify()
 %s:28 PhanAccessReadOnlyProperty Cannot modify read-only property \NS86ReadonlyDefault\Example->tags defined at %s:11
 %s:39 PhanAccessReadOnlyPropertyMultipleTimes Cannot modify readonly property \NS86ReadonlyDefault\Point->x after initialization
-%s:47 PhanWriteOnlyPublicProperty Possibly zero read references to public property \NS86ReadonlyDefault\Coalesce->nullable
-%s:54 PhanAccessReadOnlyPropertyMultipleTimes Cannot modify readonly property \NS86ReadonlyDefault\Coalesce->nullable after initialization
-%s:61 PhanTypeModifyImmutableObjectProperty Saw attempt to modify class \NS86ReadonlyDefault\Example's property $kind declared at %s:9 (immutability of properties is enforced at runtime)
-%s:64 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is $example->tags of type array|array<int,string>|array{} (real type array) but \strlen() takes string
+%s:56 PhanAccessReadOnlyPropertyMultipleTimes Cannot modify readonly property \NS86ReadonlyDefault\Coalesce->nullable after initialization
+%s:63 PhanTypeModifyImmutableObjectProperty Saw attempt to modify class \NS86ReadonlyDefault\Example's property $kind declared at %s:9 (immutability of properties is enforced at runtime)
+%s:66 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is $example->tags of type array|array<int,string>|array{} (real type array) but \strlen() takes string

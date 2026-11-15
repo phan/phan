@@ -9,3 +9,4 @@
 %s:124 PhanCommentOverrideOnNonOverrideConstant Saw an @override annotation for class constant \NS86OverrideConstant\NonPublicWithMatch::PRIV, but could not find an overridden constant
 %s:130 PhanCommentOverrideOnNonOverrideConstant Saw an @override annotation for class constant \NS86OverrideConstant\NonPublicWithoutMatch::PRIV, but could not find an overridden constant
 %s:130 PhanCommentOverrideOnNonOverrideConstant Saw an @override annotation for class constant \NS86OverrideConstant\NonPublicWithoutMatch::PROT, but could not find an overridden constant
+%s:149 PhanCommentOverrideOnNonOverrideConstant Saw an @override annotation for class constant \NS86OverrideConstant\OverrideFirst::C, but could not find an overridden constant

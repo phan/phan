@@ -133,5 +133,24 @@ class NonPublicWithoutMatch
 }
 
 echo (new NonPublicWithMatch())->sum(), (new NonPublicWithoutMatch())->sum();
+// When two traits declare the same constant, the class gets the constant of the trait it uses first.
+trait PlainC
+{
+    public const C = 4;
+}
+
+// The constant comes from PlainC, which has no attribute.
+class PlainFirst
+{
+    use PlainC, T;
+}
+
+// Fatal error: OverrideFirst::C has #[\Override] attribute, but no matching parent constant exists
+class OverrideFirst
+{
+    use T, PlainC;
+}
+
+echo PlainFirst::C, OverrideFirst::C;
 echo NestedWithMatch::C, NestedWithoutMatch::C, RedeclaresConstant::C, RedeclaresWithOverride::C;
 echo Child::X, Child::C, Bad::NOPE, Bad::P, Suit::C, Suit::Hearts->value, UsesTrait::C, UsesTraitWithoutMatch::C, Base::UNRELATED;
