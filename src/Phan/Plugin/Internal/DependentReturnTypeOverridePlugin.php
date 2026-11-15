@@ -474,8 +474,35 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             return $class_string_type->asPHPDocUnionType();
         };
 
+        /**
+         * clamp($value, $min, $max) (PHP 8.6+) returns one of its three arguments.
+         *
+         * @param array<int,Node|int|float|string> $args
+         */
+        $clamp_handler = static function (
+            CodeBase $code_base,
+            Context $context,
+            Func $function,
+            array $args
+        ): UnionType {
+            if (count($args) !== 3) {
+                return $function->getUnionType();
+            }
+            $result = UnionType::empty();
+            foreach ($args as $arg) {
+                $arg_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $arg);
+                if ($arg_type->isEmpty() || $arg instanceof Node && ($arg->kind === \ast\AST_UNPACK || $arg->kind === \ast\AST_NAMED_ARG)) {
+                    // Nothing is known about one of the arguments, or the arguments are not the three parameters in order.
+                    return $function->getUnionType();
+                }
+                $result = $result->withUnionType($arg_type);
+            }
+            return $result;
+        };
+
         // TODO: Handle flags of preg_split.
         return [
+            'clamp'                       => $clamp_handler,
             // commonly used functions where the return type depends on a passed in boolean
             'var_export'                  => $string_if_2_true,
             'print_r'                     => $string_if_2_true_else_true,
