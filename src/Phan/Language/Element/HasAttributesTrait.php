@@ -78,12 +78,12 @@ trait HasAttributesTrait
     }
 
     /**
-     * Check if this element has a #[Override] attribute (PHP 8.3+ for methods, PHP 8.5+ for properties)
+     * Check if this element has a #[Override] attribute (PHP 8.3+ for methods, PHP 8.5+ for properties, PHP 8.6+ for class constants)
      */
     public function hasOverrideAttribute(): bool
     {
         $target_version = Config::get_closest_target_php_version_id();
-        $minimum_version = ($this instanceof Property) ? 80500 : 80300;
+        $minimum_version = ($this instanceof Property) ? 80500 : (($this instanceof ClassConstant) ? 80600 : 80300);
         if ($target_version < $minimum_version) {
             return false;
         }

@@ -462,6 +462,29 @@ class Property extends ClassElement
     }
 
     /**
+     * Is this property declared with a default value, e.g. `public int $x = 1;`?
+     * (false for a promoted constructor property: the default belongs to the parameter)
+     */
+    public function hasDefaultValue(): bool
+    {
+        return $this->getPhanFlagsHasState(Flags::HAS_DEFAULT_VALUE);
+    }
+
+    /**
+     * Record whether this property is declared with a default value.
+     */
+    public function setHasDefaultValue(bool $has_default_value): void
+    {
+        $this->setPhanFlags(
+            Flags::bitVectorWithState(
+                $this->getPhanFlags(),
+                Flags::HAS_DEFAULT_VALUE,
+                $has_default_value
+            )
+        );
+    }
+
+    /**
      * Is this property declared with the PHP 8.1+ `readonly` modifier?
      */
     public function isReadOnlyReal(): bool

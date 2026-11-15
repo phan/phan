@@ -1,0 +1,3 @@
+%s:34 PhanTypeMismatchPropertyReal Assigning 'not an int' of type string to property but \NS86ConstantObject\Counter->count is int
+%s:35 PhanUndeclaredProperty Reference to undeclared property \NS86ConstantObject\Counter->undeclared
+%s:38 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression (OBJ['key'] of type \stdClass) in write context

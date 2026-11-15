@@ -3058,6 +3058,36 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      * @return Context
      * The updated context after visiting the node
      */
+    /**
+     * Emit PhanDeprecatedReturnInFinally for the return statements of a finally block (deprecated in PHP 8.6):
+     * such a return discards the exception being thrown and the value being returned by the try or catch block.
+     *
+     * This does not look into the functions and classes declared in the block.
+     */
+    private function warnAboutReturnInFinally(Node $node): void
+    {
+        foreach ($node->children as $child_node) {
+            if (!($child_node instanceof Node)) {
+                continue;
+            }
+            switch ($child_node->kind) {
+                case ast\AST_RETURN:
+                    $this->emitIssue(
+                        Issue::DeprecatedReturnInFinally,
+                        $child_node->lineno
+                    );
+                    break;
+                case ast\AST_CLOSURE:
+                case ast\AST_ARROW_FUNC:
+                case ast\AST_FUNC_DECL:
+                case ast\AST_CLASS:
+                    break;
+                default:
+                    $this->warnAboutReturnInFinally($child_node);
+            }
+        }
+    }
+
     public function visitTry(Node $node): Context
     {
         $context = $this->context->withLineNumberStart(
@@ -3085,6 +3115,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         $catch_nodes = $node->children['catches']->children ?? [];
         $has_finally = isset($node->children['finally']);
+        if ($has_finally && Config::get_closest_target_php_version_id() >= 80600) {
+            $this->warnAboutReturnInFinally($node->children['finally']);
+        }
 
         // Step into each try node and get an
         // updated context for the node

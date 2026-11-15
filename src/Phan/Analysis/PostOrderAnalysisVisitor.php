@@ -375,12 +375,22 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     private function checkUnsetOfTemporaryExpression(Node $node): bool
     {
         $base_node = $node->children['expr'];
+        $parent_node = $node;
         while ($base_node instanceof Node) {
             switch ($base_node->kind) {
                 case ast\AST_DIM:
                 case ast\AST_PROP:
+                    $parent_node = $base_node;
                     $base_node = $base_node->children['expr'];
                     continue 2;
+                case ast\AST_CONST:
+                case ast\AST_CLASS_CONST:
+                    // PHP 8.6+: a property of an object referenced by a constant can be written to or unset (`unset(OBJ->prop)`, `unset(A::OBJ->list['key'])`).
+                    // `unset(OBJ['key'])` remains an error.
+                    if ($parent_node->kind === ast\AST_PROP && Config::get_closest_minimum_target_php_version_id() >= 80600) {
+                        return false;
+                    }
+                    break;
                 case ast\AST_VAR:
                 case ast\AST_STATIC_PROP:
                 case ast\AST_CALL:

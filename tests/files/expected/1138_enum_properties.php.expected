@@ -1,4 +1,5 @@
 %s:14 PhanTypeMismatchArgumentInternalReal Argument 1 ($object) is MyUnitEnum::FIRST->name of type string but \spl_object_hash() takes object
+%s:15 PhanInvalidWriteToTemporaryExpression Cannot use temporary expression (MyUnitEnum::FIRST->name of type \NS1138\MyUnitEnum) in write context
 %s:15 PhanTypeModifyImmutableObjectProperty Saw attempt to modify enum \NS1138\MyUnitEnum's property $name declared at %s:5 (immutability of properties is enforced at runtime)
 %s:16 PhanUndeclaredProperty Reference to undeclared property \NS1138\MyUnitEnum->value
 %s:18 PhanTypeMismatchArgumentInternalReal Argument 1 ($object) is MyBackedEnum::ABC->name of type string but \spl_object_hash() takes object

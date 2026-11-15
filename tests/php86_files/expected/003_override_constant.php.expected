@@ -1,0 +1,5 @@
+%s:14 PhanUnreferencedProtectedClassConstant Possibly zero references to protected class constant \NS86OverrideConstant\Base::X
+%s:32 PhanCommentOverrideOnNonOverrideConstant Saw an @override annotation for class constant \NS86OverrideConstant\Bad::NOPE, but could not find an overridden constant
+%s:36 PhanCommentOverrideOnNonOverrideConstant Saw an @override annotation for class constant \NS86OverrideConstant\Bad::P, but could not find an overridden constant
+%s:46 PhanCommentOverrideOnNonOverrideConstant Saw an @override annotation for class constant \NS86OverrideConstant\Suit::Hearts, but could not find an overridden constant
+%s:53 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \NS86OverrideConstant\T::C

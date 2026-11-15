@@ -1653,6 +1653,12 @@ class Clazz extends AddressableElement
         );
     }
 
+    private static function isConstantOfTrait(CodeBase $code_base, ClassConstant $constant): bool
+    {
+        $class_fqsen = $constant->getDefiningClassFQSEN();
+        return $code_base->hasClassWithFQSEN($class_fqsen) && $code_base->getClassByFQSEN($class_fqsen)->isTrait();
+    }
+
     /**
      * Inherit a class constant from an ancestor class
      */
@@ -1668,7 +1674,12 @@ class Clazz extends AddressableElement
         if ($code_base->hasClassConstantWithFQSEN($constant_fqsen)) {
             // If the constant with that name already exists, mark it as an override.
             $overriding_constant = $code_base->getClassConstantByFQSEN($constant_fqsen);
-            $overriding_constant->setIsOverride(true);
+            if (!$constant->isPrivate() || self::isConstantOfTrait($code_base, $constant)) {
+                // A private constant of an ancestor class is not visible to this class, so it is not overridden:
+                // php rejects #[Override] on a constant that only has a private constant of that name in an ancestor class.
+                // (The private constant of a trait becomes a constant of this class)
+                $overriding_constant->setIsOverride(true);
+            }
             $this->checkConstantCompatibility(
                 $code_base,
                 $constant,
@@ -4062,7 +4073,11 @@ class Clazz extends AddressableElement
         // Load parent methods, properties, constants
         $this->importConstantsFromAncestorClasses($code_base);
 
-        self::analyzeClassConstantOverrides($code_base, $original_declared_class_constants);
+        if (!$this->isTrait()) {
+            // The constants of a trait override the constants of the classes using the trait, which are not known here.
+            // (php ignores #[Override] on the constant of the trait itself, and checks it for each class using the trait)
+            self::analyzeClassConstantOverrides($code_base, $original_declared_class_constants);
+        }
     }
 
     /**
