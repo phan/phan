@@ -1,0 +1,34 @@
+%s:7 PhanDeprecatedReservedName Using "let" as the name of a function has been deprecated in PHP 8.6
+%s:7 PhanEmptyFunction Empty function \NS86Deprecations\let()
+%s:7 PhanPluginUseReturnValueNoopVoid The function/method \NS86Deprecations\let() is declared to return void and it has no side effects
+%s:11 PhanDeprecatedReservedName Using "is" as the name of a function has been deprecated in PHP 8.6
+%s:11 PhanEmptyFunction Empty function \NS86Deprecations\is()
+%s:11 PhanPluginUseReturnValueNoopVoid The function/method \NS86Deprecations\is() is declared to return void and it has no side effects
+%s:15 PhanDeprecatedReservedName Using "readonly" as the name of a function has been deprecated in PHP 8.6
+%s:15 PhanEmptyFunction Empty function \NS86Deprecations\readonly()
+%s:15 PhanPluginUseReturnValueNoopVoid The function/method \NS86Deprecations\readonly() is declared to return void and it has no side effects
+%s:15 PhanUnreferencedFunction Possibly zero references to function \NS86Deprecations\readonly()
+%s:19 PhanDeprecatedReservedName Using "Let" as the name of a class has been deprecated in PHP 8.6
+%s:21 PhanDeprecatedReservedName Using "NAMESPACE" as the name of a class constant has been deprecated in PHP 8.6
+%s:31 PhanDeprecatedReservedName Using "Is" as the name of an interface has been deprecated in PHP 8.6
+%s:35 PhanPluginUnknownArrayFunctionParamType Function test() has a parameter type of array for $a, but does not specify any key types or value types (Types inferred after analysis: array)
+%s:37 PhanDeprecatedFunctionInternal Call to deprecated function \doubleval()
+%s:37 PhanDeprecatedFunctionInternal Call to deprecated function \is_double()
+%s:37 PhanDeprecatedFunctionInternal Call to deprecated function \is_integer()
+%s:37 PhanDeprecatedFunctionInternal Call to deprecated function \is_long()
+%s:37 PhanImpossibleCondition Impossible attempt to cast $f of type float to int
+%s:37 PhanRedundantCondition Redundant attempt to cast $f of type float to float
+%s:37 PhanTypeSuspiciousEcho Suspicious argument is_double($f) of type bool for an echo/print statement
+%s:37 PhanTypeSuspiciousEcho Suspicious argument is_integer($f) of type bool for an echo/print statement
+%s:37 PhanTypeSuspiciousEcho Suspicious argument is_long($f) of type bool for an echo/print statement
+%s:38 PhanDeprecatedFunctionInternal Call to deprecated function \metaphone()
+%s:38 PhanDeprecatedFunctionInternal Call to deprecated function \strcoll()
+%s:39 PhanDeprecatedFunctionInternal Call to deprecated function \spl_classes()
+%s:39 PhanDeprecatedFunctionInternal Call to deprecated function \spl_object_hash()
+%s:40 PhanDeprecatedGlobalConstant Reference to deprecated constant \SORT_LOCALE_STRING (Deprecated because: Deprecated in PHP 8.6. Use one of the Collator::*sort*() methods instead.)
+%s:43 PhanDeprecatedFunctionInternal Call to deprecated function \ArrayIterator::asort()
+%s:44 PhanDeprecatedFunctionInternal Call to deprecated function \ArrayIterator::ksort()
+%s:45 PhanDeprecatedFunctionInternal Call to deprecated function \ArrayIterator::getFlags()
+%s:48 PhanDeprecatedFunctionInternal Call to deprecated function \SplFileObject::setCsvControl()
+%s:49 PhanDeprecatedFunctionInternal Call to deprecated function \SplFileObject::fgetcsv()
+%s:49 PhanDeprecatedFunctionInternal Call to deprecated function \SplFileObject::getCsvControl()

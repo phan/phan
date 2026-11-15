@@ -779,6 +779,12 @@ Reference to deprecated property {PROPERTY} defined at {FILE}:{LINE}{DETAILS}
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0171_deprecated_property.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0171_deprecated_property.php#L9).
 
+## PhanDeprecatedReservedName
+
+```
+Using "{DETAILS}" as the name of {DETAILS} has been deprecated in PHP 8.6
+```
+
 ## PhanDeprecatedReturnInFinally
 
 ```

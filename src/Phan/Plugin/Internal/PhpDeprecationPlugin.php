@@ -15,6 +15,7 @@ use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\GlobalConstant;
+use Phan\Language\Element\Method;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCallCapability;
 use Phan\PluginV3\HandleLazyLoadInternalFunctionCapability;
@@ -147,6 +148,130 @@ final class PhpDeprecationPlugin extends PluginV3 implements
             'min_php_version' => 80500,
             'reason' => 'Deprecated in PHP 8.5. Has no effect since PHP 8.0; parsers are freed automatically.',
         ],
+        // PHP 8.6 deprecations
+        'doubleval' => [
+            'min_php_version' => 80600,
+            'reason' => 'Deprecated in PHP 8.6. Use floatval() instead.',
+        ],
+        'is_double' => [
+            'min_php_version' => 80600,
+            'reason' => 'Deprecated in PHP 8.6. Use is_float() instead.',
+        ],
+        'is_integer' => [
+            'min_php_version' => 80600,
+            'reason' => 'Deprecated in PHP 8.6. Use is_int() instead.',
+        ],
+        'is_long' => [
+            'min_php_version' => 80600,
+            'reason' => 'Deprecated in PHP 8.6. Use is_int() instead.',
+        ],
+        'mb_ereg' => [
+            'min_php_version' => 80600,
+            'reason' => 'Deprecated in PHP 8.6. The mbregex functions are deprecated, because Oniguruma is no longer maintained. Use the preg_* functions instead.',
+        ],
+        'mb_ereg_match' => [
+            'min_php_version' => 80600,
+            'reason' => 'Deprecated in PHP 8.6. The mbregex functions are deprecated, because Oniguruma is no longer maintained. Use the preg_* functions instead.',
+        ],
+        'mb_ereg_replace' => [
+            'min_php_version' => 80600,
+            'reason' => 'Deprecated in PHP 8.6. The mbregex functions are deprecated, because Oniguruma is no longer maintained. Use the preg_* functions instead.',
+        ],
+        'mb_ereg_replace_callback' => [
+            'min_php_version' => 80600,
+            'reason' => 'Deprecated in PHP 8.6. The mbregex functions are deprecated, because Oniguruma is no longer maintained. Use the preg_* functions instead.',
+        ],
+        'mb_ereg_search' => [
+            'min_php_version' => 80600,
+            'reason' => 'Deprecated in PHP 8.6. The mbregex functions are deprecated, because Oniguruma is no longer maintained. Use the preg_* functions instead.',
+        ],
+        'mb_ereg_search_getpos' => [
+            'min_php_version' => 80600,
+            'reason' => 'Deprecated in PHP 8.6. The mbregex functions are deprecated, because Oniguruma is no longer maintained. Use the preg_* functions instead.',
+        ],
+        'mb_ereg_search_getregs' => [
+            'min_php_version' => 80600,
+            'reason' => 'Deprecated in PHP 8.6. The mbregex functions are deprecated, because Oniguruma is no longer maintained. Use the preg_* functions instead.',
+        ],
+        'mb_ereg_search_init' => [
+            'min_php_version' => 80600,
+            'reason' => 'Deprecated in PHP 8.6. The mbregex functions are deprecated, because Oniguruma is no longer maintained. Use the preg_* functions instead.',
+        ],
+        'mb_ereg_search_pos' => [
+            'min_php_version' => 80600,
+            'reason' => 'Deprecated in PHP 8.6. The mbregex functions are deprecated, because Oniguruma is no longer maintained. Use the preg_* functions instead.',
+        ],
+        'mb_ereg_search_regs' => [
+            'min_php_version' => 80600,
+            'reason' => 'Deprecated in PHP 8.6. The mbregex functions are deprecated, because Oniguruma is no longer maintained. Use the preg_* functions instead.',
+        ],
+        'mb_ereg_search_setpos' => [
+            'min_php_version' => 80600,
+            'reason' => 'Deprecated in PHP 8.6. The mbregex functions are deprecated, because Oniguruma is no longer maintained. Use the preg_* functions instead.',
+        ],
+        'mb_eregi' => [
+            'min_php_version' => 80600,
+            'reason' => 'Deprecated in PHP 8.6. The mbregex functions are deprecated, because Oniguruma is no longer maintained. Use the preg_* functions instead.',
+        ],
+        'mb_eregi_replace' => [
+            'min_php_version' => 80600,
+            'reason' => 'Deprecated in PHP 8.6. The mbregex functions are deprecated, because Oniguruma is no longer maintained. Use the preg_* functions instead.',
+        ],
+        'mb_regex_encoding' => [
+            'min_php_version' => 80600,
+            'reason' => 'Deprecated in PHP 8.6. The mbregex functions are deprecated, because Oniguruma is no longer maintained. Use the preg_* functions instead.',
+        ],
+        'mb_regex_set_options' => [
+            'min_php_version' => 80600,
+            'reason' => 'Deprecated in PHP 8.6. The mbregex functions are deprecated, because Oniguruma is no longer maintained. Use the preg_* functions instead.',
+        ],
+        'mb_split' => [
+            'min_php_version' => 80600,
+            'reason' => 'Deprecated in PHP 8.6. The mbregex functions are deprecated, because Oniguruma is no longer maintained. Use the preg_* functions instead.',
+        ],
+        'metaphone' => [
+            'min_php_version' => 80600,
+            'reason' => 'Deprecated in PHP 8.6. Use a userland phonetic matching library instead.',
+        ],
+        'spl_classes' => [
+            'min_php_version' => 80600,
+            'reason' => 'Deprecated in PHP 8.6. Use ReflectionExtension::getClassNames() instead.',
+        ],
+        'spl_object_hash' => [
+            'min_php_version' => 80600,
+            'reason' => 'Deprecated in PHP 8.6. Use spl_object_id() instead.',
+        ],
+        'strcoll' => [
+            'min_php_version' => 80600,
+            'reason' => 'Deprecated in PHP 8.6. Use Collator::compare() instead.',
+        ],
+    ];
+
+    /**
+     * The methods of internal classes that are deprecated, by the lowercase name of the class and of the method.
+     *
+     * @var array<string,array<string,int>> maps the class name to a map from the method name to the php version id of the deprecation
+     */
+    private const DEPRECATED_METHODS = [
+        // PHP 8.6 deprecations: the methods that ArrayIterator shares with ArrayObject, and the CSV methods of SplFileObject
+        'arrayiterator' => [
+            'asort' => 80600,
+            'getflags' => 80600,
+            'ksort' => 80600,
+            'natcasesort' => 80600,
+            'natsort' => 80600,
+            'serialize' => 80600,
+            'setflags' => 80600,
+            'uasort' => 80600,
+            'uksort' => 80600,
+            'unserialize' => 80600,
+        ],
+        'splfileobject' => [
+            'fgetcsv' => 80600,
+            'fputcsv' => 80600,
+            'getcsvcontrol' => 80600,
+            'setcsvcontrol' => 80600,
+        ],
     ];
 
     /** @var array<string,array{min_php_version:int,reason:string}> */
@@ -216,6 +341,15 @@ final class PhpDeprecationPlugin extends PluginV3 implements
         'GSLC_SSL_TWOWAY_AUTH' => [
             'min_php_version' => 80500,
             'reason' => 'Deprecated in PHP 8.5. Oracle LDAP support is broken since PHP 8.0.',
+        ],
+        // PHP 8.6 deprecations
+        'MB_ONIGURUMA_VERSION' => [
+            'min_php_version' => 80600,
+            'reason' => 'Deprecated in PHP 8.6. Oniguruma is no longer maintained.',
+        ],
+        'SORT_LOCALE_STRING' => [
+            'min_php_version' => 80600,
+            'reason' => 'Deprecated in PHP 8.6. Use one of the Collator::*sort*() methods instead.',
         ],
     ];
 
@@ -294,6 +428,61 @@ final class PhpDeprecationPlugin extends PluginV3 implements
                         );
                     }
                 };
+        }
+
+        // The deprecated functions that Phan's stubs declare (e.g. spl_object_hash() in the SPL stub).
+        // A function from a stub replaces the one from Reflection and is not passed to handleLazyLoadInternalFunction(),
+        // so it is not marked as deprecated.
+        foreach (self::DEPRECATED_FUNCTIONS as $function_name => $deprecation_info) {
+            if (!self::isTargetingPhpVersionOrNewer($deprecation_info['min_php_version'])) {
+                continue;
+            }
+            $closures["\\$function_name"] ??=
+                /** @param list<Node|int|float|string> $unused_args */
+                static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $unused_args, ?Node $call_node): void {
+                    if ($function->isDeprecated()) {
+                        // Already reported as PhanDeprecatedFunctionInternal
+                        return;
+                    }
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::DeprecatedFunctionInternal,
+                        $call_node->lineno ?? $context->getLineNumberStart(),
+                        $function->getRepresentationForIssue(),
+                        ''
+                    );
+                };
+        }
+
+        // The deprecated methods of internal classes. These classes may be declared by Phan's stubs (e.g. the SPL classes),
+        // which replace the information from Reflection, so the methods are not marked as deprecated there.
+        foreach (self::DEPRECATED_METHODS as $class_name => $methods) {
+            foreach ($methods as $method_name => $min_php_version) {
+                if (!self::isTargetingPhpVersionOrNewer($min_php_version)) {
+                    continue;
+                }
+                $closures["\\$class_name::$method_name"] =
+                    /** @param list<Node|int|float|string> $unused_args */
+                    static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $unused_args, ?Node $call_node) use ($class_name): void {
+                        if ($function->isDeprecated()) {
+                            // Already reported as PhanDeprecatedFunctionInternal, from Reflection
+                            return;
+                        }
+                        if (!($function instanceof Method) || \strtolower(\ltrim((string)$function->getDefiningClassFQSEN(), '\\')) !== $class_name) {
+                            // This is an override of the method in a subclass
+                            return;
+                        }
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::DeprecatedFunctionInternal,
+                            $call_node->lineno ?? $context->getLineNumberStart(),
+                            $function->getRepresentationForIssue(),
+                            ''
+                        );
+                    };
+            }
         }
 
         return $closures;
