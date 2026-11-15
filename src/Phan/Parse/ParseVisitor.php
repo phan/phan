@@ -2188,6 +2188,7 @@ class ParseVisitor extends ScopeVisitor
         ast\AST_BINARY_OP => true,
         ast\AST_BREAK => true,
         ast\AST_CALLABLE_CONVERT => true,
+        ast\AST_PLACEHOLDER_ARG => true,
         ast\AST_CAST => true,
         ast\AST_CATCH => true,
         ast\AST_CLASS_CONST => true,
@@ -2280,6 +2281,10 @@ class ParseVisitor extends ScopeVisitor
         return $this->context;
     }
     public function visitCallableConvert(Node $node): Context
+    {
+        return $this->context;
+    }
+    public function visitPlaceholderArg(Node $node): Context
     {
         return $this->context;
     }

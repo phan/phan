@@ -16,6 +16,7 @@ use Phan\AST\PipeExpression;
 use Phan\AST\ContextNode;
 use Phan\AST\PhanAnnotationAdder;
 use Phan\AST\ScopeImpactCheckingVisitor;
+use Phan\AST\PartialApplication;
 use Phan\AST\UnionTypeVisitor;
 use Phan\BlockAnalysisVisitor;
 use Phan\CodeBase;
@@ -3945,7 +3946,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $argument_expression = $argument;
             }
             if ($argument_name_set) {
-                if ($argument === $argument_expression) {
+                // `...` of partial function application is the last argument, and is allowed after named arguments.
+                if ($argument === $argument_expression && !PartialApplication::isVariadicPlaceholder($argument)) {
                     $this->emitIssue(
                         Issue::PositionalArgumentAfterNamedArgument,
                         $argument->lineno ?? $node->lineno,
@@ -4619,6 +4621,23 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * @param Node $node a node of kind ast\AST_CALLABLE_CONVERT:
+     * the arguments of first-class callable syntax (`f(...)`) or of partial function application (`f(1, ?)`, php 8.6+)
+     * @override
+     */
+    public function visitCallableConvert(Node $node): Context
+    {
+        if (Config::get_closest_minimum_target_php_version_id() < 80600 && PartialApplication::isPartialApplication($node)) {
+            $this->emitIssue(
+                Issue::CompatiblePartialApplication,
+                $node->lineno,
+                ASTReverter::toShortString($node)
+            );
+        }
+        return $this->context;
+    }
+
+    /**
      * Analyze the parameters and arguments for a call
      * to the given method or function
      */
@@ -4633,6 +4652,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         $args_node = $node->children['args'];
         if ($args_node->kind === ast\AST_CALLABLE_CONVERT) {
+            if (PartialApplication::isPartialApplication($args_node)) {
+                // Partial function application (php 8.6+): check the arguments that are bound to values.
+                // The function is not called here, so the effects of a call (e.g. on arguments passed by reference) are not analyzed.
+                ArgumentType::analyzePartialApplication($method, $node, $context, $code_base);
+            }
             return;
         }
         // Create variables for any pass-by-reference

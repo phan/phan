@@ -1,0 +1,4 @@
+%s:8 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type string(real=string)
+%s:10 PhanDebugAnnotation @phan-debug-var requested for variable $list - it has union type list<string>(real=array)
+%s:12 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is $list of type list<string> (real type array) but \strlen() takes string
+%s:12 PhanTypeMismatchArgumentInternalReal Argument 1 ($value) is $s of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (real type \Countable|array)

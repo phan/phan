@@ -147,8 +147,13 @@ class ASTReverter
             ast\AST_ARG_LIST => static function (Node $node): string {
                 return '(' . implode(', ', array_map([self::class, 'toShortString'], $node->children)) . ')';
             },
-            ast\AST_CALLABLE_CONVERT => /** @unused-param $node */ static function (Node $node): string {
-                return '(...)';
+            ast\AST_CALLABLE_CONVERT => static function (Node $node): string {
+                // `f(...)`, or partial function application such as `f(1, ?)` (the arguments are available in AST version 130+)
+                $args_node = $node->children['args'] ?? null;
+                return $args_node instanceof Node ? self::toShortString($args_node) : '(...)';
+            },
+            ast\AST_PLACEHOLDER_ARG => static function (Node $node): string {
+                return ($node->flags & ast\flags\PLACEHOLDER_VARIADIC) ? '...' : '?';
             },
             ast\AST_ATTRIBUTE_LIST => static function (Node $node): string {
                 return implode(' ', array_map([self::class, 'toShortString'], $node->children));

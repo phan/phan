@@ -59,6 +59,9 @@ final class PHP86Test extends AbstractPhanFileTestBase
         $main_path = \basename(\reset($test_file_list));
         if (\PHP_VERSION_ID < 80600) {
             $skip_reason = 'Skip PHP 8.6 is required';
+        } elseif (Config::AST_VERSION < 130 && \str_contains($main_path, 'partial_application')) {
+            // php-ast only provides the arguments of partial function application in AST version 130
+            $skip_reason = 'Skip php-ast 1.1.5+ is required';
         }
         if ($skip_reason !== null) {
             $this->markTestSkipped("Skipping test for $main_path: $skip_reason");

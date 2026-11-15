@@ -11,6 +11,7 @@ use Closure;
 use Exception;
 use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
+use Phan\AST\PartialApplication;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
@@ -74,13 +75,64 @@ final class ArgumentType
         Context $context,
         CodeBase $code_base
     ): void {
+        self::analyzeArguments($method, $node, $context, $code_base, false, false);
+    }
+
+    /**
+     * Analyze the arguments of partial function application (php 8.6+), such as `f(1, ?)` or `f(1, ...)`:
+     * the arguments that are bound to values are checked against the parameters of $method, and so is the number of arguments.
+     * The placeholders are checked when the closure is called.
+     *
+     * @param FunctionInterface $method
+     * The function/method that is partially applied
+     *
+     * @param Node $node
+     * The node of the call, with an argument list of kind ast\AST_CALLABLE_CONVERT for which PartialApplication::isPartialApplication() is true
+     */
+    public static function analyzePartialApplication(
+        FunctionInterface $method,
+        Node $node,
+        Context $context,
+        CodeBase $code_base
+    ): void {
+        $args = PartialApplication::getArgs($node->children['args']);
+        $has_variadic_placeholder = false;
+        foreach ($args as $i => $arg) {
+            if (PartialApplication::isVariadicPlaceholder($arg)) {
+                // `...` stands for the parameters that are left: it is not an argument.
+                unset($args[$i]);
+                $has_variadic_placeholder = true;
+            }
+        }
+        // Analyze this like a call where the type of each `?` is unknown.
+        $call_node = clone $node;
+        $call_node->children['args'] = new Node(ast\AST_ARG_LIST, 0, \array_values($args), $node->children['args']->lineno);
+        self::analyzeArguments($method, $call_node, $context, $code_base, true, $has_variadic_placeholder);
+    }
+
+    /**
+     * @param bool $is_partial_application
+     * Whether this is partial function application: the arguments may contain placeholders (`?`),
+     * and the function is not called, so the checks of plugins for calls of this function are skipped.
+     *
+     * @param bool $allow_too_few_arguments
+     * Whether the remaining parameters are left for later (partial application with `...`)
+     */
+    private static function analyzeArguments(
+        FunctionInterface $method,
+        Node $node,
+        Context $context,
+        CodeBase $code_base,
+        bool $is_partial_application,
+        bool $allow_too_few_arguments
+    ): void {
         if ($node->kind === ast\AST_STATIC_CALL && $method instanceof Method) {
             if ($method->isAbstract() && $method->isStatic()) {
                 self::checkAbstractStaticMethodCall($method, $node, $context, $code_base);
             }
         }
         self::checkIsDeprecatedOrInternal($code_base, $context, $method);
-        if ($method->hasFunctionCallAnalyzer()) {
+        if (!$is_partial_application && $method->hasFunctionCallAnalyzer()) {
             try {
                 $method->analyzeFunctionCall($code_base, $context->withLineNumberStart($node->lineno), self::normalizeNamedArgs($node->children['args']->children ?? [], $method), $node);
             } catch (StopParamAnalysisException) {
@@ -104,7 +156,7 @@ final class ArgumentType
         $suppress_param_validation = self::shouldSuppressParamValidationForNode($code_base, $context, $node);
 
         // Make sure we have enough arguments
-        if (!$suppress_param_validation && $argcount < $method->getNumberOfRequiredParameters()) {
+        if (!$suppress_param_validation && !$allow_too_few_arguments && $argcount < $method->getNumberOfRequiredParameters()) {
             $alternate_found = false;
             foreach ($method->alternateGenerator($code_base) as $alternate_method) {
                 $alternate_found = $alternate_found || (
@@ -162,14 +214,26 @@ final class ArgumentType
         // NOTE: Attributes have an optional arg list, which is the same as 0 args.
         // Because there are 0 args, no argument types need to be checked.
         if ($arglist instanceof Node) {
-            self::analyzeParameterList(
-                $code_base,
-                $method,
-                $arglist,
-                $context
-            );
+            $old_allow_missing_named_arguments = self::$allow_missing_named_arguments;
+            self::$allow_missing_named_arguments = $allow_too_few_arguments;
+            try {
+                self::analyzeParameterList(
+                    $code_base,
+                    $method,
+                    $arglist,
+                    $context
+                );
+            } finally {
+                self::$allow_missing_named_arguments = $old_allow_missing_named_arguments;
+            }
         }
     }
+
+    /**
+     * @var bool whether the argument list being analyzed is of partial function application with `...`,
+     * where the parameters without an argument are left for the call of the closure.
+     */
+    private static $allow_missing_named_arguments = false;
 
     /**
      * @param FunctionInterface $method
@@ -822,6 +886,11 @@ final class ArgumentType
                 continue;
             }
 
+            if (PartialApplication::isPlaceholder($argument_expression)) {
+                // `?` in partial function application: the argument is checked when the closure is called.
+                continue;
+            }
+
             $argument_kind = $argument->kind ?? 0;
 
             // If this is a pass-by-reference parameter, make sure
@@ -997,6 +1066,9 @@ final class ArgumentType
         FunctionInterface $method,
         array $positions_used
     ): void {
+        if (self::$allow_missing_named_arguments) {
+            return;
+        }
         foreach ($method->getRealParameterList() as $i => $parameter) {
             if ($parameter->isOptional() || $parameter->isVariadic()) {
                 continue;
@@ -1103,6 +1175,11 @@ final class ArgumentType
             // Shouldn't be possible?
             if (!$parameter) {
                 return;
+            }
+
+            if (PartialApplication::isPlaceholder($argument)) {
+                // `?` in partial function application: the argument is checked when the closure is called.
+                continue;
             }
 
             $argument_kind = $argument->kind;

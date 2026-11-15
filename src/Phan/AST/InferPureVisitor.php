@@ -563,10 +563,23 @@ class InferPureVisitor extends AnalysisVisitor
     }
 
     /**
-     * @unused-param $node
      * @override
      */
     public function visitCallableConvert(Node $node): void
+    {
+        // The arguments that partial function application (php 8.6+) binds to values are evaluated when the closure is created.
+        foreach (PartialApplication::getBoundArgs($node) as $arg) {
+            if ($arg instanceof Node) {
+                $this->__invoke($arg);
+            }
+        }
+    }
+
+    /**
+     * @unused-param $node
+     * @override
+     */
+    public function visitPlaceholderArg(Node $node): void
     {
     }
 

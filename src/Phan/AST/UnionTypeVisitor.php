@@ -47,7 +47,6 @@ use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\ClassStringType;
-use Phan\Language\Type\ClosureDeclarationType;
 use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
@@ -3540,11 +3539,8 @@ class UnionTypeVisitor extends AnalysisVisitor
     private function getDependentReturnTypeOfCall(FunctionInterface $function, Node $node): UnionType
     {
         if ($node->children['args']->kind === ast\AST_CALLABLE_CONVERT) {
-            if ($function instanceof ClosureDeclarationType) {
-                return $function->asRealUnionType();
-            } else {
-                return ClosureType::instanceWithClosureFQSEN($function->getFQSEN(), $function)->asRealUnionType();
-            }
+            // First-class callable syntax, or partial function application (php 8.6+)
+            return PartialApplication::createClosureUnionType($function, $node->children['args']);
         } elseif ($function->hasDependentReturnType()) {
             return $function->getDependentReturnType($this->code_base, $this->context, ArgumentType::normalizeNamedArgs($node->children['args']->children ?? [], $function));
         }

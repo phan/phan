@@ -55,6 +55,10 @@ class Shim
         if (!defined('ast\AST_CALLABLE_CONVERT')) {
             define('ast\AST_CALLABLE_CONVERT', 249);
         }
+        if (!defined('ast\AST_PLACEHOLDER_ARG')) {
+            // Added in php-ast 1.1.5 (AST version 130). No node of this kind exists with an older php-ast.
+            define('ast\AST_PLACEHOLDER_ARG', 0x501);
+        }
         if (!defined('ast\AST_MATCH')) {
             define('ast\AST_MATCH', 0x2fc);
         }
@@ -137,6 +141,9 @@ class Shim
         }
         if (!defined('ast\flags\MODIFIER_PRIVATE_SET')) {
             define('ast\flags\MODIFIER_PRIVATE_SET', 0x50000000);
+        }
+        if (!defined('ast\flags\PLACEHOLDER_VARIADIC')) {
+            define('ast\flags\PLACEHOLDER_VARIADIC', 1);
         }
         if (!defined('ast\flags\BINARY_PIPE')) {
             // @phan-suppress-next-line PhanUnreferencedConstant Will be used in future

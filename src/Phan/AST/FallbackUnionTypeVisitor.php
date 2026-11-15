@@ -17,7 +17,6 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
-use Phan\Language\Type\ClosureDeclarationType;
 use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
@@ -668,11 +667,7 @@ class FallbackUnionTypeVisitor extends KindVisitorImplementation
     private static function getDependentFallbackReturnTypeOfCall(FunctionInterface $function, Node $node): UnionType
     {
         if ($node->children['args']->kind === ast\AST_CALLABLE_CONVERT) {
-            if ($function instanceof ClosureDeclarationType) {
-                return $function->asRealUnionType();
-            } else {
-                return ClosureType::instanceWithClosureFQSEN($function->getFQSEN(), $function)->asRealUnionType();
-            }
+            return PartialApplication::createClosureUnionType($function, $node->children['args']);
         }
         return $function->getUnionType();
     }

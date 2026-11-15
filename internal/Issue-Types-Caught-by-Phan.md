@@ -523,6 +523,12 @@ e.g. this issue is emitted when analyzing #[Override] while targeting versions t
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/1201_version_specific.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/1201_version_specific.php#L18).
 
+## PhanCompatiblePartialApplication
+
+```
+Partial function application (a call with the arguments {CODE}) is only supported in PHP 8.6+.
+```
+
 ## PhanCompatibleReadonlyClass
 
 ```
