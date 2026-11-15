@@ -4,3 +4,4 @@
 %s:46 PhanCommentOverrideOnNonOverrideConstant Saw an @override annotation for class constant \NS86OverrideConstant\Suit::Hearts, but could not find an overridden constant
 %s:62 PhanCommentOverrideOnNonOverrideConstant Saw an @override annotation for class constant \NS86OverrideConstant\UsesTraitWithoutMatch::C, but could not find an overridden constant
 %s:79 PhanCommentOverrideOnNonOverrideConstant Saw an @override annotation for class constant \NS86OverrideConstant\NestedWithoutMatch::C, but could not find an overridden constant
+%s:100 PhanCommentOverrideOnNonOverrideConstant Saw an @override annotation for class constant \NS86OverrideConstant\RedeclaresWithOverride::C, but could not find an overridden constant

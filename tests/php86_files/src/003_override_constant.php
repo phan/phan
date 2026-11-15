@@ -81,5 +81,24 @@ class NestedWithoutMatch
     use UsesT;
 }
 
-echo NestedWithMatch::C, NestedWithoutMatch::C;
+// A class that declares the constant itself replaces the constant of the trait:
+// the attribute of the trait's constant is not checked for it.
+class RedeclaresConstant
+{
+    use T;
+
+    public const C = 4;
+}
+
+// The attribute of the class's own constant is checked, and the constant of the trait is not a parent constant.
+// Fatal error: RedeclaresWithOverride::C has #[\Override] attribute, but no matching parent constant exists
+class RedeclaresWithOverride
+{
+    use T;
+
+    #[\Override]
+    public const C = 4;
+}
+
+echo NestedWithMatch::C, NestedWithoutMatch::C, RedeclaresConstant::C, RedeclaresWithOverride::C;
 echo Child::X, Child::C, Bad::NOPE, Bad::P, Suit::C, Suit::Hearts->value, UsesTrait::C, UsesTraitWithoutMatch::C, Base::UNRELATED;

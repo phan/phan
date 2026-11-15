@@ -1674,12 +1674,7 @@ class Clazz extends AddressableElement
         if ($code_base->hasClassConstantWithFQSEN($constant_fqsen)) {
             // If the constant with that name already exists, mark it as an override.
             $overriding_constant = $code_base->getClassConstantByFQSEN($constant_fqsen);
-            if (!$constant->isPrivate() || self::isConstantOfTrait($code_base, $constant)) {
-                // A private constant of an ancestor class is not visible to this class, so it is not overridden:
-                // php rejects #[Override] on a constant that only has a private constant of that name in an ancestor class.
-                // (The private constant of a trait becomes a constant of this class)
-                $overriding_constant->setIsOverride(true);
-            }
+            $overriding_constant->setIsOverride(true);
             $this->checkConstantCompatibility(
                 $code_base,
                 $constant,
@@ -4076,7 +4071,7 @@ class Clazz extends AddressableElement
         if (!$this->isTrait()) {
             // The constants of a trait override the constants of the classes using the trait, which are not known here.
             // (php ignores #[Override] on the constant of the trait itself, and checks it for each class using the trait)
-            self::analyzeClassConstantOverrides($code_base, $original_declared_class_constants);
+            $this->analyzeClassConstantOverrides($code_base, $original_declared_class_constants);
             $this->analyzeTraitConstantOverrides($code_base);
         }
     }
@@ -4100,6 +4095,13 @@ class Clazz extends AddressableElement
                     continue;
                 }
                 $checked_names[$name] = true;
+                $constant_fqsen = FullyQualifiedClassConstantName::make($this->fqsen, (string)$name);
+                if (!$code_base->hasClassConstantWithFQSEN($constant_fqsen)
+                    || !self::isConstantOfTrait($code_base, $code_base->getClassConstantByFQSEN($constant_fqsen))) {
+                    // This class declares a constant with this name itself, which replaces the constant of the trait:
+                    // php does not check the attribute of the trait's constant for this class.
+                    continue;
+                }
                 if ($this->hasConstantToOverrideWithName($code_base, (string)$name)) {
                     continue;
                 }
@@ -4185,10 +4187,12 @@ class Clazz extends AddressableElement
     /**
      * @param ClassConstant[] $original_declared_class_constants
      */
-    private static function analyzeClassConstantOverrides(CodeBase $code_base, array $original_declared_class_constants): void
+    private function analyzeClassConstantOverrides(CodeBase $code_base, array $original_declared_class_constants): void
     {
         foreach ($original_declared_class_constants as $constant) {
-            if ($constant->isOverrideIntended() && !$constant->isOverride()) {
+            // NOTE: $constant->isOverride() is not used here: it is also set for a constant with the same name in a trait
+            // used by this class, which is not a constant of a parent class or interface.
+            if ($constant->isOverrideIntended() && !$this->hasConstantToOverrideWithName($code_base, $constant->getName())) {
                 if ($constant->checkHasSuppressIssueAndIncrementCount(Issue::CommentOverrideOnNonOverrideConstant)) {
                     continue;
                 }
