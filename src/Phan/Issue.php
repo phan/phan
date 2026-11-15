@@ -360,6 +360,7 @@ class Issue
     public const DeprecatedEncapsVar       = 'PhanDeprecatedEncapsVar';
     public const DeprecatedImplicitNullableParam = 'PhanDeprecatedImplicitNullableParam';
     public const DeprecatedReturnInFinally = 'PhanDeprecatedReturnInFinally';
+    public const DeprecatedReservedName = 'PhanDeprecatedReservedName';
     public const DeprecatedConstructorObjectParamInternal = 'PhanDeprecatedConstructorObjectParamInternal';
 
     // Issue::CATEGORY_PARAMETER
@@ -3457,6 +3458,14 @@ class Issue
                 'Returning from a finally block has been deprecated in PHP 8.6: it discards the exception being thrown or the value being returned by the try block or a catch block',
                 self::REMEDIATION_B,
                 5016
+            ),
+            new Issue(
+                self::DeprecatedReservedName,
+                self::CATEGORY_DEPRECATED,
+                self::SEVERITY_NORMAL,
+                'Using "{DETAILS}" as the name of {DETAILS} has been deprecated in PHP 8.6',
+                self::REMEDIATION_B,
+                5017
             ),
 
             // Issue::CATEGORY_PARAMETER

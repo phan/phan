@@ -119,6 +119,14 @@ class ParseVisitor extends ScopeVisitor
         if ($class_name === '') {
             return $this->context;
         }
+        if (!($node->flags & \ast\flags\CLASS_ANONYMOUS)) {
+            $this->warnAboutNameReservedInFutureVersion(
+                $class_name,
+                ['let', 'is'],
+                ($node->flags & \ast\flags\CLASS_INTERFACE) ? 'an interface' : (($node->flags & \ast\flags\CLASS_TRAIT) ? 'a trait' : (($node->flags & \ast\flags\CLASS_ENUM) ? 'an enum' : 'a class')),
+                $node->lineno
+            );
+        }
 
         $class_fqsen = FullyQualifiedClassName::fromStringInContext(
             $class_name,
@@ -1265,6 +1273,7 @@ class ParseVisitor extends ScopeVisitor
             if (!\is_string($name)) {
                 throw new AssertionError('expected class const name to be a string');
             }
+            $this->warnAboutNameReservedInFutureVersion($name, ['namespace'], 'a class constant', $child_node->lineno);
 
             $fqsen = FullyQualifiedClassConstantName::make(
                 $class->getFQSEN(),
@@ -1473,6 +1482,29 @@ class ParseVisitor extends ScopeVisitor
         return $this->context;
     }
 
+    /**
+     * Emit PhanDeprecatedReservedName for the declaration of a function, class or class constant
+     * with a name that PHP 8.6 deprecates, to reserve it for future syntax.
+     *
+     * @param list<string> $deprecated_names the deprecated names for this kind of element, in lowercase
+     * @param string $kind a description of the kind of element, e.g. 'a function'
+     */
+    private function warnAboutNameReservedInFutureVersion(string $name, array $deprecated_names, string $kind, int $lineno): void
+    {
+        if (Config::get_closest_target_php_version_id() < 80600) {
+            return;
+        }
+        if (!\in_array(\strtolower($name), $deprecated_names, true)) {
+            return;
+        }
+        $this->emitIssue(
+            Issue::DeprecatedReservedName,
+            $lineno,
+            $name,
+            $kind
+        );
+    }
+
     private function handleClassConstantComment(ClassConstant $constant, Comment $comment): void
     {
         $constant->setIsDeprecated($comment->isDeprecated());
@@ -1583,6 +1615,7 @@ class ParseVisitor extends ScopeVisitor
     public function visitFuncDecl(Node $node): Context
     {
         $function_name = (string)$node->children['name'];
+        $this->warnAboutNameReservedInFutureVersion($function_name, ['let', 'is', 'readonly'], 'a function', $node->lineno);
         $context = $this->context;
         $code_base = $this->code_base;
 
