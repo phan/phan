@@ -7,6 +7,9 @@ RUN apt-get update && apt-get install -y unzip parallel colordiff sqlite3 && apt
 # pie builds the tagged release against this image's PHP and enables it in the conf.d directory.
 RUN curl -fSL https://github.com/php/pie/releases/download/1.5.3/pie.phar -o /usr/local/bin/pie && echo "34a1315073b6089d4cdf4cc5a8295ecc6d36cfde683ef785582f7da0d74f127b  /usr/local/bin/pie" | sha256sum -c && chmod a+x /usr/local/bin/pie
 RUN pie install nikic/php-ast:1.1.4
+# The php 8.6 images no longer bundle mbstring, which phpunit and Phan's dependencies require.
+# mbregex is disabled so that building it does not need oniguruma (https://wiki.php.net/rfc/eol-oniguruma)
+RUN php -r 'exit(extension_loaded("mbstring") ? 0 : 1);' || (docker-php-ext-configure mbstring --disable-mbregex && docker-php-ext-install mbstring)
 RUN curl -fSL https://getcomposer.org/download/2.10.1/composer.phar -o /usr/bin/composer.phar && echo "345b9c6a98da5c30dcbd4b0d99fc8710bf0ae98a3898eea18f7b2ad9dec93f06  /usr/bin/composer.phar" | sha256sum -c && chmod a+x /usr/bin/composer.phar
 WORKDIR /phan
 
