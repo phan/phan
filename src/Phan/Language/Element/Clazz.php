@@ -4077,7 +4077,66 @@ class Clazz extends AddressableElement
             // The constants of a trait override the constants of the classes using the trait, which are not known here.
             // (php ignores #[Override] on the constant of the trait itself, and checks it for each class using the trait)
             self::analyzeClassConstantOverrides($code_base, $original_declared_class_constants);
+            $this->analyzeTraitConstantOverrides($code_base);
         }
+    }
+
+    /**
+     * Check the constants that this class gets from the traits it uses and that are marked with (at)override or #[Override]:
+     * they have to override a constant of the parent class or of an interface of this class.
+     * (php checks #[Override] on the constant of a trait for each class using the trait, and reports it for the class)
+     */
+    private function analyzeTraitConstantOverrides(CodeBase $code_base): void
+    {
+        foreach ($this->trait_fqsen_list as $trait_fqsen) {
+            if (!$code_base->hasClassWithFQSEN($trait_fqsen)) {
+                continue;
+            }
+            $trait = $code_base->getClassByFQSENWithoutHydrating($trait_fqsen);
+            foreach ($trait->getConstantMap($code_base) as $name => $constant) {
+                if (!$constant->isOverrideIntended() || $constant->getDefiningClassFQSEN() !== $trait_fqsen) {
+                    continue;
+                }
+                if ($this->hasConstantToOverrideWithName($code_base, (string)$name)) {
+                    continue;
+                }
+                if ($constant->checkHasSuppressIssueAndIncrementCount(Issue::CommentOverrideOnNonOverrideConstant)) {
+                    continue;
+                }
+                Issue::maybeEmit(
+                    $code_base,
+                    $this->internal_context,
+                    Issue::CommentOverrideOnNonOverrideConstant,
+                    $this->internal_context->getLineNumberStart(),
+                    $this->fqsen . '::' . $name
+                );
+            }
+        }
+    }
+
+    /**
+     * @return bool whether the parent class has a constant with this name that is not private, or an interface of this class has one
+     */
+    private function hasConstantToOverrideWithName(CodeBase $code_base, string $name): bool
+    {
+        if ($this->hasParentType()) {
+            $parent_fqsen = $this->getParentClassFQSEN();
+            if ($code_base->hasClassWithFQSEN($parent_fqsen)) {
+                $parent = $code_base->getClassByFQSEN($parent_fqsen);
+                $constant_fqsen = FullyQualifiedClassConstantName::make($parent_fqsen, $name);
+                if ($parent->hasConstantWithName($code_base, $name)
+                    && !$code_base->getClassConstantByFQSEN($constant_fqsen)->isPrivate()) {
+                    return true;
+                }
+            }
+        }
+        foreach ($this->interface_fqsen_list as $interface_fqsen) {
+            if ($code_base->hasClassWithFQSEN($interface_fqsen)
+                && $code_base->getClassByFQSEN($interface_fqsen)->hasConstantWithName($code_base, $name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

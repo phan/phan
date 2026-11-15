@@ -41,6 +41,21 @@ readonly class Point
     }
 }
 
+final class Coalesce
+{
+    public readonly int $id = 1;
+    public readonly ?int $nullable = null;
+
+    public function __construct()
+    {
+        // Does not assign: the default value is not null
+        $this->id ??= 2;
+        // Error: this assigns, because the default value is null
+        $this->nullable ??= 2;
+    }
+}
+
+echo (new Coalesce())->id;
 $example = new Example(1);
 echo $example->kind, $example->id, count($example->tags), $example->promoted;
 $example->kind = 'outside';
