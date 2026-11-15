@@ -485,7 +485,8 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             Func $function,
             array $args
         ): UnionType {
-            if (count($args) !== 3) {
+            if (count($args) !== 3 || !$function->isPHPInternal()) {
+                // A function named clamp() declared by the analyzed code (e.g. for php < 8.6) need not behave like the built-in.
                 return $function->getUnionType();
             }
             $result = UnionType::empty();

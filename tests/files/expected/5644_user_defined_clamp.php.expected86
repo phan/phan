@@ -1,0 +1,3 @@
+%s:7 PhanRedefineFunctionInternal Function clamp defined at %s:7 was previously defined internally
+%s:12 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type 0|1|10(real=mixed)
+%s:14 PhanTypeMismatchArgumentInternal Argument 1 ($value) is $x of type int (value: 0)|int (value: 1)|int (value: 10) but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
