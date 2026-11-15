@@ -440,6 +440,22 @@ final class PhpDeprecationPlugin extends PluginV3 implements
             $closures["\\$function_name"] ??=
                 /** @param list<Node|int|float|string> $unused_args */
                 static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $unused_args, ?Node $call_node): void {
+                    if (!$function->isPHPInternal()) {
+                        return;
+                    }
+                    if ($function instanceof Func) {
+                        // The analyzed code declares a function with this name, e.g. a polyfill for an extension that is not enabled:
+                        // that is the function being called, and it is not deprecated.
+                        // (Phan knows the internal function from its signature map, and calls resolve to it)
+                        $alternate_id = 0;
+                        $fqsen = $function->getFQSEN()->getCanonicalFQSEN();
+                        while ($code_base->hasFunctionWithFQSEN($fqsen)) {
+                            if (!$code_base->getFunctionByFQSEN($fqsen)->isPHPInternal()) {
+                                return;
+                            }
+                            $fqsen = $fqsen->withAlternateId(++$alternate_id);
+                        }
+                    }
                     if ($function->isDeprecated()) {
                         // Already reported as PhanDeprecatedFunctionInternal
                         return;
@@ -465,8 +481,8 @@ final class PhpDeprecationPlugin extends PluginV3 implements
                 $closures["\\$class_name::$method_name"] =
                     /** @param list<Node|int|float|string> $unused_args */
                     static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $unused_args, ?Node $call_node) use ($class_name): void {
-                        if ($function->isDeprecated()) {
-                            // Already reported as PhanDeprecatedFunctionInternal, from Reflection
+                        if (!$function->isPHPInternal() || $function->isDeprecated()) {
+                            // Not a method of the internal class, or already reported as PhanDeprecatedFunctionInternal from Reflection
                             return;
                         }
                         if (!($function instanceof Method) || \strtolower(\ltrim((string)$function->getDefiningClassFQSEN(), '\\')) !== $class_name) {
