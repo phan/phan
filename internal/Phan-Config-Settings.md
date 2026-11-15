@@ -856,7 +856,7 @@ The values you will want depend on what PHP versions you are checking for compat
 
 The PHP version that will be used for feature/syntax compatibility warnings.
 
-Supported values: `'8.1'`, `'8.2'`, `'8.3'`, `'8.4'`, `'8.5'`, `null`.
+Supported values: `'8.1'`, `'8.2'`, `'8.3'`, `'8.4'`, `'8.5'`, `'8.6'`, `null`.
 If this is set to `null`, Phan will first attempt to infer the value from
 the project's composer.json's `{"require": {"php": "version range"}}` if possible.
 If that could not be determined, then Phan assumes `target_php_version`.
@@ -887,7 +887,7 @@ For best results, the PHP binary used to run Phan should have the same PHP versi
 (Phan relies on Reflection for some types, param counts,
 and checks for undefined classes/methods/functions)
 
-Supported values: `'8.1'`, `'8.2'`, `'8.3'`, `'8.4'`, `'8.5'`, `null`.
+Supported values: `'8.1'`, `'8.2'`, `'8.3'`, `'8.4'`, `'8.5'`, `'8.6'`, `null`.
 If this is set to `null`,
 then Phan assumes the PHP version which is closest to the minor version
 of the php executable used to execute Phan.

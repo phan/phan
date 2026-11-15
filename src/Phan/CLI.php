@@ -1752,13 +1752,13 @@ $init_help
  -q, --quick
   Quick mode - doesn't recurse into all function calls
 
- --target-php-version {8.1,8.2,8.3,8.4,8.5,native}
+ --target-php-version {8.1,8.2,8.3,8.4,8.5,8.6,native}
   The PHP version that the codebase will be checked for compatibility against.
   For best results, the PHP binary used to run Phan should have the same PHP version.
   (Phan relies on Reflection for some param counts
    and checks for undefined classes/methods/functions)
 
- --minimum-target-php-version {8.1,8.2,8.3,8.4,8.5,native}
+ --minimum-target-php-version {8.1,8.2,8.3,8.4,8.5,8.6,native}
   The PHP version that will be used for feature/syntax compatibility warnings.
 
  --ignore-undeclared

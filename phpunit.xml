@@ -70,6 +70,9 @@
     <testsuite name="PHP85Test">
       <file>tests/Phan/PHP85Test.php</file>
     </testsuite>
+    <testsuite name="PHP86Test">
+      <file>tests/Phan/PHP86Test.php</file>
+    </testsuite>
     <testsuite name="Structure">
       <file>tests/Phan/TestSuitesTest.php</file>
     </testsuite>

@@ -715,7 +715,7 @@ final class UnionTypeTest extends TestBase
 
     public function testFunctionSignatureMapSorted(): void
     {
-        foreach ([80100, 80200, 80300, 80400] as $version) {
+        foreach ([80100, 80200, 80300, 80400, 80500, 80600] as $version) {
             $map = UnionType::internalFunctionSignatureMap($version);
             $keys = \array_keys($map);
             $sorted = $keys;
