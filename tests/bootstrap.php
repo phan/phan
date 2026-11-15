@@ -24,6 +24,8 @@ const PHP84_TEST_FILE_DIR = './tests/php84_files/src';
 const PHP84_EXPECTED_DIR = './tests/php84_files/expected';
 const PHP85_TEST_FILE_DIR = './tests/php85_files/src';
 const PHP85_EXPECTED_DIR = './tests/php85_files/expected';
+const PHP86_TEST_FILE_DIR = './tests/php86_files/src';
+const PHP86_EXPECTED_DIR = './tests/php86_files/expected';
 const ASYMMETRIC_VISIBILITY_TEST_FILE_DIR = './tests/asymmetric_visibility/src';
 
 require_once dirname(__DIR__) . '/src/Phan/Bootstrap.php';

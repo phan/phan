@@ -1,4 +1,4 @@
 %s:10 PhanDebugAnnotation @phan-debug-var requested for variable $last - it has union type (empty union type)
-%s:10 PhanUndeclaredFunction Call to undeclared function \array_last()
+%s:10 PhanUndeclaredFunction Call to undeclared function \array_last() (Did you mean (to use the function array_last() added in PHP 8.5 in a project with target_php_version=8.1 run with PHP %s without a polyfill parsed by Phan))
 %s:12 PhanDebugAnnotation @phan-debug-var requested for variable $first - it has union type (empty union type)
-%s:12 PhanUndeclaredFunction Call to undeclared function \array_first()
+%s:12 PhanUndeclaredFunction Call to undeclared function \array_first() (Did you mean (to use the function array_first() added in PHP 8.5 in a project with target_php_version=8.1 run with PHP %s without a polyfill parsed by Phan))

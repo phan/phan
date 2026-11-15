@@ -124,7 +124,7 @@ This is extremely useful when:
    - `src/Phan/AST/`: AST traversal and visitor implementations
    - `src/Phan/Parse/ParseVisitor.php`: Main parser that builds Phan's internal representation
    - Requires php-ast extension (1.1.3+ for PHP 8.4 support)
-   - Fallback parser via `microsoft/tolerant-php-parser` (being phased out for PHP 8.4+)
+   - Fallback parser via `phan/tolerant-php-parser`, Phan's fork of `microsoft/tolerant-php-parser` (new syntax is added to the fork, then mapped in `src/Phan/AST/TolerantASTConverter/`)
 
 2. **Type System**
    - `src/Phan/Language/Type/`: Core type representations
@@ -257,7 +257,7 @@ cat tests/files/expected/problem_test.php.expected
 
 - PHP version-specific tests go in `tests/phpXX_files/` directories
 - Expected output files use `.expected` extension with `%s` for file paths
-- PHP version-specific expected output: Use `.expectedXX` suffix (e.g., `.expected84` for PHP 8.4)
+- PHP version-specific expected output: Use `.expectedXX` suffix (e.g., `.expected84` for PHP 8.4). Run the suite on every installed PHP version (8.1-8.6) before pushing: a change can pass on one version and fail a `.expectedXX` file on another
 
 ### Generating Expected Test Output Files
 

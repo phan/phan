@@ -70,6 +70,8 @@ final class FunctionSignatureMapTest extends CodeBaseAwareTestBase
             [80200],  // PHP 8.2
             [80300],  // PHP 8.3
             [80400],  // PHP 8.4
+            [80500],  // PHP 8.5
+            [80600],  // PHP 8.6
         ];
     }
 
