@@ -223,6 +223,14 @@ class FunctionFactory
                 $function->setParameterList($function->getRealParameterList());
             }
             $function->inheritRealParameterDefaults();
+            // Phan has no signature for this function or method, e.g. because it belongs to a PECL extension or to a class
+            // added in a newer php version than the signature maps describe: use the return type that Reflection reports.
+            if ($function->getUnionType()->isEmpty()) {
+                $real_type_set = $function->getRealReturnType()->getTypeSet();
+                if ($real_type_set) {
+                    $function->setUnionType(UnionType::of($real_type_set, $real_type_set));
+                }
+            }
             return [$function];
         }
 

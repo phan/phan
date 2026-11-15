@@ -1,0 +1,10 @@
+%s:15 PhanTypeMismatchArgumentInternal Argument 1 ($string) is clamp($i, 0, 10) of type int|int (value: 0)|int (value: 10) but \strlen() takes string
+%s:16 PhanTypeMismatchArgumentInternal Argument 1 ($string) is clamp($f, 0.0, 1.0) of type float|float (value: 0.0)|float (value: 1.0) but \strlen() takes string
+%s:17 PhanTypeMismatchArgumentInternal Argument 1 ($value) is clamp($s, 'a', 'z') of type string|string|string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array
+%s:18 PhanParamTooFewInternal Call with 1 arg(s) to \clamp($value, $min, $max) which requires 3 arg(s)
+%s:21 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is stream_last_errors() of type list<\StreamError> (real type array) but \strlen() takes string
+%s:24 PhanTypeMismatchArgumentInternal Argument 1 ($string) is new ReflectionProperty(\Exception::class, 'message')->isReadable(null) of type bool but \strlen() takes string
+%s:27 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is Duration::fromSeconds(5) of type \Time\Duration but \strlen() takes string
+%s:28 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is Duration::fromSeconds(5)->negate() of type \Time\Duration but \strlen() takes string
+%s:29 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is SortDirection::Ascending of type \SortDirection|\UnitEnum but \strlen() takes string
+%s:32 PhanTypeMismatchArgumentInternal Argument 1 ($string) is stream_is_local($s, null) of type bool but \strlen() takes string
