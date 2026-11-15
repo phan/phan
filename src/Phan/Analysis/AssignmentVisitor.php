@@ -1125,6 +1125,34 @@ class AssignmentVisitor extends AnalysisVisitor
         return $this->context;
     }
 
+    /**
+     * Before PHP 8.6, writing to a property of an object referenced by a constant (`OBJ->prop = 1`, `A::OBJ->prop .= 'x'`)
+     * is a compile error ("Cannot use temporary expression in write context").
+     *
+     * @param Node $node a node of kind AST_PROP that is written to
+     * @return bool true if an issue was emitted
+     * @internal
+     */
+    public static function checkWriteToPropertyOfConstant(CodeBase $code_base, Context $context, Node $node): bool
+    {
+        $expr_node = $node->children['expr'];
+        if (!($expr_node instanceof Node) || ($expr_node->kind !== ast\AST_CONST && $expr_node->kind !== ast\AST_CLASS_CONST)) {
+            return false;
+        }
+        if (Config::get_closest_minimum_target_php_version_id() >= 80600) {
+            return false;
+        }
+        Issue::maybeEmit(
+            $code_base,
+            $context,
+            Issue::InvalidWriteToTemporaryExpression,
+            $node->lineno,
+            ASTReverter::toShortString($node),
+            UnionTypeVisitor::unionTypeFromNode($code_base, $context, $expr_node)
+        );
+        return true;
+    }
+
     // TODO: visitNullsafeProp should not be possible on the left hand side? Emit Issue::InvalidNode
 
     /**
@@ -1137,6 +1165,9 @@ class AssignmentVisitor extends AnalysisVisitor
      */
     public function visitProp(Node $node): Context
     {
+        if (!$this->is_conditional_check) {
+            self::checkWriteToPropertyOfConstant($this->code_base, $this->context, $node);
+        }
         // Get class list first, warn if the class list is invalid.
         try {
             $class_list = (new ContextNode(
@@ -1808,6 +1839,20 @@ class AssignmentVisitor extends AnalysisVisitor
             if ($method instanceof Method && in_array(strtolower($method->getName()), $allowed_methods, true) && $is_same_or_subclass) {
                 // For native readonly, also check for multiple assignments in the same method
                 if ($is_native_readonly) {
+                    if ($property->hasDefaultValue() && strtolower($method->getName()) === '__construct') {
+                        // PHP 8.6+: the default value of a readonly property is its initialization, so the constructor cannot assign to it.
+                        // (__clone() may still reinitialize it once)
+                        if ($this->is_coalesce_assign && self::mayReadonlyDefaultBeNonNull($property)) {
+                            // `$this->prop ??= $x` does not assign when the default value is not null.
+                            return;
+                        }
+                        $this->emitIssue(
+                            Issue::AccessReadOnlyPropertyMultipleTimes,
+                            $node->lineno,
+                            $property->asPropertyFQSENString()
+                        );
+                        return;
+                    }
                     $this->checkMultipleReadOnlyPropertyAssignments($property, $node, $method);
                 }
                 return;
@@ -1837,6 +1882,20 @@ class AssignmentVisitor extends AnalysisVisitor
             $context->getFile(),
             $context->getLineNumberStart()
         );
+    }
+
+    /**
+     * @return bool whether the default value of this property may be something other than null:
+     * its declared type is not nullable, or the default value is not known to be null.
+     * (The type of a default that is a constant expression such as `self::X` is not known when the property is declared)
+     */
+    private static function mayReadonlyDefaultBeNonNull(Property $property): bool
+    {
+        if (!$property->getRealUnionType()->containsNullableOrUndefined()) {
+            return true;
+        }
+        $default_type = $property->getDefaultType();
+        return $default_type === null || $default_type->isEmpty() || !$default_type->isNull();
     }
 
     /**

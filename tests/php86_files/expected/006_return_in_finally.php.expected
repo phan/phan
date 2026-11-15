@@ -1,0 +1,3 @@
+%s:12 PhanDeprecatedReturnInFinally Returning from a finally block has been deprecated in PHP 8.6: it discards the exception being thrown or the value being returned by the try block or a catch block
+%s:22 PhanDeprecatedReturnInFinally Returning from a finally block has been deprecated in PHP 8.6: it discards the exception being thrown or the value being returned by the try block or a catch block
+%s:37 PhanPluginUnknownClosureReturnType Closure Closure() has no declared or inferred return type (Types inferred after analysis: int)

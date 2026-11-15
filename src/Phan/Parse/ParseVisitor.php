@@ -1030,6 +1030,16 @@ class ParseVisitor extends ScopeVisitor
             $phan_flags |= Flags::IS_OVERRIDE_INTENDED;
         }
         $property->setPhanFlags($phan_flags);
+        if ($default_node !== null && !$from_parameter) {
+            $property->setHasDefaultValue(true);
+            if (($flags & ast\flags\MODIFIER_READONLY) && Config::get_closest_minimum_target_php_version_id() < 80600) {
+                $this->emitIssue(
+                    Issue::CompatibleReadonlyPropertyDefault,
+                    $lineno,
+                    $property->getRepresentationForIssue()
+                );
+            }
+        }
         $property->setDocComment($doc_comment);
 
         // Add the property to the class
@@ -1471,7 +1481,15 @@ class ParseVisitor extends ScopeVisitor
             $constant->setIsDeprecated(true);
         }
         $constant->setIsNSInternal($comment->isNSInternal());
-        $constant->setIsOverrideIntended($comment->isOverrideIntended());
+        // #[Override] on a class constant or an enum case (PHP 8.6+) is checked the same way as (at)override
+        $constant->setIsOverrideIntended($comment->isOverrideIntended() || $constant->hasOverrideAttribute());
+        $this->emitOverrideAttributeCompatibility(
+            $constant->getAttributeList(),
+            $constant->getFileRef()->getLineNumberStart(),
+            (string)$constant->getFQSEN(),
+            80600,
+            '8.6+'
+        );
         $constant->setIsPHPDocAbstract($comment->isPHPDocAbstract());
         $constant->setSuppressIssueSet($comment->getSuppressIssueSet());
         $constant->setComment($comment);

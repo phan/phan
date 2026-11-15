@@ -20,7 +20,9 @@ class Flags
     public const IS_RETURN_TYPE_UNDEFINED     = (1 << 4);
     public const HAS_RETURN                   = (1 << 5);
     public const IS_OVERRIDE                  = (1 << 6);
-    public const HAS_YIELD                    = (1 << 7);
+    public const HAS_YIELD                    = (1 << 7);  // used on function-likes
+    // Is this a property that is declared with a default value? (used on properties)
+    public const HAS_DEFAULT_VALUE            = (1 << 7);
 
     public const HAS_STATIC_VARIABLE          = (1 << 8);  // used on function-likes
     public const CLASS_HAS_DYNAMIC_PROPERTIES = (1 << 8);  // used on classes

@@ -1,0 +1,12 @@
+%s:14 PhanUnreferencedProtectedClassConstant Possibly zero references to protected class constant \NS86OverrideConstant\Base::X
+%s:32 PhanCommentOverrideOnNonOverrideConstant Saw an @override annotation for class constant \NS86OverrideConstant\Bad::NOPE, but could not find an overridden constant
+%s:36 PhanCommentOverrideOnNonOverrideConstant Saw an @override annotation for class constant \NS86OverrideConstant\Bad::P, but could not find an overridden constant
+%s:46 PhanCommentOverrideOnNonOverrideConstant Saw an @override annotation for class constant \NS86OverrideConstant\Suit::Hearts, but could not find an overridden constant
+%s:62 PhanCommentOverrideOnNonOverrideConstant Saw an @override annotation for class constant \NS86OverrideConstant\UsesTraitWithoutMatch::C, but could not find an overridden constant
+%s:79 PhanCommentOverrideOnNonOverrideConstant Saw an @override annotation for class constant \NS86OverrideConstant\NestedWithoutMatch::C, but could not find an overridden constant
+%s:100 PhanCommentOverrideOnNonOverrideConstant Saw an @override annotation for class constant \NS86OverrideConstant\RedeclaresWithOverride::C, but could not find an overridden constant
+%s:120 PhanUnreferencedProtectedClassConstant Possibly zero references to protected class constant \NS86OverrideConstant\WithProtected::PROT
+%s:124 PhanCommentOverrideOnNonOverrideConstant Saw an @override annotation for class constant \NS86OverrideConstant\NonPublicWithMatch::PRIV, but could not find an overridden constant
+%s:130 PhanCommentOverrideOnNonOverrideConstant Saw an @override annotation for class constant \NS86OverrideConstant\NonPublicWithoutMatch::PRIV, but could not find an overridden constant
+%s:130 PhanCommentOverrideOnNonOverrideConstant Saw an @override annotation for class constant \NS86OverrideConstant\NonPublicWithoutMatch::PROT, but could not find an overridden constant
+%s:149 PhanCommentOverrideOnNonOverrideConstant Saw an @override annotation for class constant \NS86OverrideConstant\OverrideFirst::C, but could not find an overridden constant

@@ -359,6 +359,7 @@ class Issue
     public const DeprecatedPartiallySupportedCallableAlternateScope = 'PhanDeprecatedPartiallySupportedCallableAlternateScope';
     public const DeprecatedEncapsVar       = 'PhanDeprecatedEncapsVar';
     public const DeprecatedImplicitNullableParam = 'PhanDeprecatedImplicitNullableParam';
+    public const DeprecatedReturnInFinally = 'PhanDeprecatedReturnInFinally';
     public const DeprecatedConstructorObjectParamInternal = 'PhanDeprecatedConstructorObjectParamInternal';
 
     // Issue::CATEGORY_PARAMETER
@@ -627,6 +628,7 @@ class Issue
     public const CompatibleOverrideAttribute             = 'PhanCompatibleOverrideAttribute';
     public const CompatibleEnumPropertyInConstExpression = 'PhanCompatibleEnumPropertyInConstExpression';
     public const CompatibleClosureInConstExpression      = 'PhanCompatibleClosureInConstExpression';
+    public const CompatibleReadonlyPropertyDefault       = 'PhanCompatibleReadonlyPropertyDefault';
     public const NonEnumPropertyInConstExpression        = 'PhanNonEnumPropertyInConstExpression';
 
     // Issue::CATEGORY_GENERIC
@@ -3448,6 +3450,14 @@ class Issue
                 self::REMEDIATION_B,
                 5013
             ),
+            new Issue(
+                self::DeprecatedReturnInFinally,
+                self::CATEGORY_DEPRECATED,
+                self::SEVERITY_NORMAL,
+                'Returning from a finally block has been deprecated in PHP 8.6: it discards the exception being thrown or the value being returned by the try block or a catch block',
+                self::REMEDIATION_B,
+                5016
+            ),
 
             // Issue::CATEGORY_PARAMETER
             new Issue(
@@ -5313,6 +5323,14 @@ class Issue
                 'Using static closures without use() in constant expressions (e.g. {CODE}) is only supported in PHP 8.5+.',
                 self::REMEDIATION_B,
                 3058
+            ),
+            new Issue(
+                self::CompatibleReadonlyPropertyDefault,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                'The readonly property {PROPERTY} has a default value, which is only supported in PHP 8.6+.',
+                self::REMEDIATION_B,
+                3059
             ),
             new Issue(
                 self::CompatibleAutoload,

@@ -533,6 +533,12 @@ e.g. this issue is emitted when analyzing a readonly class while targeting PHP 8
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/1201_version_specific.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/1201_version_specific.php#L3).
 
+## PhanCompatibleReadonlyPropertyDefault
+
+```
+The readonly property {PROPERTY} has a default value, which is only supported in PHP 8.6+.
+```
+
 ## PhanCompatibleSerializeInterfaceDeprecated
 
 ```
@@ -772,6 +778,12 @@ Reference to deprecated property {PROPERTY} defined at {FILE}:{LINE}{DETAILS}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0171_deprecated_property.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0171_deprecated_property.php#L9).
+
+## PhanDeprecatedReturnInFinally
+
+```
+Returning from a finally block has been deprecated in PHP 8.6: it discards the exception being thrown or the value being returned by the try block or a catch block
+```
 
 ## PhanDeprecatedTrait
 

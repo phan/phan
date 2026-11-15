@@ -1654,6 +1654,17 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * @return bool whether this constant was declared by a trait (also for the copy of it in a class using the trait)
+     */
+    private static function isConstantOfTrait(CodeBase $code_base, ClassConstant $constant): bool
+    {
+        // NOTE: The defining FQSEN of the copy of a protected or private constant is the class using the trait,
+        // so the FQSEN of the original declaration is used.
+        $class_fqsen = $constant->getRealDefiningFQSEN()->getFullyQualifiedClassName();
+        return $code_base->hasClassWithFQSEN($class_fqsen) && $code_base->getClassByFQSEN($class_fqsen)->isTrait();
+    }
+
+    /**
      * Inherit a class constant from an ancestor class
      */
     public function inheritConstant(
@@ -4062,7 +4073,81 @@ class Clazz extends AddressableElement
         // Load parent methods, properties, constants
         $this->importConstantsFromAncestorClasses($code_base);
 
-        self::analyzeClassConstantOverrides($code_base, $original_declared_class_constants);
+        if (!$this->isTrait()) {
+            // The constants of a trait override the constants of the classes using the trait, which are not known here.
+            // (php ignores #[Override] on the constant of the trait itself, and checks it for each class using the trait)
+            $this->analyzeClassConstantOverrides($code_base, $original_declared_class_constants);
+            $this->analyzeTraitConstantOverrides($code_base);
+        }
+    }
+
+    /**
+     * Check the constants that this class gets from the traits it uses and that are marked with (at)override or #[Override]:
+     * they have to override a constant of the parent class or of an interface of this class.
+     * (php checks #[Override] on the constant of a trait for each class using the trait, and reports it for the class)
+     */
+    private function analyzeTraitConstantOverrides(CodeBase $code_base): void
+    {
+        $checked_names = [];
+        foreach ($this->trait_fqsen_list as $trait_fqsen) {
+            if (!$code_base->hasClassWithFQSEN($trait_fqsen)) {
+                continue;
+            }
+            // The trait is hydrated, so that this also sees the constants it gets from the traits it uses.
+            $trait = $code_base->getClassByFQSEN($trait_fqsen);
+            foreach ($trait->getConstantMap($code_base) as $name => $constant) {
+                if (!$constant->isOverrideIntended() || isset($checked_names[$name]) || !self::isConstantOfTrait($code_base, $constant)) {
+                    continue;
+                }
+                $constant_fqsen = FullyQualifiedClassConstantName::make($this->fqsen, (string)$name);
+                if (!$code_base->hasClassConstantWithFQSEN($constant_fqsen)
+                    || $code_base->getClassConstantByFQSEN($constant_fqsen)->getRealDefiningFQSEN() !== $constant->getRealDefiningFQSEN()) {
+                    // The constant of this class with this name is not this declaration: the class declares the constant itself,
+                    // or it got a compatible constant with the same name from a trait it uses earlier.
+                    // php keeps that constant, and does not check the attribute of this one for the class.
+                    continue;
+                }
+                $checked_names[$name] = true;
+                if ($this->hasConstantToOverrideWithName($code_base, (string)$name)) {
+                    continue;
+                }
+                if ($constant->checkHasSuppressIssueAndIncrementCount(Issue::CommentOverrideOnNonOverrideConstant)) {
+                    continue;
+                }
+                Issue::maybeEmit(
+                    $code_base,
+                    $this->internal_context,
+                    Issue::CommentOverrideOnNonOverrideConstant,
+                    $this->internal_context->getLineNumberStart(),
+                    $this->fqsen . '::' . $name
+                );
+            }
+        }
+    }
+
+    /**
+     * @return bool whether the parent class has a constant with this name that is not private, or an interface of this class has one
+     */
+    private function hasConstantToOverrideWithName(CodeBase $code_base, string $name): bool
+    {
+        if ($this->hasParentType()) {
+            $parent_fqsen = $this->getParentClassFQSEN();
+            if ($code_base->hasClassWithFQSEN($parent_fqsen)) {
+                $parent = $code_base->getClassByFQSEN($parent_fqsen);
+                $constant_fqsen = FullyQualifiedClassConstantName::make($parent_fqsen, $name);
+                if ($parent->hasConstantWithName($code_base, $name)
+                    && !$code_base->getClassConstantByFQSEN($constant_fqsen)->isPrivate()) {
+                    return true;
+                }
+            }
+        }
+        foreach ($this->interface_fqsen_list as $interface_fqsen) {
+            if ($code_base->hasClassWithFQSEN($interface_fqsen)
+                && $code_base->getClassByFQSEN($interface_fqsen)->hasConstantWithName($code_base, $name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -4108,10 +4193,12 @@ class Clazz extends AddressableElement
     /**
      * @param ClassConstant[] $original_declared_class_constants
      */
-    private static function analyzeClassConstantOverrides(CodeBase $code_base, array $original_declared_class_constants): void
+    private function analyzeClassConstantOverrides(CodeBase $code_base, array $original_declared_class_constants): void
     {
         foreach ($original_declared_class_constants as $constant) {
-            if ($constant->isOverrideIntended() && !$constant->isOverride()) {
+            // NOTE: $constant->isOverride() is not used here: it is also set for a constant with the same name in a trait
+            // used by this class, which is not a constant of a parent class or interface.
+            if ($constant->isOverrideIntended() && !$this->hasConstantToOverrideWithName($code_base, $constant->getName())) {
                 if ($constant->checkHasSuppressIssueAndIncrementCount(Issue::CommentOverrideOnNonOverrideConstant)) {
                     continue;
                 }
