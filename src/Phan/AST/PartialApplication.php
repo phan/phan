@@ -95,20 +95,29 @@ final class PartialApplication
     /**
      * @param Node $node a node of kind ast\AST_CALLABLE_CONVERT
      * @return ?int the index of the argument that is the only placeholder, when it is a positional `?` or `...`
-     * and every other argument is a value: the forms `f(?)`, `f(1, ?)`, `f(1, ...)` that the pipe operator passes its left operand to.
-     * Null for anything else.
+     * and every other argument is a value: the forms `f(?)`, `f(1, ?)`, `f(1, ...)`, `f(?, b: 2)`,
+     * where an argument in the place of the placeholder is passed to the parameter that the closure has.
+     * Null for anything else, including `...` after a named argument.
      */
     public static function getIndexOfSinglePositionalPlaceholder(Node $node): ?int
     {
         $index = null;
+        $has_named_arg = false;
         foreach (self::getArgs($node) as $i => $arg) {
             if (self::isPlaceholder($arg)) {
                 if ($index !== null) {
                     return null;
                 }
+                if ($has_named_arg) {
+                    // `...` after a named argument, e.g. `f(b: 1, ...)`: the remaining parameters are not at this position.
+                    return null;
+                }
                 $index = $i;
-            } elseif ($arg instanceof Node && $arg->kind === ast\AST_NAMED_ARG && self::isPlaceholder($arg->children['expr'])) {
-                return null;
+            } elseif ($arg instanceof Node && $arg->kind === ast\AST_NAMED_ARG) {
+                if (self::isPlaceholder($arg->children['expr'])) {
+                    return null;
+                }
+                $has_named_arg = true;
             }
         }
         return $index;

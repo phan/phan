@@ -110,6 +110,10 @@ function pipes(): void
     echo \count(5 |> add3(1, ?));
     // With more than one placeholder, the closure is called with the left operand.
     echo 5 |> add3(?, ?);
+    // `...` after a named argument stands for the parameters that are left, here $a and $c.
+    echo 5 |> add3(b: 2, ...);
+    echo 'not an int' |> add3(b: 2, ...);
+    echo 5 |> add3(?, b: 2);
 }
 
 types(new Point(1));
