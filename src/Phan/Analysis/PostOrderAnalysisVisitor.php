@@ -4654,8 +4654,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($args_node->kind === ast\AST_CALLABLE_CONVERT) {
             if (PartialApplication::isPartialApplication($args_node)) {
                 // Partial function application (php 8.6+): check the arguments that are bound to values.
-                // The function is not called here, so the effects of a call (e.g. on arguments passed by reference) are not analyzed.
+                // The function is not called here, but the closure binds the arguments of parameters passed by reference
+                // by reference, which creates the variables that do not exist yet: `$p = f(?, $out);` declares $out.
+                $this->createReferencesOfPartialApplication($method, $args_node);
                 ArgumentType::analyzePartialApplication($method, $node, $context, $code_base);
+                $this->addReferenceTypesOfPartialApplication($method, $args_node);
             }
             return;
         }
@@ -4785,6 +4788,66 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $node->children['args'],
             $method
         );
+    }
+
+    /**
+     * Yields the positional arguments of partial function application that are bound to a parameter passed by reference.
+     * (Named arguments are not handled, as in regular calls.)
+     *
+     * @param Node $args_node a node of kind ast\AST_CALLABLE_CONVERT
+     * @return \Generator<int,array{0:Node,1:Parameter}> the argument and its parameter, by the index of the argument
+     */
+    private static function getBoundReferenceArguments(FunctionInterface $method, Node $args_node): \Generator
+    {
+        foreach (PartialApplication::getArgs($args_node) as $i => $argument) {
+            if (!$argument instanceof Node || PartialApplication::isPlaceholder($argument)) {
+                continue;
+            }
+            if ($argument->kind === ast\AST_NAMED_ARG || $argument->kind === ast\AST_UNPACK) {
+                // The positions of the arguments after these are not known
+                return;
+            }
+            $parameter = $method->getParameterForCaller($i);
+            if ($parameter && $parameter->isPassByReference()) {
+                yield $i => [$argument, $parameter];
+            }
+        }
+    }
+
+    /**
+     * Creates the variables that partial function application binds by reference, before the bound arguments are checked.
+     *
+     * @param Node $args_node a node of kind ast\AST_CALLABLE_CONVERT
+     */
+    private function createReferencesOfPartialApplication(FunctionInterface $method, Node $args_node): void
+    {
+        foreach (self::getBoundReferenceArguments($method, $args_node) as $i => [$argument, $parameter]) {
+            $this->createPassByReferenceArgumentInCall($method, $argument, $parameter, $method->getRealParameterForCaller($i));
+        }
+    }
+
+    /**
+     * A variable that partial function application binds by reference may be set by any later call of the closure:
+     * add the type of the parameter to the types of the variable.
+     *
+     * @param Node $args_node a node of kind ast\AST_CALLABLE_CONVERT
+     */
+    private function addReferenceTypesOfPartialApplication(FunctionInterface $method, Node $args_node): void
+    {
+        foreach (self::getBoundReferenceArguments($method, $args_node) as [$argument, $parameter]) {
+            if ($argument->kind !== ast\AST_VAR) {
+                continue;
+            }
+            $name = $argument->children['name'];
+            if (!\is_string($name) || !$this->context->getScope()->hasVariableWithName($name)) {
+                continue;
+            }
+            $variable = clone $this->context->getScope()->getVariableByName($name);
+            $variable->setUnionType(
+                $variable->getUnionType()->withUnionType($parameter->getNonVariadicUnionType())->eraseRealTypeSetRecursively()
+            );
+            $this->context->addScopeVariable($variable);
+        }
     }
 
     /**

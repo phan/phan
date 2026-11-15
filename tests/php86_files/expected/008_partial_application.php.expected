@@ -1,31 +1,40 @@
-%s:13 PhanPluginUnknownArrayFunctionParamType Function by_ref() has a parameter type of array for $out, but does not specify any key types or value types
-%s:31 PhanWriteOnlyPublicProperty Possibly zero read references to public property \NS86PartialApplication\Point->y
-%s:49 PhanDebugAnnotation @phan-debug-var requested for variable $one - it has union type Closure(int $b):int(real=Closure(int $b):int)
-%s:52 PhanTypeMismatchArgumentReal Argument 1 ($b) is 'not an int' of type string but Closure(int $b):int takes int defined at %s:8
-%s:53 PhanParamTooFew Call with 0 arg(s) to Closure(int $b):int which requires 1 arg(s) defined at %s:8
-%s:56 PhanDebugAnnotation @phan-debug-var requested for variable $rest - it has union type Closure(int $b,int $c=):int(real=Closure(int $b,int $c=):int)
-%s:61 PhanDebugAnnotation @phan-debug-var requested for variable $named - it has union type Closure(int $c,int $a):int(real=Closure(int $c,int $a):int)
-%s:66 PhanDebugAnnotation @phan-debug-var requested for variable $scale - it has union type Closure(int $factor):string(real=Closure(int $factor):string)
-%s:68 PhanTypeMismatchArgumentInternalReal Argument 1 ($value) is $scale(2) of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (real type \Countable|array)
-%s:69 PhanDebugAnnotation @phan-debug-var requested for variable $make - it has union type Closure(int $y):\NS86PartialApplication\Point(real=Closure(int $y):\NS86PartialApplication\Point)
-%s:74 PhanDebugAnnotation @phan-debug-var requested for variable $ref - it has union type Closure(array $out&):bool(real=Closure(array $out&):bool)
-%s:76 PhanDebugAnnotation @phan-debug-var requested for variable $two - it has union type Closure(int $nums0,int $nums1):string(real=Closure(int $nums0,int $nums1):string)
-%s:79 PhanDebugAnnotation @phan-debug-var requested for variable $skipped - it has union type Closure(int $nums1,int $nums0,int $nums2,int $nums3):int(real=Closure(int $nums1,int $nums0,int $nums2,int $nums3):int)
-%s:83 PhanTypeSuspiciousEcho Suspicious argument $ref($out) of type bool for an echo/print statement
-%s:86 PhanDebugAnnotation @phan-debug-var requested for variable $all - it has union type Closure(int,int,int=):int(real=Closure(int,int,int=):int)
-%s:94 PhanTypeMismatchArgumentReal Argument 1 ($a) is 'x' of type string but \NS86PartialApplication\add3() takes int defined at %s:8
-%s:95 PhanParamTooMany Call with 5 arg(s) to \NS86PartialApplication\add3(int $a, int $b, int $c = 0) which only takes 3 arg(s) defined at %s:8
-%s:96 PhanParamTooFew Call with 1 arg(s) to \NS86PartialApplication\add3(int $a, int $b, int $c = 0) which requires 2 arg(s) defined at %s:8
-%s:97 PhanTypeMismatchArgumentReal Argument 2 ($b) is 'x' of type string but \NS86PartialApplication\add3() takes int defined at %s:8
-%s:98 PhanTypeMismatchArgumentReal Argument 3 ($nums) is 'bad' of type string but \NS86PartialApplication\variadic() takes int defined at %s:24
-%s:99 PhanTypeMismatchArgumentReal Argument 1 ($factor) is $undefined of type null but \NS86PartialApplication\Point::scale() takes int defined at %s:40
-%s:99 PhanUndeclaredVariable Variable $undefined is undeclared
-%s:100 PhanUndeclaredMethod Call to undeclared method \NS86PartialApplication\Point::missing
-%s:107 PhanInvalidNode Cannot create Closure for new expression
-%s:109 PhanUseReturnValueCallableConvert Expected to use the Closure created from add3(1, ?)
-%s:110 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is add3(1, ?) of type Closure(int $b):int but \strlen() takes string
-%s:117 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type string(real=string)
-%s:117 PhanUnusedVariable Unused definition of variable $s
-%s:119 PhanTypeMismatchArgumentInternalReal Argument 1 ($value) is (5 |> add3(1, ?)) of type int but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (real type \Countable|array)
-%s:121 PhanParamTooFew Call with 1 arg(s) to Closure(int $a,int $b):int which requires 2 arg(s) defined at %s:8
-%s:124 PhanTypeMismatchArgumentReal Argument 1 ($a) is 'not an int' of type string but Closure(int $a,int $c=):int takes int defined at %s:8
+%s:13 PhanPluginUnknownArrayFunctionParamType Function by_ref() has a parameter type of array for $out, but does not specify any key types or value types (Types inferred after analysis: null)
+%s:36 PhanWriteOnlyPublicProperty Possibly zero read references to public property \NS86PartialApplication\Point->y
+%s:54 PhanDebugAnnotation @phan-debug-var requested for variable $one - it has union type Closure(int $b):int(real=Closure(int $b):int)
+%s:57 PhanTypeMismatchArgumentReal Argument 1 ($b) is 'not an int' of type string but Closure(int $b):int takes int defined at %s:8
+%s:58 PhanParamTooFew Call with 0 arg(s) to Closure(int $b):int which requires 1 arg(s) defined at %s:8
+%s:61 PhanDebugAnnotation @phan-debug-var requested for variable $rest - it has union type Closure(int $b,int $c=):int(real=Closure(int $b,int $c=):int)
+%s:66 PhanDebugAnnotation @phan-debug-var requested for variable $named - it has union type Closure(int $c,int $a):int(real=Closure(int $c,int $a):int)
+%s:71 PhanDebugAnnotation @phan-debug-var requested for variable $scale - it has union type Closure(int $factor):string(real=Closure(int $factor):string)
+%s:73 PhanTypeMismatchArgumentInternalReal Argument 1 ($value) is $scale(2) of type string but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (real type \Countable|array)
+%s:74 PhanDebugAnnotation @phan-debug-var requested for variable $make - it has union type Closure(int $y):\NS86PartialApplication\Point(real=Closure(int $y):\NS86PartialApplication\Point)
+%s:79 PhanDebugAnnotation @phan-debug-var requested for variable $ref - it has union type Closure(array $out&):bool(real=Closure(array $out&):bool)
+%s:81 PhanDebugAnnotation @phan-debug-var requested for variable $two - it has union type Closure(int $nums0,int $nums1):string(real=Closure(int $nums0,int $nums1):string)
+%s:84 PhanDebugAnnotation @phan-debug-var requested for variable $skipped - it has union type Closure(int $nums1,int $nums0,int $nums2,int $nums3):int(real=Closure(int $nums1,int $nums0,int $nums2,int $nums3):int)
+%s:88 PhanTypeSuspiciousEcho Suspicious argument $ref($out) of type bool for an echo/print statement
+%s:91 PhanDebugAnnotation @phan-debug-var requested for variable $all - it has union type Closure(int,int,int=):int(real=Closure(int,int,int=):int)
+%s:99 PhanTypeMismatchArgumentReal Argument 1 ($a) is 'x' of type string but \NS86PartialApplication\add3() takes int defined at %s:8
+%s:100 PhanParamTooMany Call with 5 arg(s) to \NS86PartialApplication\add3(int $a, int $b, int $c = 0) which only takes 3 arg(s) defined at %s:8
+%s:101 PhanParamTooFew Call with 1 arg(s) to \NS86PartialApplication\add3(int $a, int $b, int $c = 0) which requires 2 arg(s) defined at %s:8
+%s:102 PhanTypeMismatchArgumentReal Argument 2 ($b) is 'x' of type string but \NS86PartialApplication\add3() takes int defined at %s:8
+%s:103 PhanTypeMismatchArgumentReal Argument 3 ($nums) is 'bad' of type string but \NS86PartialApplication\variadic() takes int defined at %s:29
+%s:104 PhanTypeMismatchArgumentReal Argument 1 ($factor) is $undefined of type null but \NS86PartialApplication\Point::scale() takes int defined at %s:45
+%s:104 PhanUndeclaredVariable Variable $undefined is undeclared
+%s:105 PhanUndeclaredMethod Call to undeclared method \NS86PartialApplication\Point::missing
+%s:112 PhanInvalidNode Cannot create Closure for new expression
+%s:114 PhanUseReturnValueCallableConvert Expected to use the Closure created from add3(1, ?)
+%s:115 PhanTypeMismatchArgumentInternalReal Argument 1 ($string) is add3(1, ?) of type Closure(int $b):int but \strlen() takes string
+%s:122 PhanDebugAnnotation @phan-debug-var requested for variable $created - it has union type mixed
+%s:125 PhanDebugAnnotation @phan-debug-var requested for variable $count - it has union type 'one'|int|mixed
+%s:125 PhanTypeVoidAssignment Cannot assign void return value
+%s:129 PhanTypeMismatchArgument Argument 2 ($out) is $not_an_array of type null but \NS86PartialApplication\by_ref() takes array defined at %s:13
+%s:131 PhanTypeMismatchArgumentReal Argument 1 ($a) is $undeclared of type null but \NS86PartialApplication\add3() takes int defined at %s:8
+%s:131 PhanUndeclaredVariable Variable $undeclared is undeclared
+%s:132 PhanTypeVoidArgument Cannot use void return value $set2 as a function argument
+%s:138 PhanDebugAnnotation @phan-debug-var requested for variable $rest - it has union type Closure(int $nums...):string(real=Closure(int $nums...):string)
+%s:138 PhanSuspiciousNamedArgumentForVariadic Passing named argument to a variadic parameter $nums of the same name in a call to \NS86PartialApplication\variadic(string $format, int ...$nums). This will set the array offset "nums" of the resulting variadic parameter, not the parameter itself (suppress this if this is deliberate).
+%s:146 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type string(real=string)
+%s:146 PhanUnusedVariable Unused definition of variable $s
+%s:148 PhanTypeMismatchArgumentInternalReal Argument 1 ($value) is (5 |> add3(1, ?)) of type int but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (real type \Countable|array)
+%s:150 PhanParamTooFew Call with 1 arg(s) to Closure(int $a,int $b):int which requires 2 arg(s) defined at %s:8
+%s:153 PhanTypeMismatchArgumentReal Argument 1 ($a) is 'not an int' of type string but Closure(int $a,int $c=):int takes int defined at %s:8

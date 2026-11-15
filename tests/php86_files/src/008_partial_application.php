@@ -16,6 +16,11 @@ function by_ref(string $s, array &$out): bool
     return true;
 }
 
+function set_ref(int $value, mixed &$out): void
+{
+    $out = $value;
+}
+
 function named_like_element(int $nums1, int $nums0, int ...$nums): int
 {
     return $nums0 + $nums1 + \array_sum($nums);
@@ -111,6 +116,30 @@ function bound_arguments(Point $p): void
     \var_dump($a, $b, $c, $d, $e, $f, $g, $h, $i, $j);
 }
 
+function references(): void
+{
+    // The closure binds the argument of a parameter passed by reference by reference, which declares the variable.
+    $set = set_ref(?, $created);
+    '@phan-debug-var $created';
+    $count = 'one';
+    $set2 = set_ref(1, $count);
+    // A call of the closure may set it
+    '@phan-debug-var $count';
+    // TypeError: the argument is checked when the closure is created, and the variable that is declared is null.
+    $set3 = by_ref('x', $not_an_array);
+    // Not for a parameter passed by value
+    $add = add3($undeclared, ?);
+    \var_dump($set, $set2, $set3, $add);
+}
+
+function variadic_named(): void
+{
+    // A named argument with the name of the variadic parameter is an element of it: the closure still has the parameter.
+    $rest = variadic('x', nums: 1, ...);
+    '@phan-debug-var $rest';
+    echo $rest(2, 3), $rest(other: 4);
+}
+
 function pipes(): void
 {
     // The pipe operator passes its left operand in the place of the only placeholder.
@@ -127,4 +156,6 @@ function pipes(): void
 
 types(new Point(1));
 bound_arguments(new Point(1));
+references();
+variadic_named();
 pipes();

@@ -170,6 +170,10 @@ final class PartialApplication
                         continue;
                     }
                     $index = $index_of_name[$name];
+                    if ($parameter_list[$index]->isVariadic()) {
+                        // `f(nums: 1, ...)` for `...$nums` sets the element 'nums' of the variadic parameter, which the closure still has.
+                        continue;
+                    }
                     if (self::isPlaceholder($arg->children['expr']) && !isset($handled[$index])) {
                         $closure_params[] = self::asClosureParameter($parameter_list[$index], true);
                         $used_names[$name] = true;
