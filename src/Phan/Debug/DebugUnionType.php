@@ -26,7 +26,7 @@ class DebugUnionType extends UnionType
      */
     public function withType(Type $type): UnionType
     {
-        \printf("%s: Adding type %s to %s", \spl_object_hash($this), (string)$type, (string)$this);
+        \printf("%d: Adding type %s to %s", \spl_object_id($this), (string)$type, (string)$this);
         \debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
         return parent::withType($type);
     }
@@ -36,7 +36,7 @@ class DebugUnionType extends UnionType
      */
     public function withUnionType(UnionType $union_type): UnionType
     {
-        \printf("%s: Adding union type %s to %s", \spl_object_hash($this), (string)$union_type, (string)$this);
+        \printf("%d: Adding union type %s to %s", \spl_object_id($this), (string)$union_type, (string)$this);
         \debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
         return parent::withUnionType($union_type);
     }
