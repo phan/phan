@@ -64,4 +64,22 @@ class UsesTraitWithoutMatch
     use T;
 }
 
+// The constant also reaches a class through a trait using the trait.
+trait UsesT
+{
+    use T;
+}
+
+class NestedWithMatch implements HasC
+{
+    use UsesT;
+}
+
+// Fatal error: NestedWithoutMatch::C has #[\Override] attribute, but no matching parent constant exists
+class NestedWithoutMatch
+{
+    use UsesT;
+}
+
+echo NestedWithMatch::C, NestedWithoutMatch::C;
 echo Child::X, Child::C, Bad::NOPE, Bad::P, Suit::C, Suit::Hearts->value, UsesTrait::C, UsesTraitWithoutMatch::C, Base::UNRELATED;

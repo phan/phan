@@ -4088,15 +4088,18 @@ class Clazz extends AddressableElement
      */
     private function analyzeTraitConstantOverrides(CodeBase $code_base): void
     {
+        $checked_names = [];
         foreach ($this->trait_fqsen_list as $trait_fqsen) {
             if (!$code_base->hasClassWithFQSEN($trait_fqsen)) {
                 continue;
             }
-            $trait = $code_base->getClassByFQSENWithoutHydrating($trait_fqsen);
+            // The trait is hydrated, so that this also sees the constants it gets from the traits it uses.
+            $trait = $code_base->getClassByFQSEN($trait_fqsen);
             foreach ($trait->getConstantMap($code_base) as $name => $constant) {
-                if (!$constant->isOverrideIntended() || $constant->getDefiningClassFQSEN() !== $trait_fqsen) {
+                if (!$constant->isOverrideIntended() || isset($checked_names[$name]) || !self::isConstantOfTrait($code_base, $constant)) {
                     continue;
                 }
+                $checked_names[$name] = true;
                 if ($this->hasConstantToOverrideWithName($code_base, (string)$name)) {
                     continue;
                 }
