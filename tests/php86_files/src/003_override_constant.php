@@ -100,5 +100,38 @@ class RedeclaresWithOverride
     public const C = 4;
 }
 
+// The same applies to the protected and private constants of a trait.
+trait NonPublic
+{
+    #[\Override]
+    protected const PROT = 1;
+
+    #[\Override]
+    private const PRIV = 2;
+
+    public function sum(): int
+    {
+        return self::PROT + self::PRIV;
+    }
+}
+
+class WithProtected
+{
+    protected const PROT = 1;
+}
+
+// Fatal error: NonPublicWithMatch::PRIV has #[\Override] attribute, but no matching parent constant exists
+class NonPublicWithMatch extends WithProtected
+{
+    use NonPublic;
+}
+
+// Fatal error: NonPublicWithoutMatch::PROT has #[\Override] attribute, but no matching parent constant exists
+class NonPublicWithoutMatch
+{
+    use NonPublic;
+}
+
+echo (new NonPublicWithMatch())->sum(), (new NonPublicWithoutMatch())->sum();
 echo NestedWithMatch::C, NestedWithoutMatch::C, RedeclaresConstant::C, RedeclaresWithOverride::C;
 echo Child::X, Child::C, Bad::NOPE, Bad::P, Suit::C, Suit::Hearts->value, UsesTrait::C, UsesTraitWithoutMatch::C, Base::UNRELATED;

@@ -1653,9 +1653,14 @@ class Clazz extends AddressableElement
         );
     }
 
+    /**
+     * @return bool whether this constant was declared by a trait (also for the copy of it in a class using the trait)
+     */
     private static function isConstantOfTrait(CodeBase $code_base, ClassConstant $constant): bool
     {
-        $class_fqsen = $constant->getDefiningClassFQSEN();
+        // NOTE: The defining FQSEN of the copy of a protected or private constant is the class using the trait,
+        // so the FQSEN of the original declaration is used.
+        $class_fqsen = $constant->getRealDefiningFQSEN()->getFullyQualifiedClassName();
         return $code_base->hasClassWithFQSEN($class_fqsen) && $code_base->getClassByFQSEN($class_fqsen)->isTrait();
     }
 
