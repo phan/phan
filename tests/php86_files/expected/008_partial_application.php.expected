@@ -1,4 +1,4 @@
-%s:13 PhanPluginUnknownArrayFunctionParamType Function by_ref() has a parameter type of array for $out, but does not specify any key types or value types (Types inferred after analysis: null)
+%s:13 PhanPluginUnknownArrayFunctionParamType Function by_ref() has a parameter type of array for $out, but does not specify any key types or value types (Types inferred after analysis: ?array)
 %s:36 PhanWriteOnlyPublicProperty Possibly zero read references to public property \NS86PartialApplication\Point->y
 %s:61 PhanDebugAnnotation @phan-debug-var requested for variable $make - it has union type Closure(int $y):(\NS86PartialApplication\Point|\NS86PartialApplication\Point3D)(real=Closure(int $y):(\NS86PartialApplication\Point|\NS86PartialApplication\Point3D))
 %s:70 PhanDebugAnnotation @phan-debug-var requested for variable $one - it has union type Closure(int $b):int(real=Closure(int $b):int)
@@ -32,13 +32,15 @@
 %s:147 PhanTypeMismatchArgumentReal Argument 1 ($a) is $undeclared of type null but \NS86PartialApplication\add3() takes int defined at %s:8
 %s:147 PhanUndeclaredVariable Variable $undeclared is undeclared
 %s:148 PhanTypeVoidArgument Cannot use void return value $set2 as a function argument
-%s:154 PhanDebugAnnotation @phan-debug-var requested for variable $rest - it has union type Closure(int $nums...):string(real=Closure(int $nums...):string)
-%s:154 PhanSuspiciousNamedArgumentForVariadic Passing named argument to a variadic parameter $nums of the same name in a call to \NS86PartialApplication\variadic(string $format, int ...$nums). This will set the array offset "nums" of the resulting variadic parameter, not the parameter itself (suppress this if this is deliberate).
-%s:158 PhanInvalidNode Cannot use named placeholder for unknown or variadic parameter $other
-%s:159 PhanInvalidNode Cannot use named placeholder for unknown or variadic parameter $nums
-%s:161 PhanUndeclaredNamedArgument Saw a call with undeclared named argument (other: ?) to \NS86PartialApplication\add3(int $a, int $b, int $c = 0) defined at %s:8
-%s:168 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type string(real=string)
-%s:168 PhanUnusedVariable Unused definition of variable $s
-%s:170 PhanTypeMismatchArgumentInternalReal Argument 1 ($value) is (5 |> add3(1, ?)) of type int but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (real type \Countable|array)
-%s:172 PhanParamTooFew Call with 1 arg(s) to Closure(int $a,int $b):int which requires 2 arg(s) defined at %s:8
-%s:175 PhanTypeMismatchArgumentReal Argument 1 ($a) is 'not an int' of type string but Closure(int $a,int $c=):int takes int defined at %s:8
+%s:159 PhanPossiblyUndeclaredVariable Variable $items is possibly undeclared
+%s:160 PhanPossiblyUndeclaredVariable Variable $named is possibly undeclared
+%s:169 PhanDebugAnnotation @phan-debug-var requested for variable $rest - it has union type Closure(int $nums...):string(real=Closure(int $nums...):string)
+%s:169 PhanSuspiciousNamedArgumentForVariadic Passing named argument to a variadic parameter $nums of the same name in a call to \NS86PartialApplication\variadic(string $format, int ...$nums). This will set the array offset "nums" of the resulting variadic parameter, not the parameter itself (suppress this if this is deliberate).
+%s:173 PhanInvalidNode Cannot use named placeholder for unknown or variadic parameter $other
+%s:174 PhanInvalidNode Cannot use named placeholder for unknown or variadic parameter $nums
+%s:176 PhanUndeclaredNamedArgument Saw a call with undeclared named argument (other: ?) to \NS86PartialApplication\add3(int $a, int $b, int $c = 0) defined at %s:8
+%s:183 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type string(real=string)
+%s:183 PhanUnusedVariable Unused definition of variable $s
+%s:185 PhanTypeMismatchArgumentInternalReal Argument 1 ($value) is (5 |> add3(1, ?)) of type int but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (real type \Countable|array)
+%s:187 PhanParamTooFew Call with 1 arg(s) to Closure(int $a,int $b):int which requires 2 arg(s) defined at %s:8
+%s:190 PhanTypeMismatchArgumentReal Argument 1 ($a) is 'not an int' of type string but Closure(int $a,int $c=):int takes int defined at %s:8

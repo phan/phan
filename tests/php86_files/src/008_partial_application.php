@@ -148,6 +148,21 @@ function references(): void
     \var_dump($set, $set2, $set3, $add);
 }
 
+function possibly_undeclared(bool $flag): void
+{
+    if ($flag) {
+        $items = [1];
+        $named = [2];
+        $by_ref = ['x' => []];
+    }
+    // The bound arguments are read when the closure is created.
+    $first = add3($items[0], ?);
+    $second = add3(?, b: $named[0]);
+    // Not for a parameter passed by reference
+    $third = by_ref('x', $by_ref['x']);
+    \var_dump($first, $second, $third);
+}
+
 function variadic_named(): void
 {
     // A named argument with the name of the variadic parameter is an element of it: the closure still has the parameter.
@@ -180,5 +195,6 @@ types(new Point(1));
 echo (new Point3D(1))->viaParent();
 bound_arguments(new Point(1));
 references();
+possibly_undeclared(true);
 variadic_named();
 pipes();

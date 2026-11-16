@@ -4656,61 +4656,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 // Partial function application (php 8.6+): check the arguments that are bound to values.
                 // The function is not called here, but the closure binds the arguments of parameters passed by reference
                 // by reference, which creates the variables that do not exist yet: `$p = f(?, $out);` declares $out.
-                $this->createReferencesOfPartialApplication($method, $args_node);
+                $this->createReferencesAndCheckDimArguments($method, PartialApplication::getArgs($args_node));
                 ArgumentType::analyzePartialApplication($method, $node, $context, $code_base);
                 $this->addReferenceTypesOfPartialApplication($method, $args_node);
             }
             return;
         }
-        // Create variables for any pass-by-reference
-        // parameters
         $argument_list = $args_node->children;
-        foreach ($argument_list as $i => $argument) {
-            if (!$argument instanceof Node) {
-                continue;
-            }
-
-            if ($argument->kind === ast\AST_NAMED_ARG) {
-                // visitDim() leaves `name: $var[...]` to this check as well: the parameter is found by name here.
-                // (An unknown name is reported by ArgumentType::analyze().)
-                $argument_expression = $argument->children['expr'];
-                if ($argument_expression instanceof Node && $argument_expression->kind === ast\AST_DIM) {
-                    if ($method instanceof Method && ($method->isMagicCall() || $method->isMagicCallStatic())) {
-                        // __call()/__callStatic() collect every named argument by value (the stand-in Method has no real parameters).
-                        $this->emitPossiblyUndeclaredVariableOfDimArgument($argument_expression);
-                        continue;
-                    }
-                    $parameter = null;
-                    foreach ($method->getRealParameterList() as $parameter) {
-                        if ($parameter->getName() === $argument->children['name']) {
-                            break;
-                        }
-                    }
-                    // Without a match, $parameter is the last parameter: a variadic one collects the argument (as in ArgumentType::analyze()).
-                    if ($parameter && ($parameter->getName() === $argument->children['name'] || $parameter->isVariadic()) && !$parameter->isPassByReference()) {
-                        $this->emitPossiblyUndeclaredVariableOfDimArgument($argument_expression);
-                    }
-                }
-                continue;
-            }
-            $parameter = $method->getParameterForCaller($i);
-            if (!$parameter) {
-                if ($argument->kind === ast\AST_DIM) {
-                    $this->emitPossiblyUndeclaredVariableOfDimArgument($argument);
-                }
-                continue;
-            }
-
-            // If pass-by-reference, make sure the variable exists
-            // or create it if it doesn't.
-            if ($parameter->isPassByReference()) {
-                $this->createPassByReferenceArgumentInCall($method, $argument, $parameter, $method->getRealParameterForCaller($i));
-            } elseif ($argument->kind === ast\AST_DIM) {
-                // visitDim() leaves `$var[...]` arguments to this check, since a reference would have created `$var`.
-                // (It recorded whether `$var` was possibly undeclared when the argument was evaluated.)
-                $this->emitPossiblyUndeclaredVariableOfDimArgument($argument);
-            }
-        }
+        $this->createReferencesAndCheckDimArguments($method, $argument_list);
 
         // Confirm the argument types are clean
         ArgumentType::analyze(
@@ -4815,14 +4768,61 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * Creates the variables that partial function application binds by reference, before the bound arguments are checked.
+     * Creates the variables of the arguments for parameters passed by reference, before the arguments are checked,
+     * and emits the issues that visitDim() left to this check for the `$var[...]` arguments passed by value.
      *
-     * @param Node $args_node a node of kind ast\AST_CALLABLE_CONVERT
+     * This is also used for the arguments of partial function application (php 8.6+), which are evaluated
+     * and bound (by reference for these parameters) when the closure is created: the placeholders are skipped.
+     *
+     * @param array<int,Node|string|int|float|null> $argument_list
      */
-    private function createReferencesOfPartialApplication(FunctionInterface $method, Node $args_node): void
+    private function createReferencesAndCheckDimArguments(FunctionInterface $method, array $argument_list): void
     {
-        foreach (self::getBoundReferenceArguments($method, $args_node) as $i => [$argument, $parameter]) {
-            $this->createPassByReferenceArgumentInCall($method, $argument, $parameter, $method->getRealParameterForCaller($i));
+        foreach ($argument_list as $i => $argument) {
+            if (!$argument instanceof Node || PartialApplication::isPlaceholder($argument)) {
+                continue;
+            }
+
+            if ($argument->kind === ast\AST_NAMED_ARG) {
+                // visitDim() leaves `name: $var[...]` to this check as well: the parameter is found by name here.
+                // (An unknown name is reported by ArgumentType::analyze().)
+                $argument_expression = $argument->children['expr'];
+                if ($argument_expression instanceof Node && $argument_expression->kind === ast\AST_DIM) {
+                    if ($method instanceof Method && ($method->isMagicCall() || $method->isMagicCallStatic())) {
+                        // __call()/__callStatic() collect every named argument by value (the stand-in Method has no real parameters).
+                        $this->emitPossiblyUndeclaredVariableOfDimArgument($argument_expression);
+                        continue;
+                    }
+                    $parameter = null;
+                    foreach ($method->getRealParameterList() as $parameter) {
+                        if ($parameter->getName() === $argument->children['name']) {
+                            break;
+                        }
+                    }
+                    // Without a match, $parameter is the last parameter: a variadic one collects the argument (as in ArgumentType::analyze()).
+                    if ($parameter && ($parameter->getName() === $argument->children['name'] || $parameter->isVariadic()) && !$parameter->isPassByReference()) {
+                        $this->emitPossiblyUndeclaredVariableOfDimArgument($argument_expression);
+                    }
+                }
+                continue;
+            }
+            $parameter = $method->getParameterForCaller($i);
+            if (!$parameter) {
+                if ($argument->kind === ast\AST_DIM) {
+                    $this->emitPossiblyUndeclaredVariableOfDimArgument($argument);
+                }
+                continue;
+            }
+
+            // If pass-by-reference, make sure the variable exists
+            // or create it if it doesn't.
+            if ($parameter->isPassByReference()) {
+                $this->createPassByReferenceArgumentInCall($method, $argument, $parameter, $method->getRealParameterForCaller($i));
+            } elseif ($argument->kind === ast\AST_DIM) {
+                // visitDim() leaves `$var[...]` arguments to this check, since a reference would have created `$var`.
+                // (It recorded whether `$var` was possibly undeclared when the argument was evaluated.)
+                $this->emitPossiblyUndeclaredVariableOfDimArgument($argument);
+            }
         }
     }
 
