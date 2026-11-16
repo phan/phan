@@ -6,6 +6,7 @@ namespace Phan\AST;
 
 use ast;
 use ast\Node;
+use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Type\ClosureDeclarationParameter;
@@ -94,6 +95,31 @@ final class PartialApplication
 
     /**
      * @param Node $node a node of kind ast\AST_CALLABLE_CONVERT
+     * @return list<Node> the named placeholders (nodes of kind ast\AST_NAMED_ARG) that are not for a parameter of $function that can be named:
+     * `f(unknown: ?)`, and `f(nums: ?)` for the variadic parameter `...$nums`. (Error: Cannot use named placeholder for unknown or variadic parameter)
+     */
+    public static function getInvalidNamedPlaceholders(FunctionInterface $function, Node $node): array
+    {
+        $result = [];
+        foreach (self::getArgs($node) as $arg) {
+            if (!($arg instanceof Node) || $arg->kind !== ast\AST_NAMED_ARG || !self::isPlaceholder($arg->children['expr'])) {
+                continue;
+            }
+            foreach ($function->getParameterList() as $parameter) {
+                if ($parameter->getName() === $arg->children['name']) {
+                    if ($parameter->isVariadic()) {
+                        break;
+                    }
+                    continue 2;
+                }
+            }
+            $result[] = $arg;
+        }
+        return $result;
+    }
+
+    /**
+     * @param Node $node a node of kind ast\AST_CALLABLE_CONVERT
      * @return ?int the index of the argument that is the only placeholder, when it is a positional `?` or `...`
      * and every other argument is a value: the forms `f(?)`, `f(1, ?)`, `f(1, ...)`, `f(?, b: 2)`,
      * where an argument in the place of the placeholder is passed to the parameter that the closure has.
@@ -131,10 +157,12 @@ final class PartialApplication
      * and, if there is a `...`, the remaining parameters that no argument is bound to.
      *
      * @param Node $node a node of kind ast\AST_CALLABLE_CONVERT for which self::isPartialApplication() is true
+     * @param ?Context $static_context the context of the class that `static` in the return type is, if it is not the class of the method:
+     * the context of the partial application for `parent::method(?)`, where the closure keeps the called class.
      * @return FunctionLikeDeclarationType|ClosureType a closure type with the parameters that are left,
      * or `\Closure` if the arguments cannot be matched to the parameters (e.g. `f(...$args, ?)`).
      */
-    public static function createClosureType(FunctionInterface $function, Node $node): ClosureType|FunctionLikeDeclarationType
+    public static function createClosureType(FunctionInterface $function, Node $node, ?Context $static_context = null): ClosureType|FunctionLikeDeclarationType
     {
         $parameter_list = $function->getParameterList();
         /** @var array<string,int> $index_of_name */
@@ -224,7 +252,8 @@ final class PartialApplication
         }
 
         // `static` in the return type of a method is the class of the method: the closure may be called outside of the class.
-        $return_type = $function->getUnionType()->withStaticResolvedInFunctionLike($function);
+        $return_type = $function->getUnionType();
+        $return_type = $static_context ? $return_type->withStaticResolvedInContext($static_context) : $return_type->withStaticResolvedInFunctionLike($function);
         if ($return_type->isEmpty()) {
             $return_type = MixedType::instance(false)->asPHPDocUnionType();
         }
@@ -270,12 +299,13 @@ final class PartialApplication
 
     /**
      * @param Node $node a node of kind ast\AST_CALLABLE_CONVERT
+     * @param ?Context $static_context the context of the class that `static` in the return type is, for partial application of `parent::method()`
      * @return UnionType the type of the closure created for $function by first-class callable syntax or partial application
      */
-    public static function createClosureUnionType(FunctionInterface $function, Node $node): UnionType
+    public static function createClosureUnionType(FunctionInterface $function, Node $node, ?Context $static_context = null): UnionType
     {
         if (self::isPartialApplication($node)) {
-            return self::createClosureType($function, $node)->asRealUnionType();
+            return self::createClosureType($function, $node, $static_context)->asRealUnionType();
         }
         if ($function instanceof ClosureDeclarationType) {
             return $function->asRealUnionType();

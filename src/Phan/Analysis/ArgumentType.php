@@ -96,6 +96,23 @@ final class ArgumentType
         CodeBase $code_base
     ): void {
         $args = PartialApplication::getArgs($node->children['args']);
+        $parameter_list = $method->getParameterList();
+        $last_parameter = \end($parameter_list);
+        foreach (PartialApplication::getInvalidNamedPlaceholders($method, $node->children['args']) as $invalid_placeholder) {
+            if (!$last_parameter || !$last_parameter->isVariadic()) {
+                // Without a variadic parameter, this is reported as an undeclared named argument.
+                break;
+            }
+            // A named argument with a value would be an element of the variadic parameter, but a placeholder cannot be.
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::InvalidNode,
+                $invalid_placeholder->lineno,
+                'Cannot use named placeholder for unknown or variadic parameter $' . $invalid_placeholder->children['name']
+            );
+            unset($args[\array_search($invalid_placeholder, $args, true)]);
+        }
         $has_variadic_placeholder = false;
         foreach ($args as $i => $arg) {
             if (PartialApplication::isVariadicPlaceholder($arg)) {

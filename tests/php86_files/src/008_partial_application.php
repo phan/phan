@@ -48,6 +48,22 @@ class Point
     }
 }
 
+class Point3D extends Point
+{
+    public function depth(): int
+    {
+        return 0;
+    }
+
+    public function viaParent(): int
+    {
+        // The closure keeps the called class, as a call of parent::make() does: `static` is this class.
+        $make = parent::make(1, ?);
+        '@phan-debug-var $make';
+        return $make(2)->depth();
+    }
+}
+
 function types(Point $p): void
 {
     // `?` stands for one parameter: the closure has the parameters of the placeholders.
@@ -138,6 +154,12 @@ function variadic_named(): void
     $rest = variadic('x', nums: 1, ...);
     '@phan-debug-var $rest';
     echo $rest(2, 3), $rest(other: 4);
+    // Error: Cannot use named placeholder for unknown or variadic parameter
+    $unknown = variadic('x', other: ?);
+    $element = variadic('x', nums: ?);
+    // Error: Unknown named parameter $other
+    $undeclared = add3(1, other: ?);
+    \var_dump($unknown, $element, $undeclared);
 }
 
 function pipes(): void
@@ -155,6 +177,7 @@ function pipes(): void
 }
 
 types(new Point(1));
+echo (new Point3D(1))->viaParent();
 bound_arguments(new Point(1));
 references();
 variadic_named();
