@@ -308,22 +308,6 @@ abstract class ClassElement extends AddressableElement
             if ($type_of_class_of_property->isSubclassOf($accessing_class_type, $code_base)) {
                 return true;
             }
-            // and so can a trait whose (at)require-extends or (at)require-implements names a subclass of the defining class,
-            // since only such subclasses can use the trait. (This is for self::, static:: and objects other than $this)
-            if ($code_base->hasClassWithFQSEN($accessing_class_fqsen)) {
-                $accessing_class = $code_base->getClassByFQSEN($accessing_class_fqsen);
-                if ($accessing_class->isTrait()) {
-                    $required_fqsen_list = [
-                        ...$accessing_class->getRequiredExtendsFQSENList(),
-                        ...$accessing_class->getRequiredImplementsFQSENList(),
-                    ];
-                    foreach ($required_fqsen_list as $required_fqsen) {
-                        if ($required_fqsen->asType()->isSubclassOf($type_of_class_of_property, $code_base)) {
-                            return true;
-                        }
-                    }
-                }
-            }
         } catch (RecursionDepthException) {
         }
         return false;

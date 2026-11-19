@@ -149,9 +149,9 @@ class ClassInheritanceAnalyzer
         $visited[$trait_key] = true;
         $required_extends = $trait->getRequiredExtendsFQSENList();
         $required_implements = $trait->getRequiredImplementsFQSENList();
-        $expanded_types = $using_class->getFQSEN()->asType()->asExpandedTypes($code_base);
+        $ancestor_set = ($required_extends || $required_implements) ? self::getClassAndAncestorSet($code_base, $using_class) : [];
         foreach ($required_extends as $required_fqsen) {
-            if ($expanded_types->hasType($required_fqsen->asType())) {
+            if (isset($ancestor_set[\strtolower((string)$required_fqsen)])) {
                 continue;
             }
             Issue::maybeEmit(
@@ -165,7 +165,7 @@ class ClassInheritanceAnalyzer
             );
         }
         foreach ($required_implements as $required_fqsen) {
-            if ($expanded_types->hasType($required_fqsen->asType())) {
+            if (isset($ancestor_set[\strtolower((string)$required_fqsen)])) {
                 continue;
             }
             Issue::maybeEmit(
@@ -190,6 +190,39 @@ class ClassInheritanceAnalyzer
                 $visited
             );
         }
+    }
+
+    /**
+     * Returns the lowercase FQSENs of $class, its parent classes and its interfaces (and their aliases).
+     *
+     * Unlike Type::asExpandedTypes(), this does not include the classes and interfaces that the traits used by
+     * these classes require, which would make every class using a trait meet its requirements.
+     *
+     * @return array<string,true>
+     */
+    private static function getClassAndAncestorSet(CodeBase $code_base, Clazz $class): array
+    {
+        $result = [];
+        $queue = [$class->getFQSEN()];
+        while ($queue) {
+            $fqsen = \array_pop($queue);
+            $key = \strtolower((string)$fqsen);
+            if (isset($result[$key]) || !$code_base->hasClassWithFQSEN($fqsen)) {
+                continue;
+            }
+            $result[$key] = true;
+            foreach ($code_base->getClassAliasesByFQSEN($fqsen) as $alias_record) {
+                $result[\strtolower((string)$alias_record->alias_fqsen)] = true;
+            }
+            $current = $code_base->getClassByFQSENWithoutHydrating($fqsen);
+            foreach ($current->getInterfaceFQSENList() as $interface_fqsen) {
+                $queue[] = $interface_fqsen;
+            }
+            if ($current->hasParentType()) {
+                $queue[] = $current->getParentClassFQSEN();
+            }
+        }
+        return $result;
     }
 
     /**

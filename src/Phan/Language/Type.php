@@ -3045,6 +3045,17 @@ class Type implements Stringable
             }
         }
 
+        // The classes and interfaces of the (at)require-extends and (at)require-implements of a trait:
+        // only their subclasses can use the trait, so $this, self and static in the trait are instances of them.
+        // (ClassInheritanceAnalyzer checks that the classes using the trait really are, without these types)
+        if ($clazz->isTrait()) {
+            foreach ([...$clazz->getRequiredExtendsFQSENList(), ...$clazz->getRequiredImplementsFQSENList()] as $required_fqsen) {
+                $union_type_builder->addUnionType(
+                    $required_fqsen->asType()->asExpandedTypesPreservingTemplate($code_base, $recursion_depth + 1)
+                );
+            }
+        }
+
         // Class aliases
         // (If enable_class_alias_support is false, this will do nothing)
         $fqsen_aliases = $code_base->getClassAliasesByFQSEN($clazz->getFQSEN());

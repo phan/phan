@@ -143,3 +143,63 @@ final class NotACounter
 
     public string $count = '';
 }
+
+class Model
+{
+    public static function make(): static
+    {
+        return new static();
+    }
+
+    public function touch(): static
+    {
+        return $this;
+    }
+}
+
+function takesModel(Model $model): void {}
+
+/**
+ * @require-extends Model
+ */
+trait ModelHelpers
+{
+    // $this, self and static are instances of the required class
+    public static function build(): Model
+    {
+        return static::make();
+    }
+
+    public function touched(): Model
+    {
+        takesModel($this);
+        takesModel($this->touch());
+        return $this;
+    }
+}
+
+/**
+ * @require-extends Model
+ */
+trait ModelFactory
+{
+    public static function __callStatic(string $name, array $args): Model
+    {
+        throw new \RuntimeException($name);
+    }
+
+    public static function build(): Model
+    {
+        return self::make();
+    }
+}
+
+final class Post extends Model
+{
+    use ModelHelpers;
+}
+
+final class Page extends Model
+{
+    use ModelFactory;
+}
