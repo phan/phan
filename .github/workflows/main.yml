@@ -32,7 +32,7 @@ jobs:
          - PHP_VERSION: '8.3'
          - PHP_VERSION: '8.4'
          - PHP_VERSION: '8.5'
-         - PHP_VERSION: '8.6-rc'
+         - PHP_VERSION: '8.6'
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
