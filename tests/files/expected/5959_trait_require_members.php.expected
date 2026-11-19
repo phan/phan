@@ -1,0 +1,7 @@
+%s:34 PhanAccessMethodPrivate Cannot access private method \NS5959\RequiresBase::hidden defined at %s:13
+%s:35 PhanAccessPropertyPrivate Cannot access private property \NS5959\RequiresBase->secret defined at %s:9
+%s:98 PhanTraitRequireExtendsMissing Trait \NS5959\RequiresBase requires using class \NS5959\InvalidChild to extend \NS5959\Base
+%s:103 PhanTraitRequireImplementsMissing Trait \NS5959\RequiresFactory requires using class \NS5959\InvalidFactory to implement \NS5959\Factory
+%s:109 PhanUndeclaredMethod Call to undeclared method \NS5959\InvalidChild::baseMethod
+%s:109 PhanUndeclaredProperty Reference to undeclared property \NS5959\InvalidChild->baseProp
+%s:111 PhanUndeclaredStaticMethod Static call to undeclared method \NS5959\InvalidFactory::make

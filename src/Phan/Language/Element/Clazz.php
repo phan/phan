@@ -3015,11 +3015,17 @@ class Clazz extends AddressableElement
             }
             // Treat it as if all of the methods were added, with their real and phpdoc union types.
             if ($mixin) {
-                $method = $method->asPHPDocMethod($this);
-            } else {
-                $method->setPhanFlags($method->getPhanFlags() | Flags::IS_FROM_REQUIRE_ANNOTATION);
+                $this->addMethod($code_base, $method->asPHPDocMethod($this), None::instance());
+                continue;
             }
             $this->addMethod($code_base, $method, None::instance());
+            // Mark the copy that addMethod() added to this class, not $method, which belongs to the required class.
+            // (Cloning $method before addMethod() would make the copy take its inferred return type from that clone.)
+            $copy_fqsen = FullyQualifiedMethodName::make($this->fqsen, $method->getName(), $method->getFQSEN()->getAlternateId());
+            if ($code_base->hasMethodWithFQSEN($copy_fqsen)) {
+                $copy = $code_base->getMethodByFQSEN($copy_fqsen);
+                $copy->setPhanFlags($copy->getPhanFlags() | Flags::IS_FROM_REQUIRE_ANNOTATION);
+            }
         }
         foreach ($class->getPropertyMap($code_base) as $name => $property) {
             if ($mixin) {
@@ -3521,7 +3527,7 @@ class Clazz extends AddressableElement
                 );
             }
             if ($is_trait) {
-                if ($property->getFlags() & Flags::IS_FROM_REQUIRE_ANNOTATION) {
+                if ($property->getPhanFlags() & Flags::IS_FROM_REQUIRE_ANNOTATION) {
                     // Do not copy this fake property to children
                     continue;
                 }
@@ -3600,7 +3606,7 @@ class Clazz extends AddressableElement
             // If you import a trait's private method, it becomes private **to the class which used the trait** in PHP code.
             // (But preserving the defining FQSEN is fine for this)
             if ($is_trait) {
-                if ($method->getFlags() & Flags::IS_FROM_REQUIRE_ANNOTATION) {
+                if ($method->getPhanFlags() & Flags::IS_FROM_REQUIRE_ANNOTATION) {
                     // Do not copy this fake method to children
                     continue;
                 }

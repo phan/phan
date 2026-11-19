@@ -61,7 +61,7 @@ class IndirectInvalidChild
     use RequiresBaseViaTrait;
 }
 
-abstract class InvalidImplementation
+class InvalidImplementation
 {
     use RequiresInterface;
 }
