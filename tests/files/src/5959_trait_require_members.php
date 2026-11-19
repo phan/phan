@@ -111,3 +111,35 @@ function test(ValidChild $valid, InvalidChild $invalid): void
     InvalidFactory::make();
     echo Color::fromOrFirst('red')->label();
 }
+
+class Counter
+{
+    public int $count = 0;
+}
+
+/**
+ * @require-extends Counter
+ */
+trait UsesCounter
+{
+    public function next(): int
+    {
+        return ++$this->count;
+    }
+}
+
+// Reported against Counter::$count only, not also against the trait, which does not declare $count
+final class BadCounter extends Counter
+{
+    use UsesCounter;
+
+    public string $count = '';
+}
+
+// Not reported, for the same reason
+final class NotACounter
+{
+    use UsesCounter;
+
+    public string $count = '';
+}

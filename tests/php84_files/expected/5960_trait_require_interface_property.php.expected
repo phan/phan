@@ -1,0 +1,1 @@
+%s:5 PhanReadOnlyPublicProperty Possibly zero write references to public property \HasId->id

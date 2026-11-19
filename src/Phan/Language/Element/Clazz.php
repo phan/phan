@@ -4312,6 +4312,10 @@ class Clazz extends AddressableElement
 
                 // Check if trait has any non-readonly properties
                 foreach ($trait->getPropertyMap($code_base) as $property) {
+                    if ($property->getPhanFlagsHasState(Flags::IS_FROM_REQUIRE_ANNOTATION)) {
+                        // Not declared by the trait: a property of the class or interface of its (at)require-extends or (at)require-implements
+                        continue;
+                    }
                     if (!$property->isReadOnlyReal()) {
                         Issue::maybeEmit(
                             $code_base,

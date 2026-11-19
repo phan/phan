@@ -5,3 +5,5 @@
 %s:109 PhanUndeclaredMethod Call to undeclared method \NS5959\InvalidChild::baseMethod
 %s:109 PhanUndeclaredProperty Reference to undeclared property \NS5959\InvalidChild->baseProp
 %s:111 PhanUndeclaredStaticMethod Static call to undeclared method \NS5959\InvalidFactory::make
+%s:136 PhanIncompatibleRealPropertyType Declaration of \NS5959\BadCounter::count of real type string is incompatible with inherited property \NS5959\Counter::count of real type int defined at %s:117
+%s:142 PhanTraitRequireExtendsMissing Trait \NS5959\UsesCounter requires using class \NS5959\NotACounter to extend \NS5959\Counter

@@ -42,7 +42,8 @@ class CompositionAnalyzer
         // and check to see if the types line up.
         // (This must be done after hydration, because some properties are loaded from traits)
         foreach ($class->getPropertyMap($code_base) as $property) {
-            if ($property->getPhanFlagsHasState(Flags::IS_ENUM_PROPERTY)) {
+            // (A property that a trait gets from its (at)require-extends or (at)require-implements is not declared by the trait)
+            if ($property->getPhanFlags() & (Flags::IS_ENUM_PROPERTY | Flags::IS_FROM_REQUIRE_ANNOTATION)) {
                 continue;
             }
             try {
@@ -75,7 +76,7 @@ class CompositionAnalyzer
                 $inherited_property =
                     $inherited_property_map[$property->getName()];
 
-                if ($inherited_property->isDynamicOrFromPHPDoc()) {
+                if ($inherited_property->isDynamicOrFromPHPDoc() || $inherited_property->getPhanFlagsHasState(Flags::IS_FROM_REQUIRE_ANNOTATION)) {
                     continue;
                 }
                 if ($inherited_property->getRealDefiningFQSEN() === $property->getRealDefiningFQSEN()) {
