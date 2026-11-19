@@ -1,0 +1,1 @@
+%s:16 PhanUndeclaredAliasedMethodOfTrait Alias \Talker::talk was defined for a method \A::talk2 which does not exist in trait A

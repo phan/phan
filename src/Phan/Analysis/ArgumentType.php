@@ -20,6 +20,7 @@ use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
+use Phan\Language\Element\Flags;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
@@ -209,6 +210,11 @@ final class ArgumentType
                             if ($caller instanceof Method) {
                                 $class = $caller->getClass($code_base);
                                 if ($class->isTrait()) {
+                                    if ($method->getPhanFlags() & Flags::IS_FROM_REQUIRE_ANNOTATION) {
+                                        // A method of the class or interface of the trait's (at)require-extends or (at)require-implements,
+                                        // which the classes using the trait implement.
+                                        return;
+                                    }
                                     $issue_type = Issue::AbstractStaticMethodCallInTrait;
                                 }
                             }

@@ -30,6 +30,11 @@ class Flags
     public const CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES = (1 << 10);
     public const CLASS_FORBID_UNDECLARED_MAGIC_METHODS    = (1 << 11);
 
+    // Is this a method or property copied to a trait from the class or interface of its @require-extends or @require-implements?
+    // It won't be copied to the classes using that trait.
+    // (Shares a bit with CLASS_FORBID_UNDECLARED_MAGIC_METHODS: this is only used on methods and properties, that only on classes)
+    public const IS_FROM_REQUIRE_ANNOTATION   = (1 << 11);
+
     public const IS_NS_INTERNAL               = (1 << 12);
     public const IS_FROM_PHPDOC               = (1 << 13);
 
