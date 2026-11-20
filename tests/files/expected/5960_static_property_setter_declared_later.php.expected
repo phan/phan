@@ -5,3 +5,4 @@
 %s:212 PhanTypeMismatchReturnReal Returning self::$prop of type null but getProp() is declared to return \stdClass
 %s:423 PhanTypeMismatchReturnReal Returning self::$prop of type null but getAfterSettingOtherUser() is declared to return \stdClass
 %s:477 PhanTypeMismatchReturnReal Returning self::$unrelated of type null but getAfterSettingOtherClass() is declared to return \stdClass
+%s:579 PhanTypeArraySuspiciousNullable Suspicious array access to self::$replaced of nullable type array<int,int>|null

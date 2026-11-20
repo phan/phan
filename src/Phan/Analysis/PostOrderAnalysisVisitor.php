@@ -85,7 +85,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     private static $checked_methods_for_static_property_modifications = [];
 
     /**
-     * @var ?WeakMap<Node,list<Node>> the AST_STATIC_PROP nodes that are assigned in the body of a method, by the node of the method
+     * @var ?WeakMap<Node,list<array{0:Node,1:bool}>> the AST_STATIC_PROP nodes that are assigned in the body of a method,
+     * each with whether the assignment may make the property null, by the node of the method
      */
     private static $assigned_static_property_nodes = null;
 
@@ -3430,6 +3431,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if ($stmts_node instanceof Node) {
                 self::collectAssignedStaticPropertyNodes($stmts_node, $nodes);
             }
+            // The assignments that may make the property null come first: the type of a property is widened once.
+            \usort(
+                $nodes,
+                /**
+                 * @param array{0:Node,1:bool} $a
+                 * @param array{0:Node,1:bool} $b
+                 */
+                static fn (array $a, array $b): int => $b[1] <=> $a[1]
+            );
             self::$assigned_static_property_nodes[$method_node] = $nodes;
         }
         $nodes = self::$assigned_static_property_nodes[$method_node];
@@ -3438,7 +3448,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
         $applied = $this->getAppliedStaticPropertyModifications($method);
         $widened = [];
-        foreach ($nodes as $node) {
+        foreach ($nodes as [$node, $may_assign_null]) {
             $name = $node->children['prop'];
             if (\is_string($name)) {
                 $recorded_class = $applied ? self::getClassOfRecordedStaticPropertyModification($node, $method, $this->code_base) : null;
@@ -3452,7 +3462,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $names = $this->context->getStaticPropertyOverrideNames();
             }
             foreach ($names as $name) {
-                if (!isset($widened[$name]) && $this->widenStaticPropertyOverrideAssignedByNode($name, $node, $method)) {
+                if (!isset($widened[$name]) && $this->widenStaticPropertyOverrideAssignedByNode($name, $node, $method, $may_assign_null)) {
                     $widened[$name] = true;
                 }
             }
@@ -3462,9 +3472,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     /**
      * @param string $name the name of a static property of the class in scope
      * @param Node $node an AST_STATIC_PROP node that is assigned in the body of $method, with that name or a dynamic name
+     * @param bool $may_assign_null false if the assignment cannot make the property null
      * @return bool whether the type inferred for the property was widened
      */
-    private function widenStaticPropertyOverrideAssignedByNode(string $name, Node $node, Method $method): bool
+    private function widenStaticPropertyOverrideAssignedByNode(string $name, Node $node, Method $method, bool $may_assign_null): bool
     {
         $old_override = $this->context->getStaticPropertyIfOverridden($name);
         if ($old_override === null) {
@@ -3483,7 +3494,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // Without a declared type, the type after the call is unknown.
         $this->context = $this->context->withStaticPropertySetToTypeByName(
             $name,
-            $declared_type !== null ? $old_override->withUnionType(self::withNullAsSeparateType($declared_type)) : UnionType::empty()
+            $declared_type !== null ? $old_override->withUnionType(self::getTypeOfAssignedValue($declared_type, $may_assign_null)) : UnionType::empty()
         );
         return true;
     }
@@ -3496,6 +3507,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * Unless the property was assigned as `static::$prop`, a recorded type is only applied if the class it is recorded for
      * declares the property of the class in scope: not for another property with the same name,
      * and not for a property that the class of the method inherits.
+     *
+     * A property that the method also assigns a value of an unknown type to is left out: no type is recorded for that assignment.
      */
     private function getAppliedStaticPropertyModifications(Method $method): array
     {
@@ -3510,7 +3523,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 continue;
             }
             foreach ($entry['properties'] as $name => $property_info) {
-                if ($this->doesStaticOverrideMatchTargetClass($name, $target_class_fqsen, $calling_class, $property_info['is_late_static'])) {
+                if (!$method->hasStaticPropertyModificationOfUnknownType($target_class_fqsen, $name)
+                    && $this->doesStaticOverrideMatchTargetClass($name, $target_class_fqsen, $calling_class, $property_info['is_late_static'])
+                ) {
                     $applied[$target_class_fqsen->__toString()][$name] = true;
                 }
             }
@@ -3565,23 +3580,26 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * Converts `?T` to `T|null`, which is what the property has after a null check and an assignment of `T`.
-     * (Unlike `?T`, that is only reported as a possibly null value where `T` is expected by the strict type checks.)
+     * @param UnionType $type the declared type of a property
+     * @param bool $may_be_null false for an assignment that cannot make the property null
+     * @return UnionType the type that an assignment of an unknown value adds to the type of the property.
+     * `?T` is converted to `T|null`, which is what the property has after a null check and an assignment of `T`
+     * (unlike `?T`, that is only reported as a possibly null value where `T` is expected by the strict type checks),
+     * or to `T` if the value is not null.
      */
-    private static function withNullAsSeparateType(UnionType $type): UnionType
+    private static function getTypeOfAssignedValue(UnionType $type, bool $may_be_null): UnionType
     {
         if (!$type->containsNullable()) {
             return $type;
         }
-        $null_type = NullType::instance(false);
         $non_null_type = $type->nonNullableClone();
         $type_set = $non_null_type->getTypeSet();
-        $type_set[] = $null_type;
-        $real_type_set = [];
-        if ($type->hasRealTypeSet()) {
-            // (nonNullableClone() makes the real type non-null-mixed when the property has no real type.)
-            $real_type_set = $non_null_type->getRealTypeSet();
-            if ($type->getRealUnionType()->containsNullable()) {
+        // (nonNullableClone() makes the real type non-null-mixed when the property has no real type.)
+        $real_type_set = $type->hasRealTypeSet() ? $non_null_type->getRealTypeSet() : [];
+        if ($may_be_null) {
+            $null_type = NullType::instance(false);
+            $type_set[] = $null_type;
+            if ($real_type_set && $type->getRealUnionType()->containsNullable()) {
                 $real_type_set[] = $null_type;
             }
         }
@@ -3677,7 +3695,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      *
      * The bodies of closures, functions and classes declared in $node are not run by running $node.
      *
-     * @param list<Node> $nodes the nodes found so far
+     * @param list<array{0:Node,1:bool}> $nodes the nodes found so far, each with whether the assignment may make the property null
      */
     private static function collectAssignedStaticPropertyNodes(Node $node, array &$nodes): void
     {
@@ -3689,21 +3707,27 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 return;
             case ast\AST_ASSIGN:
             case ast\AST_ASSIGN_REF:
+                $var = $node->children['var'];
+                if ($var instanceof Node) {
+                    self::collectStaticPropertyNodesOfAssignmentTarget($var, true, $nodes);
+                }
+                break;
             case ast\AST_ASSIGN_OP:
             case ast\AST_PRE_INC:
             case ast\AST_PRE_DEC:
             case ast\AST_POST_INC:
             case ast\AST_POST_DEC:
+                // After `self::$prop .= $v`, `self::$prop ??= $v` or `self::$prop--`, the property is only null if it was null.
                 $var = $node->children['var'];
                 if ($var instanceof Node) {
-                    self::collectStaticPropertyNodesOfAssignmentTarget($var, $nodes);
+                    self::collectStaticPropertyNodesOfAssignmentTarget($var, false, $nodes);
                 }
                 break;
             case ast\AST_FOREACH:
                 foreach (['value', 'key'] as $name) {
                     $var = $node->children[$name];
                     if ($var instanceof Node) {
-                        self::collectStaticPropertyNodesOfAssignmentTarget($var, $nodes);
+                        self::collectStaticPropertyNodesOfAssignmentTarget($var, true, $nodes);
                     }
                 }
                 break;
@@ -3720,31 +3744,33 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * the node itself, the expression that a dimension is fetched from (and not the dimension, which is read),
      * the values of array destructuring (and not the keys), and the target of a reference (`foreach ($values as &self::$prop)`).
      *
-     * @param list<Node> $nodes the nodes found so far
+     * @param bool $may_assign_null whether the assignment may make $node null
+     * @param list<array{0:Node,1:bool}> $nodes the nodes found so far, each with whether the assignment may make the property null
      */
-    private static function collectStaticPropertyNodesOfAssignmentTarget(Node $node, array &$nodes): void
+    private static function collectStaticPropertyNodesOfAssignmentTarget(Node $node, bool $may_assign_null, array &$nodes): void
     {
         switch ($node->kind) {
             case ast\AST_STATIC_PROP:
-                $nodes[] = $node;
+                $nodes[] = [$node, $may_assign_null];
                 return;
             case ast\AST_DIM:
+                // Assigning a dimension (`self::$prop[] = $v`) does not make the property null.
                 $expr = $node->children['expr'];
                 if ($expr instanceof Node) {
-                    self::collectStaticPropertyNodesOfAssignmentTarget($expr, $nodes);
+                    self::collectStaticPropertyNodesOfAssignmentTarget($expr, false, $nodes);
                 }
                 return;
             case ast\AST_REF:
                 $var = $node->children['var'];
                 if ($var instanceof Node) {
-                    self::collectStaticPropertyNodesOfAssignmentTarget($var, $nodes);
+                    self::collectStaticPropertyNodesOfAssignmentTarget($var, $may_assign_null, $nodes);
                 }
                 return;
             case ast\AST_ARRAY:
                 foreach ($node->children as $element) {
                     $value = $element instanceof Node ? $element->children['value'] : null;
                     if ($value instanceof Node) {
-                        self::collectStaticPropertyNodesOfAssignmentTarget($value, $nodes);
+                        self::collectStaticPropertyNodesOfAssignmentTarget($value, $may_assign_null, $nodes);
                     }
                 }
                 return;

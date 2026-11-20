@@ -524,3 +524,75 @@ class StaticPropSetterMixed extends StaticPropSetterMixedParent {
         return self::$prop;
     }
 }
+
+// The setter is declared first and assigns a value of an unknown type: the type recorded for the other assignment is not all it assigns.
+class StaticPropSetterUnknownValue {
+    /** @var ?stdClass */
+    private static $prop;
+    private static $source;
+
+    /** @suppress PhanTypeMismatchPropertyProbablyReal */
+    private static function reset(): void {
+        self::$prop = null;
+        self::$prop = self::unknown(self::$source);
+    }
+
+    private static function unknown($value) {
+        return $value;
+    }
+
+    public static function getProp(): stdClass {
+        if (self::$prop !== null) {
+            return self::$prop;
+        }
+        self::reset();
+        return self::$prop;
+    }
+}
+
+// An assignment of a dimension, `.=` and `++` do not make a property null.
+class StaticPropSetterNotNull {
+    /** @var ?array<int,int> */
+    private static $items;
+    /** @var ?array<int,int> */
+    private static $replaced;
+
+    public static function getFirst(): int {
+        if (self::$items !== null) {
+            self::append();
+            return self::$items[0];
+        }
+        return 0;
+    }
+
+    public static function getFirstAfterCounting(): int {
+        if (self::$items !== null) {
+            self::count();
+            return self::$items[0];
+        }
+        return 0;
+    }
+
+    public static function getFirstAfterReplacing(): int {
+        if (self::$replaced !== null) {
+            self::appendOrReplace(null);
+            return self::$replaced[0];  // Should warn: the property may be assigned null.
+        }
+        return 0;
+    }
+
+    private static function append(): void {
+        self::$items[] = 1;
+    }
+
+    private static function count(): void {
+        self::$items[0] ??= 0;
+        self::$items[0]++;
+    }
+
+    /** @param ?array<int,int> $values */
+    private static function appendOrReplace(?array $values): void {
+        StaticPropSetterNotNull::$replaced[] = 1;
+        StaticPropSetterNotNull::$replaced = $values;
+    }
+}
