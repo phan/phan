@@ -928,9 +928,14 @@ final class Builder
      */
     private function requiredTypeFromCommentLine(int $i, string $line): ?Type
     {
-        $type = $this->typeFromCommentLine($line);
-        if ($type !== null && $type->isObjectWithKnownFQSEN() && !$type->isSelfType() && !$type->isStaticType()) {
-            return $type;
+        // `self` and `parent` are checked before the type is resolved: in a class or interface, they are resolved to its name or the name of its parent.
+        if (\preg_match('/@[\w-]+\s+(' . Type::type_regex . ')/', $line, $match)
+            && !\in_array(\strtolower(\ltrim($match[1], '\\')), ['self', 'static', 'parent'], true)
+        ) {
+            $type = Type::fromStringInContext($match[1], $this->context, Type::FROM_PHPDOC, $this->code_base);
+            if ($type->isObjectWithKnownFQSEN() && !$type->isSelfType() && !$type->isStaticType()) {
+                return $type;
+            }
         }
         $this->emitIssue(
             Issue::UnextractableAnnotation,

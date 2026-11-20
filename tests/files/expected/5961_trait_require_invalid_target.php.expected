@@ -14,3 +14,7 @@
 %s:83 PhanUnextractableAnnotation Saw unextractable annotation for comment '/** @require-implements static */'
 %s:86 PhanUnextractableAnnotation Saw unextractable annotation for comment '/** @psalm-require-extends object */'
 %s:115 PhanUnextractableAnnotation Saw unextractable annotation for comment '/** @require-extends self */'
+%s:120 PhanUnextractableAnnotation Saw unextractable annotation for comment '/** @require-extends self */'
+%s:123 PhanUnextractableAnnotation Saw unextractable annotation for comment '/** @require-implements SELF */'
+%s:126 PhanUnextractableAnnotation Saw unextractable annotation for comment '/** @require-extends parent */'
+%s:129 PhanUnextractableAnnotation Saw unextractable annotation for comment '/** @psalm-require-extends \self */'

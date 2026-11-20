@@ -114,3 +114,17 @@ trait SuppressedUnextractable {}
 
 /** @require-extends self */
 trait RequiresSelf {}
+
+// `self` and `parent` in a class or interface are not resolved to a class name.
+
+/** @require-extends self */
+class RequiresSelfInClass {}
+
+/** @require-implements SELF */
+interface RequiresSelfInInterface {}
+
+/** @require-extends parent */
+class RequiresParentInClass extends BaseClass {}
+
+/** @psalm-require-extends \self */
+trait RequiresQualifiedSelf {}
