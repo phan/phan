@@ -132,3 +132,18 @@ class ChildPrivateTyped extends ParentPrivateTyped {
     use TraitTypedString;
 }
 echo ChildPrivateTyped::C;
+
+// 12. Trait-relative `self` type resolves to the using class and is covariant with parent `self`.
+class ParentSelfTyped {
+    public const ?self C = null;
+}
+var_dump(ParentSelfTyped::C);
+
+trait TraitSelfTyped {
+    public const ?self C = null;
+}
+
+class ChildSelfTyped extends ParentSelfTyped {
+    use TraitSelfTyped;
+}
+var_dump(ChildSelfTyped::C);

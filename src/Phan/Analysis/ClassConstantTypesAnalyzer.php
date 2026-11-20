@@ -229,6 +229,7 @@ class ClassConstantTypesAnalyzer
         }
 
         $clazz->hydrate($code_base);
+        $class_context = $clazz->getContext()->withScope($clazz->getInternalScope());
 
         // Check each constant defined in this class (or imported directly from a trait)
         foreach ($clazz->getConstantMap($code_base) as $constant) {
@@ -257,7 +258,7 @@ class ClassConstantTypesAnalyzer
                 if (!$constant_union_type->hasRealTypeSet()) {
                     continue;
                 }
-                $constant_real_type = $constant_union_type->getRealUnionType();
+                $constant_real_type = $constant_union_type->getRealUnionType()->withSelfResolvedInContext($class_context);
             }
 
             // Check against each inherited class
@@ -292,11 +293,22 @@ class ClassConstantTypesAnalyzer
                     continue;
                 }
 
-                $inherited_real_type = $inherited_union_type->getRealUnionType();
+                $inherited_class_context = $inherited_class->getContext()->withScope($inherited_class->getInternalScope());
+                $inherited_real_type = $inherited_union_type->getRealUnionType()->withSelfResolvedInContext($inherited_class_context);
 
                 // Private constants can change type freely
                 if ($inherited_constant->isPrivate()) {
                     continue;
+                }
+
+                // Untyped overrides of typed constants are invalid in PHP 8.3+, but reflected
+                // internal constants carry types from the host PHP runtime rather than target_php_version.
+                if (!$constant_has_declared_type) {
+                    $target_version = Config::get_closest_target_php_version_id();
+                    $host_minor_version = \PHP_MAJOR_VERSION * 10000 + \PHP_MINOR_VERSION * 100;
+                    if ($target_version < 80300 || ($inherited_constant->isPHPInternal() && $target_version < $host_minor_version)) {
+                        continue;
+                    }
                 }
 
                 // PHP enforces covariance for typed constants: every type in the child must be a subtype of (or equal to) the parent,

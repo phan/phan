@@ -56,3 +56,9 @@ class ChildRedeclaresIncompatible extends ParentWithPublic {
     public const C = 2;
 }
 echo ChildRedeclaresIncompatible::C;
+
+// 5. Untyped override of an internal constant stays valid when targeting PHP 8.2, even on PHP 8.4+.
+class ChildDateTime extends \DateTime {
+    public const ATOM = 'custom';
+}
+echo ChildDateTime::ATOM;
