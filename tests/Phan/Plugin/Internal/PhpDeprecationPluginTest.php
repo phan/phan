@@ -143,4 +143,38 @@ PHP
         $direct_call_output = self::analyzeFile($base_code_base->shallowClone(), $without_polyfill);
         $this->assertStringContainsString('PhanDeprecatedFunctionInternal', $direct_call_output);
     }
+
+    /**
+     * Lazy-load hooks must be enabled during Analysis::loadMethodPlugins() so that
+     * internal functions loaded by a user plugin's getAnalyzeFunctionCallClosures()
+     * still receive CallableParamPlugin checks.
+     */
+    public function testLazyLoadHookRunsDuringLoadMethodPlugins(): void
+    {
+        $plugin_file = $this->createTempPhpFile(<<<'PHP'
+<?php
+use Phan\CodeBase;
+use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\PluginV3;
+use Phan\PluginV3\AnalyzeFunctionCallCapability;
+
+return new class extends PluginV3 implements AnalyzeFunctionCallCapability {
+    public function getAnalyzeFunctionCallClosures(CodeBase $code_base): array
+    {
+        $fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString('\\register_shutdown_function');
+        $code_base->hasFunctionWithFQSEN($fqsen);
+        return [];
+    }
+};
+PHP
+        );
+        Config::setValue('plugins', [$plugin_file]);
+        ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
+
+        $code_base = self::createCodeBaseWithoutFunctions([]);
+        $test_file = $this->createTempPhpFile("<?php\nregister_shutdown_function('a_nonexistent_callback_5649');\n");
+
+        $output = self::analyzeFile($code_base, $test_file);
+        $this->assertStringContainsString('PhanUndeclaredFunctionInCallable', $output);
+    }
 }

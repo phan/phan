@@ -430,6 +430,17 @@ final class ConfigPluginSet extends PluginV3 implements
     }
 
     /**
+     * Mark that parsing is done and the post-parse / analysis phase has started,
+     * enabling lazy-load hooks for internal functions and classes.
+     *
+     * @internal
+     */
+    public function beginAnalyzePhase(): void
+    {
+        $this->did_analyze_phase_start = true;
+    }
+
+    /**
      * Reset the analysis phase flag once the analysis phase finishes, so subsequent
      * analyses or daemon/language server re-parses in the same process do not trigger
      * lazy-load hooks during the parse phase.
