@@ -235,6 +235,9 @@ final class ConditionalCallAnalyzer
                     // The call throws, or calls __call() or __callStatic() instead of this method.
                     return null;
                 }
+                if (!$is_static && $accessing_class_fqsen !== null && self::isPrivateMethodOfScopeCalled($code_base, $accessing_class_fqsen, $class_fqsen, $method_name)) {
+                    return null;
+                }
                 if ($result !== null && $result !== $method) {
                     // Several candidates, e.g. for `A|B` when both classes declare the method
                     return null;
@@ -245,6 +248,26 @@ final class ConditionalCallAnalyzer
         } catch (\Exception) {
             return null;
         }
+    }
+
+    /**
+     * @return bool whether a call of the method $method_name on an instance of $class_fqsen, in the scope of the class
+     * $accessing_class_fqsen, calls a private method of that scope instead of the method of $class_fqsen.
+     * PHP does that for an instance of a subclass, also when the subclass declares a method with the same name.
+     */
+    private static function isPrivateMethodOfScopeCalled(CodeBase $code_base, FullyQualifiedClassName $accessing_class_fqsen, FullyQualifiedClassName $class_fqsen, string $method_name): bool
+    {
+        if ($accessing_class_fqsen === $class_fqsen || !$code_base->hasClassWithFQSEN($accessing_class_fqsen)) {
+            return false;
+        }
+        $accessing_class = $code_base->getClassByFQSEN($accessing_class_fqsen);
+        if (!$accessing_class->hasMethodWithName($code_base, $method_name, true)) {
+            return false;
+        }
+        $method = $accessing_class->getMethodByName($code_base, $method_name);
+        return $method->isPrivate()
+            && $method->getDefiningClassFQSEN() === $accessing_class_fqsen
+            && $class_fqsen->asType()->isSubtypeOf($accessing_class_fqsen->asType(), $code_base);
     }
 
     /**

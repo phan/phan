@@ -43,8 +43,13 @@ interface ConditionalCallCapability
      * `mixed` or a `class-string` without a class, or a class that is not final and does not declare the method
      * (a subclass may declare it). It is not resolved either if the method cannot be called from the scope of the call
      * (a private method called from outside its class is an error, or a call of `__call()`).
-     * For `isSafe($x) !== false` and `isSafe($x) !== true`, the closure is only called if the function returns a bool:
-     * those comparisons are also true for other values.
+     * For `isSafe($x) !== false` and `isSafe($x) !== true`, the closure is only called if the function or method
+     * returns a bool: those comparisons are also true for other values.
+     *
+     * A closure for a method is also called when the receiver may be an instance of a subclass that overrides the method:
+     * as for return types, an overriding method is expected to keep what the overridden method promises.
+     * Register the closure for the class that declares the method. For a class that inherits it, the closure applies
+     * to that class and not to its subclasses, as for getAnalyzeFunctionCallClosures().
      * For a call in a nullsafe chain (`$v?->isSafe($x)`, `$v?->prop->isSafe($x)`), the closure is not called for the
      * falsey case: the expression is null without calling the method when `$v` is null.
      * Closures of several plugins for the same function are called in the order the plugins are loaded,

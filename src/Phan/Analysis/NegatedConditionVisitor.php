@@ -281,19 +281,22 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
     public function visitCall(Node $node): Context
     {
         // The closures of ConditionalCallCapability plugins run after Phan's own narrowing.
-        return ConditionalCallAnalyzer::analyze($this->code_base, $this->analyzeCall($node), $node, true);
+        return ConditionalCallAnalyzer::analyze($this->code_base, $this->analyzeCall($node), $node, true, $this->is_operand_of_strict_inequality);
     }
 
     /**
-     * Analyzes a call of a function that is compared with a literal with `===` or `!==` (IdenticalCondition::analyzeCall()),
-     * like visitCall().
-     *
-     * @param bool $is_inequality true for `f($x) !== false` and `f($x) !== true`. The closures of ConditionalCallCapability
-     * plugins then only run if the function returns a bool: `f($x) !== false` is also true if f() returns 0.
+     * Analyzes $node as the operand of `!== true`: like __invoke(), except that the closures of ConditionalCallCapability
+     * plugins only run for a call of a function or method that returns a bool.
+     * `f($x) !== true` is also true if f() returns 1, so it only means that f($x) is falsey for a bool.
      */
-    public function visitCallOfStrictComparison(Node $node, bool $is_inequality): Context
+    public function analyzeOperandOfStrictInequality(Node $node): Context
     {
-        return ConditionalCallAnalyzer::analyze($this->code_base, $this->analyzeCall($node), $node, true, $is_inequality);
+        $this->is_operand_of_strict_inequality = true;
+        try {
+            return $this->__invoke($node);
+        } finally {
+            $this->is_operand_of_strict_inequality = false;
+        }
     }
 
     /**
@@ -376,7 +379,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      */
     public function visitMethodCall(Node $node): Context
     {
-        return ConditionalCallAnalyzer::analyze($this->code_base, $this->visit($node), $node, true);
+        return ConditionalCallAnalyzer::analyze($this->code_base, $this->visit($node), $node, true, $this->is_operand_of_strict_inequality);
     }
 
     /**
@@ -389,7 +392,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      */
     public function visitNullsafeMethodCall(Node $node): Context
     {
-        return ConditionalCallAnalyzer::analyze($this->code_base, $this->visit($node), $node, true);
+        return ConditionalCallAnalyzer::analyze($this->code_base, $this->visit($node), $node, true, $this->is_operand_of_strict_inequality);
     }
 
     /**
@@ -402,7 +405,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      */
     public function visitStaticCall(Node $node): Context
     {
-        return ConditionalCallAnalyzer::analyze($this->code_base, $this->visit($node), $node, true);
+        return ConditionalCallAnalyzer::analyze($this->code_base, $this->visit($node), $node, true, $this->is_operand_of_strict_inequality);
     }
 
     public function visitVar(Node $node): Context

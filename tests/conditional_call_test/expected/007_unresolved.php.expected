@@ -12,3 +12,10 @@ src/007_unresolved.php:91 PhanDebugAnnotation @phan-debug-var requested for vari
 src/007_unresolved.php:94 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int|string
 src/007_unresolved.php:117 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string
 src/007_unresolved.php:121 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int|string
+src/007_unresolved.php:136 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string
+src/007_unresolved.php:139 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string
+src/007_unresolved.php:142 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int
+src/007_unresolved.php:146 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int|string
+src/007_unresolved.php:149 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string
+src/007_unresolved.php:164 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int|string(real=int|string)
+src/007_unresolved.php:180 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string

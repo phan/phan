@@ -87,6 +87,8 @@ final class ConditionalCallTestPlugin extends PluginV3 implements ConditionalCal
             '\int_check' => $narrow,
             '\PrivateChecker::check' => $narrow,
             '\FinalWithoutMethod::unused' => $narrow,
+            '\IntChecker::check' => $narrow,
+            '\PrivateBindingChild::check' => $narrow,
         ];
     }
 

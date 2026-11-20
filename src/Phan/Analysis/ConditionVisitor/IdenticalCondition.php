@@ -71,11 +71,13 @@ class IdenticalCondition implements BinaryCondition
         }
         if ($value xor $negate) {  // logical xor
             // e.g. `if (is_string($x) === true)`
-            return (new ConditionVisitor($code_base, $context))->visitCallOfStrictComparison($call_node, $negate);
+            $visitor = new ConditionVisitor($code_base, $context);
         } else {
             // e.g. `if (is_string($x) === false)`
-            return (new NegatedConditionVisitor($code_base, $context))->visitCallOfStrictComparison($call_node, $negate);
+            $visitor = new NegatedConditionVisitor($code_base, $context);
         }
+        // `f($x) !== false` and `f($x) !== true` are also true for values that are not a bool.
+        return $negate ? $visitor->analyzeOperandOfStrictInequality($call_node) : $visitor->visitCall($call_node);
     }
 
     /**
@@ -145,12 +147,14 @@ class IdenticalCondition implements BinaryCondition
             return null;
         }
         if ($value xor $negate) {  // logical xor
-            // e.g. `if (is_string($x) === true)`
-            return (new ConditionVisitor($code_base, $context))->__invoke($complex_node);
+            // e.g. `if (($x instanceof Xyz) === true)`
+            $visitor = new ConditionVisitor($code_base, $context);
         } else {
-            // e.g. `if (is_string($x) === false)`
-            return (new NegatedConditionVisitor($code_base, $context))->__invoke($complex_node);
+            // e.g. `if (($x instanceof Xyz) === false)`
+            $visitor = new NegatedConditionVisitor($code_base, $context);
         }
+        // `$v->isValid($x) !== false` and `$v->isValid($x) !== true` are also true for values that are not a bool.
+        return $negate ? $visitor->analyzeOperandOfStrictInequality($complex_node) : $visitor->__invoke($complex_node);
     }
 
     /** @return static */

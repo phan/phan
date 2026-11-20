@@ -122,3 +122,62 @@ function test_nullsafe_chain_with_static_call(?FactoryHolder $holder, int|string
         '@phan-debug-var $x';
     }
 }
+
+class IntChecker
+{
+    public function check(int|string $x): int
+    {
+        return is_string($x) ? 1 : 0;
+    }
+}
+
+function test_strict_comparison_of_methods(Validator $v, IntChecker $c, int|string $x): void
+{
+    if ($v->isValid($x) === true) {
+        '@phan-debug-var $x';
+    }
+    if ($v->isValid($x) !== false) {
+        '@phan-debug-var $x';
+    }
+    if (SafeChecker::check($x) === false) {
+        '@phan-debug-var $x';
+    }
+    // Unchanged: $c->check($x) !== false is true for 0 and for 1
+    if ($c->check($x) !== false) {
+        '@phan-debug-var $x';
+    }
+    if ($c->check($x) == true) {
+        '@phan-debug-var $x';
+    }
+}
+
+class PrivateBindingParent
+{
+    private function check(int|string $x): bool
+    {
+        return is_string($x);
+    }
+
+    public function test(PrivateBindingChild $c, int|string $x): void
+    {
+        // Unchanged: in this class, $c->check() calls the private method of this class, not PrivateBindingChild::check()
+        if ($c->check($x)) {
+            '@phan-debug-var $x';
+        }
+    }
+}
+
+final class PrivateBindingChild extends PrivateBindingParent
+{
+    public function check(int|string $x): bool
+    {
+        return is_string($x);
+    }
+}
+
+function test_public_method_of_subclass(PrivateBindingChild $c, int|string $x): void
+{
+    if ($c->check($x)) {
+        '@phan-debug-var $x';
+    }
+}
