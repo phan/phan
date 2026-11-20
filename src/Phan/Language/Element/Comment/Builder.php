@@ -905,7 +905,7 @@ final class Builder
         if (!$this->checkCompatible('@require-extends', [Comment::ON_CLASS], $i)) {
             return;
         }
-        $type = $this->typeFromCommentLine($line);
+        $type = $this->requiredTypeFromCommentLine($i, $line);
         if ($type !== null) {
             $this->required_extends_types[] = $type;
         }
@@ -916,10 +916,28 @@ final class Builder
         if (!$this->checkCompatible('@require-implements', [Comment::ON_CLASS], $i)) {
             return;
         }
-        $type = $this->typeFromCommentLine($line);
+        $type = $this->requiredTypeFromCommentLine($i, $line);
         if ($type !== null) {
             $this->required_implements_types[] = $type;
         }
+    }
+
+    /**
+     * @return ?Type the class or interface named by a `@require-extends` or `@require-implements` line.
+     * Null, with an issue, if the line has no type or a type that is not a class name (e.g. `int` or `static`).
+     */
+    private function requiredTypeFromCommentLine(int $i, string $line): ?Type
+    {
+        $type = $this->typeFromCommentLine($line);
+        if ($type !== null && $type->isObjectWithKnownFQSEN() && !$type->isSelfType() && !$type->isStaticType()) {
+            return $type;
+        }
+        $this->emitIssue(
+            Issue::UnextractableAnnotation,
+            $this->guessActualLineLocation($i),
+            \trim($line)
+        );
+        return null;
     }
 
     private function maybeParsePhanUse(int $i, string $line): void

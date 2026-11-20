@@ -90,6 +90,49 @@ class ClassInheritanceAnalyzer
                 }
             }
         }
+
+        foreach ($clazz->getRequiredExtendsFQSENList() as $fqsen) {
+            self::analyzeRequiredAncestor($code_base, $clazz, $fqsen, true);
+        }
+        foreach ($clazz->getRequiredImplementsFQSENList() as $fqsen) {
+            self::analyzeRequiredAncestor($code_base, $clazz, $fqsen, false);
+        }
+    }
+
+    /**
+     * Checks that the target of `@require-extends` is a declared class, and that the target of `@require-implements` is a declared interface.
+     *
+     * @param Clazz $clazz the class-like with the annotation (usually a trait)
+     * @param FullyQualifiedClassName $fqsen the target of the annotation
+     * @param bool $is_extends true for `@require-extends`, false for `@require-implements`
+     */
+    private static function analyzeRequiredAncestor(
+        CodeBase $code_base,
+        Clazz $clazz,
+        FullyQualifiedClassName $fqsen,
+        bool $is_extends
+    ): void {
+        if (!$code_base->hasClassWithFQSEN($fqsen)) {
+            $context = $clazz->getInternalContext();
+            Issue::maybeEmitWithParameters(
+                $code_base,
+                $context,
+                Issue::UndeclaredClassReference,
+                $context->getLineNumberStart(),
+                [(string)$fqsen],
+                IssueFixSuggester::suggestSimilarClass(
+                    $code_base,
+                    $context,
+                    $fqsen,
+                    IssueFixSuggester::createFQSENFilterForClasslikeCategories($code_base, $is_extends, false, !$is_extends)
+                )
+            );
+            return;
+        }
+        $required_class = $code_base->getClassByFQSENWithoutHydrating($fqsen);
+        if ($is_extends ? !$required_class->isClass() : !$required_class->isInterface()) {
+            $clazz->emitWrongInheritanceCategoryWarning($code_base, $required_class, $is_extends ? 'Class' : 'Interface', 0);
+        }
     }
 
     /**

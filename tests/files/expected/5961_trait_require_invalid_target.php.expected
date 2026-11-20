@@ -1,0 +1,16 @@
+%s:33 PhanAccessWrongInheritanceCategory Attempting to inherit Interface \NS5961\FooInterface defined at %s:9 as if it were a Class
+%s:36 PhanAccessWrongInheritanceCategory Attempting to inherit Trait \NS5961\OtherTrait defined at %s:11 as if it were a Class
+%s:39 PhanAccessWrongInheritanceCategoryInternal Attempting to inherit internal abstract Interface \Countable as if it were a Class
+%s:44 PhanAccessWrongInheritanceCategory Attempting to inherit Class \NS5961\BaseClass defined at %s:5 as if it were a Interface
+%s:47 PhanAccessWrongInheritanceCategory Attempting to inherit Trait \NS5961\OtherTrait defined at %s:11 as if it were a Interface
+%s:50 PhanAccessWrongInheritanceCategoryInternal Attempting to inherit internal Class \ArrayObject as if it were a Interface
+%s:55 PhanUndeclaredClassReference Reference to undeclared class \NS5961\UndeclaredClass
+%s:60 PhanUndeclaredClassReference Reference to undeclared class \NS5961\UndeclaredInterface
+%s:63 PhanUndeclaredClassReference Reference to undeclared class \NS5961\BaseClas (Did you mean class \NS5961\BaseClass)
+%s:67 PhanTraitRequireExtendsMissing Trait \NS5961\RequiresUndeclaredClass requires using class \NS5961\UsesUndeclared to extend \NS5961\UndeclaredClass
+%s:72 PhanUnextractableAnnotation Saw unextractable annotation for comment '/** @require-extends */'
+%s:76 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @require-implements'
+%s:80 PhanUnextractableAnnotation Saw unextractable annotation for comment '/** @require-extends int */'
+%s:83 PhanUnextractableAnnotation Saw unextractable annotation for comment '/** @require-implements static */'
+%s:86 PhanUnextractableAnnotation Saw unextractable annotation for comment '/** @psalm-require-extends object */'
+%s:115 PhanUnextractableAnnotation Saw unextractable annotation for comment '/** @require-extends self */'
