@@ -903,6 +903,9 @@ class Phan implements IgnoredFilesFilterInterface
                 $request->exit(EXIT_SUCCESS);
             }
             throw $e;
+        } finally {
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            ConfigPluginSet::instance()->endAnalyzePhase();
         }
 
         if ($request instanceof Request) {

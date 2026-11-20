@@ -408,7 +408,6 @@ final class ConfigPluginSet extends PluginV3 implements
      */
     public function beforeAnalyze(CodeBase $code_base): void
     {
-        $this->did_analyze_phase_start = true;
         foreach ($this->before_analyze_plugin_set as $plugin) {
             $plugin->beforeAnalyze($code_base);
         }
@@ -428,6 +427,18 @@ final class ConfigPluginSet extends PluginV3 implements
         foreach ($this->before_analyze_phase_plugin_set as $plugin) {
             $plugin->beforeAnalyzePhase($code_base);
         }
+    }
+
+    /**
+     * Reset the analysis phase flag once the analysis phase finishes, so subsequent
+     * analyses or daemon/language server re-parses in the same process do not trigger
+     * lazy-load hooks during the parse phase.
+     *
+     * @internal
+     */
+    public function endAnalyzePhase(): void
+    {
+        $this->did_analyze_phase_start = false;
     }
 
     /**
