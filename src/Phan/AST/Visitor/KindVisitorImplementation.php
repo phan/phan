@@ -116,6 +116,11 @@ abstract class KindVisitorImplementation implements KindVisitor
         return $this->visit($node);
     }
 
+    public function visitPlaceholderArg(Node $node)
+    {
+        return $this->visit($node);
+    }
+
     public function visitCast(Node $node)
     {
         return $this->visit($node);

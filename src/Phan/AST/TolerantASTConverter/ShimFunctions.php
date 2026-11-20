@@ -14,6 +14,8 @@ class ShimFunctions
 {
     private const KIND_LOOKUP = [
         ast\AST_ARG_LIST => 'AST_ARG_LIST',
+        ast\AST_CALLABLE_CONVERT => 'AST_CALLABLE_CONVERT',
+        ast\AST_PLACEHOLDER_ARG => 'AST_PLACEHOLDER_ARG',
         ast\AST_LIST => 'AST_LIST',
         ast\AST_ARRAY => 'AST_ARRAY',
         ast\AST_ENCAPS_LIST => 'AST_ENCAPS_LIST',

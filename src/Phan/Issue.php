@@ -630,6 +630,7 @@ class Issue
     public const CompatibleEnumPropertyInConstExpression = 'PhanCompatibleEnumPropertyInConstExpression';
     public const CompatibleClosureInConstExpression      = 'PhanCompatibleClosureInConstExpression';
     public const CompatibleReadonlyPropertyDefault       = 'PhanCompatibleReadonlyPropertyDefault';
+    public const CompatiblePartialApplication            = 'PhanCompatiblePartialApplication';
     public const NonEnumPropertyInConstExpression        = 'PhanNonEnumPropertyInConstExpression';
 
     // Issue::CATEGORY_GENERIC
@@ -5340,6 +5341,14 @@ class Issue
                 'The readonly property {PROPERTY} has a default value, which is only supported in PHP 8.6+.',
                 self::REMEDIATION_B,
                 3059
+            ),
+            new Issue(
+                self::CompatiblePartialApplication,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                'Partial function application (a call with the arguments {CODE}) is only supported in PHP 8.6+.',
+                self::REMEDIATION_B,
+                3060
             ),
             new Issue(
                 self::CompatibleAutoload,

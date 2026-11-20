@@ -165,9 +165,10 @@ final class ClosureDeclarationParameter
         if ($this->is_reference) {
             $flags |= \ast\flags\PARAM_REF;
         }
+        $name = $this->name;
         $result = Parameter::create(
             (new Context())->withFile('phpdoc'),
-            "p$i",
+            StringUtil::isNonZeroLengthString($name) ? $name : "p$i",
             $this->type,
             $flags
         );

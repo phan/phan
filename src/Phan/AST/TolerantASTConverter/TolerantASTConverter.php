@@ -124,7 +124,8 @@ class TolerantASTConverter
 
     // The versions that this supports
     // Version 120 is supported for PHP 8.4+ (property hooks, closure name field removal)
-    public const SUPPORTED_AST_VERSIONS = [80, self::AST_VERSION, 120];
+    // Version 130 adds the 'args' child of AST_CALLABLE_CONVERT (php-ast 1.1.5+)
+    public const SUPPORTED_AST_VERSIONS = [80, self::AST_VERSION, 120, 130];
 
     // If this environment variable is set, this will throw.
     // (For debugging, may be removed in the future)
@@ -2517,11 +2518,24 @@ class TolerantASTConverter
                 if ($only_arg instanceof PhpParser\Node\Expression\ArgumentExpression
                     && $only_arg->dotDotDotToken !== null
                     && $only_arg->expression === null) {
+                    $callable_convert_line = self::getStartLine($only_arg);
+                    if (self::$ast_version_parsing < 130) {
+                        return new ast\Node(ast\AST_CALLABLE_CONVERT, 0, [], $callable_convert_line);
+                    }
+                    // In AST version 130+, the `...` of first-class callable syntax is a variadic placeholder in an argument list.
+                    // TODO: Convert the other forms of php 8.6 partial function application (`f(1, ?)`) when the parser supports them.
                     return new ast\Node(
                         ast\AST_CALLABLE_CONVERT,
                         0,
-                        [],
-                        self::getStartLine($only_arg)
+                        [
+                            'args' => new ast\Node(
+                                ast\AST_ARG_LIST,
+                                0,
+                                [new ast\Node(ast\AST_PLACEHOLDER_ARG, ast\flags\PLACEHOLDER_VARIADIC, [], $callable_convert_line)],
+                                $callable_convert_line
+                            ),
+                        ],
+                        $callable_convert_line
                     );
                 }
             }

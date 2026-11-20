@@ -24,10 +24,16 @@ use const STDERR;
 
 /** @internal hack to use dynamic configuration in class constant */
 
-// Phan v6 always uses AST 120 since it requires PHP 8.1+ to run
-// This ensures consistent AST structure regardless of --target-php-version
-// Note: php-ast 1.1.3+ is required for AST version 120 support
-\define('Phan\AST_VERSION', 120);
+// Phan v6 uses AST version 130 when the installed php-ast supports it, and 120 otherwise.
+// The AST structure does not depend on --target-php-version.
+// - Version 120 needs php-ast 1.1.3+.
+// - Version 130 (php-ast 1.1.5+) adds the arguments of partial function application (`f(1, ?)`, php 8.6+)
+//   as the 'args' child of AST_CALLABLE_CONVERT, and the node kind AST_PLACEHOLDER_ARG. See \Phan\AST\PartialApplication.
+// Without php-ast (--force-polyfill-parser with the stubs for ast), the fallback parser generates version 130.
+\define(
+    'Phan\AST_VERSION',
+    (!\function_exists('ast\get_supported_versions') || \in_array(130, \ast\get_supported_versions(), true)) ? 130 : 120
+);
 
 /**
  * Program configuration.

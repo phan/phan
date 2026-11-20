@@ -85,6 +85,12 @@ interface KindVisitor
     public function visitCallableConvert(Node $node);
 
     /**
+     * Visit a node with kind `\ast\AST_PLACEHOLDER_ARG`
+     * (`?` or `...` in the arguments of php 8.6 partial function application, in AST version 130+)
+     */
+    public function visitPlaceholderArg(Node $node);
+
+    /**
      * Visit a node with kind `\ast\AST_CAST`
      */
     public function visitCast(Node $node);
