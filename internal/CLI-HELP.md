@@ -65,6 +65,9 @@ Usage: ./phan [options] [files...]
  -o, --output <filename>
   Output filename
 
+ --output-log
+  Also output issues to stderr in mode 'text'.
+
  --init
    [--init-level=3]
    [--init-analyze-dir=path/to/src]
