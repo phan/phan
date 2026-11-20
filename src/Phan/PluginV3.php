@@ -146,6 +146,15 @@ use Phan\PluginV3\IssueEmitter;
  *     The counterpart of handleLazyLoadInternalFunction() for methods.
  *
  *     (implement \Phan\PluginV3\HandleLazyLoadInternalMethodCapability)
+ * 23. public function getConditionalCallClosures(CodeBase $code_base) : array<string,Closure(CodeBase,Context,FunctionInterface,Node,list<Node|string|int|float>,bool):Context>
+ *     Maps FQSEN of function or method to a closure that returns the Context after a call of it used as a condition,
+ *     e.g. to narrow the type of an argument in `if (isSafe($x)) {...}`.
+ *     The closure runs after Phan's own narrowing for the call, only if the call resolves to exactly one function or method.
+ *     It must not emit issues, and may be called more than once for the same call.
+ *
+ *     Closure type: function(CodeBase $code_base, Context $context, FunctionInterface $function, Node $call, array $args, bool $is_negated) : Context {...}
+ *
+ *     (implement \Phan\PluginV3\ConditionalCallCapability)
  */
 abstract class PluginV3
 {

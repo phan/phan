@@ -153,7 +153,7 @@ final class LazyInheritedMethods
     /**
      * @var list<array{0:string,1:string,2:Closure,3:?PluginV3}> the plugin closures of Analysis::loadMethodPlugins() that
      * were attached to the methods with a given defining FQSEN while some of their copies were still lazy:
-     * [FQSEN string, 'return_type' or 'call', closure, plugin]
+     * [FQSEN string, 'return_type', 'call' or 'conditional_call', closure, plugin]
      */
     private $ops = [];
 
@@ -985,7 +985,8 @@ final class LazyInheritedMethods
      * Record that a plugin closure was attached to the methods defined by $fqsen while some of their copies were still
      * lazy: those get it when they are created (replayOps()).
      *
-     * @param string $kind 'return_type' or 'call'
+     * @param string $kind 'return_type' (a return type override), 'call' (a function call analyzer) or 'conditional_call'
+     * (a closure of a ConditionalCallCapability plugin)
      */
     public function recordOp(FullyQualifiedMethodName $fqsen, string $kind, Closure $closure, ?PluginV3 $plugin): void
     {
@@ -1030,6 +1031,8 @@ final class LazyInheritedMethods
                         continue;
                     }
                     $method->setDependentReturnTypeClosure($closure);
+                } elseif ($kind === 'conditional_call') {
+                    $method->addConditionalCallClosure($closure, $plugin);
                 } else {
                     $method->addFunctionCallAnalyzer($closure, $plugin);
                 }

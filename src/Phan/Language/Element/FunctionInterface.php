@@ -391,6 +391,33 @@ interface FunctionInterface extends AddressableElementInterface
     public function addFunctionCallAnalyzer(Closure $closure, ?PluginV3 $plugin = null): void;
 
     /**
+     * Returns true if this function or method has closures that change the context when a call of it is used as a condition
+     * (see addConditionalCallClosure())
+     */
+    public function hasConditionalCallClosure(): bool;
+
+    /**
+     * Returns the context after a call of this function or method that is used as a condition, as computed by the closures
+     * added with addConditionalCallClosure(), in the order they were added. Callers should check hasConditionalCallClosure().
+     *
+     * @param Node $node the call (ast\AST_CALL, ast\AST_METHOD_CALL, ast\AST_NULLSAFE_METHOD_CALL or ast\AST_STATIC_CALL)
+     * @param list<Node|string|int|float> $args the arguments of the call, normalized with ArgumentType::normalizeNamedArgs()
+     * @param bool $is_negated false if the call is assumed to be truthy, true if it is assumed to be falsey
+     */
+    public function analyzeConditionalCall(CodeBase $code_base, Context $context, Node $node, array $args, bool $is_negated): Context;
+
+    /**
+     * Add a closure that changes the context when a call of this function or method is used as a condition,
+     * after the closures that were already added (see \Phan\PluginV3\ConditionalCallCapability for its signature).
+     * A plugin adds at most one closure to a function or method: a closure is not added if a closure of the same
+     * plugin (or the same closure, when $plugin is null) was already added.
+     *
+     * @param Closure(CodeBase,Context,FunctionInterface,Node,list<Node|string|int|float>,bool):Context $closure
+     * @param ?PluginV3 $plugin the plugin that created the closure, or null @phan-mandatory-param
+     */
+    public function addConditionalCallClosure(Closure $closure, ?PluginV3 $plugin = null): void;
+
+    /**
      * Initialize the inner scope of this method with variables created from the parameters.
      *
      * Deferred until the parse phase because getting the UnionType of parameter defaults requires having all class constants be known.

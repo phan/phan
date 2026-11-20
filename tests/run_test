@@ -61,6 +61,11 @@ case "$TEST_SUITE" in
 		./test.sh
 		exit $?
 		;;
+	__FakeConditionalCallTest)
+		cd tests/conditional_call_test
+		./test.sh
+		exit $?
+		;;
 	__FakeRealTypesTest)
 		cd tests/real_types_test
 		./test.sh

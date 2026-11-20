@@ -280,6 +280,15 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      */
     public function visitCall(Node $node): Context
     {
+        // The closures of ConditionalCallCapability plugins run after Phan's own narrowing.
+        return ConditionalCallAnalyzer::analyze($this->code_base, $this->analyzeCall($node), $node, true);
+    }
+
+    /**
+     * Phan's own analysis of the negation of a call of a function used as a condition (see visitCall())
+     */
+    private function analyzeCall(Node $node): Context
+    {
         $args_node = $node->children['args'];
         if ($args_node->kind === ast\AST_CALLABLE_CONVERT) {
             // Warn about `if (!strlen(...))` always being a truthy closure
@@ -343,6 +352,45 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         }
 
         return $context;
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse, with kind ast\AST_METHOD_CALL (e.g. `if (!$x->method())`)
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitMethodCall(Node $node): Context
+    {
+        return ConditionalCallAnalyzer::analyze($this->code_base, $this->visit($node), $node, true);
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse, with kind ast\AST_NULLSAFE_METHOD_CALL (e.g. `if (!$x?->method())`)
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitNullsafeMethodCall(Node $node): Context
+    {
+        return ConditionalCallAnalyzer::analyze($this->code_base, $this->visit($node), $node, true);
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse, with kind ast\AST_STATIC_CALL (e.g. `if (!Foo::method($x))`)
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitStaticCall(Node $node): Context
+    {
+        return ConditionalCallAnalyzer::analyze($this->code_base, $this->visit($node), $node, true);
     }
 
     public function visitVar(Node $node): Context

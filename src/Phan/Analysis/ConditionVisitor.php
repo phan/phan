@@ -664,7 +664,8 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
     {
         $this->visit($node);
         // `$x?->method()` is only truthy if `$x` is not null
-        return $this->removeNullFromNullsafeReceivers($node, $this->context);
+        $context = $this->removeNullFromNullsafeReceivers($node, $this->context);
+        return ConditionalCallAnalyzer::analyze($this->code_base, $context, $node, false);
     }
 
     /**
@@ -678,7 +679,21 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
     public function visitMethodCall(Node $node): Context
     {
         $this->visit($node);
-        return $this->removeNullFromNullsafeReceivers($node, $this->context);
+        $context = $this->removeNullFromNullsafeReceivers($node, $this->context);
+        return ConditionalCallAnalyzer::analyze($this->code_base, $context, $node, false);
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse, with kind ast\AST_STATIC_CALL (e.g. `if (Foo::method($x))`)
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitStaticCall(Node $node): Context
+    {
+        return ConditionalCallAnalyzer::analyze($this->code_base, $this->visit($node), $node, false);
     }
 
     /**
@@ -1192,6 +1207,15 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      * parsing the node
      */
     public function visitCall(Node $node): Context
+    {
+        // The closures of ConditionalCallCapability plugins run after Phan's own narrowing.
+        return ConditionalCallAnalyzer::analyze($this->code_base, $this->analyzeCall($node), $node, false);
+    }
+
+    /**
+     * Phan's own analysis of a call of a function used as a condition (see visitCall())
+     */
+    private function analyzeCall(Node $node): Context
     {
         if ($node->children['args']->kind === ast\AST_CALLABLE_CONVERT) {
             // Warn about `if (strlen(...))` always being a truthy closure if redundant condition detection is enabled.

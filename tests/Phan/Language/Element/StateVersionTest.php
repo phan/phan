@@ -167,6 +167,7 @@ final class StateVersionTest extends CodeBaseAwareTestBase
             }),
             'addFunctionCallAnalyzer' => static fn(Method $m) => $m->addFunctionCallAnalyzer(static function (): void {
             }, null),
+            'addConditionalCallClosure' => static fn(Method $m) => $m->addConditionalCallClosure(static fn(CodeBase $unused_code_base, Context $context): Context => $context, null),
             'setComment' => static fn(Method $m) => $m->setComment(NullComment::instance()),
             'ensureScopeInitialized' => static fn(Method $m, CodeBase $code_base) => $m->ensureScopeInitialized($code_base),
             'setIsPure' => static fn(Method $m) => $m->setIsPure(),
