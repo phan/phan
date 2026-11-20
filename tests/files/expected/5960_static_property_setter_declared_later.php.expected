@@ -1,0 +1,1 @@
+%s:36 PhanTypeMismatchReturnReal Returning self::$prop of type null but getPropWithoutSetting() is declared to return \stdClass

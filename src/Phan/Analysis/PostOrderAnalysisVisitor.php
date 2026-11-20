@@ -58,6 +58,7 @@ use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
+use WeakMap;
 
 use function implode;
 use function sprintf;
@@ -82,6 +83,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /** @var array<string,bool> tracks which methods were checked for static property modifications on-demand */
     private static $checked_methods_for_static_property_modifications = [];
+
+    /**
+     * @var ?WeakMap<Node,?list<string>> the names of the static properties assigned in the body of a method, by the node of the method.
+     * The names are null if a static property with a dynamic name is assigned.
+     */
+    private static $assigned_static_property_names = null;
 
     /**
      * @param CodeBase $code_base
@@ -3300,6 +3307,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $class_name_lower = \strtolower($class_name);
                 if (\in_array($class_name_lower, ['self', 'static', 'parent'], true)) {
                     $this->applyStaticPropertyModificationsFromMethod($method);
+                    $this->widenStaticPropertyOverridesAssignedByMethod($method);
                 }
             }
         }
@@ -3394,6 +3402,130 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
         }
         return $applied;
+    }
+
+    /**
+     * Widens the types inferred for the static properties that the body of the called method assigns,
+     * when the types it assigns were not recorded by analyzing it (see applyStaticPropertyModificationsFromMethod).
+     * That is the case when the method is declared after the caller (it is analyzed later), when it is inherited
+     * (the types are recorded for the method it is inherited from) and when the type of the assigned value is unknown.
+     * The property is then assumed to have its previous type or its declared type, or an unknown type if it declares none.
+     *
+     * This only looks at the node of the method, instead of analyzing the method before its turn:
+     * analyzing it twice changes what is inferred in it, e.g. from the types of the properties it has assigned the first time.
+     */
+    private function widenStaticPropertyOverridesAssignedByMethod(Method $method): void
+    {
+        if (!$this->context->getScope()->hasVariableWithName(Context::VAR_NAME_STATIC_PROPERTIES)) {
+            // Nothing was inferred about static properties (the common case).
+            return;
+        }
+        $node = $method->getNode();
+        if (!($node instanceof Node)) {
+            return;
+        }
+        self::$assigned_static_property_names ??= new WeakMap();
+        if (!self::$assigned_static_property_names->offsetExists($node)) {
+            $names = [];
+            self::$assigned_static_property_names[$node] = self::collectAssignedStaticPropertyNames($node, $names) ? \array_keys($names) : null;
+        }
+        $names = self::$assigned_static_property_names[$node];
+        if ($names === null) {
+            $this->context = $this->context->withoutStaticPropertyOverrides();
+            return;
+        }
+        if (!$names) {
+            return;
+        }
+        $recorded = [];
+        foreach ($method->getStaticPropertyModifications() as $entry) {
+            $recorded += $entry['properties'];
+        }
+        foreach ($names as $name) {
+            if (isset($recorded[$name])) {
+                continue;
+            }
+            $old_override = $this->context->getStaticPropertyIfOverridden($name);
+            if ($old_override === null) {
+                continue;
+            }
+            $this->context = $this->context->withoutStaticPropertyOverrides([$name]);
+            $declared_type = $this->getDeclaredTypeOfStaticPropertyInScope($name);
+            if ($declared_type !== null && !$declared_type->isEmpty() && !$declared_type->isNull()) {
+                $this->context = $this->context->withStaticPropertySetToTypeByName(
+                    $name,
+                    $old_override->withUnionType(self::withNullAsSeparateType($declared_type))
+                );
+            }
+        }
+    }
+
+    /**
+     * Converts `?T` to `T|null`, which is what the property has after a null check and an assignment of `T`.
+     * (Unlike `?T`, that is only reported as a possibly null value where `T` is expected by the strict type checks.)
+     */
+    private static function withNullAsSeparateType(UnionType $type): UnionType
+    {
+        if (!$type->containsNullable()) {
+            return $type;
+        }
+        $null_type = NullType::instance(false);
+        $non_null_type = $type->nonNullableClone();
+        $type_set = $non_null_type->getTypeSet();
+        $type_set[] = $null_type;
+        $real_type_set = $non_null_type->getRealTypeSet();
+        if ($real_type_set && $type->getRealUnionType()->containsNullable()) {
+            $real_type_set[] = $null_type;
+        }
+        return UnionType::of($type_set, $real_type_set);
+    }
+
+    /**
+     * @return ?UnionType the declared type of the static property of the class in scope, or null if there is no such property
+     */
+    private function getDeclaredTypeOfStaticPropertyInScope(string $property_name): ?UnionType
+    {
+        $class_fqsen = $this->context->getClassFQSENOrNull();
+        if (!$class_fqsen || !$this->code_base->hasClassWithFQSEN($class_fqsen)) {
+            return null;
+        }
+        try {
+            return $this->code_base->getClassByFQSEN($class_fqsen)->getPropertyByNameInContext(
+                $this->code_base,
+                $property_name,
+                $this->context,
+                true
+            )->getUnionType();
+        } catch (IssueException | CodeBaseException) {
+            return null;
+        }
+    }
+
+    /**
+     * Collects the names of the static properties that are assigned in $node, such as `self::$prop = $v`,
+     * `static::$prop['key'] ??= $v` or `[self::$a, Other::$b] = $v`, without analyzing it.
+     *
+     * @param array<string,true> $names the names found so far, as keys
+     * @return bool false if a static property with a dynamic name (`self::$$name = $v`) is assigned
+     */
+    private static function collectAssignedStaticPropertyNames(Node $node, array &$names, bool $is_assigned = false): bool
+    {
+        if ($is_assigned && $node->kind === ast\AST_STATIC_PROP) {
+            $name = $node->children['prop'];
+            if (!\is_string($name)) {
+                return false;
+            }
+            $names[$name] = true;
+        }
+        $is_assignment = \in_array($node->kind, [ast\AST_ASSIGN, ast\AST_ASSIGN_REF, ast\AST_ASSIGN_OP], true);
+        foreach ($node->children as $key => $child) {
+            if ($child instanceof Node
+                && !self::collectAssignedStaticPropertyNames($child, $names, $is_assigned || ($is_assignment && $key === 'var'))
+            ) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private function ensureStaticPropertyModificationsComputed(Method $method): void
