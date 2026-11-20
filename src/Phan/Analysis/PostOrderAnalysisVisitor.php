@@ -3429,7 +3429,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $nodes = [];
             $stmts_node = $method_node->children['stmts'] ?? null;
             if ($stmts_node instanceof Node) {
-                self::collectAssignedStaticPropertyNodes($stmts_node, $nodes);
+                self::collectAssignedStaticPropertyNodes($stmts_node, self::getNamesOfNonNullParameters($method_node), $nodes);
             }
             // The assignments that may make the property null come first: the type of a property is widened once.
             \usort(
@@ -3567,16 +3567,18 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * @return ?UnionType the type that the property is declared with (a real type or `@var`),
-     * or null if it is declared without a type or with no other type than `null`.
+     * or null if it is declared without a type, or with `@var null` and no real type.
      * (Without a declaration, the type of the property is inferred from its default value and from the assignments analyzed so far.)
      */
     private static function getDeclaredTypeOfProperty(Property $property): ?UnionType
     {
-        if ($property->getRealUnionType()->isEmpty() && $property->getPHPDocUnionType()->isEmpty()) {
+        $has_real_type = !$property->getRealUnionType()->isEmpty();
+        if (!$has_real_type && $property->getPHPDocUnionType()->isEmpty()) {
             return null;
         }
         $type = $property->getUnionType();
-        return $type->isEmpty() || $type->isNull() ? null : $type;
+        // A property with the real type `null` can only be null.
+        return $type->isEmpty() || ($type->isNull() && !$has_real_type) ? null : $type;
     }
 
     /**
@@ -3589,7 +3591,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     private static function getTypeOfAssignedValue(UnionType $type, bool $may_be_null): UnionType
     {
-        if (!$type->containsNullable()) {
+        if (!$type->containsNullable() || $type->isNull()) {
             return $type;
         }
         $non_null_type = $type->nonNullableClone();
@@ -3695,9 +3697,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      *
      * The bodies of closures, functions and classes declared in $node are not run by running $node.
      *
+     * @param array<string,true> $non_null_params the names of the parameters of the method that are not null (see getNamesOfNonNullParameters)
      * @param list<array{0:Node,1:bool}> $nodes the nodes found so far, each with whether the assignment may make the property null
      */
-    private static function collectAssignedStaticPropertyNodes(Node $node, array &$nodes): void
+    private static function collectAssignedStaticPropertyNodes(Node $node, array $non_null_params, array &$nodes): void
     {
         switch ($node->kind) {
             case ast\AST_CLOSURE:
@@ -3706,6 +3709,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             case ast\AST_CLASS:
                 return;
             case ast\AST_ASSIGN:
+                $var = $node->children['var'];
+                if ($var instanceof Node) {
+                    self::collectStaticPropertyNodesOfAssignmentTarget($var, self::mayBeNull($node->children['expr'], $non_null_params), $nodes);
+                }
+                break;
             case ast\AST_ASSIGN_REF:
                 $var = $node->children['var'];
                 if ($var instanceof Node) {
@@ -3734,9 +3742,110 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
         foreach ($node->children as $child) {
             if ($child instanceof Node) {
-                self::collectAssignedStaticPropertyNodes($child, $nodes);
+                self::collectAssignedStaticPropertyNodes($child, $non_null_params, $nodes);
             }
         }
+    }
+
+    /**
+     * @param Node $method_node the node of a method
+     * @return array<string,true> the names of the parameters with a real type that does not allow null.
+     * (A parameter that the method assigns null to is rare, and is not looked for.)
+     */
+    private static function getNamesOfNonNullParameters(Node $method_node): array
+    {
+        $params_node = $method_node->children['params'] ?? null;
+        if (!($params_node instanceof Node)) {
+            return [];
+        }
+        $names = [];
+        foreach ($params_node->children as $param) {
+            if (!($param instanceof Node) || ($param->flags & ast\flags\PARAM_REF)) {
+                continue;
+            }
+            $name = $param->children['name'];
+            if (!\is_string($name)) {
+                continue;
+            }
+            if ($param->flags & ast\flags\PARAM_VARIADIC) {
+                // An array.
+                $names[$name] = true;
+                continue;
+            }
+            $type = $param->children['type'];
+            $default = $param->children['default'];
+            // `T $param = null` allows null.
+            if ($type instanceof Node && self::isNonNullTypeNode($type) && ($default === null || !self::mayBeNull($default, []))) {
+                $names[$name] = true;
+            }
+        }
+        return $names;
+    }
+
+    /**
+     * @param Node $type the node of a type declaration
+     * @return bool whether the type does not allow null
+     */
+    private static function isNonNullTypeNode(Node $type): bool
+    {
+        switch ($type->kind) {
+            case ast\AST_TYPE:
+                return $type->flags !== ast\flags\TYPE_NULL && $type->flags !== ast\flags\TYPE_MIXED;
+            case ast\AST_NAME:
+            case ast\AST_TYPE_INTERSECTION:
+                return true;
+            case ast\AST_TYPE_UNION:
+                foreach ($type->children as $child) {
+                    if (!($child instanceof Node) || !self::isNonNullTypeNode($child)) {
+                        return false;
+                    }
+                }
+                return true;
+        }
+        // e.g. ast\AST_NULLABLE_TYPE
+        return false;
+    }
+
+    /**
+     * @param Node|string|int|float|null $expr an expression in the body of a method
+     * @param array<string,true> $non_null_params the names of the parameters of the method that are not null
+     * @return bool false if the syntax of the expression shows that its value is not null:
+     * a literal, an array, `new`, a closure, an operation that does not result in null, or a parameter that is not null.
+     * True for anything else, such as a call.
+     */
+    private static function mayBeNull(Node|float|int|string|null $expr, array $non_null_params): bool
+    {
+        if (!($expr instanceof Node)) {
+            return $expr === null;
+        }
+        switch ($expr->kind) {
+            case ast\AST_ARRAY:
+            case ast\AST_NEW:
+            case ast\AST_CLOSURE:
+            case ast\AST_ARROW_FUNC:
+            case ast\AST_ENCAPS_LIST:
+                return false;
+            case ast\AST_CONST:
+                $name = $expr->children['name']->children['name'] ?? null;
+                return !\is_string($name) || !\in_array(\strtolower($name), ['true', 'false'], true);
+            case ast\AST_VAR:
+                $name = $expr->children['name'];
+                return !\is_string($name) || !isset($non_null_params[$name]);
+            case ast\AST_UNARY_OP:
+                // `@$expr` is the value of the expression.
+                return $expr->flags === ast\flags\UNARY_SILENCE && self::mayBeNull($expr->children['expr'], $non_null_params);
+            case ast\AST_BINARY_OP:
+                // `$a ?? $b` is null if $b is null.
+                return $expr->flags === ast\flags\BINARY_COALESCE && self::mayBeNull($expr->children['right'], $non_null_params);
+            case ast\AST_CONDITIONAL:
+                // `$a ?: $b` is $a if it is truthy.
+                return ($expr->children['true'] !== null && self::mayBeNull($expr->children['true'], $non_null_params))
+                    || self::mayBeNull($expr->children['false'], $non_null_params);
+            case ast\AST_ASSIGN:
+                // `self::$a = self::$b = []`
+                return self::mayBeNull($expr->children['expr'], $non_null_params);
+        }
+        return true;
     }
 
     /**

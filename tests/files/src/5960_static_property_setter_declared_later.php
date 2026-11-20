@@ -596,3 +596,89 @@ class StaticPropSetterNotNull {
         StaticPropSetterNotNull::$replaced = $values;
     }
 }
+
+// The value that the method assigns shows that the property is not null after the call.
+class StaticPropSetterNotNullValue {
+    /** @var ?array<int,int> */
+    private static $items;
+
+    public static function getAfterLiteral(): int {
+        if (self::$items !== null) {
+            self::setLiteral();
+            return self::$items[0];
+        }
+        return 0;
+    }
+
+    /** @param array<int,int> $items */
+    public static function getAfterParam(array $items): int {
+        if (self::$items !== null) {
+            self::setParam($items);
+            return self::$items[0];
+        }
+        return 0;
+    }
+
+    /** @param ?array<int,int> $items */
+    public static function getAfterCoalescing(?array $items): int {
+        if (self::$items !== null) {
+            self::setCoalescing($items);
+            return self::$items[0];
+        }
+        return 0;
+    }
+
+    /** @param ?array<int,int> $items */
+    public static function getAfterNullableParam(?array $items): int {
+        if (self::$items !== null) {
+            self::setNullableParam($items);
+            return self::$items[0];  // Should warn: the parameter may be null.
+        }
+        return 0;
+    }
+
+    /** @param array<int,int> $items */
+    public static function getAfterParamWithNullDefault(array $items): int {
+        if (self::$items !== null) {
+            self::setParamWithNullDefault($items);
+            return self::$items[0];  // Should warn: the parameter may be null.
+        }
+        return 0;
+    }
+
+    public static function getAfterNull(): int {
+        if (self::$items !== null) {
+            self::setNull();
+            return self::$items[0];  // Should warn
+        }
+        return 0;
+    }
+
+    private static function setLiteral(): void {
+        self::$items = [1];
+    }
+
+    /** @param array<int,int> $items */
+    private static function setParam(array $items): void {
+        self::$items = $items;
+    }
+
+    /** @param ?array<int,int> $items */
+    private static function setCoalescing(?array $items): void {
+        self::$items = $items ?? [];
+    }
+
+    /** @param ?array<int,int> $items */
+    private static function setNullableParam(?array $items): void {
+        self::$items = $items;
+    }
+
+    /** @param ?array<int,int> $items */
+    private static function setParamWithNullDefault(array $items = null): void {
+        self::$items = $items;
+    }
+
+    private static function setNull(): void {
+        self::$items = null;
+    }
+}
