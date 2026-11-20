@@ -499,15 +499,13 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
             if (count($array_shapes_per_arg) === 1 && count($array_shapes_per_arg[0]['shapes']) === 1) {
                 // Single argument with one shape. This could be from the first argument or a later argument.
                 $shape_info = $array_shapes_per_arg[0];
-                /** @phan-suppress-next-line PhanTypeInvalidDimOffset */
                 $shape_arg_index = $shape_info['arg_index'];
                 $shape_only = $shape_info['shapes'][0];
-                /** @phan-suppress-next-line PhanTypeInvalidDimOffset */
                 $shape_arg_union = $shape_info['array_union'];
 
                 // Check if this argument's union consists only of shapes (no generic alternatives)
                 $shape_arg_all_shapes = true;
-                /** @phan-suppress-next-line PhanNonClassMethodCall,PhanPluginUnknownObjectMethodCall */
+                /** @phan-suppress-next-line PhanPluginUnknownObjectMethodCall */
                 foreach ($shape_arg_union->getTypeSet() as $type) {
                     if ($type instanceof ArrayType && !($type instanceof ArrayShapeType)) {
                         $shape_arg_all_shapes = false;

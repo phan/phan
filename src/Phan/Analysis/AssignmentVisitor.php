@@ -2736,7 +2736,7 @@ class AssignmentVisitor extends AnalysisVisitor
         if ($this->dim_depth <= 1) {
             throw new AssertionError("Expected dim_depth > 1, got $this->dim_depth");
         }
-        if (!$right_type->hasTopLevelArrayShapeTypeInstances() || !$old_union_type->hasTopLevelArrayShapeTypeInstances()) {
+        if (!$right_type->hasTopLevelArrayShapeTypeInstances() || !$old_union_type->hasGenericArray()) {
             return $old_union_type->withUnionType($right_type);
         }
 
@@ -2747,10 +2747,9 @@ class AssignmentVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param list<Type> $old_type_set may contain ArrayShapeType instances
+     * @param list<Type> $old_type_set may contain ArrayShapeType or GenericArrayType instances
      * @param list<Type> $new_type_set may contain ArrayShapeType instances
      * @return list<Type> possibly containing duplicates.
-     * TODO: Handle $this->dim_depth of more than 2
      */
     private static function computeTypeSetOfMergedArrayShapeTypes(array $old_type_set, array $new_type_set, int $dim_depth, bool $is_real): array
     {
@@ -2772,30 +2771,57 @@ class AssignmentVisitor extends AnalysisVisitor
             return \array_merge($old_type_set, $new_type_set);
         }
         $old_array_shape_types = [];
+        $old_generic_array_types = [];
         foreach ($old_type_set as $type) {
             if ($type instanceof ArrayShapeType) {
                 $old_array_shape_types[] = $type;
             } else {
+                if (!$is_real && $type instanceof GenericArrayType) {
+                    $old_generic_array_types[] = $type;
+                }
                 $result[] = $type;
             }
         }
-        if (!$old_array_shape_types) {
+        if (!$old_array_shape_types && !$old_generic_array_types) {
             return \array_merge($old_type_set, $new_type_set);
         }
-        // Postcondition: $old_array_shape_types and $new_array_shape_types are non-empty lists of ArrayShapeTypes
-        $old_array_shape_type = ArrayShapeType::union($old_array_shape_types);
+        // Postcondition: $new_array_shape_types is non-empty, and at least one of $old_array_shape_types or $old_generic_array_types is non-empty.
         $new_array_shape_type = ArrayShapeType::union($new_array_shape_types);
-        $combined_fields = $old_array_shape_type->getFieldTypes();
+        $combined_fields = $old_array_shape_types
+            ? ArrayShapeType::union($old_array_shape_types)->getFieldTypes()
+            : [];
         foreach ($new_array_shape_type->getFieldTypes() as $field => $field_type) {
             $old_field_type = $combined_fields[$field] ?? null;
+            if ($old_field_type === null && $old_generic_array_types) {
+                $old_field_type = self::genericArrayElementTypeForField($old_generic_array_types, $field);
+            }
             if ($old_field_type) {
                 if ($dim_depth >= 3) {
-                    $combined_fields[$field] = UnionType::of(self::computeTypeSetOfMergedArrayShapeTypes(
-                        $old_field_type->getTypeSet(),
-                        $field_type->getTypeSet(),
-                        $dim_depth - 1,
-                        true
-                    ));
+                    if ($is_real) {
+                        $combined_fields[$field] = UnionType::of(self::computeTypeSetOfMergedArrayShapeTypes(
+                            $old_field_type->getTypeSet(),
+                            $field_type->getTypeSet(),
+                            $dim_depth - 1,
+                            true
+                        ));
+                    } else {
+                        $combined_fields[$field] = UnionType::of(
+                            self::computeTypeSetOfMergedArrayShapeTypes(
+                                $old_field_type->getTypeSet(),
+                                $field_type->getTypeSet(),
+                                $dim_depth - 1,
+                                false
+                            ),
+                            self::computeTypeSetOfMergedArrayShapeTypes(
+                                $old_field_type->getRealTypeSet(),
+                                $field_type->getRealTypeSet(),
+                                $dim_depth - 1,
+                                true
+                            )
+                        );
+                    }
+                } elseif ($old_field_type->hasPossiblyObjectTypes() || $old_field_type->isEmpty()) {
+                    $combined_fields[$field] = $old_field_type->withUnionType($field_type);
                 } else {
                     $combined_fields[$field] = ArrayType::combineArrayTypesOverriding($field_type, $old_field_type, true);
                 }
@@ -2805,6 +2831,38 @@ class AssignmentVisitor extends AnalysisVisitor
         }
         $result[] = ArrayShapeType::fromFieldTypes($combined_fields, false);
         return $result;
+    }
+
+    /**
+     * Returns the combined PHPDoc element type of any generic array types in $generic_array_types
+     * whose key type accepts $field and whose element type is an array (or mixed), so a nested
+     * assignment such as `$arr[0]['key2'] = 'new'` preserves the other fields of `$arr[0]`.
+     *
+     * @param non-empty-list<GenericArrayType> $generic_array_types
+     */
+    private static function genericArrayElementTypeForField(array $generic_array_types, int|string $field): ?UnionType
+    {
+        $field_key_type = \is_int($field) ? GenericArrayType::KEY_INT : GenericArrayType::KEY_STRING;
+        $element_types = [];
+        foreach ($generic_array_types as $generic_type) {
+            if ($generic_type instanceof ListType) {
+                if (!\is_int($field) || $field < 0) {
+                    continue;
+                }
+            } elseif (($generic_type->getKeyType() & $field_key_type) === 0) {
+                continue;
+            }
+            $element_type = $generic_type->genericArrayElementType();
+            if ($element_type instanceof ArrayType) {
+                $element_types[] = $element_type->withIsNullable(false);
+            } elseif ($element_type instanceof MixedType) {
+                $element_types[] = $element_type;
+            }
+        }
+        if (!$element_types) {
+            return null;
+        }
+        return UnionType::of($element_types);
     }
 
     /**

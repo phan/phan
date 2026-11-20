@@ -1,0 +1,11 @@
+%s:14 PhanTypeInvalidDimOffset Invalid offset "bogus" of $myarray[0] of array type array{key1:string,key2:'anewvalue',key3:string}
+%s:14 PhanTypeSuspiciousEcho Suspicious argument $myarray[0]['bogus'] of type null for an echo/print statement
+%s:16 PhanDebugAnnotation @phan-debug-var requested for variable $myarray - it has union type array{0:array{key1:42,key2:'anewvalue',key3:string}}|non-empty-array<mixed,array{key1:string,key2:string,key3:string}>(real=array{0:array{key2:'anewvalue',key1:42}}|non-empty-array<mixed,mixed>)
+%s:21 PhanTypeInvalidDimOffset Invalid offset "bogus" of $myarray[1] of array type array{key1:string,key2:'other',key3:string}
+%s:21 PhanTypeSuspiciousEcho Suspicious argument $myarray[1]['bogus'] of type null for an echo/print statement
+%s:43 PhanTypeInvalidDimOffset Invalid offset "b" of $intKeyed['str'] of array type array{a:1}
+%s:43 PhanTypeSuspiciousEcho Suspicious argument $intKeyed['str']['b'] of type null for an echo/print statement
+%s:54 PhanTypeInvalidDimOffset Invalid offset "nope" of $deep[0][1] of array type array{a:99,b:string}
+%s:54 PhanTypeSuspiciousEcho Suspicious argument $deep[0][1]['nope'] of type null for an echo/print statement
+%s:67 PhanTypeInvalidDimOffset Invalid offset "missing" of $this->items[0] of array type array{key1:string,key2:'updated'}
+%s:67 PhanTypeSuspiciousEcho Suspicious argument $this->items[0]['missing'] of type null for an echo/print statement
