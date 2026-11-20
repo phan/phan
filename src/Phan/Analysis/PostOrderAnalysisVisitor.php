@@ -3436,68 +3436,118 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if (!$nodes) {
             return;
         }
-        $applied = $this->getNamesOfAppliedStaticPropertyModifications($method);
+        $applied = $this->getAppliedStaticPropertyModifications($method);
         $widened = [];
         foreach ($nodes as $node) {
             $name = $node->children['prop'];
-            if (!\is_string($name)) {
-                // `self::$$name = $v` may assign any of the properties.
-                $this->context = $this->context->withoutStaticPropertyOverrides();
-                return;
+            if (\is_string($name)) {
+                $recorded_class = $applied ? self::getClassOfRecordedStaticPropertyModification($node, $method, $this->code_base) : null;
+                if ($recorded_class !== null && isset($applied[$recorded_class][$name])) {
+                    // The type recorded for this assignment was applied.
+                    continue;
+                }
+                $names = [$name];
+            } else {
+                // `self::$$name = $v` may assign any of the properties, and no type is recorded for it.
+                $names = $this->context->getStaticPropertyOverrideNames();
             }
-            if (isset($applied[$name]) || isset($widened[$name])) {
-                continue;
+            foreach ($names as $name) {
+                if (!isset($widened[$name]) && $this->widenStaticPropertyOverrideAssignedByNode($name, $node, $method)) {
+                    $widened[$name] = true;
+                }
             }
-            $old_override = $this->context->getStaticPropertyIfOverridden($name);
-            if ($old_override === null) {
-                continue;
-            }
-            $property = $this->getStaticPropertyOfClassInScope($name);
-            if ($property !== null && !$this->mayBeSameStaticProperty($node, $method, $property)) {
-                // e.g. `Other::$prop = $v`, or `self::$prop = $v` in a parent class when the class in scope declares its own $prop.
-                continue;
-            }
-            $widened[$name] = true;
-            $this->context = $this->context->withoutStaticPropertyOverrides([$name]);
-            if ($property === null) {
-                continue;
-            }
-            $declared_type = self::getDeclaredTypeOfProperty($property);
-            // Without a declared type, the type after the call is unknown.
-            $this->context = $this->context->withStaticPropertySetToTypeByName(
-                $name,
-                $declared_type !== null ? $old_override->withUnionType(self::withNullAsSeparateType($declared_type)) : UnionType::empty()
-            );
         }
     }
 
     /**
-     * @return array<string,true> the names of the static properties with types recorded for $method
-     * that applyStaticPropertyModificationsFromMethod applies to the properties of the class in scope.
-     *
-     * A type is recorded for the class that `self` or `parent` is in the method. Unless the property was assigned
-     * as `static::$prop`, it is only applied if that class declares the property of the class in scope:
-     * not for another property with the same name, and not for a property that the class of the method inherits.
+     * @param string $name the name of a static property of the class in scope
+     * @param Node $node an AST_STATIC_PROP node that is assigned in the body of $method, with that name or a dynamic name
+     * @return bool whether the type inferred for the property was widened
      */
-    private function getNamesOfAppliedStaticPropertyModifications(Method $method): array
+    private function widenStaticPropertyOverrideAssignedByNode(string $name, Node $node, Method $method): bool
+    {
+        $old_override = $this->context->getStaticPropertyIfOverridden($name);
+        if ($old_override === null) {
+            return false;
+        }
+        $property = $this->getStaticPropertyOfClassInScope($name);
+        if ($property !== null && !$this->mayBeSameStaticProperty($node, $method, $property)) {
+            // e.g. `Other::$prop = $v`, or `self::$prop = $v` in a parent class when the class in scope declares its own $prop.
+            return false;
+        }
+        $this->context = $this->context->withoutStaticPropertyOverrides([$name]);
+        if ($property === null) {
+            return true;
+        }
+        $declared_type = self::getDeclaredTypeOfProperty($property);
+        // Without a declared type, the type after the call is unknown.
+        $this->context = $this->context->withStaticPropertySetToTypeByName(
+            $name,
+            $declared_type !== null ? $old_override->withUnionType(self::withNullAsSeparateType($declared_type)) : UnionType::empty()
+        );
+        return true;
+    }
+
+    /**
+     * @return array<string,array<string,true>> the names of the static properties with types recorded for $method
+     * that applyStaticPropertyModificationsFromMethod applies to the properties of the class in scope,
+     * by the class they are recorded for (see getClassOfRecordedStaticPropertyModification).
+     *
+     * Unless the property was assigned as `static::$prop`, a recorded type is only applied if the class it is recorded for
+     * declares the property of the class in scope: not for another property with the same name,
+     * and not for a property that the class of the method inherits.
+     */
+    private function getAppliedStaticPropertyModifications(Method $method): array
     {
         $calling_class = $this->context->getClassFQSENOrNull();
         if (!$calling_class) {
             return [];
         }
-        $names = [];
+        $applied = [];
         foreach ($method->getStaticPropertyModifications() as $entry) {
             $target_class_fqsen = $entry['class'];
             if (!$this->canApplyStaticPropertyOverride($calling_class, $target_class_fqsen)) {
                 continue;
             }
             foreach ($entry['properties'] as $name => $property_info) {
-                if (!isset($names[$name]) && $this->doesStaticOverrideMatchTargetClass($name, $target_class_fqsen, $calling_class, $property_info['is_late_static'])) {
-                    $names[$name] = true;
+                if ($this->doesStaticOverrideMatchTargetClass($name, $target_class_fqsen, $calling_class, $property_info['is_late_static'])) {
+                    $applied[$target_class_fqsen->__toString()][$name] = true;
                 }
             }
         }
-        return $names;
+        return $applied;
+    }
+
+    /**
+     * @param Node $node an AST_STATIC_PROP node with a name, which is assigned in the body of $method
+     * @return ?string the class that the type assigned to the property is recorded for when $method is analyzed
+     * (see AssignmentVisitor::getStaticPropertyAssignmentTarget): the class of the method for `self` and `static`,
+     * its parent class for `parent`. Null for anything else, such as `ClassName::$prop`: no type is recorded.
+     */
+    private static function getClassOfRecordedStaticPropertyModification(Node $node, Method $method, CodeBase $code_base): ?string
+    {
+        $class_node = $node->children['class'];
+        if (!($class_node instanceof Node) || $class_node->kind !== ast\AST_NAME) {
+            return null;
+        }
+        $class_name = $class_node->children['name'];
+        $method_context = $method->getContext();
+        if (!\is_string($class_name) || !$method_context->isInClassScope()) {
+            return null;
+        }
+        switch (\strtolower($class_name)) {
+            case 'self':
+            case 'static':
+                return $method_context->getClassFQSEN()->__toString();
+            case 'parent':
+                try {
+                    $method_class = $method_context->getClassInScope($code_base);
+                } catch (CodeBaseException) {
+                    return null;
+                }
+                return $method_class->hasParentType() ? $method_class->getParentClassFQSEN()->__toString() : null;
+        }
+        return null;
     }
 
     /**
@@ -3560,9 +3610,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param Node $node an AST_STATIC_PROP node with a name, which is assigned in the body of $method
-     * @return bool false if the assigned property is known to be another property than $property,
-     * which is a static property of the class in scope with the same name
+     * @param Node $node an AST_STATIC_PROP node that is assigned in the body of $method, with the name of $property or a dynamic name
+     * @param Property $property a static property of the class in scope
+     * @return bool false if the assigned property is known to be another property than $property
      */
     private function mayBeSameStaticProperty(Node $node, Method $method, Property $property): bool
     {
@@ -3609,9 +3659,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 // `self` in a trait is the class using the trait.
                 return true;
             }
+            // An inherited property has the defining FQSEN of the property of the class that declares it,
+            // and a property from a trait has the defining FQSEN of the property of the class that uses the trait:
+            // the properties of two classes using the same trait are different properties.
             $name = $property->getName();
             return $class->hasPropertyWithName($this->code_base, $name)
-                && $class->getPropertyByName($this->code_base, $name)->getRealDefiningFQSEN() === $property->getRealDefiningFQSEN();
+                && $class->getPropertyByName($this->code_base, $name)->getDefiningFQSEN() === $property->getDefiningFQSEN();
         } catch (FQSENException | CodeBaseException) {
             return true;
         }

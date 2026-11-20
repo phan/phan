@@ -401,3 +401,126 @@ class StaticPropSetterCallable {
         self::$prop = $v;
     }
 }
+
+// Classes that use the same trait have separate static properties. A subclass shares the property of its parent class.
+trait StaticPropSharedTrait {
+    /** @var ?stdClass */
+    public static $prop;
+}
+
+class StaticPropTraitUserOther {
+    use StaticPropSharedTrait;
+}
+
+class StaticPropTraitUser {
+    use StaticPropSharedTrait;
+
+    public static function getAfterSettingOtherUser(): stdClass {
+        if (self::$prop !== null) {
+            return self::$prop;
+        }
+        self::setOtherUser();
+        return self::$prop;  // Should warn: the property of another class using the trait is assigned.
+    }
+
+    public static function getAfterSettingByClassName(): stdClass {
+        if (self::$prop !== null) {
+            return self::$prop;
+        }
+        self::setByClassName();
+        return self::$prop;
+    }
+
+    private static function setOtherUser(): void {
+        StaticPropTraitUserOther::$prop = new stdClass();
+    }
+
+    private static function setByClassName(): void {
+        StaticPropTraitUser::$prop = new stdClass();
+    }
+}
+
+class StaticPropTraitUserChild extends StaticPropTraitUser {
+    public static function getAfterSettingParent(): stdClass {
+        if (self::$prop !== null) {
+            return self::$prop;
+        }
+        self::setParent();
+        return self::$prop;
+    }
+
+    private static function setParent(): void {
+        StaticPropTraitUser::$prop = new stdClass();
+    }
+}
+
+// A property with a dynamic name may be any property of its class, and no property of another class.
+class StaticPropSetterDynamicName {
+    /** @var ?stdClass */
+    private static $prop;
+    /** @var ?stdClass */
+    private static $unrelated;
+
+    public static function getProp(): stdClass {
+        if (self::$prop !== null) {
+            return self::$prop;
+        }
+        self::setByName('prop');
+        return self::$prop;
+    }
+
+    public static function getAfterSettingOtherClass(): stdClass {
+        if (self::$unrelated !== null) {
+            return self::$unrelated;
+        }
+        self::setOtherClassByName('prop');
+        return self::$unrelated;  // Should warn: a property of another class is assigned.
+    }
+
+    private static function setByName(string $name): void {
+        self::$$name = new stdClass();
+    }
+
+    private static function setOtherClassByName(string $name): void {
+        StaticPropTraitUserOther::$$name = new stdClass();
+    }
+}
+
+// The setters are declared first. The type recorded for `self::$prop = null` is applied,
+// and nothing is recorded for the assignment that follows it.
+class StaticPropSetterMixedParent {
+    /** @var ?stdClass */
+    protected static $prop;
+}
+
+class StaticPropSetterMixed extends StaticPropSetterMixedParent {
+    /** @var ?stdClass */
+    private static $own;
+
+    private static function resetOwn(): void {
+        self::$own = null;
+        StaticPropSetterMixed::$own = new stdClass();
+    }
+
+    // The type recorded for `self::$prop` is for this class, which does not declare the property.
+    private static function resetInherited(): void {
+        parent::$prop = null;
+        self::$prop = new stdClass();
+    }
+
+    public static function getOwn(): stdClass {
+        if (self::$own !== null) {
+            return self::$own;
+        }
+        self::resetOwn();
+        return self::$own;
+    }
+
+    public static function getInherited(): stdClass {
+        if (self::$prop !== null) {
+            return self::$prop;
+        }
+        self::resetInherited();
+        return self::$prop;
+    }
+}

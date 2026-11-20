@@ -1434,6 +1434,26 @@ class Context extends FileRef
     }
 
     /**
+     * @return list<string> the names of the static properties (without the $) that may have a narrowed type in this context
+     * (getStaticPropertyIfOverridden returns the type, or null if a type is only inferred in some of the branches)
+     */
+    public function getStaticPropertyOverrideNames(): array
+    {
+        if (!$this->scope->hasVariableWithName(self::VAR_NAME_STATIC_PROPERTIES)) {
+            return [];
+        }
+        $names = [];
+        foreach ($this->scope->getVariableByName(self::VAR_NAME_STATIC_PROPERTIES)->getUnionType()->getTypeSet() as $type) {
+            if ($type instanceof ArrayShapeType) {
+                foreach ($type->getFieldTypes() as $name => $_) {
+                    $names[(string)$name] = (string)$name;
+                }
+            }
+        }
+        return \array_values($names);
+    }
+
+    /**
      * Returns a clone of this context without overrides for the provided static property names.
      * If no property names are provided, removes all static property overrides.
      *
