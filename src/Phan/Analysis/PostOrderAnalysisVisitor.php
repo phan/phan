@@ -85,10 +85,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     private static $checked_methods_for_static_property_modifications = [];
 
     /**
-     * @var ?WeakMap<Node,?list<string>> the names of the static properties assigned in the body of a method, by the node of the method.
-     * The names are null if a static property with a dynamic name is assigned.
+     * @var ?WeakMap<Node,list<Node>> the AST_STATIC_PROP nodes that are assigned in the body of a method, by the node of the method
      */
-    private static $assigned_static_property_names = null;
+    private static $assigned_static_property_nodes = null;
 
     /**
      * @param CodeBase $code_base
@@ -3420,37 +3419,50 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // Nothing was inferred about static properties (the common case).
             return;
         }
-        $node = $method->getNode();
-        if (!($node instanceof Node)) {
+        $method_node = $method->getNode();
+        if (!($method_node instanceof Node)) {
             return;
         }
-        self::$assigned_static_property_names ??= new WeakMap();
-        if (!self::$assigned_static_property_names->offsetExists($node)) {
-            $names = [];
-            self::$assigned_static_property_names[$node] = self::collectAssignedStaticPropertyNames($node, $names) ? \array_keys($names) : null;
+        self::$assigned_static_property_nodes ??= new WeakMap();
+        if (!self::$assigned_static_property_nodes->offsetExists($method_node)) {
+            $nodes = [];
+            $stmts_node = $method_node->children['stmts'] ?? null;
+            if ($stmts_node instanceof Node) {
+                self::collectAssignedStaticPropertyNodes($stmts_node, $nodes);
+            }
+            self::$assigned_static_property_nodes[$method_node] = $nodes;
         }
-        $names = self::$assigned_static_property_names[$node];
-        if ($names === null) {
-            $this->context = $this->context->withoutStaticPropertyOverrides();
-            return;
-        }
-        if (!$names) {
+        $nodes = self::$assigned_static_property_nodes[$method_node];
+        if (!$nodes) {
             return;
         }
         $recorded = [];
         foreach ($method->getStaticPropertyModifications() as $entry) {
             $recorded += $entry['properties'];
         }
-        foreach ($names as $name) {
-            if (isset($recorded[$name])) {
+        $widened = [];
+        foreach ($nodes as $node) {
+            $name = $node->children['prop'];
+            if (!\is_string($name)) {
+                // `self::$$name = $v` may assign any of the properties.
+                $this->context = $this->context->withoutStaticPropertyOverrides();
+                return;
+            }
+            if (isset($recorded[$name]) || isset($widened[$name])) {
                 continue;
             }
             $old_override = $this->context->getStaticPropertyIfOverridden($name);
             if ($old_override === null) {
                 continue;
             }
+            $property = $this->getStaticPropertyOfClassInScope($name);
+            if ($property !== null && !$this->mayBeSameStaticProperty($node, $method, $property)) {
+                // e.g. `Other::$prop = $v`, or `self::$prop = $v` in a parent class when the class in scope declares its own $prop.
+                continue;
+            }
+            $widened[$name] = true;
             $this->context = $this->context->withoutStaticPropertyOverrides([$name]);
-            $declared_type = $this->getDeclaredTypeOfStaticPropertyInScope($name);
+            $declared_type = $property?->getUnionType();
             if ($declared_type !== null && !$declared_type->isEmpty() && !$declared_type->isNull()) {
                 $this->context = $this->context->withStaticPropertySetToTypeByName(
                     $name,
@@ -3481,9 +3493,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @return ?UnionType the declared type of the static property of the class in scope, or null if there is no such property
+     * @return ?Property the static property with that name of the class in scope, or null if there is no such property
      */
-    private function getDeclaredTypeOfStaticPropertyInScope(string $property_name): ?UnionType
+    private function getStaticPropertyOfClassInScope(string $property_name): ?Property
     {
         $class_fqsen = $this->context->getClassFQSENOrNull();
         if (!$class_fqsen || !$this->code_base->hasClassWithFQSEN($class_fqsen)) {
@@ -3495,37 +3507,130 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $property_name,
                 $this->context,
                 true
-            )->getUnionType();
+            );
         } catch (IssueException | CodeBaseException) {
             return null;
         }
     }
 
     /**
-     * Collects the names of the static properties that are assigned in $node, such as `self::$prop = $v`,
+     * @param Node $node an AST_STATIC_PROP node with a name, which is assigned in the body of $method
+     * @return bool false if the assigned property is known to be another property than $property,
+     * which is a static property of the class in scope with the same name
+     */
+    private function mayBeSameStaticProperty(Node $node, Method $method, Property $property): bool
+    {
+        $class_node = $node->children['class'];
+        if (!($class_node instanceof Node) || $class_node->kind !== ast\AST_NAME) {
+            // The class is an expression, such as `$class::$prop`.
+            return true;
+        }
+        $class_name = $class_node->children['name'];
+        $method_context = $method->getContext();
+        if (!\is_string($class_name) || !$method_context->isInClassScope()) {
+            return true;
+        }
+        try {
+            switch (\strtolower($class_name)) {
+                case 'static':
+                    // The class that the calling method was called on.
+                    return true;
+                case 'self':
+                    $class_fqsen = $method_context->getClassFQSEN();
+                    break;
+                case 'parent':
+                    $method_class = $method_context->getClassInScope($this->code_base);
+                    if (!$method_class->hasParentType()) {
+                        return false;
+                    }
+                    $class_fqsen = $method_class->getParentClassFQSEN();
+                    break;
+                default:
+                    if ($class_node->flags & ast\flags\NAME_NOT_FQ) {
+                        $class_fqsen = FullyQualifiedClassName::fromStringInContext($class_name, $method_context);
+                    } elseif ($class_node->flags & ast\flags\NAME_RELATIVE) {
+                        $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($method_context->getNamespace() . '\\' . $class_name);
+                    } else {
+                        $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString('\\' . $class_name);
+                    }
+                    break;
+            }
+            if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {
+                return false;
+            }
+            $class = $this->code_base->getClassByFQSEN($class_fqsen);
+            if ($class->isTrait()) {
+                // `self` in a trait is the class using the trait.
+                return true;
+            }
+            $name = $property->getName();
+            return $class->hasPropertyWithName($this->code_base, $name)
+                && $class->getPropertyByName($this->code_base, $name)->getRealDefiningFQSEN() === $property->getRealDefiningFQSEN();
+        } catch (FQSENException | CodeBaseException) {
+            return true;
+        }
+    }
+
+    /**
+     * Collects the AST_STATIC_PROP nodes that are assigned by running $node, such as `self::$prop = $v`,
      * `static::$prop['key'] ??= $v` or `[self::$a, Other::$b] = $v`, without analyzing it.
      *
-     * @param array<string,true> $names the names found so far, as keys
-     * @return bool false if a static property with a dynamic name (`self::$$name = $v`) is assigned
+     * The bodies of closures, functions and classes declared in $node are not run by running $node.
+     *
+     * @param list<Node> $nodes the nodes found so far
      */
-    private static function collectAssignedStaticPropertyNames(Node $node, array &$names, bool $is_assigned = false): bool
+    private static function collectAssignedStaticPropertyNodes(Node $node, array &$nodes): void
     {
-        if ($is_assigned && $node->kind === ast\AST_STATIC_PROP) {
-            $name = $node->children['prop'];
-            if (!\is_string($name)) {
-                return false;
-            }
-            $names[$name] = true;
+        switch ($node->kind) {
+            case ast\AST_CLOSURE:
+            case ast\AST_ARROW_FUNC:
+            case ast\AST_FUNC_DECL:
+            case ast\AST_CLASS:
+                return;
+            case ast\AST_ASSIGN:
+            case ast\AST_ASSIGN_REF:
+            case ast\AST_ASSIGN_OP:
+                $var = $node->children['var'];
+                if ($var instanceof Node) {
+                    self::collectStaticPropertyNodesOfAssignmentTarget($var, $nodes);
+                }
+                break;
         }
-        $is_assignment = \in_array($node->kind, [ast\AST_ASSIGN, ast\AST_ASSIGN_REF, ast\AST_ASSIGN_OP], true);
-        foreach ($node->children as $key => $child) {
-            if ($child instanceof Node
-                && !self::collectAssignedStaticPropertyNames($child, $names, $is_assigned || ($is_assignment && $key === 'var'))
-            ) {
-                return false;
+        foreach ($node->children as $child) {
+            if ($child instanceof Node) {
+                self::collectAssignedStaticPropertyNodes($child, $nodes);
             }
         }
-        return true;
+    }
+
+    /**
+     * Collects the AST_STATIC_PROP nodes that an assignment to $node writes to:
+     * the node itself, the expression that a dimension is fetched from (and not the dimension, which is read),
+     * and the values of array destructuring (and not the keys).
+     *
+     * @param list<Node> $nodes the nodes found so far
+     */
+    private static function collectStaticPropertyNodesOfAssignmentTarget(Node $node, array &$nodes): void
+    {
+        switch ($node->kind) {
+            case ast\AST_STATIC_PROP:
+                $nodes[] = $node;
+                return;
+            case ast\AST_DIM:
+                $expr = $node->children['expr'];
+                if ($expr instanceof Node) {
+                    self::collectStaticPropertyNodesOfAssignmentTarget($expr, $nodes);
+                }
+                return;
+            case ast\AST_ARRAY:
+                foreach ($node->children as $element) {
+                    $value = $element instanceof Node ? $element->children['value'] : null;
+                    if ($value instanceof Node) {
+                        self::collectStaticPropertyNodesOfAssignmentTarget($value, $nodes);
+                    }
+                }
+                return;
+        }
     }
 
     private function ensureStaticPropertyModificationsComputed(Method $method): void

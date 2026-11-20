@@ -120,3 +120,115 @@ class StaticPropSetterParentDeclaredLater {
         self::$instance = new stdClass();
     }
 }
+
+// Only the assignments that the called method makes to the property of the caller are used.
+class StaticPropOtherClass {
+    /** @var stdClass */
+    public static $prop;
+}
+
+class StaticPropSetterTargets {
+    /** @var stdClass */
+    private static $prop;
+    /** @var string */
+    private static $key;
+    /** @var array<string,int> */
+    private static $counts = [];
+
+    public static function getAfterSettingByClassName(): stdClass {
+        if (self::$prop !== null) {
+            return self::$prop;
+        }
+        self::setByClassName();
+        return self::$prop;
+    }
+
+    public static function getAfterSettingOtherClass(): stdClass {
+        if (self::$prop !== null) {
+            return self::$prop;
+        }
+        self::setOtherClass();
+        return self::$prop;  // Should warn: the property of another class is assigned.
+    }
+
+    public static function getAfterCreatingClosure(): stdClass {
+        if (self::$prop !== null) {
+            return self::$prop;
+        }
+        self::createSetter();
+        return self::$prop;  // Should warn: the closure that assigns the property is not called.
+    }
+
+    public static function getKeyAfterReadingIt(): string {
+        if (self::$key !== null) {
+            return self::$key;
+        }
+        self::count();
+        return self::$key;  // Should warn: the property is read as a dimension and not assigned.
+    }
+
+    public static function getKeyAfterDestructuring(): string {
+        if (self::$key !== null) {
+            return self::$key;
+        }
+        self::destructure(['a', 'b']);
+        return self::$key;
+    }
+
+    private static function setByClassName(): void {
+        StaticPropSetterTargets::$prop = new stdClass();
+    }
+
+    private static function setOtherClass(): void {
+        StaticPropOtherClass::$prop = new stdClass();
+    }
+
+    private static function createSetter(): Closure {
+        return static function (): void {
+            self::$prop = new stdClass();
+        };
+    }
+
+    private static function count(): void {
+        self::$counts[self::$key] = 1;
+    }
+
+    /** @param list<string> $values */
+    private static function destructure(array $values): void {
+        [, self::$key] = $values;
+    }
+}
+
+// The setter of the parent class assigns the property of the parent class, not the one that the subclass redeclares.
+class StaticPropRedeclaredChild extends StaticPropRedeclaredParent {
+    /** @var stdClass */
+    protected static $prop;
+
+    public static function getProp(): stdClass {
+        if (self::$prop !== null) {
+            return self::$prop;
+        }
+        self::init();
+        return self::$prop;  // Should warn
+    }
+
+    public static function getShared(): stdClass {
+        if (self::$shared !== null) {
+            return self::$shared;
+        }
+        self::init();
+        return self::$shared;
+    }
+}
+
+class StaticPropRedeclaredParent {
+    /** @var stdClass */
+    protected static $prop;
+    /** @var stdClass */
+    protected static $shared;
+
+    protected static function init(): void {
+        self::$prop = new stdClass();
+        self::$shared = new stdClass();
+    }
+}

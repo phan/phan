@@ -1,1 +1,5 @@
 %s:36 PhanTypeMismatchReturnReal Returning self::$prop of type null but getPropWithoutSetting() is declared to return \stdClass
+%s:151 PhanTypeMismatchReturnReal Returning self::$prop of type null but getAfterSettingOtherClass() is declared to return \stdClass
+%s:159 PhanTypeMismatchReturnReal Returning self::$prop of type null but getAfterCreatingClosure() is declared to return \stdClass
+%s:167 PhanTypeMismatchReturnReal Returning self::$key of type null but getKeyAfterReadingIt() is declared to return string
+%s:212 PhanTypeMismatchReturnReal Returning self::$prop of type null but getProp() is declared to return \stdClass
