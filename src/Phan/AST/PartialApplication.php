@@ -24,8 +24,9 @@ use Phan\Language\UnionType;
  * ast\AST_NAMED_ARG nodes (the expression of which may be a placeholder), and placeholders: nodes of kind ast\AST_PLACEHOLDER_ARG,
  * with the flag ast\flags\PLACEHOLDER_VARIADIC for `...`. `f(...)` has a single variadic placeholder.
  *
- * In older AST versions, the node has no children: partial function application cannot be told apart from `f(...)`
- * and is treated like it.
+ * In older AST versions, the node has no children: partial function application cannot be told apart from `f(...)`.
+ * When Phan runs on php 8.6+ with such a php-ast, PartialApplicationReparser recovers the arguments of the files that
+ * contain partial function application in the shape of version 130.
  *
  * @see https://wiki.php.net/rfc/partial_function_application_v2
  */

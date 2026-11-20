@@ -4,7 +4,7 @@ Phan 6.0.12-dev
 --------------
 
 New features:
-- Support partial function application (PHP 8.6), such as `f(1, ?)`, `f(1, ...)`, `$obj->method(?, 2)` or `f(b: ?, a: 1)`. This needs php-ast 1.1.5+, which provides the arguments in AST version 130; Phan uses that version when the installed php-ast supports it, and version 120 otherwise. With an older php-ast, partial function application cannot be told apart from first-class callable syntax (`f(...)`) and is still analyzed like it.
+- Support partial function application (PHP 8.6), such as `f(1, ?)`, `f(1, ...)`, `$obj->method(?, 2)` or `f(b: ?, a: 1)`. Phan uses AST version 130 when the installed php-ast supports it (1.1.5+), which provides the arguments. With an older php-ast (version 120), partial function application cannot be told apart from first-class callable syntax (`f(...)`), so Phan parses a file that contains it a second time with the placeholders replaced, and recovers the arguments from that.
   - The type of the expression is a closure with the parameters that are left, e.g. `Closure(int $b):int` for `add3(1, ?, 3)`: a parameter for each `?` (required, also when the parameter of the function is optional), the parameters of named placeholders in the order they are written, and the remaining parameters for `...`. Calls of the closure are checked against those parameters.
   - The arguments that are bound to values are checked against the parameters of the function when the closure is created, and so is the number of arguments (`PhanTypeMismatchArgument`, `PhanParamTooMany`, `PhanParamTooFew`, ...).
   - `$x |> f(1, ?)` and `$x |> f(1, ...)` pass `$x` in the place of the placeholder.
