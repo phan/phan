@@ -230,28 +230,35 @@ class ClassConstantTypesAnalyzer
 
         $clazz->hydrate($code_base);
 
-        // Check each constant defined in this class
+        // Check each constant defined in this class (or imported directly from a trait)
         foreach ($clazz->getConstantMap($code_base) as $constant) {
             // Skip the magic ::class constant - it's automatically different in child classes
             if ($constant->getName() === 'class') {
                 continue;
             }
 
-            // Only check constants defined in this class
-            if (!($constant->hasDefiningFQSEN() && $constant->getDefiningFQSEN() === $constant->getFQSEN())) {
+            if (!$constant->hasDefiningFQSEN()) {
                 continue;
             }
-
-            if (!$constant->hasDeclaredType()) {
-                continue;
+            $is_from_trait = false;
+            if ($constant->getDefiningFQSEN() !== $constant->getFQSEN()) {
+                // Public constants imported from a trait keep the trait's defining FQSEN.
+                $defining_class_fqsen = $constant->getDefiningFQSEN()->getFullyQualifiedClassName();
+                if (!$code_base->hasClassWithFQSEN($defining_class_fqsen) || !$code_base->getClassByFQSEN($defining_class_fqsen)->isTrait()) {
+                    continue;
+                }
+                $is_from_trait = true;
             }
 
-            $constant_union_type = $constant->getUnionType();
-            if (!$constant_union_type->hasRealTypeSet()) {
-                continue;
+            $constant_has_declared_type = $constant->hasDeclaredType();
+            $constant_real_type = null;
+            if ($constant_has_declared_type) {
+                $constant_union_type = $constant->getUnionType();
+                if (!$constant_union_type->hasRealTypeSet()) {
+                    continue;
+                }
+                $constant_real_type = $constant_union_type->getRealUnionType();
             }
-
-            $constant_real_type = $constant_union_type->getRealUnionType();
 
             // Check against each inherited class
             foreach ($inherited_class_list as $inherited_class) {
@@ -271,7 +278,7 @@ class ClassConstantTypesAnalyzer
                 $inherited_constant = $inherited_constant_map[$constant->getName()];
 
                 // Skip if it's the same constant (from traits)
-                if ($inherited_constant->getDefiningFQSEN() === $constant->getDefiningFQSEN()) {
+                if ($inherited_constant->getRealDefiningFQSEN() === $constant->getRealDefiningFQSEN()) {
                     continue;
                 }
 
@@ -292,15 +299,19 @@ class ClassConstantTypesAnalyzer
                     continue;
                 }
 
-                // PHP enforces covariance for typed constants: every type in the child must be a subtype of (or equal to) the parent
-                if (!$constant_real_type->isStrictSubtypeOf($code_base, $inherited_real_type)) {
+                // PHP enforces covariance for typed constants: every type in the child must be a subtype of (or equal to) the parent,
+                // and an untyped constant cannot override a typed constant.
+                if (!$constant_has_declared_type || ($constant_real_type !== null && !$constant_real_type->isStrictSubtypeOf($code_base, $inherited_real_type))) {
+                    $issue_context = ($is_from_trait || $constant->getRealDefiningFQSEN() !== $constant->getFQSEN())
+                        ? $clazz->getContext()
+                        : $constant->getContext();
                     Issue::maybeEmit(
                         $code_base,
-                        $constant->getContext(),
+                        $issue_context,
                         Issue::ConstantTypeMismatchInheritance,
-                        $constant->getContext()->getLineNumberStart(),
+                        $issue_context->getLineNumberStart(),
                         $constant->getFQSEN(),
-                        $constant_real_type,
+                        $constant_real_type ?? 'none',
                         $inherited_real_type,
                         $inherited_class->getFQSEN()
                     );

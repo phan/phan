@@ -86,3 +86,49 @@ class ChildTwoTraits extends ParentPublic {
     use TraitPublic, TraitOther;
 }
 echo ChildTwoTraits::C;
+
+// 8. Incompatible typed trait constant overriding typed parent constant reports PhanConstantTypeMismatchInheritance.
+class ParentTypedInt {
+    public const int C = 0;
+}
+echo ParentTypedInt::C;
+
+trait TraitTypedString {
+    public const string C = 'x';
+}
+
+class ChildBadTypedTrait extends ParentTypedInt {
+    use TraitTypedString;
+}
+echo ChildBadTypedTrait::C;
+
+// 9. Covariant typed trait constant overriding wider parent constant is allowed.
+class ParentTypedUnion {
+    public const int|string C = 0;
+}
+echo ParentTypedUnion::C;
+
+class ChildCovariantTrait extends ParentTypedUnion {
+    use TraitTypedString;
+}
+echo ChildCovariantTrait::C;
+
+// 10. Untyped trait constant overriding typed parent constant reports PhanConstantTypeMismatchInheritance.
+class ChildUntypedTrait extends ParentTypedInt {
+    use TraitPublic;
+}
+echo ChildUntypedTrait::C;
+
+// 11. Private typed parent constant can be overridden with an unrelated type by a trait.
+class ParentPrivateTyped {
+    private const int C = 0;
+    public static function getParent(): int {
+        return self::C;
+    }
+}
+echo ParentPrivateTyped::getParent();
+
+class ChildPrivateTyped extends ParentPrivateTyped {
+    use TraitTypedString;
+}
+echo ChildPrivateTyped::C;
