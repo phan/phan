@@ -278,7 +278,8 @@ class Debug
                 }
             }
 
-            if (ast\kind_uses_flags($ast->kind)) {
+            // (Before php-ast 1.1.5, kind_uses_flags() does not know ast\AST_PLACEHOLDER_ARG, which PartialApplicationReparser creates)
+            if (ast\kind_uses_flags($ast->kind) || $ast->kind === ast\AST_PLACEHOLDER_ARG) {
                 $flags_without_phan_additions = $ast->flags & ~BlockExitStatusChecker::STATUS_BITMASK;
                 if ($flags_without_phan_additions !== 0) {
                     $result .= "\n    flags: " . self::formatFlags($ast->kind, $flags_without_phan_additions);
@@ -460,6 +461,9 @@ class Debug
                 ast\AST_PARAM => [
                     flags\PARAM_REF => 'PARAM_REF',
                     flags\PARAM_VARIADIC => 'PARAM_VARIADIC',
+                ],
+                ast\AST_PLACEHOLDER_ARG => [
+                    flags\PLACEHOLDER_VARIADIC => 'PLACEHOLDER_VARIADIC',
                 ],
             ];
         }

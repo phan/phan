@@ -3,7 +3,7 @@
 namespace NS86PartialApplication;
 
 // PHP 8.6: partial function application (https://wiki.php.net/rfc/partial_function_application_v2)
-// This test needs AST version 130 (php-ast 1.1.5+), which provides the arguments and the placeholders.
+// AST version 130 (php-ast 1.1.5+) provides the arguments; with version 120, PartialApplicationReparser recovers them.
 
 function add3(int $a, int $b, int $c = 0): int
 {

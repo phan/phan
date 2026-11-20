@@ -29,6 +29,7 @@ use const STDERR;
 // - Version 120 needs php-ast 1.1.3+.
 // - Version 130 (php-ast 1.1.5+) adds the arguments of partial function application (`f(1, ?)`, php 8.6+)
 //   as the 'args' child of AST_CALLABLE_CONVERT, and the node kind AST_PLACEHOLDER_ARG. See \Phan\AST\PartialApplication.
+//   With version 120, \Phan\AST\PartialApplicationReparser recovers them in that shape.
 // Without php-ast (--force-polyfill-parser with the stubs for ast), the fallback parser generates version 130.
 \define(
     'Phan\AST_VERSION',

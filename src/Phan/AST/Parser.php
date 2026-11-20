@@ -165,6 +165,13 @@ class Parser
                     $error['message']
                 );
             }
+            if (PartialApplicationReparser::isEnabled() && PartialApplicationReparser::mayContainPlaceholders($file_contents)) {
+                // Before AST version 130, php-ast does not provide the arguments of partial function application (php 8.6+).
+                // Recover them by parsing the file again with the placeholders replaced.
+                // The first parse emitted the deprecations, if there are any.
+                $__no_echo_phan_errors = static fn(int $unused_errno, string $unused_errstr, string $unused_errfile, int $unused_errline): bool => true;
+                $root_node = PartialApplicationReparser::reparse($file_contents, $file_path) ?? $root_node;
+            }
             // Normalize AST to handle differences between PHP versions
             // (e.g., AST 120+ represents 'clone' as AST_CALL instead of AST_CLONE)
             // php-ast only creates that call for the (case-insensitive) clone keyword, so skip walking the AST when it's absent.
@@ -598,7 +605,11 @@ class Parser
         static $use_native = null;
         $use_native ??= self::shouldUseNativeAST();
         if ($use_native) {
-            return \ast\get_kind_name($kind);
+            try {
+                return \ast\get_kind_name($kind);
+            } catch (\LogicException) {
+                // A kind that Phan defines when php-ast lacks it, e.g. ast\AST_PLACEHOLDER_ARG before php-ast 1.1.5
+            }
         }
         // The native function doesn't exist or is missing some constants Phan would use.
         return ShimFunctions::getKindName($kind);
