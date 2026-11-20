@@ -1,0 +1,1 @@
+src/006_chaining.php:11 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type non-empty-string

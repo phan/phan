@@ -602,14 +602,15 @@ final class EmitOnlyChecks
     }
 
     /**
-     * @return array<int,string> the short class names of the plugins that can add function call analyzers, by spl_object_id()
+     * @return array<int,string> the short class names of the plugins that can add function call analyzers or conditional call
+     * closures, by spl_object_id()
      */
     private static function getFunctionCallAnalyzerOwnerNames(): array
     {
         $plugin_set = ConfigPluginSet::instance();
         $names = [];
         // @phan-suppress-next-line PhanAccessMethodInternal
-        foreach ([...$plugin_set->getAnalyzeFunctionCallPluginSet(), ...$plugin_set->getAnalyzeCallableArgumentPluginSet()] as $plugin) {
+        foreach ([...$plugin_set->getAnalyzeFunctionCallPluginSet(), ...$plugin_set->getAnalyzeCallableArgumentPluginSet(), ...$plugin_set->getConditionalCallPluginSet()] as $plugin) {
             $names[\spl_object_id($plugin)] = \substr((string)\strrchr('\\' . \get_class($plugin), '\\'), 1);
         }
         return $names;
@@ -638,6 +639,11 @@ final class EmitOnlyChecks
             $call_plugins[] = $owner_names[$id] ?? 'closure';
         }
         \sort($call_plugins);
+        $conditional_call_plugins = [];
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        foreach ($method->getConditionalCallClosureOwnerIds() as $id) {
+            $conditional_call_plugins[] = $owner_names[$id] ?? 'closure';
+        }
         // @phan-suppress-next-line PhanAccessMethodInternal
         $inherited_throws = $method->getInheritedThrowsUnionType();
         return \implode("\t", [
@@ -649,6 +655,7 @@ final class EmitOnlyChecks
             // @phan-suppress-next-line PhanAccessMethodInternal
             'return_cb=' . ($method->hasReturnTypeCallback() ? '1' : '0'),
             'call_plugins=' . ($call_plugins ? \implode(',', $call_plugins) : '-'),
+            'conditional_call_plugins=' . ($conditional_call_plugins ? \implode(',', $conditional_call_plugins) : '-'),
             'inherited_throws=' . ($inherited_throws !== null ? (string)$inherited_throws : '-'),
         ]);
     }

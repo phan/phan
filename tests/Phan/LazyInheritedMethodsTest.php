@@ -457,6 +457,7 @@ PHP;
         $registry->recordOp($root_fqsen, 'return_type', $make_closure('string'), null);
         $registry->recordOp($root_fqsen, 'call', static function (): void {
         }, null);
+        $registry->recordOp($root_fqsen, 'conditional_call', static fn(CodeBase $unused_code_base, Context $context): Context => $context, null);
 
         $context = new Context();
         $child_a = self::method($code_base, '\SChild6002::a');
@@ -464,18 +465,21 @@ PHP;
         // The closures are applied in the order they were attached: the last return type override wins
         $this->assertSame('string', (string)$child_a->getDependentReturnType($code_base, $context, []));
         $this->assertTrue($child_a->hasFunctionCallAnalyzer());
+        $this->assertTrue($child_a->hasConditionalCallClosure());
         // The declaration analysis ran
         $this->assertTrue($child_a->isScopeInitialized());
 
         $other_a = self::method($code_base, '\SOther6002::a');
         $this->assertFalse($other_a->hasDependentReturnType());
         $this->assertTrue($other_a->hasFunctionCallAnalyzer());
+        $this->assertTrue($other_a->hasConditionalCallClosure());
 
         $child_b = self::method($code_base, '\SChild6002::b');
         $this->assertFalse($child_b->hasDependentReturnType());
         $this->assertFalse($child_b->hasFunctionCallAnalyzer());
+        $this->assertFalse($child_b->hasConditionalCallClosure());
         $counts = $registry->getCounts();
-        $this->assertSame(4, $counts['lazy_ops_replayed']);
+        $this->assertSame(6, $counts['lazy_ops_replayed']);
         $this->assertSame(3, $counts['lazy_materialized_late_lookup']);
         $this->assertSame(3, $counts['lazy_late_pipelines']);
     }

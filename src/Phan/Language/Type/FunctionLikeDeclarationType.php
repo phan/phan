@@ -681,6 +681,28 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return false;
     }
 
+    public function hasConditionalCallClosure(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @return never
+     * @param list<Node|int|string|float> $args
+     */
+    public function analyzeConditionalCall(CodeBase $code_base, Context $context, Node $node, array $args, bool $is_negated): Context
+    {
+        throw new \AssertionError('should not call ' . __METHOD__);
+    }
+
+    /**
+     * @return never
+     */
+    public function addConditionalCallClosure(Closure $closure, ?PluginV3 $plugin = null): void
+    {
+        throw new \AssertionError('unexpected call to ' . __METHOD__);
+    }
+
     public function isFromPHPDoc(): bool
     {
         return true;

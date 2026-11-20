@@ -1,0 +1,5 @@
+src/002_namespaces.php:11 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string
+src/002_namespaces.php:14 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string
+src/002_namespaces.php:18 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string
+src/002_namespaces.php:29 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string
+src/002_namespaces.php:31 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int(real=int)

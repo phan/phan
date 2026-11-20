@@ -1,0 +1,9 @@
+src/001_functions.php:20 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string
+src/001_functions.php:22 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int(real=int)
+src/001_functions.php:25 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int
+src/001_functions.php:32 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string
+src/001_functions.php:40 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int(real=int)
+src/001_functions.php:49 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int|string(real=int|string)
+src/001_functions.php:51 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int|string(real=int|string)
+src/001_functions.php:58 PhanDebugAnnotation @phan-debug-var requested for variable $checked - it has union type true
+src/001_functions.php:61 PhanDebugAnnotation @phan-debug-var requested for variable $checked - it has union type false
