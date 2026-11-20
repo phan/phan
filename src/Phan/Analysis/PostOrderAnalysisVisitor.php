@@ -3663,7 +3663,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     break;
                 default:
                     if ($class_node->flags & ast\flags\NAME_NOT_FQ) {
-                        $class_fqsen = FullyQualifiedClassName::fromStringInContext($class_name, $method_context);
+                        $class_fqsen = FullyQualifiedClassName::fromNameInContext($class_name, $method_context);
                     } elseif ($class_node->flags & ast\flags\NAME_RELATIVE) {
                         $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($method_context->getNamespace() . '\\' . $class_name);
                     } else {

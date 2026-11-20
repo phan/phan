@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Phan\Language\FQSEN;
 
+use Phan\Exception\FQSENException;
+use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Memoize;
@@ -36,6 +38,30 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
     public static function canonicalName(string $name): string
     {
         return $name;
+    }
+
+    /**
+     * Returns the class that PHP resolves a name in the code to, for a name that is not fully qualified:
+     * `Foo` or `Sub\Foo` (a name node with the flag ast\flags\NAME_NOT_FQ), not `\Foo` or `namespace\Foo`.
+     *
+     * The first segment is replaced if it is the alias of a `use` statement. Otherwise the name is relative to the
+     * namespace of $context: `Sub\Foo` is `\NS\Sub\Foo` in the namespace `NS`.
+     *
+     * This differs from fromStringInContext(), which takes a name with a namespace as fully qualified (`\Sub\Foo`).
+     * That is right for a string that names a class, such as the callable `'Sub\Foo::method'`, and not for a name in the code.
+     *
+     * @param string $name the name as written in the code, without `self`, `static` and `parent`
+     * @throws FQSENException if the name is not a valid class name
+     */
+    public static function fromNameInContext(string $name, Context $context): FullyQualifiedClassName
+    {
+        if ($context->hasNamespaceMapFor(\ast\flags\USE_NORMAL, $name)) {
+            $fqsen = $context->getNamespaceMapFor(\ast\flags\USE_NORMAL, $name);
+            if ($fqsen instanceof FullyQualifiedClassName) {
+                return $fqsen;
+            }
+        }
+        return self::fromFullyQualifiedString(\rtrim($context->getNamespace(), '\\') . '\\' . $name);
     }
 
     /**

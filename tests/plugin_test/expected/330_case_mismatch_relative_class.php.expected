@@ -1,0 +1,13 @@
+src/330_case_mismatch_relative_class.php:26 PhanUnreferencedClass Possibly zero references to class \Outer330\User330
+src/330_case_mismatch_relative_class.php:28 PhanUnreferencedPublicMethod Possibly zero references to public method \Outer330\User330::relative()
+src/330_case_mismatch_relative_class.php:33 PhanUnreferencedPublicMethod Possibly zero references to public method \Outer330\User330::fullyQualified()
+src/330_case_mismatch_relative_class.php:37 PhanUnreferencedPublicMethod Possibly zero references to public method \Outer330\User330::namespaceRelative()
+src/330_case_mismatch_relative_class.php:42 PhanUnreferencedPublicMethod Possibly zero references to public method \Outer330\User330::relativeMismatch()
+src/330_case_mismatch_relative_class.php:43 PhanPluginCaseMismatchClassName Class reference node330 has a casing mismatch with declaration Node330 defined at src/330_case_mismatch_relative_class.php:11
+src/330_case_mismatch_relative_class.php:43 PhanPluginCaseMismatchNamespace Namespace segment \abc330 has a casing mismatch with declaration \ABC330
+src/330_case_mismatch_relative_class.php:47 PhanUnreferencedPublicMethod Possibly zero references to public method \Outer330\User330::alias()
+src/330_case_mismatch_relative_class.php:51 PhanUnreferencedPublicMethod Possibly zero references to public method \Outer330\User330::aliasMismatch()
+src/330_case_mismatch_relative_class.php:52 PhanPluginCaseMismatchNamespace Namespace segment \alias330 has a casing mismatch with use alias \Alias330
+src/330_case_mismatch_relative_class.php:52 PhanPluginCaseMismatchNamespace Namespace segment \sub330 has a casing mismatch with declaration \Sub330
+src/330_case_mismatch_relative_class.php:56 PhanUnreferencedPublicMethod Possibly zero references to public method \Outer330\User330::globalMismatch()
+src/330_case_mismatch_relative_class.php:57 PhanPluginCaseMismatchNamespace Namespace segment \ABC330 has a casing mismatch with declaration \Abc330
