@@ -148,7 +148,7 @@ class MagicValidator
 
 function test_union_with_class_lacking_method(ValidatorA|Validator $v, int|string $x): void
 {
-    // Calling accepts() on a Validator would throw, so the call can only be ValidatorA::accepts()
+    // Unchanged: a subclass of Validator may declare accepts()
     if ($v->accepts($x)) {
         '@phan-debug-var $x';
     }

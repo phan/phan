@@ -1,0 +1,14 @@
+src/007_unresolved.php:13 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int|string(real=int|string)
+src/007_unresolved.php:17 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int|string(real=int|string)
+src/007_unresolved.php:20 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string
+src/007_unresolved.php:23 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string
+src/007_unresolved.php:43 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string
+src/007_unresolved.php:52 PhanAccessMethodPrivateWithCallMagicMethod Cannot access private method \PrivateChecker::check defined at src/007_unresolved.php:30 (if this call should be handled by __call, consider adding a @method tag to the class)
+src/007_unresolved.php:52 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int|string(real=int|string)
+src/007_unresolved.php:68 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string
+src/007_unresolved.php:76 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int|string(real=int|string)
+src/007_unresolved.php:87 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string
+src/007_unresolved.php:91 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int|string
+src/007_unresolved.php:94 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int|string
+src/007_unresolved.php:117 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string
+src/007_unresolved.php:121 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int|string

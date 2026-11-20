@@ -39,6 +39,12 @@ interface ConditionalCallCapability
      * The closure is only called when Phan resolves the call to exactly one function or method,
      * and not for first-class callable syntax (`isSafe(...)`). A closure for a method also applies to the
      * copies of that method that subclasses inherit without overriding it.
+     * A method call is not resolved if the receiver may be an object of another class: a type such as `object`,
+     * `mixed` or a `class-string` without a class, or a class that is not final and does not declare the method
+     * (a subclass may declare it). It is not resolved either if the method cannot be called from the scope of the call
+     * (a private method called from outside its class is an error, or a call of `__call()`).
+     * For `isSafe($x) !== false` and `isSafe($x) !== true`, the closure is only called if the function returns a bool:
+     * those comparisons are also true for other values.
      * For a call in a nullsafe chain (`$v?->isSafe($x)`, `$v?->prop->isSafe($x)`), the closure is not called for the
      * falsey case: the expression is null without calling the method when `$v` is null.
      * Closures of several plugins for the same function are called in the order the plugins are loaded,

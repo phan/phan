@@ -14,6 +14,8 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\Type\ClassStringType;
+use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 
 /**
@@ -27,7 +29,8 @@ use Phan\Language\UnionType;
  *
  * A call is resolved without reporting issues (the call is analyzed elsewhere, and a condition can be analyzed
  * several times): lookups that fail return null instead of emitting an issue. The closures only run if the call
- * resolves to exactly one function or method.
+ * resolves to exactly one function or method, which is the one that the call runs: not if the receiver may be an
+ * object of another class, and not if the method cannot be called from the scope of the call.
  */
 final class ConditionalCallAnalyzer
 {
@@ -80,8 +83,10 @@ final class ConditionalCallAnalyzer
      *
      * @param Node $node a node of kind ast\AST_CALL, ast\AST_METHOD_CALL, ast\AST_NULLSAFE_METHOD_CALL or ast\AST_STATIC_CALL
      * @param bool $is_negated false if the call is assumed to be truthy, true if it is assumed to be falsey
+     * @param bool $requires_bool true if that assumption is only valid for a function that returns a bool:
+     * `f($x) !== false` is also true for 0, and `f($x) !== true` is also true for 1.
      */
-    public static function analyze(CodeBase $code_base, Context $context, Node $node, bool $is_negated): Context
+    public static function analyze(CodeBase $code_base, Context $context, Node $node, bool $is_negated, bool $requires_bool = false): Context
     {
         if ($node->kind === ast\AST_CALL) {
             if (!self::$function_names) {
@@ -100,6 +105,9 @@ final class ConditionalCallAnalyzer
             $function = self::resolveMethod($code_base, $context, $node);
         }
         if ($function === null || !$function->hasConditionalCallClosure()) {
+            return $context;
+        }
+        if ($requires_bool && !$function->getUnionType()->isExclusivelyBoolTypes()) {
             return $context;
         }
         // @phan-suppress-next-line PhanPartialTypeMismatchArgument the arguments of a call are a list
@@ -170,8 +178,23 @@ final class ConditionalCallAnalyzer
                     // This throws an IssueException instead of emitting an issue.
                     $union_type = UnionTypeVisitor::unionTypeFromClassNode($code_base, $context, $class_node);
                 } elseif ($class_node instanceof Node) {
-                    // `$class::method()`
-                    $union_type = UnionTypeVisitor::expandClassStringTypes(self::getTypeOfReceiver($code_base, $context, $class_node));
+                    // `$class::method()`, for an object or the name of a class
+                    $union_type = UnionType::empty();
+                    foreach (self::getTypeOfReceiver($code_base, $context, $class_node)->getTypeSet() as $type) {
+                        if ($type instanceof ClassStringType) {
+                            $class_union_type = $type->getClassUnionTypeResolvingBounds();
+                            if ($class_union_type->isEmpty()) {
+                                // `class-string` can be the name of any class.
+                                return null;
+                            }
+                            $union_type = $union_type->withUnionType($class_union_type);
+                        } elseif ($type instanceof StringType) {
+                            // A string can be the name of any class.
+                            return null;
+                        } else {
+                            $union_type = $union_type->withType($type);
+                        }
+                    }
                 } else {
                     return null;
                 }
@@ -183,8 +206,14 @@ final class ConditionalCallAnalyzer
                 $union_type = self::getTypeOfReceiver($code_base, $context, $expr);
             }
             $result = null;
-            foreach ($union_type->withStaticResolvedInContext($context)->nonNativeTypes()->getUniqueFlattenedTypeSet() as $type) {
+            $accessing_class_fqsen = $context->getClassFQSENOrNull();
+            foreach ($union_type->withStaticResolvedInContext($context)->getUniqueFlattenedTypeSet() as $type) {
                 if (!$type->isObjectWithKnownFQSEN()) {
+                    if ($type->isPossiblyObject()) {
+                        // e.g. `object`, `mixed`, `iterable` or a template type: an object of a class that is not known
+                        return null;
+                    }
+                    // e.g. `null` or `int`: the call would throw.
                     continue;
                 }
                 $class_fqsen = FullyQualifiedClassName::fromType($type);
@@ -193,14 +222,19 @@ final class ConditionalCallAnalyzer
                 }
                 $class = $code_base->getClassByFQSEN($class_fqsen);
                 if (!$class->hasMethodWithName($code_base, $method_name, true)) {
-                    if ($is_static ? $class->allowsCallingUndeclaredStaticMethod($code_base) : $class->allowsCallingUndeclaredInstanceMethod($code_base)) {
-                        // __call() or __callStatic() is another candidate
+                    if (!$class->isFinal() || ($is_static ? $class->allowsCallingUndeclaredStaticMethod($code_base) : $class->allowsCallingUndeclaredInstanceMethod($code_base))) {
+                        // A subclass or a class implementing the interface may declare the method,
+                        // and __call() or __callStatic() is another candidate.
                         return null;
                     }
-                    // Calling the method on an instance of this class would throw.
+                    // Calling the method on an instance of this final class would throw.
                     continue;
                 }
                 $method = $class->getMethodByName($code_base, $method_name);
+                if (!$method->isAccessibleFromClass($code_base, $accessing_class_fqsen)) {
+                    // The call throws, or calls __call() or __callStatic() instead of this method.
+                    return null;
+                }
                 if ($result !== null && $result !== $method) {
                     // Several candidates, e.g. for `A|B` when both classes declare the method
                     return null;
@@ -216,15 +250,10 @@ final class ConditionalCallAnalyzer
     /**
      * @return bool whether $node (a method call or a static call) can evaluate to null without the method being called:
      * `$x?->method()`, or a call that follows a nullsafe access in a chain, such as `$x?->prop->method()`
+     * or `$x?->factory()::make()->method()`
      */
     private static function isInNullsafeChain(Node $node): bool
     {
-        if ($node->kind === ast\AST_STATIC_CALL) {
-            $node = $node->children['class'];
-            if (!$node instanceof Node) {
-                return false;
-            }
-        }
         while (true) {
             switch ($node->kind) {
                 case ast\AST_NULLSAFE_METHOD_CALL:
@@ -234,12 +263,17 @@ final class ConditionalCallAnalyzer
                 case ast\AST_PROP:
                 case ast\AST_DIM:
                     $node = $node->children['expr'];
-                    if (!$node instanceof Node) {
-                        return false;
-                    }
+                    break;
+                case ast\AST_STATIC_CALL:
+                case ast\AST_STATIC_PROP:
+                    // e.g. `$x?->factory()::make()->method()`
+                    $node = $node->children['class'];
                     break;
                 default:
                     return false;
+            }
+            if (!$node instanceof Node) {
+                return false;
             }
         }
     }

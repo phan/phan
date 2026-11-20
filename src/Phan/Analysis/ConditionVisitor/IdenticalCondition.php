@@ -71,10 +71,10 @@ class IdenticalCondition implements BinaryCondition
         }
         if ($value xor $negate) {  // logical xor
             // e.g. `if (is_string($x) === true)`
-            return (new ConditionVisitor($code_base, $context))->visitCall($call_node);
+            return (new ConditionVisitor($code_base, $context))->visitCallOfStrictComparison($call_node, $negate);
         } else {
             // e.g. `if (is_string($x) === false)`
-            return (new NegatedConditionVisitor($code_base, $context))->visitCall($call_node);
+            return (new NegatedConditionVisitor($code_base, $context))->visitCallOfStrictComparison($call_node, $negate);
         }
     }
 

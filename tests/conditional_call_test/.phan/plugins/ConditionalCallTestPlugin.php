@@ -83,6 +83,10 @@ final class ConditionalCallTestPlugin extends PluginV3 implements ConditionalCal
             '\named_args' => $record_args,
             // 006_chaining.php (ConditionalCallSecondTestPlugin also has a closure for it)
             '\chained' => $narrow,
+            // 007_unresolved.php
+            '\int_check' => $narrow,
+            '\PrivateChecker::check' => $narrow,
+            '\FinalWithoutMethod::unused' => $narrow,
         ];
     }
 

@@ -285,6 +285,18 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
     }
 
     /**
+     * Analyzes a call of a function that is compared with a literal with `===` or `!==` (IdenticalCondition::analyzeCall()),
+     * like visitCall().
+     *
+     * @param bool $is_inequality true for `f($x) !== false` and `f($x) !== true`. The closures of ConditionalCallCapability
+     * plugins then only run if the function returns a bool: `f($x) !== false` is also true if f() returns 0.
+     */
+    public function visitCallOfStrictComparison(Node $node, bool $is_inequality): Context
+    {
+        return ConditionalCallAnalyzer::analyze($this->code_base, $this->analyzeCall($node), $node, true, $is_inequality);
+    }
+
+    /**
      * Phan's own analysis of the negation of a call of a function used as a condition (see visitCall())
      */
     private function analyzeCall(Node $node): Context

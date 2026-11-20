@@ -13,6 +13,6 @@ src/004_methods.php:109 PhanDebugAnnotation @phan-debug-var requested for variab
 src/004_methods.php:113 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int|string
 src/004_methods.php:131 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string
 src/004_methods.php:135 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int|string
-src/004_methods.php:152 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string
+src/004_methods.php:152 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int|string(real=int|string)
 src/004_methods.php:160 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int|string(real=int|string)
 src/004_methods.php:174 PhanDebugAnnotation @phan-debug-var requested for variable $checked - it has union type true
