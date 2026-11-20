@@ -232,3 +232,172 @@ class StaticPropRedeclaredParent {
         self::$shared = new stdClass();
     }
 }
+
+// The setter assigns a property that its class inherits. The type recorded for the setter is for the subclass
+// and is not applied to the property of the parent class, whether the setter is declared before or after the caller.
+class StaticPropInheritedParent {
+    /** @var stdClass */
+    protected static $prop;
+}
+
+class StaticPropInheritedSetterFirst extends StaticPropInheritedParent {
+    public static function init(): void {
+        self::$prop = new stdClass();
+    }
+
+    public static function getProp(): stdClass {
+        if (self::$prop === null) {
+            self::init();
+        }
+        return self::$prop;
+    }
+}
+
+class StaticPropInheritedSetterLater extends StaticPropInheritedParent {
+    public static function getProp(): stdClass {
+        if (self::$prop === null) {
+            self::init();
+        }
+        return self::$prop;
+    }
+
+    public static function init(): void {
+        self::$prop = new stdClass();
+    }
+}
+
+// The type of a property without a declared type is inferred from its default value: it is not the type after the call.
+class StaticPropSetterDefaultFalse {
+    private static $instance = false;
+
+    public static function getInstance(): self {
+        if (self::$instance === false) {
+            self::init();
+        }
+        return self::$instance;
+    }
+
+    public static function getInstanceWithEarlyReturn(): self {
+        if (self::$instance !== false) {
+            return self::$instance;
+        }
+        self::init();
+        return self::$instance;
+    }
+
+    private static function init(): void {
+        self::$instance = new self();
+    }
+}
+
+// The property has no real type: the method may assign null.
+class StaticPropSetterNullablePHPDoc {
+    /** @var ?stdClass */
+    private static $prop;
+
+    public static function resetProp(): void {
+        if (self::$prop !== null) {
+            self::reset();
+            if (self::$prop === null) {
+                echo "reset\n";
+            }
+        }
+    }
+
+    private static function reset(): void {
+        self::$prop = null;
+    }
+}
+
+// Writes that are not assignment expressions.
+class StaticPropSetterOtherWrites {
+    /** @var stdClass */
+    private static $prop;
+    /** @var int */
+    private static $count;
+    /** @var string */
+    private static $key;
+
+    public static function getAfterForeach(): stdClass {
+        if (self::$prop === null) {
+            self::setByForeach(['key' => new stdClass()]);
+        }
+        return self::$prop;
+    }
+
+    public static function getKeyAfterForeach(): string {
+        if (self::$key === null) {
+            self::setByForeach(['key' => new stdClass()]);
+        }
+        return self::$key;
+    }
+
+    public static function getAfterForeachByReference(): stdClass {
+        if (self::$prop === null) {
+            self::setByForeachByReference([new stdClass()]);
+        }
+        return self::$prop;
+    }
+
+    public static function getCount(): int {
+        if (self::$count === null) {
+            self::increment();
+        }
+        return self::$count;
+    }
+
+    public static function getCountAfterDecrement(): int {
+        if (self::$count === null) {
+            self::decrement();
+        }
+        return self::$count;
+    }
+
+    /** @param array<string,stdClass> $values */
+    private static function setByForeach(array $values): void {
+        foreach ($values as self::$key => self::$prop) {
+            echo self::$key, "\n";
+        }
+    }
+
+    /** @param list<stdClass> $values */
+    private static function setByForeachByReference(array $values): void {
+        foreach ($values as &self::$prop) {
+            echo "set\n";
+        }
+    }
+
+    private static function increment(): void {
+        self::$count++;
+    }
+
+    private static function decrement(): void {
+        --self::$count;
+    }
+}
+
+// Creating a callable for the setter is treated as a call: calls of the callable are not tracked.
+class StaticPropSetterCallable {
+    /** @var stdClass */
+    private static $prop;
+
+    /** @param list<stdClass> $values */
+    public static function getAfterArrayMap(array $values): stdClass {
+        if (self::$prop === null) {
+            array_map(self::setProp(...), $values);
+        }
+        return self::$prop;
+    }
+
+    public static function getAfterCallingVariable(): stdClass {
+        if (self::$prop === null) {
+            $setter = self::setProp(...);
+            $setter(new stdClass());
+        }
+        return self::$prop;
+    }
+
+    public static function setProp(stdClass $v): void {
+        self::$prop = $v;
+    }
+}

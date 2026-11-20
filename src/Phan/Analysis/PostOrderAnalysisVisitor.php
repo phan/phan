@@ -3436,10 +3436,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if (!$nodes) {
             return;
         }
-        $recorded = [];
-        foreach ($method->getStaticPropertyModifications() as $entry) {
-            $recorded += $entry['properties'];
-        }
+        $applied = $this->getNamesOfAppliedStaticPropertyModifications($method);
         $widened = [];
         foreach ($nodes as $node) {
             $name = $node->children['prop'];
@@ -3448,7 +3445,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->context = $this->context->withoutStaticPropertyOverrides();
                 return;
             }
-            if (isset($recorded[$name]) || isset($widened[$name])) {
+            if (isset($applied[$name]) || isset($widened[$name])) {
                 continue;
             }
             $old_override = $this->context->getStaticPropertyIfOverridden($name);
@@ -3462,14 +3459,59 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
             $widened[$name] = true;
             $this->context = $this->context->withoutStaticPropertyOverrides([$name]);
-            $declared_type = $property?->getUnionType();
-            if ($declared_type !== null && !$declared_type->isEmpty() && !$declared_type->isNull()) {
-                $this->context = $this->context->withStaticPropertySetToTypeByName(
-                    $name,
-                    $old_override->withUnionType(self::withNullAsSeparateType($declared_type))
-                );
+            if ($property === null) {
+                continue;
+            }
+            $declared_type = self::getDeclaredTypeOfProperty($property);
+            // Without a declared type, the type after the call is unknown.
+            $this->context = $this->context->withStaticPropertySetToTypeByName(
+                $name,
+                $declared_type !== null ? $old_override->withUnionType(self::withNullAsSeparateType($declared_type)) : UnionType::empty()
+            );
+        }
+    }
+
+    /**
+     * @return array<string,true> the names of the static properties with types recorded for $method
+     * that applyStaticPropertyModificationsFromMethod applies to the properties of the class in scope.
+     *
+     * A type is recorded for the class that `self` or `parent` is in the method. Unless the property was assigned
+     * as `static::$prop`, it is only applied if that class declares the property of the class in scope:
+     * not for another property with the same name, and not for a property that the class of the method inherits.
+     */
+    private function getNamesOfAppliedStaticPropertyModifications(Method $method): array
+    {
+        $calling_class = $this->context->getClassFQSENOrNull();
+        if (!$calling_class) {
+            return [];
+        }
+        $names = [];
+        foreach ($method->getStaticPropertyModifications() as $entry) {
+            $target_class_fqsen = $entry['class'];
+            if (!$this->canApplyStaticPropertyOverride($calling_class, $target_class_fqsen)) {
+                continue;
+            }
+            foreach ($entry['properties'] as $name => $property_info) {
+                if (!isset($names[$name]) && $this->doesStaticOverrideMatchTargetClass($name, $target_class_fqsen, $calling_class, $property_info['is_late_static'])) {
+                    $names[$name] = true;
+                }
             }
         }
+        return $names;
+    }
+
+    /**
+     * @return ?UnionType the type that the property is declared with (a real type or `@var`),
+     * or null if it is declared without a type or with no other type than `null`.
+     * (Without a declaration, the type of the property is inferred from its default value and from the assignments analyzed so far.)
+     */
+    private static function getDeclaredTypeOfProperty(Property $property): ?UnionType
+    {
+        if ($property->getRealUnionType()->isEmpty() && $property->getPHPDocUnionType()->isEmpty()) {
+            return null;
+        }
+        $type = $property->getUnionType();
+        return $type->isEmpty() || $type->isNull() ? null : $type;
     }
 
     /**
@@ -3485,9 +3527,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $non_null_type = $type->nonNullableClone();
         $type_set = $non_null_type->getTypeSet();
         $type_set[] = $null_type;
-        $real_type_set = $non_null_type->getRealTypeSet();
-        if ($real_type_set && $type->getRealUnionType()->containsNullable()) {
-            $real_type_set[] = $null_type;
+        $real_type_set = [];
+        if ($type->hasRealTypeSet()) {
+            // (nonNullableClone() makes the real type non-null-mixed when the property has no real type.)
+            $real_type_set = $non_null_type->getRealTypeSet();
+            if ($type->getRealUnionType()->containsNullable()) {
+                $real_type_set[] = $null_type;
+            }
         }
         return UnionType::of($type_set, $real_type_set);
     }
@@ -3573,7 +3619,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * Collects the AST_STATIC_PROP nodes that are assigned by running $node, such as `self::$prop = $v`,
-     * `static::$prop['key'] ??= $v` or `[self::$a, Other::$b] = $v`, without analyzing it.
+     * `static::$prop['key'] ??= $v`, `[self::$a, Other::$b] = $v`, `self::$prop++` or `foreach ($values as self::$prop)`,
+     * without analyzing it.
      *
      * The bodies of closures, functions and classes declared in $node are not run by running $node.
      *
@@ -3590,9 +3637,21 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             case ast\AST_ASSIGN:
             case ast\AST_ASSIGN_REF:
             case ast\AST_ASSIGN_OP:
+            case ast\AST_PRE_INC:
+            case ast\AST_PRE_DEC:
+            case ast\AST_POST_INC:
+            case ast\AST_POST_DEC:
                 $var = $node->children['var'];
                 if ($var instanceof Node) {
                     self::collectStaticPropertyNodesOfAssignmentTarget($var, $nodes);
+                }
+                break;
+            case ast\AST_FOREACH:
+                foreach (['value', 'key'] as $name) {
+                    $var = $node->children[$name];
+                    if ($var instanceof Node) {
+                        self::collectStaticPropertyNodesOfAssignmentTarget($var, $nodes);
+                    }
                 }
                 break;
         }
@@ -3606,7 +3665,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     /**
      * Collects the AST_STATIC_PROP nodes that an assignment to $node writes to:
      * the node itself, the expression that a dimension is fetched from (and not the dimension, which is read),
-     * and the values of array destructuring (and not the keys).
+     * the values of array destructuring (and not the keys), and the target of a reference (`foreach ($values as &self::$prop)`).
      *
      * @param list<Node> $nodes the nodes found so far
      */
@@ -3620,6 +3679,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $expr = $node->children['expr'];
                 if ($expr instanceof Node) {
                     self::collectStaticPropertyNodesOfAssignmentTarget($expr, $nodes);
+                }
+                return;
+            case ast\AST_REF:
+                $var = $node->children['var'];
+                if ($var instanceof Node) {
+                    self::collectStaticPropertyNodesOfAssignmentTarget($var, $nodes);
                 }
                 return;
             case ast\AST_ARRAY:
