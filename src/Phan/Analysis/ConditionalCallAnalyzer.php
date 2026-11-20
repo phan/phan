@@ -97,9 +97,10 @@ final class ConditionalCallAnalyzer
             if (!self::$method_names) {
                 return $context;
             }
-            if ($is_negated && self::isInNullsafeChain($node)) {
+            if (($is_negated || $requires_bool) && self::isInNullsafeChain($node)) {
                 // `$x?->isSafe($y)` is null without calling the method when `$x` is null:
-                // that the expression is falsey does not mean that the method returned a falsey value.
+                // that the expression is falsey does not mean that the method returned a falsey value,
+                // and `$x?->isSafe($y) !== false` is true for null.
                 return $context;
             }
             $function = self::resolveMethod($code_base, $context, $node);

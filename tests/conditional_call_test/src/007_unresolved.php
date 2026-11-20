@@ -181,3 +181,15 @@ function test_public_method_of_subclass(PrivateBindingChild $c, int|string $x): 
         '@phan-debug-var $x';
     }
 }
+
+function test_nullsafe_comparisons(?Validator $v, int|string $x): void
+{
+    // Unchanged: null !== false, so isValid() is not called when $v is null
+    if ($v?->isValid($x) !== false) {
+        '@phan-debug-var $x';
+    }
+    // Only $v is narrowed: Phan does not analyze the call of a nullsafe chain that is compared with a literal
+    if ($v?->isValid($x) === true) {
+        '@phan-debug-var $v, $x';
+    }
+}

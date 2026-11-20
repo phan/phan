@@ -19,3 +19,6 @@ src/007_unresolved.php:146 PhanDebugAnnotation @phan-debug-var requested for var
 src/007_unresolved.php:149 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string
 src/007_unresolved.php:164 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int|string(real=int|string)
 src/007_unresolved.php:180 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string
+src/007_unresolved.php:188 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int|string(real=int|string)
+src/007_unresolved.php:192 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type \Validator(real=\Validator)
+src/007_unresolved.php:192 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int|string(real=int|string)

@@ -51,7 +51,7 @@ interface ConditionalCallCapability
      * Register the closure for the class that declares the method. For a class that inherits it, the closure applies
      * to that class and not to its subclasses, as for getAnalyzeFunctionCallClosures().
      * For a call in a nullsafe chain (`$v?->isSafe($x)`, `$v?->prop->isSafe($x)`), the closure is not called for the
-     * falsey case: the expression is null without calling the method when `$v` is null.
+     * falsey case, nor for `$v?->isSafe($x) !== false`: the expression is null without calling the method when `$v` is null.
      * Closures of several plugins for the same function are called in the order the plugins are loaded,
      * and each one is passed the Context returned by the previous one.
      */
