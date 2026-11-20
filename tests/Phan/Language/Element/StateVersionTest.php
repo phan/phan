@@ -363,18 +363,23 @@ final class StateVersionTest extends CodeBaseAwareTestBase
         $method->setPhanFlags(($method->getPhanFlags() & ~(Flags::IS_OVERRIDE | Flags::IS_OVERRIDDEN_BY_ANOTHER)) | Flags::IS_DEPRECATED);
         $this->assertGreaterThan($before, $method->getStateVersion());
 
+        // An assignment of an unknown type to a static property is recorded once, without a type.
+        $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString('\StateVersionTest\C');
+        $this->assertFalse($method->hasStaticPropertyModificationOfUnknownType($class_fqsen, 'prop'));
+        $before = $method->getStateVersion();
+        $method->recordStaticPropertyModification($class_fqsen, 'prop', UnionType::empty(), false);
+        $this->assertGreaterThan($before, $method->getStateVersion());
+        $this->assertTrue($method->hasStaticPropertyModificationOfUnknownType($class_fqsen, 'prop'));
+        $this->assertFalse($method->hasStaticPropertyModificationOfUnknownType($class_fqsen, 'other'));
+        $this->assertSame([], $method->getStaticPropertyModifications());
+
         // Writes that do not change anything do not increment it.
         $method->recordHasMandatoryPHPDocParamAtOffset(3);
         $before = $method->getStateVersion();
         $method->enablePhanFlagBits(Flags::IS_DEPRECATED);
         $method->setIsDeprecated(true);
         $method->recordHasMandatoryPHPDocParamAtOffset(2);
-        $method->recordStaticPropertyModification(
-            FullyQualifiedClassName::fromFullyQualifiedString('\StateVersionTest\C'),
-            'prop',
-            UnionType::empty(),
-            false
-        );
+        $method->recordStaticPropertyModification($class_fqsen, 'prop', UnionType::empty(), false);
         $this->assertSame($before, $method->getStateVersion());
     }
 
