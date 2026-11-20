@@ -4546,8 +4546,11 @@ class Clazz extends AddressableElement
             }
         }
 
-        // Check for conflicts between parent class constants and trait constants
-        if ($this->parent_type) {
+        // Check for conflicts between parent class constants and trait constants.
+        // Before PHP 8.5, trait constants were bound after parent class inheritance, so an
+        // inherited non-private parent constant conflicted unless the class redeclared it.
+        // From PHP 8.5 on, trait constants override parent class constants like class constants.
+        if ($this->parent_type && Config::get_closest_minimum_target_php_version_id() < 80500) {
             $parent_fqsen = $this->parent_type->asFQSEN();
             if ($parent_fqsen instanceof \Phan\Language\FQSEN\FullyQualifiedClassName && $code_base->hasClassWithFQSEN($parent_fqsen)) {
                 $parent = $code_base->getClassByFQSENWithoutHydrating($parent_fqsen);
@@ -4556,6 +4559,9 @@ class Clazz extends AddressableElement
 
                 foreach ($constant_sources as $name => $sources) {
                     if (isset($parent_constants[$name])) {
+                        if (isset($class_constant_map[$name]) && $class_constant_map[$name]->getRealDefiningFQSEN()->getFullyQualifiedClassName() === $this->fqsen) {
+                            continue;
+                        }
                         $source = $sources[0];
                         // @phan-suppress-next-line PhanSuspiciousTruthyCondition
                         if (!$source) {
@@ -4566,6 +4572,9 @@ class Clazz extends AddressableElement
                             continue;
                         }
                         $parent_constant = $parent_constants[$name];
+                        if ($parent_constant->isPrivate()) {
+                            continue;
+                        }
                         if (!self::areConstantsCompatible($parent_constant, $trait_constant)) {
                             Issue::maybeEmit(
                                 $code_base,

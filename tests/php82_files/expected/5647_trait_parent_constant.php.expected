@@ -1,0 +1,2 @@
+%s:41 PhanIncompatibleCompositionConstant \Issue5647\ParentWithPublic and \Issue5647\TraitPublic define the same constant (C) in the composition of \Issue5647\ChildPublicConflict. However, the definition differs and is considered incompatible. Class was composed in %s on line 41
+%s:54 PhanIncompatibleCompositionConstant \Issue5647\ChildRedeclaresIncompatible and \Issue5647\TraitPublic define the same constant (C) in the composition of \Issue5647\ChildRedeclaresIncompatible. However, the definition differs and is considered incompatible. Class was composed in %s on line 54
