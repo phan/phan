@@ -119,3 +119,28 @@ class ChildOfDateTime extends \DateTime {
     public const ATOM = 'custom';
 }
 var_dump(ChildOfDateTime::ATOM);
+
+// 10. A trait constant must remain covariant with an interface constant, even when their values differ.
+// Interfaces are not checked by the trait/parent class composition conflict check.
+interface InterfaceTypedInt {
+    public const int K = 0;
+}
+
+trait TraitTypedStringK {
+    public const string K = 'x';
+}
+
+class ImplementsTypedInterfaceWithTrait implements InterfaceTypedInt {
+    use TraitTypedStringK;
+}
+echo ImplementsTypedInterfaceWithTrait::K;
+
+// A compatible trait constant overriding the interface constant must not report a mismatch.
+trait TraitTypedIntK {
+    public const int K = 1;
+}
+
+class ImplementsCompatibleInterfaceWithTrait implements InterfaceTypedInt {
+    use TraitTypedIntK;
+}
+echo ImplementsCompatibleInterfaceWithTrait::K;

@@ -348,7 +348,11 @@ class ClassConstantTypesAnalyzer
                     continue;
                 }
 
-                if ($is_from_trait && Clazz::isTraitConstantConflictingWith($constant, $inherited_constant, $inherited_class->isTrait())) {
+                // Interfaces are never included in the trait/parent composition conflict check.
+                // Their constant types must still be checked for covariance in PHP 8.3+.
+                if ($is_from_trait && !$inherited_class->isInterface()
+                    && Clazz::isTraitConstantConflictingWith($constant, $inherited_constant, $inherited_class->isTrait())
+                ) {
                     // PhanIncompatibleCompositionConstant is reported for these constants
                     continue;
                 }
