@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Phan\Language\Element;
 
+use ArithmeticError;
 use ast;
 use ast\Node;
 use Closure;
+use Error;
 use LogicException;
 use Phan\Analysis\AbstractMethodAnalyzer;
 use Phan\Analysis\ClassConstantTypesAnalyzer;
@@ -18,12 +20,16 @@ use Phan\Analysis\ParentConstructorCalledAnalyzer;
 use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\Analysis\PropertyTypesAnalyzer;
 use Phan\AST\ASTReverter;
+use Phan\AST\ASTSimplifier;
+use Phan\AST\InferValue;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\CodeBase\InheritedMethodLink;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
+use Phan\Exception\FQSENException;
 use Phan\Exception\IssueException;
+use Phan\Exception\NodeException;
 use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
@@ -39,7 +45,9 @@ use Phan\Language\Scope\ClassScope;
 use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntersectionType;
+use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
@@ -4475,16 +4483,26 @@ class Clazz extends AddressableElement
             $trait = $code_base->getClassByFQSENWithoutHydrating($trait_fqsen);
             $trait->hydrate($code_base);
 
+            // The constants of the trait include those it gets from the traits it uses: PHP checks them against the constants
+            // of this class and of its other traits as constants of the trait, e.g. "P and Outer define the same constant".
+            // The same constant reached through two traits is compatible with itself (see areConstantsCompatible()).
+            $trait_class_fqsen = $trait->getFQSEN();
+            // The traits that the trait uses, directly or through other traits (computed when a constant of another class turns up)
+            $used_trait_ids = null;
             foreach ($trait->getConstantMap($code_base) as $constant) {
                 $name = $constant->getName();
                 // Skip magic ::class constant (it's not a real class constant in PHP)
                 if ($name === 'class') {
                     continue;
                 }
-                // Only check constants directly defined in this trait (not inherited)
-                $defining_fqsen = $constant->getDefiningFQSEN();
-                if ($defining_fqsen->getFullyQualifiedClassName()->__toString() !== $trait_fqsen->__toString()) {
-                    continue;
+                // Only the constants that the trait gets through `use` statements are its constants in PHP. A trait with `@extends`
+                // or `@inherits` in its PHPDoc also has the constants of that class, including those the class gets from its traits.
+                $declaring_fqsen = $constant->getRealDefiningFQSEN()->getFullyQualifiedClassName();
+                if ($declaring_fqsen !== $trait_class_fqsen) {
+                    $used_trait_ids ??= self::getIdsOfTraitsUsedBy($code_base, $trait);
+                    if (!isset($used_trait_ids[\spl_object_id($declaring_fqsen)])) {
+                        continue;
+                    }
                 }
                 if (!isset($constant_sources[$name])) {
                     $constant_sources[$name] = [];
@@ -4516,7 +4534,7 @@ class Clazz extends AddressableElement
                     if (!$other_constant instanceof ClassConstant) {
                         continue;
                     }
-                    if (!self::areConstantsCompatible($code_base, $first_constant, $other_constant)) {
+                    if (!$this->areConstantsCompatible($code_base, $first_constant, $other_constant)) {
                         Issue::maybeEmit(
                             $code_base,
                             $this->getContext(),
@@ -4556,7 +4574,7 @@ class Clazz extends AddressableElement
                     // If the class constant is compatible with the trait constant, it's likely just inherited
                     // from the trait (not explicitly redefined). Only emit an error if they're incompatible,
                     // which indicates the class tried to redefine it with a different visibility or value.
-                    if (!self::areConstantsCompatible($code_base, $class_constant, $trait_constant)) {
+                    if (!$this->areConstantsCompatible($code_base, $class_constant, $trait_constant)) {
                         Issue::maybeEmit(
                             $code_base,
                             $this->getContext(),
@@ -4598,7 +4616,7 @@ class Clazz extends AddressableElement
                         if (!$trait_constant instanceof ClassConstant) {
                             continue;
                         }
-                        if (self::isTraitConstantConflictingWith($code_base, $trait_constant, $parent_constants[$name], false)) {
+                        if ($this->isTraitConstantConflictingWith($code_base, $trait_constant, $parent_constants[$name], false)) {
                             Issue::maybeEmit(
                                 $code_base,
                                 $this->getContext(),
@@ -4619,17 +4637,46 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * Returns true if PhanIncompatibleCompositionConstant is reported for $trait_constant, a constant that a class imports
-     * from a trait, and $other_constant, the constant with the same name of another trait used by that class
-     * (if $other_is_trait is true) or of the parent class of that class (otherwise).
-     * The caller checks that the class does not declare the constant itself.
+     * Returns the traits that $trait uses, directly or through the traits it uses, as the set of spl_object_id() of their FQSENs.
+     *
+     * @return array<int,true>
+     */
+    private static function getIdsOfTraitsUsedBy(CodeBase $code_base, Clazz $trait): array
+    {
+        $result = [];
+        $queue = [$trait];
+        while ($queue) {
+            $current = \array_pop($queue);
+            foreach ($current->getTraitFQSENList() as $used_trait_fqsen) {
+                if (!$code_base->hasClassWithFQSEN($used_trait_fqsen)) {
+                    continue;
+                }
+                $used_trait = $code_base->getClassByFQSENWithoutHydrating($used_trait_fqsen);
+                $id = \spl_object_id($used_trait->getFQSEN());
+                // Each trait is visited once, also if traits use each other
+                if (!isset($result[$id])) {
+                    $result[$id] = true;
+                    $queue[] = $used_trait;
+                }
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Returns true if PhanIncompatibleCompositionConstant is reported for $trait_constant, a constant that this class imports
+     * from a trait, and $other_constant, the constant with the same name of another trait used by this class
+     * (if $other_is_trait is true) or of the parent class of this class (otherwise).
+     * The caller checks that this class does not declare the constant itself.
      *
      * Constants of two traits conflict in every PHP version unless they are compatible.
      * Before PHP 8.5, trait constants were bound after parent class inheritance, so an inherited
      * non-private parent constant conflicted with a trait constant unless they were compatible.
      * From PHP 8.5 on, trait constants override parent class constants like class constants.
+     *
+     * @internal used by ClassConstantTypesAnalyzer
      */
-    public static function isTraitConstantConflictingWith(
+    public function isTraitConstantConflictingWith(
         CodeBase $code_base,
         ClassConstant $trait_constant,
         ClassConstant $other_constant,
@@ -4640,18 +4687,20 @@ class Clazz extends AddressableElement
                 return false;
             }
         }
-        return !self::areConstantsCompatible($code_base, $other_constant, $trait_constant);
+        return !$this->areConstantsCompatible($code_base, $other_constant, $trait_constant, !$other_is_trait);
     }
 
     /**
-     * Check if two constants are compatible (same visibility, final modifier, declared type, and equivalent value).
+     * Check if two constants with the same name are compatible in the composition of this class or trait
+     * (same visibility, final modifier, declared type, and value).
      * In PHP 8.2+, constants with different visibility, modifiers, types, or values cannot coexist in composition.
      *
      * @param ClassConstant $const1 the first constant to compare
      * @param ClassConstant $const2 the second constant to compare
+     * @param bool $const1_is_inherited true if $const1 is a constant that this class inherits from its parent class
      * @return bool true if constants are compatible
      */
-    private static function areConstantsCompatible(CodeBase $code_base, ClassConstant $const1, ClassConstant $const2): bool
+    private function areConstantsCompatible(CodeBase $code_base, ClassConstant $const1, ClassConstant $const2, bool $const1_is_inherited = false): bool
     {
         if ($const1->getRealDefiningFQSEN() === $const2->getRealDefiningFQSEN()) {
             return true;
@@ -4687,7 +4736,6 @@ class Clazz extends AddressableElement
             }
         }
 
-        // Check if values are equivalent by comparing AST nodes
         $node1 = $const1->getNodeForValue();
         $node2 = $const2->getNodeForValue();
 
@@ -4701,19 +4749,613 @@ class Clazz extends AddressableElement
             return false;
         }
 
-        // Compare AST nodes for value equivalence
-        // For simplicity, we use string representation comparison
-        // This may have false positives for complex expressions, but catches most cases
-        return \var_export($node1, true) === \var_export($node2, true);
+        // PHP evaluates both values and compares them with `===`.
+        self::$class_names_of_unknown_case = [];
+        self::$evaluation_budget = self::EVALUATION_BUDGET;
+        try {
+            $value1 = $this->evaluateConstantValueInComposition($code_base, $const1, $node1, $const1_is_inherited);
+            $value2 = $this->evaluateConstantValueInComposition($code_base, $const2, $node2, false);
+        } catch (NodeException) {
+            // PHP throws an Error when it evaluates one of the values, and rejects the composition
+            return false;
+        } catch (Error) {
+            // An operation that Phan evaluated threw: Phan does not know the value
+            return true;
+        }
+        if ($value1 instanceof Node || $value2 instanceof Node) {
+            // Phan does not know one of the values, which may be the same as the other one
+            return true;
+        }
+        if ($value1 === $value2) {
+            return true;
+        }
+        // Phan may know a class name with another letter case than PHP (see evaluateClassName()). The values may be the same in PHP
+        // if they differ only in the letter case of strings that are such a class name.
+        return self::$class_names_of_unknown_case !== []
+            && self::lowercaseClassNamesOfUnknownCase($value1) === self::lowercaseClassNamesOfUnknownCase($value2);
     }
 
     /**
-     * Canonicalizes a declared constant type for PHP composition equality:
+     * The class names that evaluateClassName() gave in the current comparison with a letter case that may differ from PHP's,
+     * in lowercase. Reset before the values of two constants are compared.
+     * @var array<string,true>
+     */
+    private static $class_names_of_unknown_case = [];
+
+    /**
+     * Returns $value (an evaluated constant value) with each string and string key whose lowercase form is in
+     * $class_names_of_unknown_case changed to that lowercase form. Other strings keep their letter case.
+     * Keys that become the same are one key, as in PHP: the element has the position of the first and the value of the last.
+     *
+     * @return EnumCase|array|bool|float|int|string|null
+     */
+    private static function lowercaseClassNamesOfUnknownCase(mixed $value): mixed
+    {
+        if (is_string($value)) {
+            $lowercase_value = strtolower($value);
+            return isset(self::$class_names_of_unknown_case[$lowercase_value]) ? $lowercase_value : $value;
+        }
+        if (!\is_array($value)) {
+            return $value;
+        }
+        $result = [];
+        foreach ($value as $key => $element) {
+            if (is_string($key)) {
+                $lowercase_key = strtolower($key);
+                if (isset(self::$class_names_of_unknown_case[$lowercase_key])) {
+                    $key = $lowercase_key;
+                }
+            }
+            $result[$key] = self::lowercaseClassNamesOfUnknownCase($element);
+        }
+        return $result;
+    }
+
+    /**
+     * Returns the value of $constant as PHP evaluates it when it compares the value with the value of another constant
+     * with the same name in the composition of this class or trait, or a Node if Phan does not know the value.
+     *
+     * `self` in the value of a constant of a trait is the class or trait using the trait (this class or trait),
+     * and in the value of a constant of a class it is that class.
+     *
+     * PHP evaluates the value of a constant that this class inherits from its parent class (if $is_inherited is true)
+     * in the scope of this class, unless the value was evaluated before: then it is the value in the scope of the class
+     * the constant is bound to (see getClassOfConstantScope()). Phan does not know which, so the value is not known
+     * if the two differ (e.g. for `self::class` in a constant of a trait, or `self::A` where this class declares its own `A`).
+     *
+     * @param mixed $node the value of $constant (see getNodeForValue())
+     * @return Node|EnumCase|array|bool|float|int|string|null see evaluateConstantExpression()
+     * @throws NodeException if PHP throws an Error when it evaluates the value
+     */
+    private function evaluateConstantValueInComposition(CodeBase $code_base, ClassConstant $constant, mixed $node, bool $is_inherited): mixed
+    {
+        if (!$is_inherited) {
+            $self_fqsen = self::isConstantOfTrait($code_base, $constant)
+                ? $this->fqsen
+                : $constant->getRealDefiningFQSEN()->getFullyQualifiedClassName();
+            return self::evaluateConstantValueWithSelf($code_base, $constant, $node, $self_fqsen);
+        }
+        $value = self::evaluateConstantValueWithSelf($code_base, $constant, $node, self::getClassOfConstantScope($code_base, $constant));
+        if (!$node instanceof Node || $value instanceof Node || !self::hasSelfOrParentName($node)) {
+            // The value is the same in both scopes: a constant that it refers to is evaluated in the scope it is bound to
+            return $value;
+        }
+        return self::evaluateConstantValueWithSelf($code_base, $constant, $node, $this->fqsen) === $value ? $value : $node;
+    }
+
+    /**
+     * Returns true if the constant expression $node contains `self` or `parent` (e.g. `self::X` or `parent::class`).
+     */
+    private static function hasSelfOrParentName(Node $node): bool
+    {
+        if ($node->kind === ast\AST_NAME) {
+            $name = $node->children['name'];
+            return is_string($name) && (\strcasecmp($name, 'self') === 0 || \strcasecmp($name, 'parent') === 0);
+        }
+        foreach ($node->children as $child) {
+            if ($child instanceof Node && self::hasSelfOrParentName($child)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns the value of $constant (see evaluateConstantValueInComposition()), where `self` is $self_fqsen.
+     *
+     * @param mixed $node the value of $constant (see getNodeForValue())
+     * @return Node|EnumCase|array|bool|float|int|string|null see evaluateConstantExpression()
+     * @throws NodeException if PHP throws an Error when it evaluates the value
+     */
+    private static function evaluateConstantValueWithSelf(CodeBase $code_base, ClassConstant $constant, mixed $node, FullyQualifiedClassName $self_fqsen): mixed
+    {
+        $value = self::evaluateConstantExpression($code_base, $constant->getContext(), $self_fqsen, $node, 0);
+        $converted_value = self::convertToDeclaredFloatType($constant, $value);
+        // PHP converts the value of a typed constant when it can evaluate the value at compile time, which it always can for a value
+        // without class constants. It compares a value that it evaluates later (e.g. with `self::X` in a trait) without converting it.
+        // Phan does not know which class constants PHP replaces at compile time.
+        if (is_int($value) && !is_int($converted_value) && $node instanceof Node && self::hasClassConstantReference($node)) {
+            return $node;
+        }
+        return $converted_value;
+    }
+
+    /**
+     * Returns the class in whose scope PHP evaluates the value of $constant when it fetches the constant: the class that
+     * declares it, or for a constant of a trait, the class that imports it from the trait. That is not the class
+     * that $constant belongs to if it inherits $constant.
+     */
+    private static function getClassOfConstantScope(CodeBase $code_base, ClassConstant $constant): FullyQualifiedClassName
+    {
+        $class_fqsen = $constant->getFQSEN()->getFullyQualifiedClassName();
+        if (!self::isConstantOfTrait($code_base, $constant) || !$code_base->hasClassWithFQSEN($class_fqsen)) {
+            return $constant->getRealDefiningFQSEN()->getFullyQualifiedClassName();
+        }
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        return ClassConstantTypesAnalyzer::getClassBindingSelfOfConstant($code_base, $code_base->getClassByFQSEN($class_fqsen), $constant)->getFQSEN();
+    }
+
+    /**
+     * Returns $value converted to float if it is an int and $constant has a declared type that accepts float and not int,
+     * as PHP converts the value of such a constant (`const float C = 1;` is 1.0). PHP converts no other values of constants:
+     * a value that the declared type does not accept is an error.
+     *
+     * @param Node|EnumCase|array|bool|float|int|string|null $value
+     * @return Node|EnumCase|array|bool|float|int|string|null
+     */
+    private static function convertToDeclaredFloatType(ClassConstant $constant, mixed $value): mixed
+    {
+        if (!is_int($value) || !$constant->hasDeclaredType()) {
+            return $value;
+        }
+        $accepts_float = false;
+        foreach ($constant->getUnionType()->getRealTypeSet() as $type) {
+            if ($type instanceof IntType || $type instanceof MixedType) {
+                return $value;
+            }
+            if ($type instanceof FloatType) {
+                $accepts_float = true;
+            }
+        }
+        return $accepts_float ? (float)$value : $value;
+    }
+
+    /**
+     * Returns true if the constant expression $node contains a class constant (`X::C`, not `X::class`).
+     */
+    private static function hasClassConstantReference(Node $node): bool
+    {
+        if ($node->kind === ast\AST_CLASS_CONST) {
+            return true;
+        }
+        foreach ($node->children as $child) {
+            if ($child instanceof Node && self::hasClassConstantReference($child)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** The maximum number of class constants that evaluateConstantExpression() follows to evaluate a value */
+    private const MAX_CONSTANT_REFERENCE_DEPTH = 10;
+
+    /**
+     * The number of nodes and array elements that evaluateConstantExpression() evaluates for the two values of one comparison
+     * before it gives up (the value is not known). A constant referenced several times is evaluated each time, so the depth limit
+     * alone does not bound the work: `const C1 = self::C0 + self::C0 + ...` over ten levels has billions of nodes.
+     */
+    private const EVALUATION_BUDGET = 3000;
+
+    /**
+     * The number of nodes that evaluateConstantExpression() may still evaluate in the current comparison (see EVALUATION_BUDGET)
+     * @var int
+     */
+    private static $evaluation_budget = 0;
+
+    /**
+     * Returns the value of the constant expression $node of a class constant declared in $context, where `self` is $self_fqsen,
+     * or a Node if Phan does not know the value. An enum case is represented by its EnumCase.
+     *
+     * This evaluates literals, `null`, `true`, `false`, `__LINE__`, `X::class`, arrays, the unary and binary operators supported
+     * by InferValue, the integer operators (`%`, `|`, `&`, `^`, `<<`, `>>` and `~`) on integers, and references to class constants
+     * and enum cases.
+     * A global constant (other than `null`, `true` and `false`) may have another value in the PHP version or environment
+     * that runs the code, and is not evaluated.
+     *
+     * @param mixed $node a node or a literal, or the value of an internal constant
+     * @return Node|EnumCase|array|bool|float|int|string|null the value, or a Node if Phan does not know the value
+     * @throws NodeException if PHP throws an Error when it evaluates $node
+     */
+    private static function evaluateConstantExpression(
+        CodeBase $code_base,
+        Context $context,
+        FullyQualifiedClassName $self_fqsen,
+        mixed $node,
+        int $depth
+    ): mixed {
+        if (!$node instanceof Node) {
+            // A literal, or the value of an internal constant
+            return $node;
+        }
+        if (--self::$evaluation_budget < 0) {
+            return $node;
+        }
+        switch ($node->kind) {
+            case ast\AST_CONST:
+                $name_node = $node->children['name'];
+                // `namespace\true` is a constant of the namespace, which can be defined with define(). `true` and `\true` are the literal.
+                if (!$name_node instanceof Node || ($name_node->flags & ast\flags\NAME_RELATIVE)) {
+                    return $node;
+                }
+                $name = $name_node->children['name'];
+                switch (is_string($name) ? strtolower($name) : '') {
+                    case 'null':
+                        return null;
+                    case 'true':
+                        return true;
+                    case 'false':
+                        return false;
+                }
+                return $node;
+            case ast\AST_ARRAY:
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                if (ASTSimplifier::isTrimmedArray($node)) {
+                    // Phan keeps some of the elements of a large array of literals (see the setting ast_trim_max_elements_per_level)
+                    return $node;
+                }
+                $result = [];
+                // The largest integer key so far (null if there is none), which determines the key of an appended element
+                $max_int_key = null;
+                foreach ($node->children as $element) {
+                    if (!$element instanceof Node || --self::$evaluation_budget < 0) {
+                        return $node;
+                    }
+                    if ($element->kind === ast\AST_UNPACK) {
+                        $value = self::evaluateConstantExpression($code_base, $context, $self_fqsen, $element->children['expr'], $depth);
+                        if (!\is_array($value)) {
+                            return $node;
+                        }
+                        // Unpacking appends the elements with integer keys and sets the elements with string keys
+                        foreach ($value as $key => $element_value) {
+                            if (!self::addToConstantArray($result, $max_int_key, is_int($key) ? null : $key, $element_value)) {
+                                return $node;
+                            }
+                        }
+                        continue;
+                    }
+                    $value = self::evaluateConstantExpression($code_base, $context, $self_fqsen, $element->children['value'], $depth);
+                    if ($value instanceof Node) {
+                        return $node;
+                    }
+                    $key_node = $element->children['key'];
+                    $key = null;
+                    if ($key_node !== null) {
+                        $key = self::evaluateConstantExpression($code_base, $context, $self_fqsen, $key_node, $depth);
+                        if (!is_int($key) && !is_string($key)) {
+                            // PHP converts a float, bool or null key, which is not done here
+                            return $node;
+                        }
+                    }
+                    if (!self::addToConstantArray($result, $max_int_key, $key, $value)) {
+                        return $node;
+                    }
+                }
+                return $result;
+            case ast\AST_UNARY_OP:
+                $operand = self::evaluateOperand($code_base, $context, $self_fqsen, $node->children['expr'], $depth);
+                if ($node->flags === ast\flags\UNARY_BITWISE_NOT) {
+                    // PHP also applies `~` to floats and to the bytes of strings, which is not evaluated here
+                    return is_int($operand) ? ~$operand : $node;
+                }
+                // Unary operators are evaluated for scalars and null (an enum case is an object here)
+                if ($operand !== null && !\is_scalar($operand)) {
+                    return $node;
+                }
+                try {
+                    $result = InferValue::computeUnaryOpResult($operand, $node->flags);
+                } catch (Error) {
+                    return $node;
+                }
+                return $result instanceof Node ? $node : $result;
+            case ast\AST_BINARY_OP:
+                $left = self::evaluateOperand($code_base, $context, $self_fqsen, $node->children['left'], $depth);
+                // PHP does not evaluate the right operand of these operators when the left operand determines the result.
+                // When Phan does not know the left operand, the right operand is not evaluated either: it could throw.
+                switch ($node->flags) {
+                    case ast\flags\BINARY_BOOL_AND:
+                        if ($left instanceof Node) {
+                            return $node;
+                        }
+                        if (!(bool)$left) {
+                            return false;
+                        }
+                        break;
+                    case ast\flags\BINARY_BOOL_OR:
+                        if ($left instanceof Node) {
+                            return $node;
+                        }
+                        if ((bool)$left) {
+                            return true;
+                        }
+                        break;
+                    case ast\flags\BINARY_COALESCE:
+                        if ($left instanceof Node) {
+                            return $node;
+                        }
+                        if ($left !== null) {
+                            return $left;
+                        }
+                        break;
+                }
+                $right = self::evaluateOperand($code_base, $context, $self_fqsen, $node->children['right'], $depth);
+                switch ($node->flags) {
+                    case ast\flags\BINARY_MOD:
+                    case ast\flags\BINARY_BITWISE_OR:
+                    case ast\flags\BINARY_BITWISE_AND:
+                    case ast\flags\BINARY_BITWISE_XOR:
+                    case ast\flags\BINARY_SHIFT_LEFT:
+                    case ast\flags\BINARY_SHIFT_RIGHT:
+                        // PHP also applies these operators to floats and numeric strings (and the bitwise operators to the bytes
+                        // of two strings), which is not evaluated here
+                        if (!is_int($left) || !is_int($right)) {
+                            return $node;
+                        }
+                        try {
+                            return match ($node->flags) {
+                                ast\flags\BINARY_MOD => $left % $right,
+                                ast\flags\BINARY_BITWISE_OR => $left | $right,
+                                ast\flags\BINARY_BITWISE_AND => $left & $right,
+                                ast\flags\BINARY_BITWISE_XOR => $left ^ $right,
+                                ast\flags\BINARY_SHIFT_LEFT => $left << $right,
+                                default => $left >> $right,
+                            };
+                        } catch (ArithmeticError) {
+                            // `%` by zero or a shift by a negative number
+                            return $node;
+                        }
+                }
+                // Binary operators are evaluated for scalars and null, and `+` for two arrays
+                if (\is_array($left) && \is_array($right)) {
+                    if ($node->flags !== ast\flags\BINARY_ADD) {
+                        return $node;
+                    }
+                } elseif (($left !== null && !\is_scalar($left)) || ($right !== null && !\is_scalar($right))) {
+                    return $node;
+                }
+                try {
+                    $result = InferValue::computeBinaryOpResult($left, $right, $node->flags);
+                } catch (Error) {
+                    return $node;
+                }
+                return $result instanceof Node ? $node : $result;
+            case ast\AST_CLASS_NAME:
+                return self::evaluateClassName($code_base, $context, $self_fqsen, $node);
+            case ast\AST_MAGIC_CONST:
+                // PHP replaces __LINE__ with the line number when it compiles the code. The values of the other magic constants
+                // depend on the path of the file or, in a trait, on the class using the trait.
+                return $node->flags === ast\flags\MAGIC_LINE ? $node->lineno : $node;
+            case ast\AST_CLASS_CONST:
+                if ($depth >= self::MAX_CONSTANT_REFERENCE_DEPTH) {
+                    return $node;
+                }
+                $constant = self::getClassConstantOfConstantExpression($code_base, $context, $self_fqsen, $node);
+                if (!$constant) {
+                    return $node;
+                }
+                if ($constant instanceof EnumCase) {
+                    return $constant;
+                }
+                // PHP evaluates the value of a constant that it fetches in the scope of the class the constant is bound to,
+                // whether or not it evaluated the constant before, and converts it to the declared type of the constant
+                return self::convertToDeclaredFloatType(
+                    $constant,
+                    self::evaluateConstantExpression(
+                        $code_base,
+                        $constant->getContext(),
+                        self::getClassOfConstantScope($code_base, $constant),
+                        $constant->getNodeForValue(),
+                        $depth + 1
+                    )
+                );
+        }
+        return $node;
+    }
+
+    /**
+     * Sets $value at $key in $array, an array that a constant expression builds, or appends it if $key is null, as PHP 8.1+ does
+     * for an array in a constant expression: an appended element gets the largest integer key so far plus one, or 0 if there is none.
+     * (`$array[] = ...` gives 0 after negative keys before PHP 8.3, so this does not use it.) A numeric string key is an integer key.
+     * Returns false if PHP throws because the next key would be greater than PHP_INT_MAX.
+     *
+     * @param array<mixed,mixed> $array
+     * @param ?int $max_int_key the largest integer key of $array, or null if it has none
+     */
+    private static function addToConstantArray(array &$array, ?int &$max_int_key, int|string|null $key, mixed $value): bool
+    {
+        if ($key === null) {
+            if ($max_int_key === \PHP_INT_MAX) {
+                // "Cannot add element to the array as the next element is already occupied"
+                return false;
+            }
+            $key = $max_int_key === null ? 0 : $max_int_key + 1;
+        } elseif (is_string($key) && (string)(int)$key === $key) {
+            $key = (int)$key;
+        }
+        $array[$key] = $value;
+        if (is_int($key) && ($max_int_key === null || $key > $max_int_key)) {
+            $max_int_key = $key;
+        }
+        return true;
+    }
+
+    /**
+     * Returns the value of $node, an operand of an operator (see evaluateConstantExpression()), or $node if Phan does not know it.
+     * The value is not known if its evaluation gave a class name whose letter case Phan does not know (see evaluateClassName()):
+     * the result of the operator may depend on it.
+     *
+     * @return Node|EnumCase|array|bool|float|int|string|null
+     * @throws NodeException if PHP throws an Error when it evaluates $node
+     */
+    private static function evaluateOperand(CodeBase $code_base, Context $context, FullyQualifiedClassName $self_fqsen, mixed $node, int $depth): mixed
+    {
+        $outer_class_names_of_unknown_case = self::$class_names_of_unknown_case;
+        self::$class_names_of_unknown_case = [];
+        try {
+            $value = self::evaluateConstantExpression($code_base, $context, $self_fqsen, $node, $depth);
+            return self::$class_names_of_unknown_case !== [] && $node instanceof Node ? $node : $value;
+        } finally {
+            self::$class_names_of_unknown_case = $outer_class_names_of_unknown_case;
+        }
+    }
+
+    /**
+     * Returns the string that PHP gives for $node, a node of kind AST_CLASS_NAME (`X::class`) in a constant expression declared
+     * in $context, where `self` is $self_fqsen, or $node if it is not known. The class does not have to exist.
+     *
+     * PHP resolves a name with the namespace and the `use` statements of the code that declares the constant, and keeps
+     * the letters as they are written there. Phan knows the target of a `use` statement and the names of the classes of `self`
+     * and `parent` with the letter case it saw first, so that case may differ from PHP's: such a name is added to
+     * $class_names_of_unknown_case (see areConstantsCompatible()).
+     */
+    private static function evaluateClassName(CodeBase $code_base, Context $context, FullyQualifiedClassName $self_fqsen, Node $node): Node|string
+    {
+        $class_node = $node->children['class'];
+        if (!$class_node instanceof Node || $class_node->kind !== ast\AST_NAME) {
+            return $node;
+        }
+        $name = $class_node->children['name'];
+        if (!is_string($name)) {
+            return $node;
+        }
+        switch (strtolower($name)) {
+            case 'self':
+                $class_fqsen = self::getClassOfSelfInClassName($code_base, $context, $self_fqsen);
+                break;
+            case 'parent':
+                $self_class_fqsen = self::getClassOfSelfInClassName($code_base, $context, $self_fqsen);
+                if (!$code_base->hasClassWithFQSEN($self_class_fqsen)) {
+                    return $node;
+                }
+                $self_class = $code_base->getClassByFQSEN($self_class_fqsen);
+                if (!$self_class->hasParentType()) {
+                    return $node;
+                }
+                $class_fqsen = $self_class->getParentClassFQSEN();
+                break;
+            case 'static':
+                // Not allowed in constant expressions
+                return $node;
+            default:
+                if ($class_node->flags & ast\flags\NAME_NOT_FQ) {
+                    $parts = \explode('\\', $name, 2);
+                    if ($context->hasNamespaceMapFor(ast\flags\USE_NORMAL, $parts[0])) {
+                        $class_name = \ltrim((string)$context->getNamespaceMapFor(ast\flags\USE_NORMAL, $parts[0]), '\\')
+                            . (isset($parts[1]) ? '\\' . $parts[1] : '');
+                        self::$class_names_of_unknown_case[strtolower($class_name)] = true;
+                        return $class_name;
+                    }
+                    return \ltrim(\rtrim($context->getNamespace(), '\\') . '\\' . $name, '\\');
+                }
+                if ($class_node->flags & ast\flags\NAME_RELATIVE) {
+                    return \ltrim(\rtrim($context->getNamespace(), '\\') . '\\' . $name, '\\');
+                }
+                return $name;
+        }
+        $class_name = \ltrim((string)$class_fqsen, '\\');
+        self::$class_names_of_unknown_case[strtolower($class_name)] = true;
+        return $class_name;
+    }
+
+    /**
+     * Returns the class that `self` is in `self::class` and `parent::class` in a constant expression declared in $context:
+     * PHP resolves them when it compiles the code in a class or an interface (as the class or interface that declares the constant),
+     * and when it evaluates the value in a trait ($self_fqsen).
+     */
+    private static function getClassOfSelfInClassName(CodeBase $code_base, Context $context, FullyQualifiedClassName $self_fqsen): FullyQualifiedClassName
+    {
+        if (!$context->isInClassScope()) {
+            return $self_fqsen;
+        }
+        $declaring_fqsen = $context->getClassFQSEN();
+        if (!$code_base->hasClassWithFQSEN($declaring_fqsen) || $code_base->getClassByFQSEN($declaring_fqsen)->isTrait()) {
+            return $self_fqsen;
+        }
+        return $declaring_fqsen;
+    }
+
+    /**
+     * Returns the class constant or enum case that $node (a node of kind AST_CLASS_CONST in a constant expression declared
+     * in $context, where `self` is $self_fqsen) refers to, or null if it is not known.
+     * This does not emit issues: they are emitted where the constant expression is analyzed.
+     *
+     * @throws NodeException if the constant is accessed through a trait: PHP 8.2+ throws "Cannot access trait constant T::X directly",
+     * also for `self::X` when PHP checks the constants of a trait that uses another trait (`self` is that trait)
+     */
+    private static function getClassConstantOfConstantExpression(
+        CodeBase $code_base,
+        Context $context,
+        FullyQualifiedClassName $self_fqsen,
+        Node $node
+    ): ?ClassConstant {
+        $class_node = $node->children['class'];
+        $name = $node->children['const'];
+        if (!is_string($name) || !$class_node instanceof Node || $class_node->kind !== ast\AST_NAME) {
+            return null;
+        }
+        $class_name = $class_node->children['name'];
+        if (!is_string($class_name)) {
+            return null;
+        }
+        try {
+            switch (strtolower($class_name)) {
+                case 'self':
+                    $class_fqsen = $self_fqsen;
+                    break;
+                case 'parent':
+                    if (!$code_base->hasClassWithFQSEN($self_fqsen)) {
+                        return null;
+                    }
+                    $self_class = $code_base->getClassByFQSEN($self_fqsen);
+                    if (!$self_class->hasParentType()) {
+                        return null;
+                    }
+                    $class_fqsen = $self_class->getParentClassFQSEN();
+                    break;
+                case 'static':
+                    // Not allowed in constant expressions
+                    return null;
+                default:
+                    if ($class_node->flags & ast\flags\NAME_NOT_FQ) {
+                        $class_fqsen = FullyQualifiedClassName::fromNameInContext($class_name, $context);
+                    } elseif ($class_node->flags & ast\flags\NAME_RELATIVE) {
+                        $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString(\rtrim($context->getNamespace(), '\\') . '\\' . $class_name);
+                    } else {
+                        $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString('\\' . $class_name);
+                    }
+                    break;
+            }
+        } catch (FQSENException) {
+            return null;
+        }
+        if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+            return null;
+        }
+        $class = $code_base->getClassByFQSEN($class_fqsen);
+        if ($class->isTrait()) {
+            throw new NodeException($node, 'Cannot access a trait constant directly');
+        }
+        return $class->getConstantMap($code_base)[$name] ?? null;
+    }
+
+    /**
+     * Canonicalizes a declared constant type for PHP composition equality and for the covariance check of constant types:
      * - Expands `iterable` to `array|\Traversable`.
      * - Resolves class aliases to their canonical FQSEN.
      * - Normalizes nullable representations (`?T` vs `T|null`).
+     *
+     * @internal used by ClassConstantTypesAnalyzer
      */
-    private static function canonicalizeDeclaredConstantType(CodeBase $code_base, UnionType $type): UnionType
+    public static function canonicalizeDeclaredConstantType(CodeBase $code_base, UnionType $type): UnionType
     {
         $expanded = [];
         $changed = false;
