@@ -46,6 +46,8 @@ class ChildWidened extends ParentProtected {
 echo ChildWidened::C;
 
 // 4. Narrowing visibility still reports PhanConstantAccessSignatureMismatch (no composition error).
+// It is reported at the class using the trait, not at the constant of the trait, so that it is also reported
+// when the file of the trait is excluded from analysis.
 trait TraitProtected {
     protected const C = 1;
 }
@@ -147,3 +149,25 @@ class ChildSelfTyped extends ParentSelfTyped {
     use TraitSelfTyped;
 }
 var_dump(ChildSelfTyped::C);
+
+// 13. A suppression on the class using the trait applies to the issues reported for a constant of the trait.
+/** @suppress PhanConstantTypeMismatchInheritance */
+class ChildBadTypedTraitSuppressed extends ParentTypedInt {
+    use TraitTypedString;
+}
+echo ChildBadTypedTraitSuppressed::C;
+
+/** @suppress PhanConstantAccessSignatureMismatch */
+class ChildNarrowedSuppressed extends ParentPublic {
+    use TraitProtected;
+    public static function get(): int {
+        return self::C;
+    }
+}
+echo ChildNarrowedSuppressed::get();
+
+/** @suppress PhanAccessOverridesFinalConstant */
+class ChildFinalSuppressed extends ParentFinal {
+    use TraitPublic;
+}
+echo ChildFinalSuppressed::C;

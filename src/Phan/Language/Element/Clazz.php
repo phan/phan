@@ -1722,7 +1722,7 @@ class Clazz extends AddressableElement
         ClassConstant $overriding_constant
     ): void {
         if ($inherited_constant->isFinal() && $inherited_constant->getRealDefiningFQSEN() !== $overriding_constant->getRealDefiningFQSEN()) {
-            $issue_context = $overriding_constant->getFQSEN() === $overriding_constant->getRealDefiningFQSEN() ? $overriding_constant->getContext() : $this->getContext();
+            $issue_context = $this->getContextForOverridingConstantIssue($overriding_constant);
             Issue::maybeEmit(
                 $code_base,
                 $issue_context,
@@ -1737,13 +1737,14 @@ class Clazz extends AddressableElement
         // Traits don't have constants, thankfully, so the logic is simple.
         // FIXME now they do
         if ($inherited_constant->isStrictlyMoreVisibleThan($overriding_constant)) {
+            $issue_context = $this->getContextForOverridingConstantIssue($overriding_constant);
             if ($inherited_constant->isPHPInternal()) {
                 if (!$overriding_constant->checkHasSuppressIssueAndIncrementCount(Issue::ConstantAccessSignatureMismatchInternal)) {
                     Issue::maybeEmit(
                         $code_base,
-                        $overriding_constant->getContext(),
+                        $issue_context,
                         Issue::ConstantAccessSignatureMismatchInternal,
-                        $overriding_constant->getFileRef()->getLineNumberStart(),
+                        $issue_context->getLineNumberStart(),
                         $overriding_constant->asVisibilityAndFQSENString(),
                         $inherited_constant->asVisibilityAndFQSENString()
                     );
@@ -1752,9 +1753,9 @@ class Clazz extends AddressableElement
                 if (!$overriding_constant->checkHasSuppressIssueAndIncrementCount(Issue::ConstantAccessSignatureMismatchInternal)) {
                     Issue::maybeEmit(
                         $code_base,
-                        $overriding_constant->getContext(),
+                        $issue_context,
                         Issue::ConstantAccessSignatureMismatch,
-                        $overriding_constant->getFileRef()->getLineNumberStart(),
+                        $issue_context->getLineNumberStart(),
                         $overriding_constant->asVisibilityAndFQSENString(),
                         $inherited_constant->asVisibilityAndFQSENString(),
                         $inherited_constant->getFileRef()->getFile(),
@@ -1763,6 +1764,22 @@ class Clazz extends AddressableElement
                 }
             }
         }
+    }
+
+    /**
+     * Returns the context in which to report an issue with $overriding_constant, a constant of this class
+     * that overrides an inherited constant.
+     *
+     * The copy of a constant imported from a trait has the context of its declaration in the trait,
+     * so issues with it are reported at the declaration of this class, in the scope of this class:
+     * they are reported in the file of this class and can be suppressed there.
+     */
+    private function getContextForOverridingConstantIssue(ClassConstant $overriding_constant): Context
+    {
+        if ($overriding_constant->getFQSEN() === $overriding_constant->getRealDefiningFQSEN()) {
+            return $overriding_constant->getContext();
+        }
+        return $this->getContext()->withScope($this->getInternalScope());
     }
 
     /**
@@ -4554,10 +4571,7 @@ class Clazz extends AddressableElement
         }
 
         // Check for conflicts between parent class constants and trait constants.
-        // Before PHP 8.5, trait constants were bound after parent class inheritance, so an
-        // inherited non-private parent constant conflicted unless the class redeclared it.
-        // From PHP 8.5 on, trait constants override parent class constants like class constants.
-        if ($this->parent_type && Config::get_closest_minimum_target_php_version_id() < 80500) {
+        if ($this->parent_type) {
             $parent_fqsen = $this->parent_type->asFQSEN();
             if ($parent_fqsen instanceof \Phan\Language\FQSEN\FullyQualifiedClassName && $code_base->hasClassWithFQSEN($parent_fqsen)) {
                 $parent = $code_base->getClassByFQSENWithoutHydrating($parent_fqsen);
@@ -4566,6 +4580,8 @@ class Clazz extends AddressableElement
 
                 foreach ($constant_sources as $name => $sources) {
                     if (isset($parent_constants[$name])) {
+                        // A constant declared in the class itself overrides the parent constant
+                        // (its conflicts with the trait constant are checked above).
                         if (isset($class_constant_map[$name]) && $class_constant_map[$name]->getRealDefiningFQSEN()->getFullyQualifiedClassName() === $this->fqsen) {
                             continue;
                         }
@@ -4578,11 +4594,7 @@ class Clazz extends AddressableElement
                         if (!$trait_constant instanceof ClassConstant) {
                             continue;
                         }
-                        $parent_constant = $parent_constants[$name];
-                        if ($parent_constant->isPrivate()) {
-                            continue;
-                        }
-                        if (!self::areConstantsCompatible($parent_constant, $trait_constant)) {
+                        if (self::isTraitConstantConflictingWith($trait_constant, $parent_constants[$name], false)) {
                             Issue::maybeEmit(
                                 $code_base,
                                 $this->getContext(),
@@ -4600,6 +4612,27 @@ class Clazz extends AddressableElement
                 }
             }
         }
+    }
+
+    /**
+     * Returns true if PhanIncompatibleCompositionConstant is reported for $trait_constant, a constant that a class imports
+     * from a trait, and $other_constant, the constant with the same name of another trait used by that class
+     * (if $other_is_trait is true) or of the parent class of that class (otherwise).
+     * The caller checks that the class does not declare the constant itself.
+     *
+     * Constants of two traits conflict in every PHP version unless they are compatible.
+     * Before PHP 8.5, trait constants were bound after parent class inheritance, so an inherited
+     * non-private parent constant conflicted with a trait constant unless they were compatible.
+     * From PHP 8.5 on, trait constants override parent class constants like class constants.
+     */
+    public static function isTraitConstantConflictingWith(ClassConstant $trait_constant, ClassConstant $other_constant, bool $other_is_trait): bool
+    {
+        if (!$other_is_trait) {
+            if ($other_constant->isPrivate() || Config::get_closest_minimum_target_php_version_id() >= 80500) {
+                return false;
+            }
+        }
+        return !self::areConstantsCompatible($other_constant, $trait_constant);
     }
 
     /**
