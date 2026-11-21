@@ -2,7 +2,7 @@
 
 namespace Issue5661Php83;
 
-// Typed constants that a trait gets from the traits it uses, and `iterable` in the declared types of constants.
+// Typed constants that a trait gets from the traits it uses, `iterable` in the declared types of constants, and their values.
 
 // 1. PHP checks the typed constants that a trait gets from the traits it uses as constants of that trait.
 // PHP 8.3 and 8.4: "ParentIntA and OuterA define the same constant (A) in the composition of ChildNestedA".
@@ -147,3 +147,80 @@ class ChildTraitArrayI extends ParentIterableI {
     use TraitArrayI;
 }
 var_dump(ChildTraitArrayI::I);
+
+// 8. PHP converts an int value of a constant whose declared type accepts float and not int to a float (`const float J = 1;` is 1.0).
+// PHP 8.3 to 8.5 accept ClassFloatValues.
+trait IntToFloatValues {
+    public const float J = 1;
+    public const ?float K = -2;
+    public const float|string L = 1 + 2;
+}
+
+trait FloatValues {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const float J = 1.0;
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const ?float K = -2.0;
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const float|string L = 3.0;
+}
+
+class ClassFloatValues {
+    use IntToFloatValues, FloatValues;
+}
+var_dump(ClassFloatValues::J, ClassFloatValues::K, ClassFloatValues::L);
+
+// 9. PHP does not convert the value when the declared type accepts int: PHP 8.3 to 8.5 reject ClassIntOrFloat
+// ("IntOrFloatFirst and IntOrFloatSecond define the same constant (M) in the composition of ClassIntOrFloat").
+trait IntOrFloatFirst {
+    public const int|float M = 1;
+}
+
+trait IntOrFloatSecond {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const int|float M = 1.0;
+}
+
+class ClassIntOrFloat {
+    use IntOrFloatFirst, IntOrFloatSecond;
+}
+var_dump(ClassIntOrFloat::M);
+
+// 10. A constant reached through a reference has the converted value: PHP 8.3 to 8.5 reject ClassConvertedReference
+// ("ConvertedReferenceFirst and ConvertedReferenceSecond define the same constant (N) ...": 1.0 and 1).
+class FloatHolder {
+    public const float VALUE = 1;
+}
+echo FloatHolder::VALUE;
+
+trait ConvertedReferenceFirst {
+    public const N = FloatHolder::VALUE;
+}
+
+trait ConvertedReferenceSecond {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const N = 1;
+}
+
+class ClassConvertedReference {
+    use ConvertedReferenceFirst, ConvertedReferenceSecond;
+}
+var_dump(ClassConvertedReference::N);
+
+// 11. PHP converts the value of a constant when it evaluates the value at compile time. It does not evaluate `self::ONE` in a trait
+// at compile time, and compares 1 with 1.0: PHP 8.3 to 8.5 reject ClassRuntimeValue
+// ("RuntimeValueFirst and RuntimeValueSecond define the same constant (O) in the composition of ClassRuntimeValue").
+trait RuntimeValueFirst {
+    public const ONE = 1;
+    public const float O = self::ONE;
+}
+
+trait RuntimeValueSecond {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const float O = 1.0;
+}
+
+class ClassRuntimeValue {
+    use RuntimeValueFirst, RuntimeValueSecond;
+}
+var_dump(ClassRuntimeValue::ONE, ClassRuntimeValue::O);

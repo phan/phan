@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phan\Language\Element;
 
+use ArithmeticError;
 use ast;
 use ast\Node;
 use Closure;
@@ -43,7 +44,9 @@ use Phan\Language\Scope\ClassScope;
 use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntersectionType;
+use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
@@ -4706,6 +4709,7 @@ class Clazz extends AddressableElement
         }
 
         // PHP evaluates both values and compares them with `===`.
+        self::$is_class_name_case_unknown = false;
         try {
             $value1 = $this->evaluateConstantValueInComposition($code_base, $const1, $node1);
             $value2 = $this->evaluateConstantValueInComposition($code_base, $const2, $node2);
@@ -4717,7 +4721,39 @@ class Clazz extends AddressableElement
             // Phan does not know one of the values, which may be the same as the other one
             return true;
         }
-        return $value1 === $value2;
+        if ($value1 === $value2) {
+            return true;
+        }
+        // Phan may know a class name with another letter case than PHP uses (see evaluateClassName()): values that differ
+        // only in letter case may be the same in PHP.
+        return self::$is_class_name_case_unknown
+            && self::lowercaseStringsOfConstantValue($value1) === self::lowercaseStringsOfConstantValue($value2);
+    }
+
+    /**
+     * True if evaluateConstantExpression() evaluated a class name whose letter case in PHP may differ from the case Phan knows it with.
+     * Reset before the values of two constants are compared.
+     * @var bool
+     */
+    private static $is_class_name_case_unknown = false;
+
+    /**
+     * Returns $value (an evaluated constant value) with its strings and string keys in lowercase.
+     * @return EnumCase|array|bool|float|int|string|null
+     */
+    private static function lowercaseStringsOfConstantValue(mixed $value): mixed
+    {
+        if (is_string($value)) {
+            return strtolower($value);
+        }
+        if (!\is_array($value)) {
+            return $value;
+        }
+        $result = [];
+        foreach ($value as $key => $element) {
+            $result[is_string($key) ? strtolower($key) : $key] = self::lowercaseStringsOfConstantValue($element);
+        }
+        return $result;
     }
 
     /**
@@ -4736,7 +4772,55 @@ class Clazz extends AddressableElement
         $self_fqsen = self::isConstantOfTrait($code_base, $constant)
             ? $this->fqsen
             : $constant->getRealDefiningFQSEN()->getFullyQualifiedClassName();
-        return self::evaluateConstantExpression($code_base, $constant->getContext(), $self_fqsen, $node, 0);
+        $value = self::evaluateConstantExpression($code_base, $constant->getContext(), $self_fqsen, $node, 0);
+        // PHP converts the value of a typed constant when it can evaluate the value at compile time, which it always can for a value
+        // without class constants. It compares a value that it evaluates later (e.g. with `self::X` in a trait) without converting it.
+        // Phan does not know which class constants PHP replaces at compile time, and leaves values with class constants as they are.
+        if ($node instanceof Node && self::hasClassConstantReference($node)) {
+            return $value;
+        }
+        return self::convertToDeclaredFloatType($constant, $value);
+    }
+
+    /**
+     * Returns $value converted to float if it is an int and $constant has a declared type that accepts float and not int,
+     * as PHP converts the value of such a constant (`const float C = 1;` is 1.0). PHP converts no other values of constants:
+     * a value that the declared type does not accept is an error.
+     *
+     * @param Node|EnumCase|array|bool|float|int|string|null $value
+     * @return Node|EnumCase|array|bool|float|int|string|null
+     */
+    private static function convertToDeclaredFloatType(ClassConstant $constant, mixed $value): mixed
+    {
+        if (!is_int($value) || !$constant->hasDeclaredType()) {
+            return $value;
+        }
+        $accepts_float = false;
+        foreach ($constant->getUnionType()->getRealTypeSet() as $type) {
+            if ($type instanceof IntType || $type instanceof MixedType) {
+                return $value;
+            }
+            if ($type instanceof FloatType) {
+                $accepts_float = true;
+            }
+        }
+        return $accepts_float ? (float)$value : $value;
+    }
+
+    /**
+     * Returns true if the constant expression $node contains a class constant (`X::C`, not `X::class`).
+     */
+    private static function hasClassConstantReference(Node $node): bool
+    {
+        if ($node->kind === ast\AST_CLASS_CONST) {
+            return true;
+        }
+        foreach ($node->children as $child) {
+            if ($child instanceof Node && self::hasClassConstantReference($child)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** The maximum number of class constants that evaluateConstantExpression() follows to evaluate a value */
@@ -4746,8 +4830,9 @@ class Clazz extends AddressableElement
      * Returns the value of the constant expression $node of a class constant declared in $context, where `self` is $self_fqsen,
      * or a Node if Phan does not know the value. An enum case is represented by its EnumCase.
      *
-     * This evaluates literals, `null`, `true`, `false`, `__LINE__`, arrays, the unary and binary operators supported by InferValue,
-     * and references to class constants and enum cases.
+     * This evaluates literals, `null`, `true`, `false`, `__LINE__`, `X::class`, arrays, the unary and binary operators supported
+     * by InferValue, the integer operators (`%`, `|`, `&`, `^`, `<<`, `>>` and `~`) on integers, and references to class constants
+     * and enum cases.
      * A global constant (other than `null`, `true` and `false`) may have another value in the PHP version or environment
      * that runs the code, and is not evaluated.
      *
@@ -4818,6 +4903,10 @@ class Clazz extends AddressableElement
                 return $result;
             case ast\AST_UNARY_OP:
                 $operand = self::evaluateConstantExpression($code_base, $context, $self_fqsen, $node->children['expr'], $depth);
+                if ($node->flags === ast\flags\UNARY_BITWISE_NOT) {
+                    // PHP also applies `~` to floats and to the bytes of strings, which is not evaluated here
+                    return is_int($operand) ? ~$operand : $node;
+                }
                 // Unary operators are evaluated for scalars and null (an enum case is an object here)
                 if ($operand !== null && !\is_scalar($operand)) {
                     return $node;
@@ -4831,26 +4920,60 @@ class Clazz extends AddressableElement
             case ast\AST_BINARY_OP:
                 $left = self::evaluateConstantExpression($code_base, $context, $self_fqsen, $node->children['left'], $depth);
                 // PHP does not evaluate the right operand of these operators when the left operand determines the result.
-                if (!$left instanceof Node) {
-                    switch ($node->flags) {
-                        case ast\flags\BINARY_BOOL_AND:
-                            if (!(bool)$left) {
-                                return false;
-                            }
-                            break;
-                        case ast\flags\BINARY_BOOL_OR:
-                            if ((bool)$left) {
-                                return true;
-                            }
-                            break;
-                        case ast\flags\BINARY_COALESCE:
-                            if ($left !== null) {
-                                return $left;
-                            }
-                            break;
-                    }
+                // When Phan does not know the left operand, the right operand is not evaluated either: it could throw.
+                switch ($node->flags) {
+                    case ast\flags\BINARY_BOOL_AND:
+                        if ($left instanceof Node) {
+                            return $node;
+                        }
+                        if (!(bool)$left) {
+                            return false;
+                        }
+                        break;
+                    case ast\flags\BINARY_BOOL_OR:
+                        if ($left instanceof Node) {
+                            return $node;
+                        }
+                        if ((bool)$left) {
+                            return true;
+                        }
+                        break;
+                    case ast\flags\BINARY_COALESCE:
+                        if ($left instanceof Node) {
+                            return $node;
+                        }
+                        if ($left !== null) {
+                            return $left;
+                        }
+                        break;
                 }
                 $right = self::evaluateConstantExpression($code_base, $context, $self_fqsen, $node->children['right'], $depth);
+                switch ($node->flags) {
+                    case ast\flags\BINARY_MOD:
+                    case ast\flags\BINARY_BITWISE_OR:
+                    case ast\flags\BINARY_BITWISE_AND:
+                    case ast\flags\BINARY_BITWISE_XOR:
+                    case ast\flags\BINARY_SHIFT_LEFT:
+                    case ast\flags\BINARY_SHIFT_RIGHT:
+                        // PHP also applies these operators to floats and numeric strings (and the bitwise operators to the bytes
+                        // of two strings), which is not evaluated here
+                        if (!is_int($left) || !is_int($right)) {
+                            return $node;
+                        }
+                        try {
+                            return match ($node->flags) {
+                                ast\flags\BINARY_MOD => $left % $right,
+                                ast\flags\BINARY_BITWISE_OR => $left | $right,
+                                ast\flags\BINARY_BITWISE_AND => $left & $right,
+                                ast\flags\BINARY_BITWISE_XOR => $left ^ $right,
+                                ast\flags\BINARY_SHIFT_LEFT => $left << $right,
+                                default => $left >> $right,
+                            };
+                        } catch (ArithmeticError) {
+                            // `%` by zero or a shift by a negative number
+                            return $node;
+                        }
+                }
                 // Binary operators are evaluated for scalars and null, and `+` for two arrays
                 if (\is_array($left) && \is_array($right)) {
                     if ($node->flags !== ast\flags\BINARY_ADD) {
@@ -4865,6 +4988,8 @@ class Clazz extends AddressableElement
                     return $node;
                 }
                 return $result instanceof Node ? $node : $result;
+            case ast\AST_CLASS_NAME:
+                return self::evaluateClassName($code_base, $context, $self_fqsen, $node);
             case ast\AST_MAGIC_CONST:
                 // PHP replaces __LINE__ with the line number when it compiles the code. The values of the other magic constants
                 // depend on the path of the file or, in a trait, on the class using the trait.
@@ -4884,9 +5009,67 @@ class Clazz extends AddressableElement
                 $constant_self_fqsen = self::isConstantOfTrait($code_base, $constant)
                     ? $constant->getFQSEN()->getFullyQualifiedClassName()
                     : $constant->getRealDefiningFQSEN()->getFullyQualifiedClassName();
-                return self::evaluateConstantExpression($code_base, $constant->getContext(), $constant_self_fqsen, $constant->getNodeForValue(), $depth + 1);
+                // PHP converts the value of a constant that it fetches to the declared type of the constant
+                return self::convertToDeclaredFloatType(
+                    $constant,
+                    self::evaluateConstantExpression($code_base, $constant->getContext(), $constant_self_fqsen, $constant->getNodeForValue(), $depth + 1)
+                );
         }
         return $node;
+    }
+
+    /**
+     * Returns the string that PHP gives for $node, a node of kind AST_CLASS_NAME (`X::class`) in a constant expression declared
+     * in $context, where `self` is $self_fqsen, or $node if it is not known. The class does not have to exist.
+     *
+     * PHP resolves a name with the namespace and the `use` statements of the code that declares the constant, and keeps
+     * the letters as they are written there. Phan knows the target of a `use` statement and the names of the classes of `self`
+     * and `parent` with the letter case it saw first, so that case may differ from PHP's (see areConstantsCompatible()).
+     */
+    private static function evaluateClassName(CodeBase $code_base, Context $context, FullyQualifiedClassName $self_fqsen, Node $node): Node|string
+    {
+        $class_node = $node->children['class'];
+        if (!$class_node instanceof Node || $class_node->kind !== ast\AST_NAME) {
+            return $node;
+        }
+        $name = $class_node->children['name'];
+        if (!is_string($name)) {
+            return $node;
+        }
+        switch (strtolower($name)) {
+            case 'self':
+                $class_fqsen = $self_fqsen;
+                break;
+            case 'parent':
+                if (!$code_base->hasClassWithFQSEN($self_fqsen)) {
+                    return $node;
+                }
+                $self_class = $code_base->getClassByFQSEN($self_fqsen);
+                if (!$self_class->hasParentType()) {
+                    return $node;
+                }
+                $class_fqsen = $self_class->getParentClassFQSEN();
+                break;
+            case 'static':
+                // Not allowed in constant expressions
+                return $node;
+            default:
+                if ($class_node->flags & ast\flags\NAME_NOT_FQ) {
+                    $parts = \explode('\\', $name, 2);
+                    if ($context->hasNamespaceMapFor(ast\flags\USE_NORMAL, $parts[0])) {
+                        self::$is_class_name_case_unknown = true;
+                        return \ltrim((string)$context->getNamespaceMapFor(ast\flags\USE_NORMAL, $parts[0]), '\\')
+                            . (isset($parts[1]) ? '\\' . $parts[1] : '');
+                    }
+                    return \ltrim(\rtrim($context->getNamespace(), '\\') . '\\' . $name, '\\');
+                }
+                if ($class_node->flags & ast\flags\NAME_RELATIVE) {
+                    return \ltrim(\rtrim($context->getNamespace(), '\\') . '\\' . $name, '\\');
+                }
+                return $name;
+        }
+        self::$is_class_name_case_unknown = true;
+        return \ltrim((string)$class_fqsen, '\\');
     }
 
     /**

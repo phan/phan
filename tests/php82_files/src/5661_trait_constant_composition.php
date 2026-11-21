@@ -360,14 +360,14 @@ class ClassOuterSelfZ {
 var_dump(ClassOuterSelfZ::Z);
 
 // 10. Phan does not evaluate global constants other than `null`, `true` and `false`, magic constants other than `__LINE__`,
-// `X::class`, and some operators such as `%`. These are not reported whether or not the values are the same.
+// and some expressions such as `?:` and `[3][0]`. These are not reported whether or not the values are the same.
 // PHP 8.2 to 8.5 accept ClassUnknownSame, and reject ClassUnknownDifferent: "UnknownFirst and UnknownSecond define the same constant (GLOBAL_DIFFERENT) ...".
 const GLOBAL_ONE = 1;
 
 trait UnknownFirst {
     public const INT_SIZE = PHP_INT_SIZE;
     public const NAME = __CLASS__;
-    public const MOD = 7 % 4;
+    public const DIM = [3][0];
 }
 
 trait UnknownSecond {
@@ -376,13 +376,13 @@ trait UnknownSecond {
     /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
     public const NAME = __CLASS__;
     /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
-    public const MOD = 3;
+    public const DIM = 3;
 }
 
 class ClassUnknownSame {
     use UnknownFirst, UnknownSecond;
 }
-var_dump(ClassUnknownSame::INT_SIZE, ClassUnknownSame::NAME, ClassUnknownSame::MOD);
+var_dump(ClassUnknownSame::INT_SIZE, ClassUnknownSame::NAME, ClassUnknownSame::DIM);
 
 trait GlobalFirst {
     public const GLOBAL_DIFFERENT = GLOBAL_ONE;
@@ -397,3 +397,195 @@ class ClassUnknownDifferent {
     use GlobalFirst, GlobalSecond;
 }
 var_dump(ClassUnknownDifferent::GLOBAL_DIFFERENT);
+
+// 11. `X::class` is the name of the class resolved with the namespace and the `use` statements, as it is written: PHP 8.2 to 8.5 reject
+// ClassTwoModels ("ModelFoo and ModelBar define the same constant (MODEL) in the composition of ClassTwoModels")
+// and ClassTwoSpellings ("ModelSpellingFirst and ModelSpellingSecond ...": `modelfoo::class` and `ModelFoo::class` are different strings).
+class ModelFoo {}
+class ModelBar {}
+
+trait ModelFooTrait {
+    public const MODEL = ModelFoo::class;
+}
+
+trait ModelBarTrait {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const MODEL = ModelBar::class;
+}
+
+class ClassTwoModels {
+    use ModelFooTrait, ModelBarTrait;
+}
+var_dump(ClassTwoModels::MODEL, new ModelFoo(), new ModelBar());
+
+trait ModelSpellingFirst {
+    public const SPELLING = modelfoo::class;
+}
+
+trait ModelSpellingSecond {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const SPELLING = ModelFoo::class;
+}
+
+class ClassTwoSpellings {
+    use ModelSpellingFirst, ModelSpellingSecond;
+}
+var_dump(ClassTwoSpellings::SPELLING);
+
+// 12. PHP 8.2 to 8.5 accept ClassSameModel: the same class name written in different ways, and `self::class` in a trait,
+// which is the name of the class using the trait.
+use Issue5661Php82 as AliasedNamespace;
+
+trait SameModelFirst {
+    public const NAME_ONE = ModelFoo::class;
+    public const NAME_TWO = AliasedNamespace\ModelFoo::class;
+    public const NAME_THREE = self::class;
+}
+
+trait SameModelSecond {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const NAME_ONE = \Issue5661Php82\ModelFoo::class;
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const NAME_TWO = namespace\ModelFoo::class;
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const NAME_THREE = 'Issue5661Php82\ClassSameModel';
+}
+
+class ClassSameModel {
+    use SameModelFirst, SameModelSecond;
+}
+var_dump(ClassSameModel::NAME_ONE, ClassSameModel::NAME_TWO, ClassSameModel::NAME_THREE);
+
+// 13. PHP 8.2 to 8.5 reject ClassSelfClassAndTraitName: `self::class` in SelfClassTrait is the name of the class using it, not of the trait
+// ("SelfClassTrait and TraitNameTrait define the same constant (SELF_NAME) in the composition of ClassSelfClassAndTraitName").
+trait SelfClassTrait {
+    public const SELF_NAME = self::class;
+}
+
+trait TraitNameTrait {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const SELF_NAME = 'Issue5661Php82\SelfClassTrait';
+}
+
+class ClassSelfClassAndTraitName {
+    use SelfClassTrait, TraitNameTrait;
+}
+var_dump(ClassSelfClassAndTraitName::SELF_NAME);
+
+// 14. The integer operators `%`, `|`, `&`, `^`, `<<`, `>>` and `~` are evaluated for integers.
+// PHP 8.2 to 8.5 accept ClassSameFlags, and reject ClassTwoFlags, ClassTwoShifts and ClassTwoModulos
+// ("FlagsFirst and FlagsSecond define the same constant (FLAGS) in the composition of ClassTwoFlags", and so on).
+trait SameFlagsFirst {
+    public const FLAG_A = 1;
+    public const FLAG_B = 2;
+    public const FLAGS = self::FLAG_A | self::FLAG_B;
+    public const MASK = 6 & 3;
+    public const TOGGLE = 6 ^ 3;
+    public const SHIFTED = (1 << 4) >> 1;
+    public const MODULO = -7 % 3;
+    public const NONE = ~0;
+}
+
+trait SameFlagsSecond {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const FLAGS = 3;
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const MASK = 2;
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const TOGGLE = 5;
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const SHIFTED = 8;
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const MODULO = -1;
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const NONE = -1;
+}
+
+class ClassSameFlags {
+    use SameFlagsFirst, SameFlagsSecond;
+}
+var_dump(ClassSameFlags::FLAG_A, ClassSameFlags::FLAG_B, ClassSameFlags::FLAGS, ClassSameFlags::MASK, ClassSameFlags::TOGGLE, ClassSameFlags::SHIFTED, ClassSameFlags::MODULO, ClassSameFlags::NONE);
+
+trait FlagsFirst {
+    public const READ = 1;
+    public const WRITE = 2;
+    public const FLAGS = self::READ | self::WRITE;
+}
+
+trait FlagsSecond {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const FLAGS = 4;
+}
+
+class ClassTwoFlags {
+    use FlagsFirst, FlagsSecond;
+}
+var_dump(ClassTwoFlags::READ, ClassTwoFlags::WRITE, ClassTwoFlags::FLAGS);
+
+trait ShiftFirst {
+    public const SHIFT = 1 << 3;
+}
+
+trait ShiftSecond {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const SHIFT = 9;
+}
+
+class ClassTwoShifts {
+    use ShiftFirst, ShiftSecond;
+}
+var_dump(ClassTwoShifts::SHIFT);
+
+trait ModuloFirst {
+    public const MODULO = 7 % 4;
+}
+
+trait ModuloSecond {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const MODULO = 2;
+}
+
+class ClassTwoModulos {
+    use ModuloFirst, ModuloSecond;
+}
+var_dump(ClassTwoModulos::MODULO);
+
+// 15. These operators are not evaluated for operands that are not integers. PHP 8.2 to 8.5 reject ClassFloatOperand
+// ("FloatOperandFirst and FloatOperandSecond define the same constant (FLOAT_FLAGS) ..."): `1 | 2.0` is 3. Phan does not report it.
+trait FloatOperandFirst {
+    public const FLOAT_FLAGS = 1 | 2.0;
+}
+
+trait FloatOperandSecond {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const FLOAT_FLAGS = 4;
+}
+
+class ClassFloatOperand {
+    use FloatOperandFirst, FloatOperandSecond;
+}
+var_dump(ClassFloatOperand::FLOAT_FLAGS);
+
+// 16. PHP does not evaluate the right operand of `&&`, `||` and `??` when the left operand determines the result, so it does not throw
+// "Cannot access trait constant SourceShortCircuit::X directly" here: PHP 8.2 to 8.5 accept ClassShortCircuit.
+// Phan does not know the value of the global constant, and does not evaluate the right operand.
+const SHORT_CIRCUIT_OFF = false;
+
+trait SourceShortCircuit {
+    public const X = 1;
+}
+
+trait ShortCircuitFirst {
+    /** @phan-suppress-next-line PhanImpossibleCondition */
+    public const SHORT = SHORT_CIRCUIT_OFF && SourceShortCircuit::X;
+}
+
+trait ShortCircuitSecond {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const SHORT = false;
+}
+
+class ClassShortCircuit {
+    use ShortCircuitFirst, ShortCircuitSecond;
+}
+var_dump(ClassShortCircuit::SHORT);
