@@ -1,0 +1,1 @@
+%s:10 PhanTypeMismatchReturnReal Returning self::$prop of type null but getProp() is declared to return \stdClass

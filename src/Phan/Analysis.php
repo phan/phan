@@ -13,6 +13,7 @@ use InvalidArgumentException;
 use ParseError;
 use Phan\Analysis\AttributeAnalyzer;
 use Phan\Analysis\CloneReplay;
+use Phan\Analysis\ConditionalCallAnalyzer;
 use Phan\Analysis\EmitOnlyChecks;
 use Phan\Analysis\MethodDeclarationAnalyzer;
 use Phan\Analysis\ReferenceCountsAnalyzer;
@@ -811,6 +812,60 @@ class Analysis
                 } catch (FQSENException | InvalidArgumentException $e) {
                     // @phan-suppress-next-line PhanPluginRemoveDebugCall
                     \fprintf(STDERR, "getAnalyzeFunctionCallClosures returned an invalid FQSEN %s: %s\n", $fqsen_string, $e->getMessage());
+                }
+            }
+        }
+
+        // The closures of ConditionalCallCapability plugins are attached like the function call analyzers above.
+        // The names they are registered for are recorded here (and not when a closure is attached, since a closure for an
+        // internal function is only attached when the function is loaded): conditions only resolve the calls of those names.
+        ConditionalCallAnalyzer::reset();
+        foreach ($plugin_set->getConditionalCallPluginSet() as $plugin) {
+            foreach ($plugin->getConditionalCallClosures($code_base) as $fqsen_string => $closure) {
+                try {
+                    if (str_contains($fqsen_string, '::')) {
+                        // This is a closure for a method.
+                        [$class, $method_name] = \explode('::', $fqsen_string, 2);
+                        $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class);
+                        ConditionalCallAnalyzer::registerMethodName($method_name);
+                        if (!$code_base->hasLoadedClassWithFQSEN($class_fqsen)) {
+                            // Configured when loaded, like the return type overrides above.
+                            $code_base->whenInternalClassIsLoaded($class_fqsen, static function (Clazz $class) use ($code_base, $method_name, $closure, $plugin): void {
+                                if ($class->hasMethodWithName($code_base, $method_name, false)) {
+                                    $class->getMethodByName($code_base, $method_name)->addConditionalCallClosure($closure, $plugin);
+                                }
+                            });
+                            continue;
+                        }
+                        $class = $code_base->getClassByFQSEN($class_fqsen);
+                        if ($class->hasMethodWithName($code_base, $method_name, false)) {
+                            $method = $class->getMethodByName($code_base, $method_name);
+                            $method->addConditionalCallClosure($closure, $plugin);
+
+                            $child_class_index ??= $code_base->getDirectChildClassIndex();
+                            $fqsen = FullyQualifiedMethodName::fromFullyQualifiedString($fqsen_string);
+
+                            foreach ($code_base->getMethodsInheritedFrom($fqsen, $child_class_index, $passed_lazy_entry) as $child_method) {
+                                $child_method->addConditionalCallClosure($closure, $plugin);
+                                // A class using a trait can give the copy of a method another name (`use T { isSafe as ok; }`).
+                                ConditionalCallAnalyzer::registerMethodName($child_method->getName());
+                            }
+                            if ($passed_lazy_entry && $lazy !== null) {
+                                // @phan-suppress-next-line PhanAccessMethodInternal
+                                $lazy->recordOp($fqsen, 'conditional_call', $closure, $plugin);
+                            }
+                        }
+                    } else {
+                        // This is a closure for a function (configured when loaded, like the return type overrides above).
+                        $fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString($fqsen_string);
+                        ConditionalCallAnalyzer::registerFunctionName($fqsen->getName());
+                        $code_base->whenFunctionIsLoaded($fqsen, static function (Func $function) use ($closure, $plugin): void {
+                            $function->addConditionalCallClosure($closure, $plugin);
+                        });
+                    }
+                } catch (FQSENException | InvalidArgumentException $e) {
+                    // @phan-suppress-next-line PhanPluginRemoveDebugCall
+                    \fprintf(STDERR, "getConditionalCallClosures returned an invalid FQSEN %s: %s\n", $fqsen_string, $e->getMessage());
                 }
             }
         }

@@ -1,0 +1,11 @@
+src/003_operators.php:5 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string
+src/003_operators.php:8 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int
+src/003_operators.php:15 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int|string
+src/003_operators.php:17 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int(real=int)
+src/003_operators.php:20 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string
+src/003_operators.php:29 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type null|string
+src/003_operators.php:29 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type int|null
+src/003_operators.php:35 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string
+src/003_operators.php:41 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string
+src/003_operators.php:44 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string
+src/003_operators.php:47 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int

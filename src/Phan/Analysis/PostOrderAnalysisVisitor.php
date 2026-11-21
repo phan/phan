@@ -58,6 +58,7 @@ use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
+use WeakMap;
 
 use function implode;
 use function sprintf;
@@ -82,6 +83,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /** @var array<string,bool> tracks which methods were checked for static property modifications on-demand */
     private static $checked_methods_for_static_property_modifications = [];
+
+    /**
+     * @var ?WeakMap<Node,list<array{0:Node,1:bool}>> the AST_STATIC_PROP nodes that are assigned in the body of a method,
+     * each with whether the assignment may make the property null, by the node of the method
+     */
+    private static $assigned_static_property_nodes = null;
 
     /**
      * @param CodeBase $code_base
@@ -3300,6 +3307,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $class_name_lower = \strtolower($class_name);
                 if (\in_array($class_name_lower, ['self', 'static', 'parent'], true)) {
                     $this->applyStaticPropertyModificationsFromMethod($method);
+                    $this->widenStaticPropertyOverridesAssignedByMethod($method);
                 }
             }
         }
@@ -3394,6 +3402,488 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
         }
         return $applied;
+    }
+
+    /**
+     * Widens the types inferred for the static properties that the body of the called method assigns,
+     * when the types it assigns were not recorded by analyzing it (see applyStaticPropertyModificationsFromMethod).
+     * That is the case when the method is declared after the caller (it is analyzed later), when it is inherited
+     * (the types are recorded for the method it is inherited from) and when the type of the assigned value is unknown.
+     * The property is then assumed to have its previous type or its declared type, or an unknown type if it declares none.
+     *
+     * This only looks at the node of the method, instead of analyzing the method before its turn:
+     * analyzing it twice changes what is inferred in it, e.g. from the types of the properties it has assigned the first time.
+     */
+    private function widenStaticPropertyOverridesAssignedByMethod(Method $method): void
+    {
+        if (!$this->context->getScope()->hasVariableWithName(Context::VAR_NAME_STATIC_PROPERTIES)) {
+            // Nothing was inferred about static properties (the common case).
+            return;
+        }
+        $method_node = $method->getNode();
+        if (!($method_node instanceof Node)) {
+            return;
+        }
+        self::$assigned_static_property_nodes ??= new WeakMap();
+        if (!self::$assigned_static_property_nodes->offsetExists($method_node)) {
+            $nodes = [];
+            $stmts_node = $method_node->children['stmts'] ?? null;
+            if ($stmts_node instanceof Node) {
+                self::collectAssignedStaticPropertyNodes($stmts_node, self::getNamesOfNonNullParameters($method_node), $nodes);
+            }
+            // The assignments that may make the property null come first: the type of a property is widened once.
+            \usort(
+                $nodes,
+                /**
+                 * @param array{0:Node,1:bool} $a
+                 * @param array{0:Node,1:bool} $b
+                 */
+                static fn (array $a, array $b): int => $b[1] <=> $a[1]
+            );
+            self::$assigned_static_property_nodes[$method_node] = $nodes;
+        }
+        $nodes = self::$assigned_static_property_nodes[$method_node];
+        if (!$nodes) {
+            return;
+        }
+        $applied = $this->getAppliedStaticPropertyModifications($method);
+        $widened = [];
+        foreach ($nodes as [$node, $may_assign_null]) {
+            $name = $node->children['prop'];
+            if (\is_string($name)) {
+                $recorded_class = $applied ? self::getClassOfRecordedStaticPropertyModification($node, $method, $this->code_base) : null;
+                if ($recorded_class !== null && isset($applied[$recorded_class][$name])) {
+                    // The type recorded for this assignment was applied.
+                    continue;
+                }
+                $names = [$name];
+            } else {
+                // `self::$$name = $v` may assign any of the properties, and no type is recorded for it.
+                $names = $this->context->getStaticPropertyOverrideNames();
+            }
+            foreach ($names as $name) {
+                if (!isset($widened[$name]) && $this->widenStaticPropertyOverrideAssignedByNode($name, $node, $method, $may_assign_null)) {
+                    $widened[$name] = true;
+                }
+            }
+        }
+    }
+
+    /**
+     * @param string $name the name of a static property of the class in scope
+     * @param Node $node an AST_STATIC_PROP node that is assigned in the body of $method, with that name or a dynamic name
+     * @param bool $may_assign_null false if the assignment cannot make the property null
+     * @return bool whether the type inferred for the property was widened
+     */
+    private function widenStaticPropertyOverrideAssignedByNode(string $name, Node $node, Method $method, bool $may_assign_null): bool
+    {
+        $old_override = $this->context->getStaticPropertyIfOverridden($name);
+        if ($old_override === null) {
+            return false;
+        }
+        $property = $this->getStaticPropertyOfClassInScope($name);
+        if ($property !== null && !$this->mayBeSameStaticProperty($node, $method, $property)) {
+            // e.g. `Other::$prop = $v`, or `self::$prop = $v` in a parent class when the class in scope declares its own $prop.
+            return false;
+        }
+        $this->context = $this->context->withoutStaticPropertyOverrides([$name]);
+        if ($property === null) {
+            return true;
+        }
+        $declared_type = self::getDeclaredTypeOfProperty($property);
+        // Without a declared type, the type after the call is unknown.
+        $this->context = $this->context->withStaticPropertySetToTypeByName(
+            $name,
+            $declared_type !== null ? $old_override->withUnionType(self::getTypeOfAssignedValue($declared_type, $may_assign_null)) : UnionType::empty()
+        );
+        return true;
+    }
+
+    /**
+     * @return array<string,array<string,true>> the names of the static properties with types recorded for $method
+     * that applyStaticPropertyModificationsFromMethod applies to the properties of the class in scope,
+     * by the class they are recorded for (see getClassOfRecordedStaticPropertyModification).
+     *
+     * Unless the property was assigned as `static::$prop`, a recorded type is only applied if the class it is recorded for
+     * declares the property of the class in scope: not for another property with the same name,
+     * and not for a property that the class of the method inherits.
+     *
+     * A property that the method also assigns a value of an unknown type to is left out: no type is recorded for that assignment.
+     */
+    private function getAppliedStaticPropertyModifications(Method $method): array
+    {
+        $calling_class = $this->context->getClassFQSENOrNull();
+        if (!$calling_class) {
+            return [];
+        }
+        $applied = [];
+        foreach ($method->getStaticPropertyModifications() as $entry) {
+            $target_class_fqsen = $entry['class'];
+            if (!$this->canApplyStaticPropertyOverride($calling_class, $target_class_fqsen)) {
+                continue;
+            }
+            foreach ($entry['properties'] as $name => $property_info) {
+                if (!$method->hasStaticPropertyModificationOfUnknownType($target_class_fqsen, $name)
+                    && $this->doesStaticOverrideMatchTargetClass($name, $target_class_fqsen, $calling_class, $property_info['is_late_static'])
+                ) {
+                    $applied[$target_class_fqsen->__toString()][$name] = true;
+                }
+            }
+        }
+        return $applied;
+    }
+
+    /**
+     * @param Node $node an AST_STATIC_PROP node with a name, which is assigned in the body of $method
+     * @return ?string the class that the type assigned to the property is recorded for when $method is analyzed
+     * (see AssignmentVisitor::getStaticPropertyAssignmentTarget): the class of the method for `self` and `static`,
+     * its parent class for `parent`. Null for anything else, such as `ClassName::$prop`: no type is recorded.
+     */
+    private static function getClassOfRecordedStaticPropertyModification(Node $node, Method $method, CodeBase $code_base): ?string
+    {
+        $class_node = $node->children['class'];
+        if (!($class_node instanceof Node) || $class_node->kind !== ast\AST_NAME) {
+            return null;
+        }
+        $class_name = $class_node->children['name'];
+        $method_context = $method->getContext();
+        if (!\is_string($class_name) || !$method_context->isInClassScope()) {
+            return null;
+        }
+        switch (\strtolower($class_name)) {
+            case 'self':
+            case 'static':
+                return $method_context->getClassFQSEN()->__toString();
+            case 'parent':
+                try {
+                    $method_class = $method_context->getClassInScope($code_base);
+                } catch (CodeBaseException) {
+                    return null;
+                }
+                return $method_class->hasParentType() ? $method_class->getParentClassFQSEN()->__toString() : null;
+        }
+        return null;
+    }
+
+    /**
+     * @return ?UnionType the type that the property is declared with (a real type or `@var`),
+     * or null if it is declared without a type, or with `@var null` and no real type.
+     * (Without a declaration, the type of the property is inferred from its default value and from the assignments analyzed so far.)
+     */
+    private static function getDeclaredTypeOfProperty(Property $property): ?UnionType
+    {
+        $has_real_type = !$property->getRealUnionType()->isEmpty();
+        if (!$has_real_type && $property->getPHPDocUnionType()->isEmpty()) {
+            return null;
+        }
+        $type = $property->getUnionType();
+        // A property with the real type `null` can only be null.
+        return $type->isEmpty() || ($type->isNull() && !$has_real_type) ? null : $type;
+    }
+
+    /**
+     * @param UnionType $type the declared type of a property
+     * @param bool $may_be_null false for an assignment that cannot make the property null
+     * @return UnionType the type that an assignment of an unknown value adds to the type of the property.
+     * `?T` is converted to `T|null`, which is what the property has after a null check and an assignment of `T`
+     * (unlike `?T`, that is only reported as a possibly null value where `T` is expected by the strict type checks),
+     * or to `T` if the value is not null.
+     */
+    private static function getTypeOfAssignedValue(UnionType $type, bool $may_be_null): UnionType
+    {
+        if (!$type->containsNullable() || $type->isNull()) {
+            return $type;
+        }
+        $non_null_type = $type->nonNullableClone();
+        $type_set = $non_null_type->getTypeSet();
+        // (nonNullableClone() makes the real type non-null-mixed when the property has no real type.)
+        $real_type_set = $type->hasRealTypeSet() ? $non_null_type->getRealTypeSet() : [];
+        if ($may_be_null) {
+            $null_type = NullType::instance(false);
+            $type_set[] = $null_type;
+            if ($real_type_set && $type->getRealUnionType()->containsNullable()) {
+                $real_type_set[] = $null_type;
+            }
+        }
+        return UnionType::of($type_set, $real_type_set);
+    }
+
+    /**
+     * @return ?Property the static property with that name of the class in scope, or null if there is no such property
+     */
+    private function getStaticPropertyOfClassInScope(string $property_name): ?Property
+    {
+        $class_fqsen = $this->context->getClassFQSENOrNull();
+        if (!$class_fqsen || !$this->code_base->hasClassWithFQSEN($class_fqsen)) {
+            return null;
+        }
+        try {
+            return $this->code_base->getClassByFQSEN($class_fqsen)->getPropertyByNameInContext(
+                $this->code_base,
+                $property_name,
+                $this->context,
+                true
+            );
+        } catch (IssueException | CodeBaseException) {
+            return null;
+        }
+    }
+
+    /**
+     * @param Node $node an AST_STATIC_PROP node that is assigned in the body of $method, with the name of $property or a dynamic name
+     * @param Property $property a static property of the class in scope
+     * @return bool false if the assigned property is known to be another property than $property
+     */
+    private function mayBeSameStaticProperty(Node $node, Method $method, Property $property): bool
+    {
+        $class_node = $node->children['class'];
+        if (!($class_node instanceof Node) || $class_node->kind !== ast\AST_NAME) {
+            // The class is an expression, such as `$class::$prop`.
+            return true;
+        }
+        $class_name = $class_node->children['name'];
+        $method_context = $method->getContext();
+        if (!\is_string($class_name) || !$method_context->isInClassScope()) {
+            return true;
+        }
+        try {
+            switch (\strtolower($class_name)) {
+                case 'static':
+                    // The class that the calling method was called on.
+                    return true;
+                case 'self':
+                    $class_fqsen = $method_context->getClassFQSEN();
+                    break;
+                case 'parent':
+                    $method_class = $method_context->getClassInScope($this->code_base);
+                    if (!$method_class->hasParentType()) {
+                        return false;
+                    }
+                    $class_fqsen = $method_class->getParentClassFQSEN();
+                    break;
+                default:
+                    if ($class_node->flags & ast\flags\NAME_NOT_FQ) {
+                        $class_fqsen = FullyQualifiedClassName::fromNameInContext($class_name, $method_context);
+                    } elseif ($class_node->flags & ast\flags\NAME_RELATIVE) {
+                        $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($method_context->getNamespace() . '\\' . $class_name);
+                    } else {
+                        $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString('\\' . $class_name);
+                    }
+                    break;
+            }
+            if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {
+                return false;
+            }
+            $class = $this->code_base->getClassByFQSEN($class_fqsen);
+            if ($class->isTrait()) {
+                // `self` in a trait is the class using the trait.
+                return true;
+            }
+            // An inherited property has the defining FQSEN of the property of the class that declares it,
+            // and a property from a trait has the defining FQSEN of the property of the class that uses the trait:
+            // the properties of two classes using the same trait are different properties.
+            $name = $property->getName();
+            return $class->hasPropertyWithName($this->code_base, $name)
+                && $class->getPropertyByName($this->code_base, $name)->getDefiningFQSEN() === $property->getDefiningFQSEN();
+        } catch (FQSENException | CodeBaseException) {
+            return true;
+        }
+    }
+
+    /**
+     * Collects the AST_STATIC_PROP nodes that are assigned by running $node, such as `self::$prop = $v`,
+     * `static::$prop['key'] ??= $v`, `[self::$a, Other::$b] = $v`, `self::$prop++` or `foreach ($values as self::$prop)`,
+     * without analyzing it.
+     *
+     * The bodies of closures, functions and classes declared in $node are not run by running $node.
+     *
+     * @param array<string,true> $non_null_params the names of the parameters of the method that are not null (see getNamesOfNonNullParameters)
+     * @param list<array{0:Node,1:bool}> $nodes the nodes found so far, each with whether the assignment may make the property null
+     */
+    private static function collectAssignedStaticPropertyNodes(Node $node, array $non_null_params, array &$nodes): void
+    {
+        switch ($node->kind) {
+            case ast\AST_CLOSURE:
+            case ast\AST_ARROW_FUNC:
+            case ast\AST_FUNC_DECL:
+            case ast\AST_CLASS:
+                return;
+            case ast\AST_ASSIGN:
+                $var = $node->children['var'];
+                if ($var instanceof Node) {
+                    self::collectStaticPropertyNodesOfAssignmentTarget($var, self::mayBeNull($node->children['expr'], $non_null_params), $nodes);
+                }
+                break;
+            case ast\AST_ASSIGN_REF:
+                $var = $node->children['var'];
+                if ($var instanceof Node) {
+                    self::collectStaticPropertyNodesOfAssignmentTarget($var, true, $nodes);
+                }
+                break;
+            case ast\AST_ASSIGN_OP:
+            case ast\AST_PRE_INC:
+            case ast\AST_PRE_DEC:
+            case ast\AST_POST_INC:
+            case ast\AST_POST_DEC:
+                // After `self::$prop .= $v`, `self::$prop ??= $v` or `self::$prop--`, the property is only null if it was null.
+                $var = $node->children['var'];
+                if ($var instanceof Node) {
+                    self::collectStaticPropertyNodesOfAssignmentTarget($var, false, $nodes);
+                }
+                break;
+            case ast\AST_FOREACH:
+                foreach (['value', 'key'] as $name) {
+                    $var = $node->children[$name];
+                    if ($var instanceof Node) {
+                        self::collectStaticPropertyNodesOfAssignmentTarget($var, true, $nodes);
+                    }
+                }
+                break;
+        }
+        foreach ($node->children as $child) {
+            if ($child instanceof Node) {
+                self::collectAssignedStaticPropertyNodes($child, $non_null_params, $nodes);
+            }
+        }
+    }
+
+    /**
+     * @param Node $method_node the node of a method
+     * @return array<string,true> the names of the parameters with a real type that does not allow null.
+     * (A parameter that the method assigns null to is rare, and is not looked for.)
+     */
+    private static function getNamesOfNonNullParameters(Node $method_node): array
+    {
+        $params_node = $method_node->children['params'] ?? null;
+        if (!($params_node instanceof Node)) {
+            return [];
+        }
+        $names = [];
+        foreach ($params_node->children as $param) {
+            if (!($param instanceof Node) || ($param->flags & ast\flags\PARAM_REF)) {
+                continue;
+            }
+            $name = $param->children['name'];
+            if (!\is_string($name)) {
+                continue;
+            }
+            if ($param->flags & ast\flags\PARAM_VARIADIC) {
+                // An array.
+                $names[$name] = true;
+                continue;
+            }
+            $type = $param->children['type'];
+            $default = $param->children['default'];
+            // `T $param = null` allows null.
+            if ($type instanceof Node && self::isNonNullTypeNode($type) && ($default === null || !self::mayBeNull($default, []))) {
+                $names[$name] = true;
+            }
+        }
+        return $names;
+    }
+
+    /**
+     * @param Node $type the node of a type declaration
+     * @return bool whether the type does not allow null
+     */
+    private static function isNonNullTypeNode(Node $type): bool
+    {
+        switch ($type->kind) {
+            case ast\AST_TYPE:
+                return $type->flags !== ast\flags\TYPE_NULL && $type->flags !== ast\flags\TYPE_MIXED;
+            case ast\AST_NAME:
+            case ast\AST_TYPE_INTERSECTION:
+                return true;
+            case ast\AST_TYPE_UNION:
+                foreach ($type->children as $child) {
+                    if (!($child instanceof Node) || !self::isNonNullTypeNode($child)) {
+                        return false;
+                    }
+                }
+                return true;
+        }
+        // e.g. ast\AST_NULLABLE_TYPE
+        return false;
+    }
+
+    /**
+     * @param Node|string|int|float|null $expr an expression in the body of a method
+     * @param array<string,true> $non_null_params the names of the parameters of the method that are not null
+     * @return bool false if the syntax of the expression shows that its value is not null:
+     * a literal, an array, `new`, a closure, an operation that does not result in null, or a parameter that is not null.
+     * True for anything else, such as a call.
+     */
+    private static function mayBeNull(Node|float|int|string|null $expr, array $non_null_params): bool
+    {
+        if (!($expr instanceof Node)) {
+            return $expr === null;
+        }
+        switch ($expr->kind) {
+            case ast\AST_ARRAY:
+            case ast\AST_NEW:
+            case ast\AST_CLOSURE:
+            case ast\AST_ARROW_FUNC:
+            case ast\AST_ENCAPS_LIST:
+                return false;
+            case ast\AST_CONST:
+                $name = $expr->children['name']->children['name'] ?? null;
+                return !\is_string($name) || !\in_array(\strtolower($name), ['true', 'false'], true);
+            case ast\AST_VAR:
+                $name = $expr->children['name'];
+                return !\is_string($name) || !isset($non_null_params[$name]);
+            case ast\AST_UNARY_OP:
+                // `@$expr` is the value of the expression.
+                return $expr->flags === ast\flags\UNARY_SILENCE && self::mayBeNull($expr->children['expr'], $non_null_params);
+            case ast\AST_BINARY_OP:
+                // `$a ?? $b` is null if $b is null.
+                return $expr->flags === ast\flags\BINARY_COALESCE && self::mayBeNull($expr->children['right'], $non_null_params);
+            case ast\AST_CONDITIONAL:
+                // `$a ?: $b` is $a if it is truthy.
+                return ($expr->children['true'] !== null && self::mayBeNull($expr->children['true'], $non_null_params))
+                    || self::mayBeNull($expr->children['false'], $non_null_params);
+            case ast\AST_ASSIGN:
+                // `self::$a = self::$b = []`
+                return self::mayBeNull($expr->children['expr'], $non_null_params);
+        }
+        return true;
+    }
+
+    /**
+     * Collects the AST_STATIC_PROP nodes that an assignment to $node writes to:
+     * the node itself, the expression that a dimension is fetched from (and not the dimension, which is read),
+     * the values of array destructuring (and not the keys), and the target of a reference (`foreach ($values as &self::$prop)`).
+     *
+     * @param bool $may_assign_null whether the assignment may make $node null
+     * @param list<array{0:Node,1:bool}> $nodes the nodes found so far, each with whether the assignment may make the property null
+     */
+    private static function collectStaticPropertyNodesOfAssignmentTarget(Node $node, bool $may_assign_null, array &$nodes): void
+    {
+        switch ($node->kind) {
+            case ast\AST_STATIC_PROP:
+                $nodes[] = [$node, $may_assign_null];
+                return;
+            case ast\AST_DIM:
+                // Assigning a dimension (`self::$prop[] = $v`) does not make the property null.
+                $expr = $node->children['expr'];
+                if ($expr instanceof Node) {
+                    self::collectStaticPropertyNodesOfAssignmentTarget($expr, false, $nodes);
+                }
+                return;
+            case ast\AST_REF:
+                $var = $node->children['var'];
+                if ($var instanceof Node) {
+                    self::collectStaticPropertyNodesOfAssignmentTarget($var, $may_assign_null, $nodes);
+                }
+                return;
+            case ast\AST_ARRAY:
+                foreach ($node->children as $element) {
+                    $value = $element instanceof Node ? $element->children['value'] : null;
+                    if ($value instanceof Node) {
+                        self::collectStaticPropertyNodesOfAssignmentTarget($value, $may_assign_null, $nodes);
+                    }
+                }
+                return;
+        }
     }
 
     private function ensureStaticPropertyModificationsComputed(Method $method): void

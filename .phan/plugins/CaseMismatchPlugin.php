@@ -424,7 +424,9 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
                     rtrim($this->context->getNamespace(), '\\') . '\\' . $reference_name
                 );
             } else {
-                $class_fqsen = FullyQualifiedClassName::fromStringInContext(
+                // NAME_NOT_FQ: `Sub\Foo` is relative to the current namespace, unless `Sub` is the alias of a use statement.
+                // (fromStringInContext() would resolve it to `\Sub\Foo`.)
+                $class_fqsen = FullyQualifiedClassName::fromNameInContext(
                     $reference_name,
                     $this->context
                 );
