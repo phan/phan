@@ -2792,7 +2792,7 @@ class AssignmentVisitor extends AnalysisVisitor
             : [];
         foreach ($new_array_shape_type->getFieldTypes() as $field => $field_type) {
             $old_field_type = $combined_fields[$field] ?? null;
-            if ($old_field_type === null && $old_generic_array_types) {
+            if ($old_field_type === null && $old_generic_array_types && $field_type->hasTopLevelArrayShapeTypeInstances()) {
                 $old_field_type = self::genericArrayElementTypeForField($old_generic_array_types, $field);
             }
             if ($old_field_type) {
@@ -2840,6 +2840,7 @@ class AssignmentVisitor extends AnalysisVisitor
     {
         $field_key_type = \is_int($field) ? GenericArrayType::KEY_INT : GenericArrayType::KEY_STRING;
         $element_types = [];
+        $has_nullable_element = false;
         foreach ($generic_array_types as $generic_type) {
             if ($generic_type instanceof ListType) {
                 if (!\is_int($field) || $field < 0) {
@@ -2850,15 +2851,47 @@ class AssignmentVisitor extends AnalysisVisitor
             }
             $element_type = $generic_type->genericArrayElementType();
             if ($element_type instanceof ArrayType) {
+                if ($element_type->isNullable()) {
+                    $has_nullable_element = true;
+                }
                 $element_types[] = $element_type->withIsNullable(false);
             } elseif ($element_type instanceof MixedType) {
                 $element_types[] = $element_type;
+            } elseif ($element_type instanceof NullType) {
+                $has_nullable_element = true;
             }
         }
         if (!$element_types) {
             return null;
         }
+        if ($has_nullable_element) {
+            foreach ($element_types as $i => $type) {
+                if ($type instanceof ArrayShapeType) {
+                    $element_types[$i] = self::withPossiblyUndefinedFields($type);
+                } elseif ($type instanceof ListType) {
+                    $element_types[$i] = ListType::fromElementType(
+                        $type->genericArrayElementType()->withIsNullable(true),
+                        false
+                    );
+                } elseif ($type instanceof GenericArrayType) {
+                    $element_types[$i] = GenericArrayType::fromElementType(
+                        $type->genericArrayElementType()->withIsNullable(true),
+                        false,
+                        $type->getKeyType()
+                    );
+                }
+            }
+        }
         return UnionType::of($element_types);
+    }
+
+    private static function withPossiblyUndefinedFields(ArrayShapeType $type): ArrayShapeType
+    {
+        $field_types = [];
+        foreach ($type->getFieldTypes() as $key => $field_type) {
+            $field_types[$key] = $field_type->withIsPossiblyUndefined(true);
+        }
+        return ArrayShapeType::fromFieldTypes($field_types, false);
     }
 
     /**

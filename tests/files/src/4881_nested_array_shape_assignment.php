@@ -150,3 +150,52 @@ function test_nullable_array_access_field(array $a): int
     '@phan-debug-var $a';
     return $a['x']->count();
 }
+
+/**
+ * When the generic array element is nullable, PHP creates an empty array if the element was null,
+ * so untouched sibling fields are possibly undefined rather than required.
+ * @param array<?array{a:int,b:string}> $a
+ */
+function test_nullable_element_shape(array $a): string
+{
+    $a[0]['a'] = 1;
+    '@phan-debug-var $a';
+    echo $a[0]['a'];
+    return $a[0]['b'];
+}
+
+/**
+ * A 3D generic array with a nullable middle element propagates nullability so inner sibling fields
+ * remain possibly undefined.
+ * @param array<?array<int,array{a:int,b:string}>> $a
+ */
+function test_3d_nullable_element_shape(array $a): string
+{
+    $a[0][1]['a'] = 1;
+    echo $a[0][1]['a'];
+    return $a[0][1]['b'];
+}
+
+/**
+ * Appending to a nested generic array element does not flatten the element shape into the new list.
+ * @param array<array{a:\stdClass}> $a
+ */
+function test_nested_append_does_not_flatten_shape(array $a): string
+{
+    $a[0][] = 'x';
+    $v = $a[0][0];
+    '@phan-debug-var $v';
+    return $v;
+}
+
+/**
+ * Assigning a dynamic key on a nested generic array element does not flatten the element shape.
+ * @param array<array{a:\stdClass}> $a
+ */
+function test_nested_dynamic_key_does_not_flatten_shape(array $a, string $k): string
+{
+    $a[0][$k] = 'x';
+    $v = $a[0][$k];
+    '@phan-debug-var $v';
+    return $v;
+}

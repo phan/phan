@@ -11,3 +11,8 @@
 %s:67 PhanTypeSuspiciousEcho Suspicious argument $this->items[0]['missing'] of type null for an echo/print statement
 %s:78 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type array{x:\ArrayObject|array{y:'str',z:string}}(real=array{x:array{y:'str'}}|non-empty-array<mixed,mixed>)
 %s:149 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type array{x:\ArrayObject<string,int>|array{y:1}}(real=array{x:array{y:1}}|non-empty-array<mixed,mixed>)
+%s:161 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type array{0:array{a:1,b?:string}}|non-empty-array<mixed,?array{a:int,b:string}>(real=array{0:array{a:1}}|non-empty-array<mixed,mixed>)
+%s:164 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $a[0] of array type array{a:1,b?:string}
+%s:176 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $a[0][1] of array type array{a:1,b?:string}
+%s:186 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type 'x'
+%s:198 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type 'x'
