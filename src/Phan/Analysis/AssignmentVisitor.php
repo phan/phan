@@ -2822,6 +2822,16 @@ class AssignmentVisitor extends AnalysisVisitor
                 if ($old_field_type !== null) {
                     $field_from_generic_fallback = true;
                 }
+            } elseif (
+                $old_field_type !== null
+                && $field_from_generic_fallback
+                && !$field_type->hasTopLevelArrayShapeTypeInstances()
+                && $old_field_type->hasTopLevelArrayShapeTypeInstances()
+            ) {
+                // The write to this field is an append or uses a key that is not a literal ($x[0]['field'][] = ...).
+                // Merging the assigned type with an array shape taken from the element type of the generic array
+                // would turn that shape into a generic array of all its field types: use the assigned type.
+                $old_field_type = null;
             }
             if ($old_field_type) {
                 $field_may_be_absent = false;
@@ -2850,7 +2860,7 @@ class AssignmentVisitor extends AnalysisVisitor
                             $field_type->getTypeSet(),
                             $dim_depth - 1,
                             $is_real,
-                            !$is_real && !$field_may_be_absent,
+                            !$is_real && $allow_generic_fallback && !$field_may_be_absent,
                             $field_may_be_absent,
                             $field_from_generic_fallback
                         ),

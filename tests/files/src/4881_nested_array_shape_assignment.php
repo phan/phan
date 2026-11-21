@@ -332,3 +332,27 @@ function test_not_null_condition_on_optional_field(array $a): string
     }
     return '';
 }
+
+/**
+ * For a null argument PHP creates ['x' => [0 => ['a' => 1]]], which has no key b.
+ * The outer container may be null, so the element shape of x is not used for x[0] either: $a['x'][0] is array{a:1}.
+ * @param ?array{x:array<array{a:int,b:string}>} $a
+ */
+function test_nullable_outer_shape_with_generic_field(?array $a): string
+{
+    $a['x'][0]['a'] = 1;
+    return $a['x'][0]['b'];
+}
+
+/**
+ * PHP appends 'x' to x at key 0. The type of x is the assigned list<'x'>: merging it with the old shape of x
+ * would turn that shape into array<string,\stdClass> and make $v 'x'|\stdClass.
+ * @param array<array{x:array{a:\stdClass}}> $a
+ */
+function test_append_to_field_of_generic_element(array $a): string
+{
+    $a[0]['x'][] = 'x';
+    $v = $a[0]['x'][0];
+    '@phan-debug-var $v';
+    return $v;
+}
