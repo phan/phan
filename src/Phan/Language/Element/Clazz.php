@@ -20,6 +20,7 @@ use Phan\Analysis\ParentConstructorCalledAnalyzer;
 use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\Analysis\PropertyTypesAnalyzer;
 use Phan\AST\ASTReverter;
+use Phan\AST\ASTSimplifier;
 use Phan\AST\InferValue;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -4473,6 +4474,8 @@ class Clazz extends AddressableElement
 
         // Build a map of constant name -> list of (source_fqsen, constant) pairs
         $constant_sources = [];
+        // Whether the class or trait that declares a constant is a trait, by spl_object_id() of its FQSEN
+        $is_trait_by_class_id = [];
 
         // Collect constants from all traits
         foreach ($trait_fqsen_list as $trait_fqsen) {
@@ -4485,11 +4488,23 @@ class Clazz extends AddressableElement
             // The constants of the trait include those it gets from the traits it uses: PHP checks them against the constants
             // of this class and of its other traits as constants of the trait, e.g. "P and Outer define the same constant".
             // The same constant reached through two traits is compatible with itself (see areConstantsCompatible()).
+            $trait_class_fqsen = $trait->getFQSEN();
             foreach ($trait->getConstantMap($code_base) as $constant) {
                 $name = $constant->getName();
                 // Skip magic ::class constant (it's not a real class constant in PHP)
                 if ($name === 'class') {
                     continue;
+                }
+                // A trait with `@extends` or `@inherits` in its PHPDoc also has the constants of that class, which are not trait constants.
+                $declaring_fqsen = $constant->getRealDefiningFQSEN()->getFullyQualifiedClassName();
+                if ($declaring_fqsen !== $trait_class_fqsen) {
+                    $declaring_id = \spl_object_id($declaring_fqsen);
+                    if (!isset($is_trait_by_class_id[$declaring_id])) {
+                        $is_trait_by_class_id[$declaring_id] = self::isConstantOfTrait($code_base, $constant);
+                    }
+                    if (!$is_trait_by_class_id[$declaring_id]) {
+                        continue;
+                    }
                 }
                 if (!isset($constant_sources[$name])) {
                     $constant_sources[$name] = [];
@@ -4711,6 +4726,7 @@ class Clazz extends AddressableElement
 
         // PHP evaluates both values and compares them with `===`.
         self::$is_class_name_case_unknown = false;
+        self::$evaluation_budget = self::EVALUATION_BUDGET;
         try {
             $value1 = $this->evaluateConstantValueInComposition($code_base, $const1, $node1, $const1_is_inherited);
             $value2 = $this->evaluateConstantValueInComposition($code_base, $const2, $node2, false);
@@ -4785,10 +4801,28 @@ class Clazz extends AddressableElement
             return self::evaluateConstantValueWithSelf($code_base, $constant, $node, $self_fqsen);
         }
         $value = self::evaluateConstantValueWithSelf($code_base, $constant, $node, self::getClassOfConstantScope($code_base, $constant));
-        if (!$node instanceof Node || $value instanceof Node) {
+        if (!$node instanceof Node || $value instanceof Node || !self::hasSelfOrParentName($node)) {
+            // The value is the same in both scopes: a constant that it refers to is evaluated in the scope it is bound to
             return $value;
         }
         return self::evaluateConstantValueWithSelf($code_base, $constant, $node, $this->fqsen) === $value ? $value : $node;
+    }
+
+    /**
+     * Returns true if the constant expression $node contains `self` or `parent` (e.g. `self::X` or `parent::class`).
+     */
+    private static function hasSelfOrParentName(Node $node): bool
+    {
+        if ($node->kind === ast\AST_NAME) {
+            $name = $node->children['name'];
+            return is_string($name) && (\strcasecmp($name, 'self') === 0 || \strcasecmp($name, 'parent') === 0);
+        }
+        foreach ($node->children as $child) {
+            if ($child instanceof Node && self::hasSelfOrParentName($child)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -4871,6 +4905,19 @@ class Clazz extends AddressableElement
     private const MAX_CONSTANT_REFERENCE_DEPTH = 10;
 
     /**
+     * The number of nodes and array elements that evaluateConstantExpression() evaluates for the two values of one comparison
+     * before it gives up (the value is not known). A constant referenced several times is evaluated each time, so the depth limit
+     * alone does not bound the work: `const C1 = self::C0 + self::C0 + ...` over ten levels has billions of nodes.
+     */
+    private const EVALUATION_BUDGET = 3000;
+
+    /**
+     * The number of nodes that evaluateConstantExpression() may still evaluate in the current comparison (see EVALUATION_BUDGET)
+     * @var int
+     */
+    private static $evaluation_budget = 0;
+
+    /**
      * Returns the value of the constant expression $node of a class constant declared in $context, where `self` is $self_fqsen,
      * or a Node if Phan does not know the value. An enum case is represented by its EnumCase.
      *
@@ -4895,9 +4942,17 @@ class Clazz extends AddressableElement
             // A literal, or the value of an internal constant
             return $node;
         }
+        if (--self::$evaluation_budget < 0) {
+            return $node;
+        }
         switch ($node->kind) {
             case ast\AST_CONST:
-                $name = $node->children['name']->children['name'] ?? null;
+                $name_node = $node->children['name'];
+                // `namespace\true` is a constant of the namespace, which can be defined with define(). `true` and `\true` are the literal.
+                if (!$name_node instanceof Node || ($name_node->flags & ast\flags\NAME_RELATIVE)) {
+                    return $node;
+                }
+                $name = $name_node->children['name'];
                 switch (is_string($name) ? strtolower($name) : '') {
                     case 'null':
                         return null;
@@ -4908,9 +4963,16 @@ class Clazz extends AddressableElement
                 }
                 return $node;
             case ast\AST_ARRAY:
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                if (ASTSimplifier::isTrimmedArray($node)) {
+                    // Phan keeps some of the elements of a large array of literals (see the setting ast_trim_max_elements_per_level)
+                    return $node;
+                }
                 $result = [];
+                // The largest integer key so far (null if there is none), which determines the key of an appended element
+                $max_int_key = null;
                 foreach ($node->children as $element) {
-                    if (!$element instanceof Node) {
+                    if (!$element instanceof Node || --self::$evaluation_budget < 0) {
                         return $node;
                     }
                     if ($element->kind === ast\AST_UNPACK) {
@@ -4919,17 +4981,10 @@ class Clazz extends AddressableElement
                             return $node;
                         }
                         // Unpacking appends the elements with integer keys and sets the elements with string keys
-                        try {
-                            foreach ($value as $key => $element_value) {
-                                if (is_int($key)) {
-                                    $result[] = $element_value;
-                                } else {
-                                    $result[$key] = $element_value;
-                                }
+                        foreach ($value as $key => $element_value) {
+                            if (!self::addToConstantArray($result, $max_int_key, is_int($key) ? null : $key, $element_value)) {
+                                return $node;
                             }
-                        } catch (Error) {
-                            // "Cannot add element to the array as the next element is already occupied" (after the key PHP_INT_MAX)
-                            return $node;
                         }
                         continue;
                     }
@@ -4938,21 +4993,17 @@ class Clazz extends AddressableElement
                         return $node;
                     }
                     $key_node = $element->children['key'];
-                    if ($key_node === null) {
-                        try {
-                            $result[] = $value;
-                        } catch (Error) {
-                            // "Cannot add element to the array as the next element is already occupied" (after the key PHP_INT_MAX)
+                    $key = null;
+                    if ($key_node !== null) {
+                        $key = self::evaluateConstantExpression($code_base, $context, $self_fqsen, $key_node, $depth);
+                        if (!is_int($key) && !is_string($key)) {
+                            // PHP converts a float, bool or null key, which is not done here
                             return $node;
                         }
-                        continue;
                     }
-                    $key = self::evaluateConstantExpression($code_base, $context, $self_fqsen, $key_node, $depth);
-                    if (!is_int($key) && !is_string($key)) {
-                        // PHP converts a float, bool or null key, which is not done here
+                    if (!self::addToConstantArray($result, $max_int_key, $key, $value)) {
                         return $node;
                     }
-                    $result[$key] = $value;
                 }
                 return $result;
             case ast\AST_UNARY_OP:
@@ -5073,6 +5124,33 @@ class Clazz extends AddressableElement
                 );
         }
         return $node;
+    }
+
+    /**
+     * Sets $value at $key in $array, an array that a constant expression builds, or appends it if $key is null, as PHP 8.1+ does
+     * for an array in a constant expression: an appended element gets the largest integer key so far plus one, or 0 if there is none.
+     * (`$array[] = ...` gives 0 after negative keys before PHP 8.3, so this does not use it.) A numeric string key is an integer key.
+     * Returns false if PHP throws because the next key would be greater than PHP_INT_MAX.
+     *
+     * @param array<mixed,mixed> $array
+     * @param ?int $max_int_key the largest integer key of $array, or null if it has none
+     */
+    private static function addToConstantArray(array &$array, ?int &$max_int_key, int|string|null $key, mixed $value): bool
+    {
+        if ($key === null) {
+            if ($max_int_key === \PHP_INT_MAX) {
+                // "Cannot add element to the array as the next element is already occupied"
+                return false;
+            }
+            $key = $max_int_key === null ? 0 : $max_int_key + 1;
+        } elseif (is_string($key) && (string)(int)$key === $key) {
+            $key = (int)$key;
+        }
+        $array[$key] = $value;
+        if (is_int($key) && ($max_int_key === null || $key > $max_int_key)) {
+            $max_int_key = $key;
+        }
+        return true;
     }
 
     /**

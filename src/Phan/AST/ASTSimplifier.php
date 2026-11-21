@@ -10,6 +10,7 @@ use ast\flags;
 use ast\Node;
 
 use Phan\Config;
+use WeakMap;
 use function array_fill;
 use function array_map;
 use function array_merge;
@@ -37,6 +38,23 @@ class ASTSimplifier
 {
     private const SYNTHETIC_DOC_COMMENT_VAR = '/** @var array<array-key,mixed> */';
     private const SYNTHETIC_DOC_COMMENT_RETURN = '/** @return array<array-key,mixed> */';
+
+    /**
+     * The array nodes that trimArrayNode() created with fewer elements than the array in the code has
+     * (or that contain such an array)
+     * @var ?WeakMap<Node,true>
+     */
+    private static $trimmed_arrays = null;
+
+    /**
+     * Returns true if $node is a trimmed copy of an array in the code (see the settings ast_trim_max_elements_per_level
+     * and ast_trim_max_total_elements) or contains one: it does not have all the elements of the array.
+     * @internal
+     */
+    public static function isTrimmedArray(Node $node): bool
+    {
+        return isset(self::$trimmed_arrays[$node]);
+    }
 
     public function __construct()
     {
@@ -404,6 +422,8 @@ class ASTSimplifier
             }
             $clone = clone($array_node);
             $clone->children = [];
+            self::$trimmed_arrays ??= new WeakMap();
+            self::$trimmed_arrays[$clone] = true;
             return [$clone, 0, true];
         }
         $children = $array_node->children;
@@ -453,6 +473,8 @@ class ASTSimplifier
         }
         $clone = clone($array_node);
         $clone->children = array_values($new_children);
+        self::$trimmed_arrays ??= new WeakMap();
+        self::$trimmed_arrays[$clone] = true;
         return [$clone, $total_used, true];
     }
 

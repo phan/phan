@@ -677,3 +677,118 @@ class ClassOverflow {
     use OverflowFirst, OverflowSecond;
 }
 var_dump(ClassOverflow::OVERFLOW);
+
+// 21. A trait whose PHPDoc has `@extends` or `@inherits` does not get the constants of that class in PHP: PHP 8.2 to 8.5 accept
+// ChildOfAnnotatedBase, which declares its own C_ANNOTATED.
+class AnnotatedBase {
+    public const C_ANNOTATED = 1;
+}
+
+/** @extends AnnotatedBase */
+trait AnnotatedTrait {
+}
+
+class ChildOfAnnotatedBase extends AnnotatedBase {
+    use AnnotatedTrait;
+    public const C_ANNOTATED = 2;
+}
+var_dump(AnnotatedBase::C_ANNOTATED, ChildOfAnnotatedBase::C_ANNOTATED);
+
+// 22. In an array in a constant expression, PHP 8.1 to 8.5 give an element without a key the largest integer key so far plus one
+// (0 if there is none), also after negative keys and for unpacked elements, and a numeric string key is an integer key:
+// PHP 8.2 to 8.5 accept ClassArrayKeys, and reject ClassArrayKeysDiffer
+// ("ArrayKeysFirst and ArrayKeysOther define the same constant (KEYS_D) in the composition of ClassArrayKeysDiffer").
+trait ArrayKeysFirst {
+    /** @phan-suppress-next-line PhanPluginMixedKeyNoKey */
+    public const KEYS_A = [-5 => 1, 2];
+    /** @phan-suppress-next-line PhanPluginMixedKeyNoKey */
+    public const KEYS_B = [-3 => 'a', ...[1, 2], 'b'];
+    /** @phan-suppress-next-line PhanPluginMixedKeyNoKey */
+    public const KEYS_C = ['5' => 'a', 'b', ...[-7 => 'c']];
+    /** @phan-suppress-next-line PhanPluginMixedKeyNoKey */
+    public const KEYS_D = [-2 => 'a', 'b'];
+}
+
+trait ArrayKeysSecond {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const KEYS_A = [-5 => 1, -4 => 2];
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const KEYS_B = [-3 => 'a', -2 => 1, -1 => 2, 0 => 'b'];
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const KEYS_C = [5 => 'a', 6 => 'b', 7 => 'c'];
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const KEYS_D = [-2 => 'a', -1 => 'b'];
+}
+
+class ClassArrayKeys {
+    use ArrayKeysFirst, ArrayKeysSecond;
+}
+var_dump(ClassArrayKeys::KEYS_A, ClassArrayKeys::KEYS_B, ClassArrayKeys::KEYS_C, ClassArrayKeys::KEYS_D);
+
+trait ArrayKeysOther {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const KEYS_D = [-2 => 'a', 0 => 'b'];
+}
+
+class ClassArrayKeysDiffer {
+    use ArrayKeysFirst, ArrayKeysOther;
+}
+var_dump(ClassArrayKeysDiffer::KEYS_D);
+
+// 23. `true` and `\true` are the literal: PHP 8.2 to 8.5 reject ClassFullyQualifiedTrue
+// ("FullyQualifiedTrueFirst and FullyQualifiedTrueSecond define the same constant (FQ_TRUE) in the composition of ClassFullyQualifiedTrue").
+// `namespace\true` is the constant Issue5661Php82\true, which can be defined with define(). It is not defined here, so PHP fails to evaluate
+// NS_TRUE and rejects ClassNamespaceTrue; with `define('Issue5661Php82\true', false)` before it, PHP accepts it. Phan does not report it.
+trait FullyQualifiedTrueFirst {
+    public const FQ_TRUE = \true;
+}
+
+trait FullyQualifiedTrueSecond {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const FQ_TRUE = false;
+}
+
+class ClassFullyQualifiedTrue {
+    use FullyQualifiedTrueFirst, FullyQualifiedTrueSecond;
+}
+var_dump(ClassFullyQualifiedTrue::FQ_TRUE);
+
+trait NamespaceTrueFirst {
+    /** @phan-suppress-next-line PhanUndeclaredConstant */
+    public const NS_TRUE = namespace\true;
+}
+
+trait NamespaceTrueSecond {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const NS_TRUE = false;
+}
+
+class ClassNamespaceTrue {
+    use NamespaceTrueFirst, NamespaceTrueSecond;
+}
+var_dump(ClassNamespaceTrue::NS_TRUE);
+
+// 24. Phan stops evaluating the values of two constants after 3000 nodes and does not report them then. A constant that is referenced
+// several times is evaluated each time: BUDGET_4 has 10000 references. PHP 8.2 to 8.5 reject ClassEvaluationBudget
+// ("BudgetFirst and BudgetSecond define the same constant (BUDGET) in the composition of ClassEvaluationBudget": 10000 and 1).
+class BudgetValues {
+    public const BUDGET_0 = 1;
+    public const BUDGET_1 = self::BUDGET_0 + self::BUDGET_0 + self::BUDGET_0 + self::BUDGET_0 + self::BUDGET_0 + self::BUDGET_0 + self::BUDGET_0 + self::BUDGET_0 + self::BUDGET_0 + self::BUDGET_0;
+    public const BUDGET_2 = self::BUDGET_1 + self::BUDGET_1 + self::BUDGET_1 + self::BUDGET_1 + self::BUDGET_1 + self::BUDGET_1 + self::BUDGET_1 + self::BUDGET_1 + self::BUDGET_1 + self::BUDGET_1;
+    public const BUDGET_3 = self::BUDGET_2 + self::BUDGET_2 + self::BUDGET_2 + self::BUDGET_2 + self::BUDGET_2 + self::BUDGET_2 + self::BUDGET_2 + self::BUDGET_2 + self::BUDGET_2 + self::BUDGET_2;
+    public const BUDGET_4 = self::BUDGET_3 + self::BUDGET_3 + self::BUDGET_3 + self::BUDGET_3 + self::BUDGET_3 + self::BUDGET_3 + self::BUDGET_3 + self::BUDGET_3 + self::BUDGET_3 + self::BUDGET_3;
+}
+
+trait BudgetFirst {
+    public const BUDGET = BudgetValues::BUDGET_4;
+}
+
+trait BudgetSecond {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const BUDGET = 1;
+}
+
+class ClassEvaluationBudget {
+    use BudgetFirst, BudgetSecond;
+}
+var_dump(BudgetValues::BUDGET_0, BudgetValues::BUDGET_1, BudgetValues::BUDGET_2, BudgetValues::BUDGET_3, ClassEvaluationBudget::BUDGET);
