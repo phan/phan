@@ -2835,7 +2835,9 @@ class Clazz extends AddressableElement
             return;
         }
 
-        foreach ($this->interface_fqsen_list as $fqsen) {
+        // Trait constants take precedence over implemented interface constants.
+        // Import traits first so their aliases occupy the class constant map.
+        foreach ($this->trait_fqsen_list as $fqsen) {
             if (!$code_base->hasClassWithFQSEN($fqsen)) {
                 continue;
             }
@@ -2847,7 +2849,7 @@ class Clazz extends AddressableElement
             );
         }
 
-        foreach ($this->trait_fqsen_list as $fqsen) {
+        foreach ($this->interface_fqsen_list as $fqsen) {
             if (!$code_base->hasClassWithFQSEN($fqsen)) {
                 continue;
             }
