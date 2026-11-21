@@ -273,3 +273,44 @@ class ChildNarrowedCompositionM extends ParentUnionM {
     public const int M = 1;
 }
 echo ChildNarrowedCompositionM::M;
+
+// 21. Deferred nested trait conflict is rechecked in the concrete using class.
+class OtherN {}
+trait TraitInnerSelfN {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const self|int N = 0;
+}
+trait TraitOuterOtherN {
+    use TraitInnerSelfN;
+    public const OtherN|int N = 0;
+}
+class ClassUsesOuterN {
+    use TraitOuterOtherN;
+}
+var_dump(ClassUsesOuterN::N, new OtherN());
+
+// 22. A trait constant typed with `static` is covariant with a parent `self` constant on the using subclass.
+class ParentSelfO {
+    public const self|int O = 0;
+}
+echo ParentSelfO::O;
+
+trait TraitStaticO {
+    public const static|int O = 0;
+}
+
+class ChildStaticO extends ParentSelfO {
+    use TraitStaticO;
+}
+var_dump(ChildStaticO::O);
+
+// Unrelated parent type still fails covariance when overridden with `static`.
+class ParentOtherO {
+    public const OtherN|int O = 0;
+}
+echo ParentOtherO::O;
+
+class ChildBadStaticO extends ParentOtherO {
+    use TraitStaticO;
+}
+var_dump(ChildBadStaticO::O);

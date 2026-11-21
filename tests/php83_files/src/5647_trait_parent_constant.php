@@ -235,3 +235,21 @@ class ClassNestedQ {
     use TraitNestedCombinedQ;
 }
 var_dump(ClassNestedQ::Q);
+
+// Using the same nested trait in an unrelated class still reports the deferred conflict.
+class ClassNestedQConflict {
+    use TraitNestedCombinedQ;
+}
+var_dump(ClassNestedQConflict::Q);
+
+// 17. Redundant subclass members in a declared union are semantically invariant and compatible.
+class RedundantBaseR {}
+class RedundantSubR extends RedundantBaseR {}
+trait TraitRedundantR {
+    public const RedundantBaseR|RedundantSubR|int R = 0;
+}
+class ClassRedundantR {
+    use TraitRedundantR;
+    public const RedundantBaseR|int R = 0;
+}
+var_dump(ClassRedundantR::R, new RedundantSubR());

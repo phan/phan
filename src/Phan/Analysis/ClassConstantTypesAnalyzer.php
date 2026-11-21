@@ -353,7 +353,10 @@ class ClassConstantTypesAnalyzer
                     ) {
                         continue;
                     }
-                } elseif ($constant_real_type->isStrictSubtypeOf($code_base, $inherited_real_type)) {
+                } elseif ($constant_real_type->isStrictSubtypeOf($code_base, $inherited_real_type)
+                    || (!$clazz->isTrait() && $constant_real_type->hasStaticType()
+                        && $constant_real_type->withStaticResolvedInContext($class_context ??= $clazz->getContext()->withScope($clazz->getInternalScope()))->isStrictSubtypeOf($code_base, $inherited_real_type))
+                ) {
                     // PHP enforces covariance for typed constants: every type in the child must be a subtype of (or equal to) the parent
                     continue;
                 }

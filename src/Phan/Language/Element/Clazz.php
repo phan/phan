@@ -4451,6 +4451,13 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * @var list<array{0:FullyQualifiedClassName,1:ClassConstant,2:FullyQualifiedClassName,3:ClassConstant,4:string}>
+     * Composition constant pairs whose declared-type check was deferred on this trait because one of
+     * the types contains `self`, to be rechecked in each concrete class using this trait.
+     */
+    private $deferred_trait_constant_checks = [];
+
+    /**
      * Check for incompatible trait constant redefinitions (PHP 8.2+).
      * This detects fatal errors caused by:
      * - Multiple traits defining the same constant
@@ -4467,13 +4474,35 @@ class Clazz extends AddressableElement
         // Build a map of constant name -> list of (source_fqsen, constant) pairs
         $constant_sources = [];
 
-        // Collect constants from all traits
+        // Collect constants from all traits and propagate/recheck any deferred self-typed pairs
         foreach ($trait_fqsen_list as $trait_fqsen) {
             if (!$code_base->hasClassWithFQSEN($trait_fqsen)) {
                 continue;
             }
             $trait = $code_base->getClassByFQSENWithoutHydrating($trait_fqsen);
             $trait->hydrate($code_base);
+
+            foreach ($trait->deferred_trait_constant_checks as $deferred) {
+                if ($this->isTrait()) {
+                    $this->deferred_trait_constant_checks[] = $deferred;
+                } else {
+                    [$fqsen1, $const1, $fqsen2, $const2, $deferred_name] = $deferred;
+                    if (!self::areConstantsCompatible($code_base, $const1, $const2, $this, $this)) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $this->getContext(),
+                            Issue::IncompatibleCompositionConstant,
+                            $this->getContext()->getLineNumberStart(),
+                            (string)$fqsen1,
+                            (string)$fqsen2,
+                            $deferred_name,
+                            $this->fqsen,
+                            $this->getContext()->getFile(),
+                            $this->getContext()->getLineNumberStart()
+                        );
+                    }
+                }
+            }
 
             foreach ($trait->getConstantMap($code_base) as $constant) {
                 $name = $constant->getName();
@@ -4516,7 +4545,8 @@ class Clazz extends AddressableElement
                     if (!$other_constant instanceof ClassConstant) {
                         continue;
                     }
-                    if (!self::areConstantsCompatible($code_base, $first_constant, $other_constant, $this, $this)) {
+                    $was_deferred = false;
+                    if (!self::areConstantsCompatible($code_base, $first_constant, $other_constant, $this, $this, $was_deferred)) {
                         Issue::maybeEmit(
                             $code_base,
                             $this->getContext(),
@@ -4530,6 +4560,9 @@ class Clazz extends AddressableElement
                             $this->getContext()->getLineNumberStart()
                         );
                         break;
+                    }
+                    if ($was_deferred) {
+                        $this->deferred_trait_constant_checks[] = [$first_fqsen, $first_constant, $other_fqsen, $other_constant, $name];
                     }
                 }
             }
@@ -4556,7 +4589,8 @@ class Clazz extends AddressableElement
                     // If the class constant is compatible with the trait constant, it's likely just inherited
                     // from the trait (not explicitly redefined). Only emit an error if they're incompatible,
                     // which indicates the class tried to redefine it with a different visibility or value.
-                    if (!self::areConstantsCompatible($code_base, $class_constant, $trait_constant, $this, $this)) {
+                    $was_deferred = false;
+                    if (!self::areConstantsCompatible($code_base, $class_constant, $trait_constant, $this, $this, $was_deferred)) {
                         Issue::maybeEmit(
                             $code_base,
                             $this->getContext(),
@@ -4569,6 +4603,8 @@ class Clazz extends AddressableElement
                             $this->getContext()->getFile(),
                             $this->getContext()->getLineNumberStart()
                         );
+                    } elseif ($was_deferred) {
+                        $this->deferred_trait_constant_checks[] = [$this->fqsen, $class_constant, $trait_fqsen, $trait_constant, $name];
                     }
                 }
             }
@@ -4705,7 +4741,8 @@ class Clazz extends AddressableElement
         ClassConstant $const1,
         ClassConstant $const2,
         Clazz $binding_class1,
-        Clazz $binding_class2
+        Clazz $binding_class2,
+        bool &$was_deferred = false
     ): bool {
         if ($const1->getRealDefiningFQSEN() === $const2->getRealDefiningFQSEN()) {
             return true;
@@ -4719,10 +4756,11 @@ class Clazz extends AddressableElement
             return false;
         }
 
-        // Check declared type compatibility (composition requires identical declared types, not covariance).
+        // Check declared type compatibility (composition requires invariant declared types, not covariance).
         // For internal constants when targeting PHP 8.3, reflected or stubbed types may reflect PHP 8.4+.
         $skip_internal_type_check = ($const1->isPHPInternal() || $const2->isPHPInternal())
             && Config::get_closest_target_php_version_id() < 80400;
+        $defer_self_check = false;
         if (!$skip_internal_type_check) {
             if ($const1->hasDeclaredType() !== $const2->hasDeclaredType()) {
                 return false;
@@ -4730,13 +4768,18 @@ class Clazz extends AddressableElement
             if ($const1->hasDeclaredType()) {
                 $raw_type1 = $const1->getUnionType()->getRealUnionType();
                 $raw_type2 = $const2->getUnionType()->getRealUnionType();
-                // When composing nested traits, `self` is not yet bound to a concrete class.
-                if (!($binding_class1->isTrait() && $raw_type1->hasSelfType())
-                    && !($binding_class2->isTrait() && $raw_type2->hasSelfType())
+                // When composing nested traits, `self` is not yet bound to a concrete class;
+                // defer the declared-type check to each concrete class that uses the trait.
+                if (($binding_class1->isTrait() && $raw_type1->hasSelfType())
+                    || ($binding_class2->isTrait() && $raw_type2->hasSelfType())
                 ) {
+                    $defer_self_check = true;
+                } else {
                     $type1 = self::canonicalizeDeclaredConstantType($code_base, $raw_type1, $binding_class1);
                     $type2 = self::canonicalizeDeclaredConstantType($code_base, $raw_type2, $binding_class2);
-                    if (!$type1->isEqualTo($type2)) {
+                    if (!$type1->isEqualTo($type2)
+                        && !($type1->isStrictSubtypeOf($code_base, $type2) && $type2->isStrictSubtypeOf($code_base, $type1))
+                    ) {
                         return false;
                     }
                 }
@@ -4747,20 +4790,20 @@ class Clazz extends AddressableElement
         $node1 = $const1->getNodeForValue();
         $node2 = $const2->getNodeForValue();
 
-        // If both have no nodes or both nodes are identical, they're compatible
         if ($node1 === $node2) {
+            $was_deferred = $defer_self_check;
             return true;
         }
 
-        // If one has a node and the other doesn't, they're incompatible
         if ($node1 === null || $node2 === null) {
             return false;
         }
 
-        // Compare AST nodes for value equivalence
-        // For simplicity, we use string representation comparison
-        // This may have false positives for complex expressions, but catches most cases
-        return \var_export($node1, true) === \var_export($node2, true);
+        if (\var_export($node1, true) === \var_export($node2, true)) {
+            $was_deferred = $defer_self_check;
+            return true;
+        }
+        return false;
     }
 
     /**
