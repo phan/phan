@@ -358,6 +358,7 @@ class ClassConstantTypesAnalyzer
                 } elseif ($constant_real_type->isStrictSubtypeOf($code_base, $inherited_real_type)
                     || (!$clazz->isTrait() && $constant_real_type->hasStaticType()
                         && $constant_real_type->withStaticResolvedInContext($class_context ??= $clazz->getContext()->withScope($clazz->getInternalScope()))->isStrictSubtypeOf($code_base, $inherited_real_type))
+                    || self::isCovariantWithCanonicalTypes($code_base, $constant_real_type, $inherited_real_type)
                 ) {
                     // PHP enforces covariance for typed constants: every type in the child must be a subtype of (or equal to) the parent
                     continue;
@@ -366,7 +367,8 @@ class ClassConstantTypesAnalyzer
                 // Interfaces are never included in the trait/parent composition conflict check.
                 // Their constant types must still be checked for covariance in PHP 8.3+.
                 if ($is_from_trait && !$inherited_class->isInterface()
-                    && Clazz::isTraitConstantConflictingWith($code_base, $constant, $inherited_constant, $inherited_class->isTrait())
+                    // @phan-suppress-next-line PhanAccessMethodInternal
+                    && $clazz->isTraitConstantConflictingWith($code_base, $constant, $inherited_constant, $inherited_class->isTrait())
                 ) {
                     // PhanIncompatibleCompositionConstant is reported for these constants
                     continue;
@@ -389,6 +391,19 @@ class ClassConstantTypesAnalyzer
                 );
             }
         }
+    }
+
+    /**
+     * Returns true if $type is covariant with $inherited_type after canonicalizing both as the composition check does
+     * (see Clazz::canonicalizeDeclaredConstantType()). PHP treats `iterable` as `array|\Traversable`, so `?iterable` is covariant
+     * with `array|\Traversable|null`. The caller checks this only after the check of the types as declared failed.
+     */
+    private static function isCovariantWithCanonicalTypes(CodeBase $code_base, UnionType $type, UnionType $inherited_type): bool
+    {
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        $canonical_type = Clazz::canonicalizeDeclaredConstantType($code_base, $type);
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        return $canonical_type->isStrictSubtypeOf($code_base, Clazz::canonicalizeDeclaredConstantType($code_base, $inherited_type));
     }
 
     /**

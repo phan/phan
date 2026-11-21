@@ -1,0 +1,1 @@
+%s:23 PhanConstantTypeMismatchInheritance Class constant \Issue5661Php85\ChildNestedA::A is declared with type string which is not covariant with type int inherited from \Issue5661Php85\ParentIntA (constant types must be invariant or covariant)
