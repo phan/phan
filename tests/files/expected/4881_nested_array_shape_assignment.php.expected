@@ -23,3 +23,6 @@
 %s:250 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $a[0] of array type array{a:1,b?:string}
 %s:261 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \stdClass|int|string
 %s:261 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $a[0] of array type \ArrayObject<string,\stdClass|int>|array{a:1,b?:\stdClass|int|string}
+%s:286 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \stdClass|string
+%s:286 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $a[0] of array type \Issue4881\GenericArrayBox<int,string>|array{a:1,b?:\stdClass|string}
+%s:300 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $a[0] of array type array{a:1,b?:string}

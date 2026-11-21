@@ -37,6 +37,7 @@ use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\AssociativeArrayType;
+use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\ListType;
@@ -2886,7 +2887,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 $element_types[] = $element_type->withIsNullable(false);
             } elseif ($element_type instanceof MixedType) {
                 $element_types[] = $element_type;
-            } elseif ($element_type instanceof NullType) {
+            } elseif ($element_type instanceof NullType || $element_type instanceof FalseType || \get_class($element_type) === BoolType::class) {
                 $element_may_be_null = true;
             } elseif (self::isPossiblyArrayAccessibleObject($element_type, $code_base)) {
                 if ($element_type->isNullable()) {
@@ -2954,9 +2955,11 @@ class AssignmentVisitor extends AnalysisVisitor
                             }
                         }
                     }
-                    $template_params = $type->getTemplateParameterTypeList();
-                    if (\count($template_params) >= 2 && !$template_params[1]->isEmpty()) {
-                        return $template_params[1];
+                    if ($type->getNamespace() === '\\' && (\strcasecmp($type->getName(), 'ArrayObject') === 0 || \strcasecmp($type->getName(), 'ArrayAccess') === 0)) {
+                        $template_params = $type->getTemplateParameterTypeList();
+                        if (\count($template_params) >= 2 && !$template_params[1]->isEmpty()) {
+                            return $template_params[1];
+                        }
                     }
                     if ($class->hasMethodWithName($code_base, 'offsetGet', true)) {
                         try {
@@ -2992,7 +2995,7 @@ class AssignmentVisitor extends AnalysisVisitor
     private static function typeSetContainsNull(UnionType $union_type): bool
     {
         foreach ($union_type->getTypeSet() as $type) {
-            if ($type instanceof NullType || ($type instanceof ArrayType && $type->isNullable())) {
+            if ($type instanceof NullType || $type instanceof FalseType || \get_class($type) === BoolType::class || ($type instanceof ArrayType && $type->isNullable())) {
                 return true;
             }
         }

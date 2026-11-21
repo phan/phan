@@ -262,3 +262,40 @@ function test_generic_array_object_alternative(array $a): \stdClass|int|string
     '@phan-debug-var $b';
     return $b;
 }
+
+/**
+ * A generic class implementing bare ArrayAccess with unrelated template parameters must derive
+ * its offset value type from offsetGet() rather than guessing from positional template arguments.
+ * @template T
+ * @template U
+ */
+class GenericArrayBox implements \ArrayAccess
+{
+    public function offsetExists(mixed $offset): bool { return true; }
+    public function offsetGet(mixed $offset): \stdClass { return new \stdClass(); }
+    public function offsetSet(mixed $offset, mixed $value): void {}
+    public function offsetUnset(mixed $offset): void {}
+}
+
+/**
+ * @param array<array{a:int,b:string}|GenericArrayBox<int,string>> $a
+ */
+function test_generic_box_offset_get_contract(array $a): \stdClass|string
+{
+    $a[0]['a'] = 1;
+    $b = $a[0]['b'];
+    '@phan-debug-var $b';
+    return $b;
+}
+
+/**
+ * A false element auto-vivifies an empty array in PHP 8.x, so untouched sibling fields remain
+ * possibly undefined.
+ * @param array<array{a:int,b:string}|false> $a
+ */
+function test_false_element_auto_vivifies(array $a): string
+{
+    $a[0]['a'] = 1;
+    echo $a[0]['a'];
+    return $a[0]['b'];
+}
