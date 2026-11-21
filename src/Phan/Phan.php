@@ -610,6 +610,8 @@ class Phan implements IgnoredFilesFilterInterface
         array $temporary_file_mapping,
         ?Library\IncrementalAnalysis\Manifest $incremental_manifest = null
     ): bool {
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        ConfigPluginSet::instance()->beginAnalyzePhase();
         try{
             // With parsing complete, we need to tell the code base to
             // start hydrating any requested elements on their way out.
@@ -903,6 +905,9 @@ class Phan implements IgnoredFilesFilterInterface
                 $request->exit(EXIT_SUCCESS);
             }
             throw $e;
+        } finally {
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            ConfigPluginSet::instance()->endAnalyzePhase();
         }
 
         if ($request instanceof Request) {

@@ -412,9 +412,16 @@ final class ConfigPluginSet extends PluginV3 implements
      */
     public function beforeAnalyze(CodeBase $code_base): void
     {
+        // Parsing is done, so a function or class that a plugin loads here is handled like one loaded during the analysis.
+        // The flag is restored afterwards because files are parsed again after this in daemon mode and by the language server.
+        $did_analyze_phase_start = $this->did_analyze_phase_start;
         $this->did_analyze_phase_start = true;
-        foreach ($this->before_analyze_plugin_set as $plugin) {
-            $plugin->beforeAnalyze($code_base);
+        try {
+            foreach ($this->before_analyze_plugin_set as $plugin) {
+                $plugin->beforeAnalyze($code_base);
+            }
+        } finally {
+            $this->did_analyze_phase_start = $did_analyze_phase_start;
         }
     }
 
@@ -428,10 +435,32 @@ final class ConfigPluginSet extends PluginV3 implements
      */
     public function beforeAnalyzePhase(CodeBase $code_base): void
     {
-        $this->did_analyze_phase_start = true;
         foreach ($this->before_analyze_phase_plugin_set as $plugin) {
             $plugin->beforeAnalyzePhase($code_base);
         }
+    }
+
+    /**
+     * Mark that parsing is done and the post-parse / analysis phase has started,
+     * enabling lazy-load hooks for internal functions and classes.
+     *
+     * @internal
+     */
+    public function beginAnalyzePhase(): void
+    {
+        $this->did_analyze_phase_start = true;
+    }
+
+    /**
+     * Reset the analysis phase flag once the analysis phase finishes, so subsequent
+     * analyses or daemon/language server re-parses in the same process do not trigger
+     * lazy-load hooks during the parse phase.
+     *
+     * @internal
+     */
+    public function endAnalyzePhase(): void
+    {
+        $this->did_analyze_phase_start = false;
     }
 
     /**
