@@ -229,27 +229,58 @@ class ClassConstantTypesAnalyzer
         }
 
         $clazz->hydrate($code_base);
-        $class_context = $clazz->getContext()->withScope($clazz->getInternalScope());
+
+        // Fetch the constant map of each inherited class once, and the names of the inherited constants with a declared type:
+        // only a constant with one of these names can be incompatible with an inherited constant.
+        $inherited_constant_map_list = [];
+        $typed_inherited_constant_names = [];
+        foreach ($inherited_class_list as $i => $inherited_class) {
+            $inherited_class->hydrate($code_base);
+            // Get the constant map directly to avoid exceptions for trait constants
+            $inherited_constant_map = $inherited_class->getConstantMap($code_base);
+            $inherited_constant_map_list[$i] = $inherited_constant_map;
+            foreach ($inherited_constant_map as $key => $inherited_constant) {
+                if ($inherited_constant->hasDeclaredType()) {
+                    $typed_inherited_constant_names[$key] = true;
+                }
+            }
+        }
+        if (!$typed_inherited_constant_names) {
+            return;
+        }
+        $uses_traits = (bool)$clazz->getTraitFQSENList();
+        // An untyped constant cannot override a typed constant in PHP 8.3+
+        $check_untyped_constants = Config::get_closest_target_php_version_id() >= 80300;
+        $class_context = null;
 
         // Check each constant defined in this class (or imported directly from a trait)
         foreach ($clazz->getConstantMap($code_base) as $constant) {
+            $name = $constant->getName();
+            if (!isset($typed_inherited_constant_names[$name])) {
+                continue;
+            }
             // Skip the magic ::class constant - it's automatically different in child classes
-            if ($constant->getName() === 'class') {
+            if ($name === 'class') {
                 continue;
             }
 
             if (!$constant->hasDefiningFQSEN()) {
                 continue;
             }
-            $is_from_trait = false;
             if ($constant->getDefiningFQSEN() !== $constant->getFQSEN()) {
+                if (!$uses_traits) {
+                    // Inherited from a parent class or an interface
+                    continue;
+                }
                 // Public constants imported from a trait keep the trait's defining FQSEN.
                 $defining_class_fqsen = $constant->getDefiningFQSEN()->getFullyQualifiedClassName();
                 if (!$code_base->hasClassWithFQSEN($defining_class_fqsen) || !$code_base->getClassByFQSEN($defining_class_fqsen)->isTrait()) {
                     continue;
                 }
-                $is_from_trait = true;
             }
+            // True for the copy of a constant imported from a trait, including the copy of a protected or private constant
+            // (the defining FQSEN of such a copy is this class)
+            $is_from_trait = $constant->getRealDefiningFQSEN() !== $constant->getFQSEN();
 
             $constant_has_declared_type = $constant->hasDeclaredType();
             $constant_real_type = null;
@@ -258,25 +289,18 @@ class ClassConstantTypesAnalyzer
                 if (!$constant_union_type->hasRealTypeSet()) {
                     continue;
                 }
+                $class_context ??= $clazz->getContext()->withScope($clazz->getInternalScope());
                 $constant_real_type = $constant_union_type->getRealUnionType()->withSelfResolvedInContext($class_context);
+            } elseif (!$check_untyped_constants) {
+                continue;
             }
 
             // Check against each inherited class
-            foreach ($inherited_class_list as $inherited_class) {
-                $inherited_class->hydrate($code_base);
-
-                if (!$inherited_class->hasConstantWithName($code_base, $constant->getName())) {
+            foreach ($inherited_class_list as $i => $inherited_class) {
+                $inherited_constant = $inherited_constant_map_list[$i][$name] ?? null;
+                if (!$inherited_constant) {
                     continue;
                 }
-
-                // Get the constant map directly to avoid exceptions for trait constants
-                $inherited_constant_map = $inherited_class->getConstantMap($code_base);
-
-                if (!isset($inherited_constant_map[$constant->getName()])) {
-                    continue;
-                }
-
-                $inherited_constant = $inherited_constant_map[$constant->getName()];
 
                 // Skip if it's the same constant (from traits)
                 if ($inherited_constant->getRealDefiningFQSEN() === $constant->getRealDefiningFQSEN()) {
@@ -301,33 +325,36 @@ class ClassConstantTypesAnalyzer
                     continue;
                 }
 
-                // Untyped overrides of typed constants are invalid in PHP 8.3+, but reflected
-                // internal constants carry types from the host PHP runtime rather than target_php_version.
-                if (!$constant_has_declared_type) {
-                    $target_version = Config::get_closest_target_php_version_id();
-                    $host_minor_version = \PHP_MAJOR_VERSION * 10000 + \PHP_MINOR_VERSION * 100;
-                    if ($target_version < 80300 || ($inherited_constant->isPHPInternal() && $target_version < $host_minor_version)) {
+                if ($constant_real_type === null) {
+                    // Reflected internal constants carry types from the PHP version running Phan rather than target_php_version.
+                    if ($inherited_constant->isPHPInternal() && Config::get_closest_target_php_version_id() < Config::get_closest_runtime_php_version_id()) {
                         continue;
                     }
+                } elseif ($constant_real_type->isStrictSubtypeOf($code_base, $inherited_real_type)) {
+                    // PHP enforces covariance for typed constants: every type in the child must be a subtype of (or equal to) the parent
+                    continue;
                 }
 
-                // PHP enforces covariance for typed constants: every type in the child must be a subtype of (or equal to) the parent,
-                // and an untyped constant cannot override a typed constant.
-                if (!$constant_has_declared_type || ($constant_real_type !== null && !$constant_real_type->isStrictSubtypeOf($code_base, $inherited_real_type))) {
-                    $issue_context = ($is_from_trait || $constant->getRealDefiningFQSEN() !== $constant->getFQSEN())
-                        ? $clazz->getContext()
-                        : $constant->getContext();
-                    Issue::maybeEmit(
-                        $code_base,
-                        $issue_context,
-                        Issue::ConstantTypeMismatchInheritance,
-                        $issue_context->getLineNumberStart(),
-                        $constant->getFQSEN(),
-                        $constant_real_type ?? 'none',
-                        $inherited_real_type,
-                        $inherited_class->getFQSEN()
-                    );
+                if ($is_from_trait && Clazz::isTraitConstantConflictingWith($constant, $inherited_constant, $inherited_class->isTrait())) {
+                    // PhanIncompatibleCompositionConstant is reported for these constants
+                    continue;
                 }
+
+                // Report a constant imported from a trait at the class using the trait, in the scope of that class
+                // (so that a suppression on the class applies).
+                $issue_context = $is_from_trait
+                    ? ($class_context ??= $clazz->getContext()->withScope($clazz->getInternalScope()))
+                    : $constant->getContext();
+                Issue::maybeEmit(
+                    $code_base,
+                    $issue_context,
+                    Issue::ConstantTypeMismatchInheritance,
+                    $issue_context->getLineNumberStart(),
+                    $constant->getFQSEN(),
+                    $constant_real_type ?? '(none)',
+                    $inherited_real_type,
+                    $inherited_class->getFQSEN()
+                );
             }
         }
     }

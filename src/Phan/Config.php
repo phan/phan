@@ -1326,6 +1326,15 @@ class Config
     {
         return self::$closest_minimum_target_php_version_id;
     }
+
+    /**
+     * @return int the 5-digit PHP version id which is closest to matching the PHP_VERSION_ID of the PHP version running Phan,
+     * computed the same way as get_closest_target_php_version_id() (e.g. 80600 for PHP 8.6 and newer)
+     */
+    public static function get_closest_runtime_php_version_id(): int
+    {
+        return self::computeClosestTargetPHPVersionId(\PHP_VERSION);
+    }
     // phpcs:enable PSR1.Methods.CamelCapsMethodName.NotCamelCaps
 
     /** @var array<string,true> the keys the project's config file (.phan/config.php) set, as opposed to defaults and CLI flags */
