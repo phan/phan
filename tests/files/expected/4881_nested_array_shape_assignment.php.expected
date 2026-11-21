@@ -28,3 +28,10 @@
 %s:243 PhanTypeInvalidDimOffset Invalid offset "b" of $a[0] of array type array{a:1}
 %s:243 PhanTypeMismatchReturn Returning $a[0]['b'] of type null but test_nullable_outer_container() is declared to return string
 %s:253 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type 1
+%s:267 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type array{0:array{x:array{y:array{z:1}}}}|non-empty-array<mixed,array{x:null}>(real=array{0:array{x:array{y:array{z:1}}}}|non-empty-array<mixed,mixed>)
+%s:269 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type array{0:array{x:array{y:array{z:1}}}}|non-empty-array<mixed,array{x:bool}>(real=array{0:array{x:array{y:array{z:1}}}}|non-empty-array<mixed,mixed>)
+%s:279 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type array{x:\ArrayObject<string,int>|array{y:1}}(real=array{x:array{y:1}}|non-empty-array<mixed,mixed>)
+%s:291 PhanTypeInvalidDimOffset Invalid offset "b" of $a[0] of array type array{a:1}
+%s:291 PhanTypeMismatchReturn Returning $a[0]['b'] of type null but test_outer_generic_array_or_object() is declared to return string
+%s:301 PhanTypeInvalidDimOffset Invalid offset "b" of $a[0]['x']['y'] of array type array{a:1}
+%s:301 PhanTypeMismatchReturn Returning $a[0]['x']['y']['b'] of type null but test_intermediate_generic_array_or_object() is declared to return string

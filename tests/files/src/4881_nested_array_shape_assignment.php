@@ -254,3 +254,49 @@ function test_recursive_nullable_intermediate_object(array $a): int
     '@phan-debug-var $v';
     return $v;
 }
+
+/**
+ * PHP replaces an intermediate field that is null or false with a new array on a nested write
+ * (false with a deprecation notice), and throws an Error if it is true.
+ * x is array{y:array{z:1}} afterwards: no null, false, bool or non-null-mixed.
+ * @param array<array{x:null}> $a
+ * @param array<array{x:bool}> $b
+ */
+function test_null_or_bool_intermediate_field(array $a, array $b): void
+{
+    $a[0]['x']['y']['z'] = 1;
+    '@phan-debug-var $a';
+    $b[0]['x']['y']['z'] = 1;
+    '@phan-debug-var $b';
+}
+
+/**
+ * A field that is false or an ArrayAccess object is an array or that object after the assignment, not false.
+ * @param array{x:false|\ArrayObject<string,int>} $a
+ */
+function test_false_or_array_access_field(array $a): void
+{
+    $a['x']['y'] = 1;
+    '@phan-debug-var $a';
+}
+
+/**
+ * The container may be an ArrayObject whose elements have b:\stdClass (PHP throws a TypeError on the return),
+ * so the element shape of the generic array alternative is not used: $a[0] is array{a:1}.
+ * @param array<array{a:int,b:string}>|\ArrayObject<int,array{a:int,b:\stdClass}> $a
+ */
+function test_outer_generic_array_or_object($a): string
+{
+    $a[0]['a'] = 1;
+    return $a[0]['b'];
+}
+
+/**
+ * The same holds for an intermediate field that may be an ArrayObject: $a[0]['x']['y'] is array{a:1}.
+ * @param array<array{x:array<array{a:int,b:string}>|\ArrayObject<string,array{a:int,b:\stdClass}>}> $a
+ */
+function test_intermediate_generic_array_or_object(array $a): string
+{
+    $a[0]['x']['y']['a'] = 1;
+    return $a[0]['x']['y']['b'];
+}
