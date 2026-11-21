@@ -4474,8 +4474,6 @@ class Clazz extends AddressableElement
 
         // Build a map of constant name -> list of (source_fqsen, constant) pairs
         $constant_sources = [];
-        // Whether the class or trait that declares a constant is a trait, by spl_object_id() of its FQSEN
-        $is_trait_by_class_id = [];
 
         // Collect constants from all traits
         foreach ($trait_fqsen_list as $trait_fqsen) {
@@ -4489,20 +4487,20 @@ class Clazz extends AddressableElement
             // of this class and of its other traits as constants of the trait, e.g. "P and Outer define the same constant".
             // The same constant reached through two traits is compatible with itself (see areConstantsCompatible()).
             $trait_class_fqsen = $trait->getFQSEN();
+            // The traits that the trait uses, directly or through other traits (computed when a constant of another class turns up)
+            $used_trait_ids = null;
             foreach ($trait->getConstantMap($code_base) as $constant) {
                 $name = $constant->getName();
                 // Skip magic ::class constant (it's not a real class constant in PHP)
                 if ($name === 'class') {
                     continue;
                 }
-                // A trait with `@extends` or `@inherits` in its PHPDoc also has the constants of that class, which are not trait constants.
+                // Only the constants that the trait gets through `use` statements are its constants in PHP. A trait with `@extends`
+                // or `@inherits` in its PHPDoc also has the constants of that class, including those the class gets from its traits.
                 $declaring_fqsen = $constant->getRealDefiningFQSEN()->getFullyQualifiedClassName();
                 if ($declaring_fqsen !== $trait_class_fqsen) {
-                    $declaring_id = \spl_object_id($declaring_fqsen);
-                    if (!isset($is_trait_by_class_id[$declaring_id])) {
-                        $is_trait_by_class_id[$declaring_id] = self::isConstantOfTrait($code_base, $constant);
-                    }
-                    if (!$is_trait_by_class_id[$declaring_id]) {
+                    $used_trait_ids ??= self::getIdsOfTraitsUsedBy($code_base, $trait);
+                    if (!isset($used_trait_ids[\spl_object_id($declaring_fqsen)])) {
                         continue;
                     }
                 }
@@ -4636,6 +4634,33 @@ class Clazz extends AddressableElement
                 }
             }
         }
+    }
+
+    /**
+     * Returns the traits that $trait uses, directly or through the traits it uses, as the set of spl_object_id() of their FQSENs.
+     *
+     * @return array<int,true>
+     */
+    private static function getIdsOfTraitsUsedBy(CodeBase $code_base, Clazz $trait): array
+    {
+        $result = [];
+        $queue = [$trait];
+        while ($queue) {
+            $current = \array_pop($queue);
+            foreach ($current->getTraitFQSENList() as $used_trait_fqsen) {
+                if (!$code_base->hasClassWithFQSEN($used_trait_fqsen)) {
+                    continue;
+                }
+                $used_trait = $code_base->getClassByFQSENWithoutHydrating($used_trait_fqsen);
+                $id = \spl_object_id($used_trait->getFQSEN());
+                // Each trait is visited once, also if traits use each other
+                if (!isset($result[$id])) {
+                    $result[$id] = true;
+                    $queue[] = $used_trait;
+                }
+            }
+        }
+        return $result;
     }
 
     /**

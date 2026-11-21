@@ -792,3 +792,36 @@ class ClassEvaluationBudget {
     use BudgetFirst, BudgetSecond;
 }
 var_dump(BudgetValues::BUDGET_0, BudgetValues::BUDGET_1, BudgetValues::BUDGET_2, BudgetValues::BUDGET_3, ClassEvaluationBudget::BUDGET);
+
+// 25. A trait whose PHPDoc has `@extends` does not get the constants of that class in PHP, also not the constants that the class gets
+// from a trait: PHP 8.2 to 8.5 accept ChildOfParentWithTrait. They reject ChildOfParentWithTraitUsed, whose trait also uses ParentTraitConstant
+// ("ChildOfParentWithTraitUsed and AnnotatedTraitUsing define the same constant (X_FROM_TRAIT) in the composition of ChildOfParentWithTraitUsed").
+trait ParentTraitConstant {
+    public const X_FROM_TRAIT = 1;
+}
+
+class ParentWithTrait {
+    use ParentTraitConstant;
+}
+echo ParentWithTrait::X_FROM_TRAIT;
+
+/** @extends ParentWithTrait */
+trait AnnotatedTraitOnly {
+}
+
+class ChildOfParentWithTrait extends ParentWithTrait {
+    use AnnotatedTraitOnly;
+    public const X_FROM_TRAIT = 2;
+}
+echo ChildOfParentWithTrait::X_FROM_TRAIT;
+
+/** @extends ParentWithTrait */
+trait AnnotatedTraitUsing {
+    use ParentTraitConstant;
+}
+
+class ChildOfParentWithTraitUsed extends ParentWithTrait {
+    use AnnotatedTraitUsing;
+    public const X_FROM_TRAIT = 2;
+}
+echo ChildOfParentWithTraitUsed::X_FROM_TRAIT;
