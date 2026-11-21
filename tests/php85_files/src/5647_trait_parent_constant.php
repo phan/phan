@@ -274,7 +274,10 @@ class ChildNarrowedCompositionM extends ParentUnionM {
 }
 echo ChildNarrowedCompositionM::M;
 
-// 21. Deferred nested trait conflict is rechecked in the concrete using class.
+// 21. PHP checks the constant of TraitInnerSelfN against the one of TraitOuterOtherN when it composes TraitOuterOtherN,
+// with `self` resolved against TraitInnerSelfN, and rejects TraitOuterOtherN ("TraitOuterOtherN and TraitInnerSelfN define
+// the same constant (N) in the composition of TraitOuterOtherN"). Phan does not compare declared types that contain `self`,
+// because the result of PHP's check depends on the classes that are loaded when it is done, and does not report this.
 class OtherN {}
 trait TraitInnerSelfN {
     /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */

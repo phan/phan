@@ -26,6 +26,9 @@ class ClassConstant extends ClassElement implements ConstantInterface
     /** @var bool true if this constant declared an explicit type in its signature */
     private $has_declared_type = false;
 
+    /** @var bool true if the type declared in the signature of this constant contains `self` */
+    private $has_self_in_declared_type = false;
+
     /**
      * @param Context $context
      * The context in which the structural element lives
@@ -104,6 +107,23 @@ class ClassConstant extends ClassElement implements ConstantInterface
     }
 
     /**
+     * Record whether the type declared in the signature of this constant contains `self`.
+     */
+    public function setHasSelfInDeclaredType(bool $has_self_in_declared_type): void
+    {
+        $this->has_self_in_declared_type = $has_self_in_declared_type;
+    }
+
+    /**
+     * True if the type declared in the signature of this constant contains `self`.
+     * (The union type of a constant of a class or an interface has `self` replaced by that class or interface.)
+     */
+    public function hasSelfInDeclaredType(): bool
+    {
+        return $this->has_self_in_declared_type;
+    }
+
+    /**
      * Create an alias from a trait use, which is treated as though it was defined in $clazz
      * E.g. if you import a trait's class constant as private/protected, it becomes private/protected **to the class which used the trait**
      *
@@ -134,6 +154,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
         // References to the copy in the class using the trait count as references to the trait's constant.
         $constant->real_defining_fqsen = $this->real_defining_fqsen;
         $constant->setHasDeclaredType($this->has_declared_type);
+        $constant->setHasSelfInDeclaredType($this->has_self_in_declared_type);
 
         // Copy the defining node so that compatibility checks can recognize
         // that this constant came from the trait (same value/node)

@@ -12,6 +12,7 @@ use Phan\Config;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
+use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\EnumCase;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -325,13 +326,14 @@ class ClassConstantTypesAnalyzer
                 }
 
                 $inherited_real_type = $inherited_union_type->getRealUnionType();
-                // In a trait, `self` is not yet bound to a concrete class; defer checks involving `self` until a class uses the trait.
+                // The inherited constants of a trait are those of the traits it uses. Their types are not compared
+                // when one of them contains `self` (see Clazz::areConstantsCompatible()).
                 if ($clazz->isTrait() && ($constant_has_self_type || $inherited_real_type->hasSelfType())) {
                     continue;
                 }
                 // Only the type of a constant of a trait keeps `self` unresolved (it is resolved when a class or interface is parsed).
                 if ($inherited_real_type->hasSelfType()) {
-                    $self_class = $inherited_class->getClassBindingSelfOfConstant($code_base, $inherited_constant);
+                    $self_class = self::getClassBindingSelfOfConstant($code_base, $inherited_class, $inherited_constant);
                     $inherited_real_type = $inherited_real_type->withSelfResolvedInContext(
                         $self_class->getContext()->withScope($self_class->getInternalScope())
                     );
@@ -364,7 +366,7 @@ class ClassConstantTypesAnalyzer
                 // Interfaces are never included in the trait/parent composition conflict check.
                 // Their constant types must still be checked for covariance in PHP 8.3+.
                 if ($is_from_trait && !$inherited_class->isInterface()
-                    && Clazz::isTraitConstantConflictingWith($code_base, $clazz, $constant, $inherited_class, $inherited_constant)
+                    && Clazz::isTraitConstantConflictingWith($code_base, $constant, $inherited_constant, $inherited_class->isTrait())
                 ) {
                     // PhanIncompatibleCompositionConstant is reported for these constants
                     continue;
@@ -387,6 +389,48 @@ class ClassConstantTypesAnalyzer
                 );
             }
         }
+    }
+
+    /**
+     * Returns the class that `self` refers to in the type of $constant, a constant of $class.
+     *
+     * PHP binds `self` of a constant of a trait to the class using the trait, and subclasses inherit the constant
+     * with that binding. This is the nearest class from $class up the parent chain that imports $constant from
+     * one of its traits ($class itself if there is none).
+     */
+    private static function getClassBindingSelfOfConstant(CodeBase $code_base, Clazz $class, ClassConstant $constant): Clazz
+    {
+        $name = $constant->getName();
+        $real_defining_fqsen = $constant->getRealDefiningFQSEN();
+        $seen = [];
+        // $seen guards against inheritance cycles
+        while (!isset($seen[\spl_object_id($class)])) {
+            $seen[\spl_object_id($class)] = true;
+            foreach ($class->getTraitFQSENList() as $trait_fqsen) {
+                if (!$code_base->hasClassWithFQSEN($trait_fqsen)) {
+                    continue;
+                }
+                $trait_constant = $code_base->getClassByFQSEN($trait_fqsen)->getConstantMap($code_base)[$name] ?? null;
+                if ($trait_constant && $trait_constant->getRealDefiningFQSEN() === $real_defining_fqsen) {
+                    return $class;
+                }
+            }
+            if (!$class->hasParentType()) {
+                break;
+            }
+            $parent_fqsen = $class->getParentClassFQSEN();
+            if (!$code_base->hasClassWithFQSEN($parent_fqsen)) {
+                break;
+            }
+            $parent = $code_base->getClassByFQSEN($parent_fqsen);
+            $parent_constant = $parent->getConstantMap($code_base)[$name] ?? null;
+            if (!$parent_constant || $parent_constant->getRealDefiningFQSEN() !== $real_defining_fqsen) {
+                break;
+            }
+            // $class inherits $constant from its parent
+            $class = $parent;
+        }
+        return $class;
     }
 
     private static function isAllowedClassConstantObjectType(CodeBase $code_base, Type $type): bool

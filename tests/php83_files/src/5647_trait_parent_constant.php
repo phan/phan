@@ -194,7 +194,9 @@ class ClassNullableN {
 }
 var_dump(ClassNullableN::N);
 
-// 14. `self` in a trait constant binds to the composing class before checking composition compatibility.
+// 14. PHP resolves `self` in the type of the constant that ClassSelfO already has (the one of TraitSelfO, which is used first)
+// against ClassSelfO, so it accepts the constant of TraitExplicitO. With the traits in the other order, PHP resolves `self`
+// against TraitSelfO and rejects ClassSelfO. Phan does not compare declared types that contain `self` and reports neither.
 trait TraitSelfO {
     public const self|int O = 0;
 }
@@ -207,7 +209,8 @@ class ClassSelfO {
 }
 var_dump(ClassSelfO::O);
 
-// 15. `static` does not bind to the composing class name and remains incompatible with it.
+// 15. PHP does not resolve `static` in this check: it rejects `static|int` and `ClassStaticP|int` in ClassStaticP
+// ("TraitStaticP and TraitExplicitP define the same constant (P) in the composition of ClassStaticP").
 trait TraitStaticP {
     public const static|int P = 0;
 }
@@ -220,7 +223,9 @@ class ClassStaticP {
 }
 var_dump(ClassStaticP::P);
 
-// 16. Nested trait composition defers `self` resolution until a concrete class uses the trait.
+// 16. PHP checks the constants of TraitNestedSelfQ and TraitNestedExplicitQ when it composes TraitNestedCombinedQ, with `self`
+// resolved against TraitNestedCombinedQ. ClassNestedQ is not loaded yet at that point, so the check passes, and the classes
+// using TraitNestedCombinedQ do not check these constants again (PHP accepts both classes).
 trait TraitNestedSelfQ {
     public const self|int Q = 0;
 }
@@ -236,13 +241,13 @@ class ClassNestedQ {
 }
 var_dump(ClassNestedQ::Q);
 
-// Using the same nested trait in an unrelated class still reports the deferred conflict.
-class ClassNestedQConflict {
+class ClassNestedQSecond {
     use TraitNestedCombinedQ;
 }
-var_dump(ClassNestedQConflict::Q);
+var_dump(ClassNestedQSecond::Q);
 
-// 17. Redundant subclass members in a declared union are semantically invariant and compatible.
+// 17. PHP checks that each of the two declared types is a subtype of the other, so `RedundantBaseR|RedundantSubR|int`
+// and `RedundantBaseR|int` are compatible (PHP accepts this).
 class RedundantBaseR {}
 class RedundantSubR extends RedundantBaseR {}
 trait TraitRedundantR {
@@ -253,3 +258,126 @@ class ClassRedundantR {
     public const RedundantBaseR|int R = 0;
 }
 var_dump(ClassRedundantR::R, new RedundantSubR());
+
+// 18. PHP resolves `self` in the type of the constant of TraitNestedSelfS against TraitNestedOuterS when it composes
+// TraitNestedOuterS, which gives the declared type of the constant of TraitNestedOtherS (PHP accepts this).
+trait TraitNestedSelfS {
+    public const self|int S = 0;
+}
+trait TraitNestedOtherS {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const TraitNestedOuterS|int S = 0;
+}
+trait TraitNestedOuterS {
+    use TraitNestedSelfS, TraitNestedOtherS;
+}
+class ClassNestedS {
+    use TraitNestedOuterS;
+}
+var_dump(ClassNestedS::S);
+
+// 19. Before PHP 8.5, PHP checks the constant of TraitChildNameT against the constant that ChildSelfT inherits from ParentSelfT,
+// with `self` resolved against ChildSelfT (PHP 8.3, 8.4 and 8.5 accept this).
+class ParentSelfT {
+    public const self|int T = 0;
+}
+echo ParentSelfT::T;
+
+trait TraitChildNameT {
+    public const ChildSelfT|int T = 0;
+}
+
+class ChildSelfT extends ParentSelfT {
+    use TraitChildNameT;
+}
+var_dump(ChildSelfT::T);
+
+// 20. PHP resolves `self` in the type of the constant that ClassTwoSelfU already has (the one of TraitSelfFirstU) against
+// ClassTwoSelfU, and `self` in the type of the constant of TraitSelfSecondU against TraitSelfSecondU, and rejects ClassTwoSelfU
+// ("TraitSelfFirstU and TraitSelfSecondU define the same constant (U) in the composition of ClassTwoSelfU").
+// Phan does not compare declared types that contain `self`, because the result of PHP's check depends on the classes
+// that are loaded when it is done, and does not report this.
+trait TraitSelfFirstU {
+    public const self|int U = 0;
+}
+trait TraitSelfSecondU {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const self|int U = 0;
+}
+class ClassTwoSelfU {
+    use TraitSelfFirstU, TraitSelfSecondU;
+}
+var_dump(ClassTwoSelfU::U);
+
+// 21. The constant of a class is the constant of the trait it uses, not the constant of an interface it implements:
+// PHP 8.3, 8.4 and 8.5 give 'trait' for ImplementsInterfaceWithTraitV::V, so getTraitValueOfV() returns a string.
+interface InterfaceUntypedV {
+    const V = 0;
+}
+echo InterfaceUntypedV::V;
+
+trait TraitUntypedV {
+    public const V = 'trait';
+}
+
+class ImplementsInterfaceWithTraitV implements InterfaceUntypedV {
+    use TraitUntypedV;
+}
+
+function getTraitValueOfV(): int {
+    return ImplementsInterfaceWithTraitV::V;
+}
+echo getTraitValueOfV();
+
+// 22. A trait constant cannot override a final constant of an interface, even with the same value
+// (PHP 8.3, 8.4 and 8.5: "ImplementsFinalInterfaceWithTrait::W cannot override final constant InterfaceFinalW::W").
+interface InterfaceFinalW {
+    final public const int W = 0;
+}
+echo InterfaceFinalW::W;
+
+trait TraitTypedW {
+    public const int W = 0;
+}
+
+class ImplementsFinalInterfaceWithTrait implements InterfaceFinalW {
+    use TraitTypedW;
+}
+echo ImplementsFinalInterfaceWithTrait::W;
+
+// 23. The constants of an interface are public: a protected or private trait constant cannot override one
+// (PHP 8.3, 8.4 and 8.5: "Access level to ImplementsInterfaceWithNonPublicTrait::X must be public (as in interface InterfacePublicXY)").
+interface InterfacePublicXY {
+    public const int X = 0;
+    public const int Y = 0;
+}
+echo InterfacePublicXY::X, InterfacePublicXY::Y;
+
+trait TraitNonPublicXY {
+    protected const int X = 0;
+    private const int Y = 0;
+
+    public static function getXY(): int {
+        return self::X + self::Y;
+    }
+}
+
+class ImplementsInterfaceWithNonPublicTrait implements InterfacePublicXY {
+    use TraitNonPublicXY;
+}
+echo ImplementsInterfaceWithNonPublicTrait::getXY();
+
+// 24. A final trait constant can override a constant of an interface that is not final (PHP 8.3, 8.4 and 8.5 accept this).
+interface InterfaceNonFinalZ {
+    public const int Z = 0;
+}
+echo InterfaceNonFinalZ::Z;
+
+trait TraitFinalZ {
+    final public const int Z = 1;
+}
+
+class ImplementsInterfaceWithFinalTrait implements InterfaceNonFinalZ {
+    use TraitFinalZ;
+}
+echo ImplementsInterfaceWithFinalTrait::Z;
