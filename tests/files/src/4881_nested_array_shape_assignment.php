@@ -199,3 +199,41 @@ function test_nested_dynamic_key_does_not_flatten_shape(array $a, string $k): st
     '@phan-debug-var $v';
     return $v;
 }
+
+/**
+ * When an element can be either a shape or a generic array, untouched sibling fields are widened
+ * with compatible generic alternative element types and marked possibly undefined.
+ * @param array<array{a:int,b:string}|array<string,\stdClass>> $a
+ */
+function test_shape_or_generic_alternative(array $a): \stdClass|string
+{
+    $a[0]['a'] = 1;
+    $b = $a[0]['b'];
+    '@phan-debug-var $b';
+    return $b;
+}
+
+/**
+ * When an element can be one of multiple shapes with different keys, branch-specific sibling
+ * fields remain possibly undefined rather than being promoted to required.
+ * @param array<array{a:int,b:string}|array{a:int,c:bool}> $a
+ */
+function test_union_of_multiple_shapes(array $a): string
+{
+    $a[0]['a'] = 1;
+    echo $a[0]['a'];
+    return $a[0]['b'];
+}
+
+/**
+ * Optional intermediate fields carry their possible absence through recursive merges so untouched
+ * sibling fields at deeper levels stay possibly undefined.
+ * @param array<array{x?:array{y:array{a:int,b:string},other:int}}> $a
+ */
+function test_optional_intermediate_field_recursive(array $a): string
+{
+    $a[0]['x']['y']['a'] = 1;
+    echo $a[0]['x']['y']['a'];
+    echo $a[0]['x']['other'];
+    return $a[0]['x']['y']['b'];
+}
