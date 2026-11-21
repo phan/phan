@@ -2290,7 +2290,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/4741
 
 ## PhanIncompatibleCompositionConstant
 
-This issue is emitted when a class uses traits that define the same constant with incompatible visibility or values, or when a class redefines a trait constant incompatibly. PHP 8.2+ allows constants in traits, and the definitions must be compatible.
+This issue is emitted when a class uses traits that define the same constant incompatibly, when a class redefines a trait constant incompatibly, or (before PHP 8.5) when a trait constant has the name of an inherited constant of the parent class that is not private and is incompatible with it. PHP 8.2+ allows constants in traits, and the definitions must be compatible: the same visibility, the same `final` modifier, the same value, and (PHP 8.3+) equivalent declared types, or no declared type on either.
 
 ```
 {CLASS} and {CLASS} define the same constant ({CONST}) in the composition of {CLASS}. However, the definition differs and is considered incompatible. Class was composed in {FILE} on line {LINE}
