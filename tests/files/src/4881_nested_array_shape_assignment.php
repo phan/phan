@@ -138,3 +138,15 @@ class StaticHolder
         echo static::$items[1]['key1'];
     }
 }
+
+/**
+ * The field is a nullable ArrayAccess object. PHP creates an array for a field that was null,
+ * so the field is not null after the assignment: \ArrayObject<string,int>|array{y:1}.
+ * @param array{x:?\ArrayObject<string,int>} $a
+ */
+function test_nullable_array_access_field(array $a): int
+{
+    $a['x']['y'] = 1;
+    '@phan-debug-var $a';
+    return $a['x']->count();
+}

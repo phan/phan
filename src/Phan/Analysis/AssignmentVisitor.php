@@ -2814,7 +2814,8 @@ class AssignmentVisitor extends AnalysisVisitor
                 } elseif ($old_field_type->hasPossiblyObjectTypes() || $old_field_type->isEmpty()) {
                     // The field may be an object (e.g. an ArrayAccess), mixed or a template type, which can still be
                     // an object after the assignment: keep those types, and override the fields of its array types.
-                    $combined_fields[$field] = $old_field_type->nonArrayTypes()->withUnionType(
+                    // The field is not null after the assignment: PHP creates an array for a field that was null.
+                    $combined_fields[$field] = $old_field_type->nonArrayTypes()->nonNullableClone()->withUnionType(
                         ArrayType::combineArrayTypesOverriding($field_type, $old_field_type->arrayTypes(), true)
                     );
                 } else {
