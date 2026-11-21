@@ -300,3 +300,35 @@ function test_intermediate_generic_array_or_object(array $a): string
     $a[0]['x']['y']['a'] = 1;
     return $a[0]['x']['y']['b'];
 }
+
+/**
+ * isset($this->items['x']['a']) is true only if x exists and is not null or false,
+ * so the other keys of x keep their types: no PhanTypePossiblyInvalidDimOffset for b.
+ */
+class IssetHolder
+{
+    /** @var array{x?:array{a:int,b:string}} */
+    public array $items = [];
+
+    public function read(): string
+    {
+        if (isset($this->items['x']['a'])) {
+            return $this->items['x']['b'];
+        }
+        return '';
+    }
+}
+
+/**
+ * $a['x']['a'] !== null is true only if x exists and is not null or false,
+ * so the other keys of x keep their types: no PhanTypePossiblyInvalidDimOffset for b.
+ * Reading $a['x'] in the condition may still warn because x is optional.
+ * @param array{x?:array{a:?int,b:string}} $a
+ */
+function test_not_null_condition_on_optional_field(array $a): string
+{
+    if ($a['x']['a'] !== null) {
+        return $a['x']['b'];
+    }
+    return '';
+}

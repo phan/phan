@@ -35,3 +35,4 @@
 %s:291 PhanTypeMismatchReturn Returning $a[0]['b'] of type null but test_outer_generic_array_or_object() is declared to return string
 %s:301 PhanTypeInvalidDimOffset Invalid offset "b" of $a[0]['x']['y'] of array type array{a:1}
 %s:301 PhanTypeMismatchReturn Returning $a[0]['x']['y']['b'] of type null but test_intermediate_generic_array_or_object() is declared to return string
+%s:330 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'x' of $a of array type array{x?:array{a:?int,b:string}}

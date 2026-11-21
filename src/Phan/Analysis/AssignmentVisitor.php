@@ -2745,8 +2745,8 @@ class AssignmentVisitor extends AnalysisVisitor
         }
 
         return UnionType::of(
-            self::computeTypeSetOfMergedArrayShapeTypes($old_union_type->getTypeSet(), $right_type->getTypeSet(), $this->dim_depth, false, !$outer_may_be_absent, false, false),
-            self::computeTypeSetOfMergedArrayShapeTypes($old_union_type->getRealTypeSet(), $right_type->getRealTypeSet(), $this->dim_depth, true, false, false, false)
+            $this->computeTypeSetOfMergedArrayShapeTypes($old_union_type->getTypeSet(), $right_type->getTypeSet(), $this->dim_depth, false, !$outer_may_be_absent, false, false),
+            $this->computeTypeSetOfMergedArrayShapeTypes($old_union_type->getRealTypeSet(), $right_type->getRealTypeSet(), $this->dim_depth, true, false, false, false)
         );
     }
 
@@ -2755,7 +2755,7 @@ class AssignmentVisitor extends AnalysisVisitor
      * @param list<Type> $new_type_set may contain ArrayShapeType instances
      * @return list<Type> possibly containing duplicates.
      */
-    private static function computeTypeSetOfMergedArrayShapeTypes(
+    private function computeTypeSetOfMergedArrayShapeTypes(
         array $old_type_set,
         array $new_type_set,
         int $dim_depth,
@@ -2826,7 +2826,11 @@ class AssignmentVisitor extends AnalysisVisitor
             if ($old_field_type) {
                 $field_may_be_absent = false;
                 if (!$is_real) {
-                    $field_may_be_absent = $container_may_be_absent || self::fieldMayBeAbsentNullOrFalse($old_field_type);
+                    // A condition such as isset($x['field']['key']) or $x['field']['key'] !== null proves that the field exists
+                    // and is not null or false, so its other keys keep the types they had. A condition such as
+                    // is_null($x['field']['key']) does not prove it, but is treated the same way.
+                    $field_may_be_absent = !$this->is_conditional_check
+                        && ($container_may_be_absent || self::fieldMayBeAbsentNullOrFalse($old_field_type));
                     $adjusted_types = self::normalizePreservedShapes(
                         $old_field_type->getTypeSet(),
                         $dim_depth < 3 && $field_may_be_absent,
@@ -2841,7 +2845,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 } elseif ($dim_depth >= 3) {
                     $kept_old_field = $is_real ? $old_field_type : self::typesAfterDimWrite($old_field_type);
                     $combined_fields[$field] = UnionType::of(
-                        self::computeTypeSetOfMergedArrayShapeTypes(
+                        $this->computeTypeSetOfMergedArrayShapeTypes(
                             $kept_old_field->getTypeSet(),
                             $field_type->getTypeSet(),
                             $dim_depth - 1,
@@ -2850,7 +2854,7 @@ class AssignmentVisitor extends AnalysisVisitor
                             $field_may_be_absent,
                             $field_from_generic_fallback
                         ),
-                        $is_real ? [] : self::computeTypeSetOfMergedArrayShapeTypes(
+                        $is_real ? [] : $this->computeTypeSetOfMergedArrayShapeTypes(
                             $old_field_type->getRealTypeSet(),
                             $field_type->getRealTypeSet(),
                             $dim_depth - 1,
@@ -2958,15 +2962,16 @@ class AssignmentVisitor extends AnalysisVisitor
 
     /**
      * Adjusts preserved ArrayShapeType instances in $types before a nested assignment merge:
-     * - When $from_generic_fallback is true and $types mixes shapes with non-shape alternatives
-     *   (other than null), strips the shapes so they cannot shadow those alternatives.
+     * - When $from_generic_fallback is true and $types contains a shape and a type that is neither a shape
+     *   nor null, returns an empty list. The caller then drops all old types of the field and uses only
+     *   the assigned type, so that a shape merged with the assigned keys does not hide those other types.
      * - If $all_fields_optional is true (the container may have been absent or null), marks all
      *   preserved shape fields possibly undefined.
      * - If $types contains multiple shapes, marks any field not required in every shape as possibly
      *   undefined so merging shapes does not promote branch-specific keys to required.
      *
      * @param list<Type> $types
-     * @return ?list<Type> null if no adjustment was needed
+     * @return ?list<Type> null if no adjustment was needed, an empty list if the old types of the field are not used
      */
     private static function normalizePreservedShapes(array $types, bool $all_fields_optional, bool $from_generic_fallback): ?array
     {
