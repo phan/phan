@@ -1264,6 +1264,8 @@ class ParseVisitor extends ScopeVisitor
         } else {
             $real_union_type = UnionType::empty();
         }
+        // Used by Clazz::areConstantsCompatible(). In a class or an interface, the union type has `self` replaced by the class or interface.
+        $has_self_in_declared_type = $type_node instanceof Node && self::typeNodeContainsSelf($type_node);
 
         foreach ($node->children['const']->children ?? [] as $child_node) {
             if (!$child_node instanceof Node) {
@@ -1327,6 +1329,7 @@ class ParseVisitor extends ScopeVisitor
                 $fqsen
             );
             $constant->setHasDeclaredType(!$real_union_type->isEmpty());
+            $constant->setHasSelfInDeclaredType($has_self_in_declared_type);
 
             $constant->setDocComment($doc_comment);
             $constant->setAttributeList($attributes);
@@ -1379,6 +1382,23 @@ class ParseVisitor extends ScopeVisitor
         }
 
         return $this->context;
+    }
+
+    /**
+     * Returns true if the name `self` appears in $node, the node of a declared type.
+     */
+    private static function typeNodeContainsSelf(Node $node): bool
+    {
+        if ($node->kind === ast\AST_NAME) {
+            $name = $node->children['name'];
+            return \is_string($name) && \strcasecmp($name, 'self') === 0;
+        }
+        foreach ($node->children as $child) {
+            if ($child instanceof Node && self::typeNodeContainsSelf($child)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
