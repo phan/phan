@@ -70,6 +70,7 @@ use Phan\PluginV3\BeforeAnalyzeFileCapability;
 use Phan\PluginV3\BeforeAnalyzePhaseCapability;
 use Phan\PluginV3\BeforeLoopBodyAnalysisCapability;
 use Phan\PluginV3\BeforeLoopBodyAnalysisVisitor;
+use Phan\PluginV3\ConditionalCallCapability;
 use Phan\PluginV3\FinalizeProcessCapability;
 use Phan\PluginV3\HandleLazyLoadInternalFunctionCapability;
 use Phan\PluginV3\HandleLazyLoadInternalMethodCapability;
@@ -173,6 +174,9 @@ final class ConfigPluginSet extends PluginV3 implements
 
     /** @var list<PluginV3&AnalyzeFunctionCallCapability>|null - plugins to analyze invocations of subsets of functions and methods. */
     private $analyze_function_call_plugin_set;
+
+    /** @var list<PluginV3&ConditionalCallCapability> - plugins to change the context when calls of functions and methods are used as conditions. */
+    private $conditional_call_plugin_set = [];
 
     /** @var list<AnalyzeFunctionCapability>|null - plugins to analyze function declarations. */
     private $analyze_function_plugin_set;
@@ -742,6 +746,15 @@ final class ConfigPluginSet extends PluginV3 implements
     }
 
     /**
+     * @return list<PluginV3&ConditionalCallCapability>
+     * @internal
+     */
+    public function getConditionalCallPluginSet(): array
+    {
+        return $this->conditional_call_plugin_set;
+    }
+
+    /**
      * Returns the class names of the loaded plugins implementing AnalyzeMethodCapability that do not implement
      * AnalyzeMethodSkipsInheritedCopiesCapability (lazy_inherited_methods is disabled if there are any).
      *
@@ -1171,6 +1184,7 @@ final class ConfigPluginSet extends PluginV3 implements
         $this->subscribe_emit_issue_plugin_set      = self::filterByClass($plugin_set, SubscribeEmitIssueCapability::class);
         $this->suppression_plugin_set               = self::filterByClass($plugin_set, SuppressionCapability::class);
         $this->analyze_function_call_plugin_set     = self::filterByClass($plugin_set, AnalyzeFunctionCallCapability::class);
+        $this->conditional_call_plugin_set          = self::filterByClass($plugin_set, ConditionalCallCapability::class);
         $this->analyze_callable_argument_plugin_set = self::filterByClass($plugin_set, AnalyzeCallableArgumentCapability::class);
         $this->handle_lazy_load_internal_function_plugin_set = self::filterByClass($plugin_set, HandleLazyLoadInternalFunctionCapability::class);
         $this->handle_lazy_load_internal_method_plugin_set = self::filterByClass($plugin_set, HandleLazyLoadInternalMethodCapability::class);

@@ -259,6 +259,19 @@ trait FunctionTrait
     private $function_call_analyzer_callback_set = [];
 
     /**
+     * @var ?Closure(CodeBase, Context, FunctionInterface, Node, list<Node|int|string|float>, bool):Context
+     * the closures that change the context when a call of this is used as a condition (see addConditionalCallClosure()),
+     * combined into one closure that calls them in the order they were added
+     */
+    private $conditional_call_closure = null;
+
+    /**
+     * @var array<int,true> the spl_object_id() of the plugins (or of the closures added without a plugin) whose closures
+     * are in $conditional_call_closure
+     */
+    private $conditional_call_closure_set = [];
+
+    /**
      * @var FunctionLikeDeclarationType|null (Lazily generated representation of this as a closure type)
      */
     private $as_closure_declaration_type;
@@ -1509,6 +1522,71 @@ trait FunctionTrait
             $closure = ConfigPluginSet::mergeAnalyzeFunctionCallClosures($old_closure, $closure);
         }
         $this->function_call_analyzer_callback = $closure;
+    }
+
+    /**
+     * Returns true if this function or method has closures that change the context when a call of it is used as a condition
+     * (see addConditionalCallClosure())
+     */
+    public function hasConditionalCallClosure(): bool
+    {
+        return $this->conditional_call_closure !== null;
+    }
+
+    /**
+     * Returns the context after a call of this function or method that is used as a condition, as computed by the closures
+     * added with addConditionalCallClosure(), in the order they were added.
+     *
+     * @param Node $node the call (ast\AST_CALL, ast\AST_METHOD_CALL, ast\AST_NULLSAFE_METHOD_CALL or ast\AST_STATIC_CALL)
+     * @param list<Node|int|string|float> $args the arguments of the call, normalized with ArgumentType::normalizeNamedArgs()
+     * @param bool $is_negated false if the call is assumed to be truthy, true if it is assumed to be falsey
+     */
+    public function analyzeConditionalCall(CodeBase $code_base, Context $context, Node $node, array $args, bool $is_negated): Context
+    {
+        $closure = $this->conditional_call_closure;
+        if ($closure === null) {
+            return $context;
+        }
+        // @phan-suppress-next-line PhanTypeMismatchArgument no way to indicate $this always implements FunctionInterface
+        return $closure($code_base, $context, $this, $node, $args, $is_negated);
+    }
+
+    /**
+     * Add a closure that changes the context when a call of this function or method is used as a condition,
+     * after the closures that were already added. A closure is not added if a closure of the same plugin
+     * (or the same closure, when $plugin is null) was already added.
+     *
+     * @param Closure(CodeBase,Context,FunctionInterface,Node,list<Node|string|int|float>,bool):Context $closure
+     * @param ?PluginV3 $plugin the plugin that created the closure, or null @phan-mandatory-param
+     */
+    public function addConditionalCallClosure(Closure $closure, ?PluginV3 $plugin = null): void
+    {
+        $closure_id = spl_object_id($plugin ?? $closure);
+        if (isset($this->conditional_call_closure_set[$closure_id])) {
+            return;
+        }
+        $this->bumpStateVersion();
+        $this->conditional_call_closure_set[$closure_id] = true;
+        $previous_closure = $this->conditional_call_closure;
+        if ($previous_closure !== null) {
+            /**
+             * @param list<Node|int|string|float> $args
+             */
+            $closure = static function (CodeBase $code_base, Context $context, FunctionInterface $function, Node $node, array $args, bool $is_negated) use ($previous_closure, $closure): Context {
+                return $closure($code_base, $previous_closure($code_base, $context, $function, $node, $args, $is_negated), $function, $node, $args, $is_negated);
+            };
+        }
+        $this->conditional_call_closure = $closure;
+    }
+
+    /**
+     * @return list<int> the spl_object_id() of the plugins (or of the closures added without a plugin) whose closures
+     * addConditionalCallClosure() added, in the order they were added (for PHAN_DUMP_METHOD_STATE_DIGEST_EXTENDED=1)
+     * @internal
+     */
+    public function getConditionalCallClosureOwnerIds(): array
+    {
+        return \array_keys($this->conditional_call_closure_set);
     }
 
     /**
