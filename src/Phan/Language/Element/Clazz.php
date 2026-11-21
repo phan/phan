@@ -4638,20 +4638,42 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * Check if two constants are compatible (same visibility and equivalent value).
-     * In PHP 8.2+, constants with different visibility or values cannot coexist in composition.
+     * Check if two constants are compatible (same visibility, final modifier, declared type, and equivalent value).
+     * In PHP 8.2+, constants with different visibility, modifiers, types, or values cannot coexist in composition.
      *
      * @param ClassConstant $const1 the first constant to compare
      * @param ClassConstant $const2 the second constant to compare
-     * @return bool true if constants are compatible (same visibility and value)
+     * @return bool true if constants are compatible
      */
     private static function areConstantsCompatible(ClassConstant $const1, ClassConstant $const2): bool
     {
-        // Check visibility compatibility
+        if ($const1->getRealDefiningFQSEN() === $const2->getRealDefiningFQSEN()) {
+            return true;
+        }
+
+        // Check visibility and final modifier compatibility
         if ($const1->isPrivate() !== $const2->isPrivate() ||
             $const1->isProtected() !== $const2->isProtected() ||
-            $const1->isPublic() !== $const2->isPublic()) {
+            $const1->isPublic() !== $const2->isPublic() ||
+            $const1->isFinal() !== $const2->isFinal()) {
             return false;
+        }
+
+        // Check declared type compatibility (composition requires identical declared types, not covariance).
+        // For internal constants when targeting PHP 8.3, reflected or stubbed types may reflect PHP 8.4+.
+        $skip_internal_type_check = ($const1->isPHPInternal() || $const2->isPHPInternal())
+            && Config::get_closest_target_php_version_id() < 80400;
+        if (!$skip_internal_type_check) {
+            if ($const1->hasDeclaredType() !== $const2->hasDeclaredType()) {
+                return false;
+            }
+            if ($const1->hasDeclaredType()) {
+                $type1 = $const1->getUnionType()->getRealUnionType();
+                $type2 = $const2->getUnionType()->getRealUnionType();
+                if (!$type1->isEqualTo($type2)) {
+                    return false;
+                }
+            }
         }
 
         // Check if values are equivalent by comparing AST nodes

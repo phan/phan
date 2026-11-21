@@ -20,8 +20,7 @@ class ChildConflict extends ParentTypedInt {
 echo ChildConflict::C;
 
 // 2. An untyped trait constant with the same visibility and value as a typed parent constant.
-// PHP 8.3 and 8.4 reject it because the types differ. The composition check of Phan compares only
-// the visibility and the value, so PhanConstantTypeMismatchInheritance reports it.
+// PHP 8.3 and 8.4 reject it as an incompatible composition because the declared types differ.
 trait TraitUntypedSameValue {
     public const C = 0;
 }
@@ -151,3 +150,27 @@ class ImplementsCompatibleInterfaceWithTrait implements InterfaceTypedInt {
     use TraitTypedIntK;
 }
 echo ImplementsCompatibleInterfaceWithTrait::K;
+
+// 11. A class narrowing the declared type of a trait constant with the same value still fails composition,
+// even when the class also extends a parent declaring the same constant.
+class ParentUnionL {
+    public const int|string L = 0;
+}
+echo ParentUnionL::L;
+
+trait TraitUnionL {
+    public const int|string L = 1;
+}
+
+class ChildNarrowedCompositionL extends ParentUnionL {
+    use TraitUnionL;
+    public const int L = 1;
+}
+echo ChildNarrowedCompositionL::L;
+
+// 12. Identical union types in different order with the same visibility and value remain compatible.
+class ChildCompatibleUnionOrderL extends ParentUnionL {
+    use TraitUnionL;
+    public const string|int L = 1;
+}
+echo ChildCompatibleUnionOrderL::L;

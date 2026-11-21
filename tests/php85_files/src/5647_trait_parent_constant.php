@@ -256,3 +256,20 @@ class ChildOfDateTimeWithTrait extends \DateTime {
     use TraitUntypedAtom;
 }
 var_dump(ChildOfDateTimeWithTrait::ATOM);
+
+// 20. A class narrowing the declared type of a trait constant with the same value still fails composition in PHP 8.5,
+// even when extending a parent with the same constant.
+class ParentUnionM {
+    public const int|string M = 0;
+}
+echo ParentUnionM::M;
+
+trait TraitUnionM {
+    public const int|string M = 1;
+}
+
+class ChildNarrowedCompositionM extends ParentUnionM {
+    use TraitUnionM;
+    public const int M = 1;
+}
+echo ChildNarrowedCompositionM::M;
