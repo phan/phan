@@ -20,3 +20,6 @@
 %s:225 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $a[0] of array type array{a:1,b?:string,c?:bool}
 %s:237 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'other' of $a[0]['x'] of array type array{y:array{a:1,b?:string},other?:int}
 %s:238 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $a[0]['x']['y'] of array type array{a:1,b?:string}
+%s:250 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $a[0] of array type array{a:1,b?:string}
+%s:261 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \stdClass|int|string
+%s:261 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $a[0] of array type \ArrayObject<string,\stdClass|int>|array{a:1,b?:\stdClass|int|string}

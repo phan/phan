@@ -237,3 +237,28 @@ function test_optional_intermediate_field_recursive(array $a): string
     echo $a[0]['x']['other'];
     return $a[0]['x']['y']['b'];
 }
+
+/**
+ * A nullable outer container (?array<array{a:int,b:string}>) may be null, in which case PHP
+ * auto-vivifies an empty array and untouched sibling fields are possibly undefined.
+ * @param ?array<array{a:int,b:string}> $a
+ */
+function test_nullable_outer_container(?array $a): string
+{
+    $a[0]['a'] = 1;
+    echo $a[0]['a'];
+    return $a[0]['b'];
+}
+
+/**
+ * An ArrayAccess alternative in a generic array element is preserved alongside the shape and
+ * widens untouched sibling fields with its value type.
+ * @param array<array{a:int,b:string}|\ArrayObject<string,int|\stdClass>> $a
+ */
+function test_generic_array_object_alternative(array $a): \stdClass|int|string
+{
+    $a[0]['a'] = 1;
+    $b = $a[0]['b'];
+    '@phan-debug-var $b';
+    return $b;
+}

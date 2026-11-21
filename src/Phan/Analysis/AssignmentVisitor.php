@@ -44,8 +44,10 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NonEmptyAssociativeArrayType;
 use Phan\Language\Type\NonEmptyGenericArrayType;
 use Phan\Language\Type\NullType;
+use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\StdClassShapeType;
+use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
 use Phan\Library\StringUtil;
 
@@ -1662,13 +1664,14 @@ class AssignmentVisitor extends AnalysisVisitor
             // Copied from visitVar
             $old_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node);
             $right_type = $this->typeCheckDimAssignment($old_type, $node);
+            $container_may_be_absent = !$this->is_conditional_check && self::typeSetContainsNull($old_type);
             $old_type = $old_type->nonNullableClone();
             if ($old_type->isEmpty()) {
                 $old_type = ArrayType::instance(false)->asPHPDocUnionType();
             }
 
             if ($this->dim_depth > 1) {
-                $new_type = $this->computeTypeOfMultiDimensionalAssignment($old_type, $right_type);
+                $new_type = $this->computeTypeOfMultiDimensionalAssignment($old_type, $right_type, $container_may_be_absent);
             } elseif ($old_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->isEmpty()) {
                 $new_type = $old_type->withUnionType($right_type);
             } else {
@@ -1733,13 +1736,14 @@ class AssignmentVisitor extends AnalysisVisitor
             // Copied from visitVar
             $old_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node);
             $right_type = $this->typeCheckDimAssignment($old_type, $node);
+            $container_may_be_absent = !$this->is_conditional_check && self::typeSetContainsNull($old_type);
             $old_type = $old_type->nonNullableClone();
             if ($old_type->isEmpty()) {
                 $old_type = ArrayType::instance(false)->asPHPDocUnionType();
             }
 
             if ($this->dim_depth > 1) {
-                $new_type = $this->computeTypeOfMultiDimensionalAssignment($old_type, $right_type);
+                $new_type = $this->computeTypeOfMultiDimensionalAssignment($old_type, $right_type, $container_may_be_absent);
             } elseif ($old_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->isEmpty()) {
                 $new_type = $old_type->withUnionType($right_type);
             } else {
@@ -2604,6 +2608,7 @@ class AssignmentVisitor extends AnalysisVisitor
                     $node->phan_is_assignment_to_real_array = true;
                 }
                 $right_type = $this->typeCheckDimAssignment($old_variable_union_type, $node);
+                $container_may_be_absent = !$this->is_conditional_check && self::typeSetContainsNull($old_variable_union_type);
                 if ($old_variable_union_type->isEmpty()) {
                     $old_variable_union_type = ArrayType::instance(false)->asPHPDocUnionType();
                 }
@@ -2611,7 +2616,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 $old_variable_union_type = $old_variable_union_type->nonNullableClone();
                 // TODO: Make the behavior more precise for $x['a']['b'] = ...; when $x is an array shape.
                 if ($this->dim_depth > 1) {
-                    $new_union_type = $this->computeTypeOfMultiDimensionalAssignment($old_variable_union_type, $right_type);
+                    $new_union_type = $this->computeTypeOfMultiDimensionalAssignment($old_variable_union_type, $right_type, $container_may_be_absent);
                 } elseif ($this->is_conditional_check && !$right_type->isEmpty() && !$right_type->hasTopLevelNonArrayShapeTypeInstances() && $old_variable_union_type->hasPossiblyObjectTypes() && $old_variable_union_type->hasArrayShapeTypeInstances()) {
                     // When a conditional check adds a new array shape field, merge it into
                     // existing shapes rather than adding as a separate union member.
@@ -2731,7 +2736,7 @@ class AssignmentVisitor extends AnalysisVisitor
         return $this->context;
     }
 
-    private function computeTypeOfMultiDimensionalAssignment(UnionType $old_union_type, UnionType $right_type): UnionType
+    private function computeTypeOfMultiDimensionalAssignment(UnionType $old_union_type, UnionType $right_type, bool $container_may_be_absent = false): UnionType
     {
         if ($this->dim_depth <= 1) {
             throw new AssertionError("Expected dim_depth > 1, got $this->dim_depth");
@@ -2741,8 +2746,8 @@ class AssignmentVisitor extends AnalysisVisitor
         }
 
         return UnionType::of(
-            self::computeTypeSetOfMergedArrayShapeTypes($old_union_type->getTypeSet(), $right_type->getTypeSet(), $this->dim_depth, false),
-            self::computeTypeSetOfMergedArrayShapeTypes($old_union_type->getRealTypeSet(), $right_type->getRealTypeSet(), $this->dim_depth, true)
+            self::computeTypeSetOfMergedArrayShapeTypes($this->code_base, $old_union_type->getTypeSet(), $right_type->getTypeSet(), $this->dim_depth, false, $container_may_be_absent),
+            self::computeTypeSetOfMergedArrayShapeTypes($this->code_base, $old_union_type->getRealTypeSet(), $right_type->getRealTypeSet(), $this->dim_depth, true)
         );
     }
 
@@ -2751,7 +2756,7 @@ class AssignmentVisitor extends AnalysisVisitor
      * @param list<Type> $new_type_set may contain ArrayShapeType instances
      * @return list<Type> possibly containing duplicates.
      */
-    private static function computeTypeSetOfMergedArrayShapeTypes(array $old_type_set, array $new_type_set, int $dim_depth, bool $is_real, bool $container_may_be_absent = false): array
+    private static function computeTypeSetOfMergedArrayShapeTypes(CodeBase $code_base, array $old_type_set, array $new_type_set, int $dim_depth, bool $is_real, bool $container_may_be_absent = false): array
     {
         if ($is_real) {
             if (!$old_type_set || !$new_type_set) {
@@ -2799,7 +2804,7 @@ class AssignmentVisitor extends AnalysisVisitor
             $old_field_type = $combined_fields[$field] ?? null;
             $element_may_be_null = false;
             if ($old_field_type === null && $old_generic_array_types && $field_type->hasTopLevelArrayShapeTypeInstances()) {
-                $old_field_type = self::genericArrayElementTypeForField($old_generic_array_types, $field, $element_may_be_null);
+                $old_field_type = self::genericArrayElementTypeForField($code_base, $old_generic_array_types, $field, $element_may_be_null);
             }
             if ($old_field_type) {
                 $field_may_be_absent = false;
@@ -2819,6 +2824,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 if ($dim_depth >= 3) {
                     $combined_fields[$field] = UnionType::of(
                         self::computeTypeSetOfMergedArrayShapeTypes(
+                            $code_base,
                             $old_field_type->getTypeSet(),
                             $field_type->getTypeSet(),
                             $dim_depth - 1,
@@ -2826,6 +2832,7 @@ class AssignmentVisitor extends AnalysisVisitor
                             $field_may_be_absent
                         ),
                         $is_real ? [] : self::computeTypeSetOfMergedArrayShapeTypes(
+                            $code_base,
                             $old_field_type->getRealTypeSet(),
                             $field_type->getRealTypeSet(),
                             $dim_depth - 1,
@@ -2852,15 +2859,17 @@ class AssignmentVisitor extends AnalysisVisitor
 
     /**
      * Returns the combined PHPDoc element type of any generic array types in $generic_array_types
-     * whose key type accepts $field and whose element type is an array (or mixed), so a nested
-     * assignment such as `$arr[0]['key2'] = 'new'` preserves the other fields of `$arr[0]`.
+     * whose key type accepts $field and whose element type is an array, mixed, or an array-accessible
+     * object, so a nested assignment such as `$arr[0]['key2'] = 'new'` preserves sibling fields and
+     * object alternatives of `$arr[0]`.
      *
      * @param non-empty-list<GenericArrayType> $generic_array_types
      */
-    private static function genericArrayElementTypeForField(array $generic_array_types, int|string $field, bool &$element_may_be_null): ?UnionType
+    private static function genericArrayElementTypeForField(CodeBase $code_base, array $generic_array_types, int|string $field, bool &$element_may_be_null): ?UnionType
     {
         $field_key_type = \is_int($field) ? GenericArrayType::KEY_INT : GenericArrayType::KEY_STRING;
         $element_types = [];
+        $object_alternatives = [];
         foreach ($generic_array_types as $generic_type) {
             if ($generic_type instanceof ListType) {
                 if (!\is_int($field) || $field < 0) {
@@ -2879,19 +2888,109 @@ class AssignmentVisitor extends AnalysisVisitor
                 $element_types[] = $element_type;
             } elseif ($element_type instanceof NullType) {
                 $element_may_be_null = true;
+            } elseif (self::isPossiblyArrayAccessibleObject($element_type, $code_base)) {
+                if ($element_type->isNullable()) {
+                    $element_may_be_null = true;
+                }
+                $non_null = $element_type->withIsNullable(false);
+                $element_types[] = $non_null;
+                $object_alternatives[] = $non_null;
             }
         }
         if (!$element_types) {
             return null;
         }
+        if ($object_alternatives) {
+            $alt_value_union = UnionType::empty();
+            foreach ($object_alternatives as $alt) {
+                $alt_value_union = $alt_value_union->withUnionType(self::arrayAccessElementUnionType($alt, $code_base));
+            }
+            foreach ($element_types as $i => $type) {
+                if (!($type instanceof ArrayShapeType)) {
+                    continue;
+                }
+                $field_types = [];
+                foreach ($type->getFieldTypes() as $key => $field_type) {
+                    $field_types[$key] = $field_type->withUnionType($alt_value_union)->withIsPossiblyUndefined(true);
+                }
+                $element_types[$i] = ArrayShapeType::fromFieldTypes($field_types, false);
+            }
+        }
         return UnionType::of($element_types);
+    }
+
+    private static function isPossiblyArrayAccessibleObject(Type $type, CodeBase $code_base): bool
+    {
+        if ($type instanceof ObjectType || $type instanceof TemplateType) {
+            return true;
+        }
+        if ($type->isObjectWithKnownFQSEN() && \strcasecmp($type->getName(), 'SimpleXMLElement') === 0 && $type->getNamespace() === '\\') {
+            return true;
+        }
+        return $type->isArrayAccess($code_base);
+    }
+
+    private static function arrayAccessElementUnionType(Type $type, CodeBase $code_base): UnionType
+    {
+        if ($type->isArrayAccess($code_base)) {
+            if ($type->isObjectWithKnownFQSEN()) {
+                $fqsen = $type->asFQSEN();
+                if ($fqsen instanceof FullyQualifiedClassName && $code_base->hasClassWithFQSEN($fqsen)) {
+                    $class = $code_base->getClassByFQSEN($fqsen);
+                    $array_access_fqsen = FullyQualifiedClassName::fromType(Type::fromNamespaceAndName('\\', 'ArrayAccess', false));
+                    $interface_option = $class->getInterfaceType($array_access_fqsen);
+                    if ($interface_option->isDefined()) {
+                        $interface_params = $interface_option->get()->getTemplateParameterTypeList();
+                        if (\count($interface_params) >= 2) {
+                            $value_type = $interface_params[1];
+                            if ($value_type->hasTemplateTypeRecursive()) {
+                                $map = $type->getTemplateParameterTypeMap($code_base);
+                                if ($map) {
+                                    $value_type = $value_type->withTemplateParameterTypeMap($map);
+                                }
+                            }
+                            if (!$value_type->isEmpty()) {
+                                return $value_type;
+                            }
+                        }
+                    }
+                    $template_params = $type->getTemplateParameterTypeList();
+                    if (\count($template_params) >= 2 && !$template_params[1]->isEmpty()) {
+                        return $template_params[1];
+                    }
+                    if ($class->hasMethodWithName($code_base, 'offsetGet', true)) {
+                        try {
+                            $return_type = $class->getMethodByName($code_base, 'offsetGet')->getUnionType();
+                            if ($return_type->hasTemplateTypeRecursive()) {
+                                $map = $type->getTemplateParameterTypeMap($code_base);
+                                if ($map) {
+                                    $return_type = $return_type->withTemplateParameterTypeMap($map);
+                                }
+                            }
+                            if (!$return_type->isEmpty()) {
+                                return $return_type;
+                            }
+                        } catch (CodeBaseException) {
+                        }
+                    }
+                }
+            } else {
+                $template_params = $type->getTemplateParameterTypeList();
+                if (\count($template_params) >= 2 && !$template_params[1]->isEmpty()) {
+                    return $template_params[1];
+                }
+            }
+        }
+        return MixedType::instance(false)->asPHPDocUnionType();
     }
 
     private static function fieldMayBeAbsentOrNull(UnionType $union_type): bool
     {
-        if ($union_type->isPossiblyUndefined()) {
-            return true;
-        }
+        return $union_type->isPossiblyUndefined() || self::typeSetContainsNull($union_type);
+    }
+
+    private static function typeSetContainsNull(UnionType $union_type): bool
+    {
         foreach ($union_type->getTypeSet() as $type) {
             if ($type instanceof NullType || ($type instanceof ArrayType && $type->isNullable())) {
                 return true;
