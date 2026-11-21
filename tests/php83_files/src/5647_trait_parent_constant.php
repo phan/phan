@@ -174,3 +174,48 @@ class ChildCompatibleUnionOrderL extends ParentUnionL {
     public const string|int L = 1;
 }
 echo ChildCompatibleUnionOrderL::L;
+
+// 13. Equivalent iterable alias (iterable === array|\Traversable) and nullable spellings (?int === int|null) are compatible.
+trait TraitIterableM {
+    public const iterable|int M = 0;
+}
+class ClassIterableM {
+    use TraitIterableM;
+    public const array|\Traversable|int M = 0;
+}
+var_dump(ClassIterableM::M);
+
+trait TraitNullableN {
+    public const ?int N = 0;
+}
+class ClassNullableN {
+    use TraitNullableN;
+    public const int|null N = 0;
+}
+var_dump(ClassNullableN::N);
+
+// 14. `self` in a trait constant binds to the composing class before checking composition compatibility.
+trait TraitSelfO {
+    public const self|int O = 0;
+}
+trait TraitExplicitO {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const ClassSelfO|int O = 0;
+}
+class ClassSelfO {
+    use TraitSelfO, TraitExplicitO;
+}
+var_dump(ClassSelfO::O);
+
+// 15. `static` does not bind to the composing class name and remains incompatible with it.
+trait TraitStaticP {
+    public const static|int P = 0;
+}
+trait TraitExplicitP {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const ClassStaticP|int P = 0;
+}
+class ClassStaticP {
+    use TraitStaticP, TraitExplicitP;
+}
+var_dump(ClassStaticP::P);
