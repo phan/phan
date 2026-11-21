@@ -17,6 +17,7 @@ use Phan\Analysis\LazyInheritedMethodsEligibility;
 use Phan\Analysis\ParentConstructorCalledAnalyzer;
 use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\Analysis\PropertyTypesAnalyzer;
+use Phan\AST\ASTHasher;
 use Phan\AST\ASTReverter;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -4701,10 +4702,10 @@ class Clazz extends AddressableElement
             return false;
         }
 
-        // Compare AST nodes for value equivalence
-        // For simplicity, we use string representation comparison
+        // Compare AST nodes for value equivalence.
+        // The hash ignores line numbers, which var_export() would include.
         // This may have false positives for complex expressions, but catches most cases
-        return \var_export($node1, true) === \var_export($node2, true);
+        return $node1 instanceof Node && $node2 instanceof Node && ASTHasher::hash($node1) === ASTHasher::hash($node2);
     }
 
     /**

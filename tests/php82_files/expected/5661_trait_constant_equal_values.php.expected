@@ -1,0 +1,1 @@
+%s:22 PhanIncompatibleCompositionConstant \T3 and \T4 define the same constant (G) in the composition of \B2. However, the definition differs and is considered incompatible. Class was composed in %s on line 22
