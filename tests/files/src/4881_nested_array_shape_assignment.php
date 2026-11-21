@@ -152,28 +152,15 @@ function test_nullable_array_access_field(array $a): int
 }
 
 /**
- * When the generic array element is nullable, PHP creates an empty array if the element was null,
- * so untouched sibling fields are possibly undefined rather than required.
+ * Nullable or mixed non-shape generic array elements do not synthesize an overriding shape
+ * (falling back to array{a:1}), so missing sibling fields still emit diagnostics.
  * @param array<?array{a:int,b:string}> $a
  */
 function test_nullable_element_shape(array $a): string
 {
     $a[0]['a'] = 1;
-    '@phan-debug-var $a';
     echo $a[0]['a'];
     return $a[0]['b'];
-}
-
-/**
- * A 3D generic array with a nullable middle element propagates nullability so inner sibling fields
- * remain possibly undefined.
- * @param array<?array<int,array{a:int,b:string}>> $a
- */
-function test_3d_nullable_element_shape(array $a): string
-{
-    $a[0][1]['a'] = 1;
-    echo $a[0][1]['a'];
-    return $a[0][1]['b'];
 }
 
 /**
@@ -201,16 +188,23 @@ function test_nested_dynamic_key_does_not_flatten_shape(array $a, string $k): st
 }
 
 /**
- * When an element can be either a shape or a generic array, untouched sibling fields are widened
- * with compatible generic alternative element types and marked possibly undefined.
+ * Generic/object/string/false alternatives alongside a shape bail out of generic-array fallback
+ * so the synthesized shape does not hide those alternatives.
  * @param array<array{a:int,b:string}|array<string,\stdClass>> $a
+ * @param array<array{a:int,b:string}|\ArrayObject<string,int|\stdClass>> $b
+ * @param array<array{0:int,1:\stdClass}|string> $c
+ * @param array<array{a:int,b:string}|false> $d
  */
-function test_shape_or_generic_alternative(array $a): \stdClass|string
+function test_non_shape_alternatives_bail_out(array $a, array $b, array $c, array $d): void
 {
     $a[0]['a'] = 1;
-    $b = $a[0]['b'];
-    '@phan-debug-var $b';
-    return $b;
+    echo $a[0]['b'];
+    $b[0]['a'] = 1;
+    echo $b[0]['b'];
+    $c[0][0] = 'x';
+    var_dump($c[0][1]);
+    $d[0]['a'] = 1;
+    echo $d[0]['b'];
 }
 
 /**
@@ -239,8 +233,7 @@ function test_optional_intermediate_field_recursive(array $a): string
 }
 
 /**
- * A nullable outer container (?array<array{a:int,b:string}>) may be null, in which case PHP
- * auto-vivifies an empty array and untouched sibling fields are possibly undefined.
+ * A nullable outer container (?array<array{a:int,b:string}>) does not preserve sibling fields as required.
  * @param ?array<array{a:int,b:string}> $a
  */
 function test_nullable_outer_container(?array $a): string
@@ -251,51 +244,13 @@ function test_nullable_outer_container(?array $a): string
 }
 
 /**
- * An ArrayAccess alternative in a generic array element is preserved alongside the shape and
- * widens untouched sibling fields with its value type.
- * @param array<array{a:int,b:string}|\ArrayObject<string,int|\stdClass>> $a
+ * A nested write through a nullable intermediate ArrayObject drops nullability from the written container.
+ * @param array<array{x:?\ArrayObject<string,array<string,int>>}> $a
  */
-function test_generic_array_object_alternative(array $a): \stdClass|int|string
+function test_recursive_nullable_intermediate_object(array $a): int
 {
-    $a[0]['a'] = 1;
-    $b = $a[0]['b'];
-    '@phan-debug-var $b';
-    return $b;
-}
-
-/**
- * A generic class implementing bare ArrayAccess with unrelated template parameters must derive
- * its offset value type from offsetGet() rather than guessing from positional template arguments.
- * @template T
- * @template U
- */
-class GenericArrayBox implements \ArrayAccess
-{
-    public function offsetExists(mixed $offset): bool { return true; }
-    public function offsetGet(mixed $offset): \stdClass { return new \stdClass(); }
-    public function offsetSet(mixed $offset, mixed $value): void {}
-    public function offsetUnset(mixed $offset): void {}
-}
-
-/**
- * @param array<array{a:int,b:string}|GenericArrayBox<int,string>> $a
- */
-function test_generic_box_offset_get_contract(array $a): \stdClass|string
-{
-    $a[0]['a'] = 1;
-    $b = $a[0]['b'];
-    '@phan-debug-var $b';
-    return $b;
-}
-
-/**
- * A false element auto-vivifies an empty array in PHP 8.x, so untouched sibling fields remain
- * possibly undefined.
- * @param array<array{a:int,b:string}|false> $a
- */
-function test_false_element_auto_vivifies(array $a): string
-{
-    $a[0]['a'] = 1;
-    echo $a[0]['a'];
-    return $a[0]['b'];
+    $a[0]['x']['y']['z'] = 1;
+    $v = $a[0]['x']['y']['z'];
+    '@phan-debug-var $v';
+    return $v;
 }

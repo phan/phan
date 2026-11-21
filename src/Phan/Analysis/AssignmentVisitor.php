@@ -45,10 +45,8 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NonEmptyAssociativeArrayType;
 use Phan\Language\Type\NonEmptyGenericArrayType;
 use Phan\Language\Type\NullType;
-use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\StdClassShapeType;
-use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
 use Phan\Library\StringUtil;
 
@@ -2737,7 +2735,7 @@ class AssignmentVisitor extends AnalysisVisitor
         return $this->context;
     }
 
-    private function computeTypeOfMultiDimensionalAssignment(UnionType $old_union_type, UnionType $right_type, bool $container_may_be_absent = false): UnionType
+    private function computeTypeOfMultiDimensionalAssignment(UnionType $old_union_type, UnionType $right_type, bool $outer_may_be_absent = false): UnionType
     {
         if ($this->dim_depth <= 1) {
             throw new AssertionError("Expected dim_depth > 1, got $this->dim_depth");
@@ -2747,8 +2745,8 @@ class AssignmentVisitor extends AnalysisVisitor
         }
 
         return UnionType::of(
-            self::computeTypeSetOfMergedArrayShapeTypes($this->code_base, $old_union_type->getTypeSet(), $right_type->getTypeSet(), $this->dim_depth, false, $container_may_be_absent),
-            self::computeTypeSetOfMergedArrayShapeTypes($this->code_base, $old_union_type->getRealTypeSet(), $right_type->getRealTypeSet(), $this->dim_depth, true)
+            self::computeTypeSetOfMergedArrayShapeTypes($old_union_type->getTypeSet(), $right_type->getTypeSet(), $this->dim_depth, false, !$outer_may_be_absent, false, false),
+            self::computeTypeSetOfMergedArrayShapeTypes($old_union_type->getRealTypeSet(), $right_type->getRealTypeSet(), $this->dim_depth, true, false, false, false)
         );
     }
 
@@ -2757,8 +2755,15 @@ class AssignmentVisitor extends AnalysisVisitor
      * @param list<Type> $new_type_set may contain ArrayShapeType instances
      * @return list<Type> possibly containing duplicates.
      */
-    private static function computeTypeSetOfMergedArrayShapeTypes(CodeBase $code_base, array $old_type_set, array $new_type_set, int $dim_depth, bool $is_real, bool $container_may_be_absent = false): array
-    {
+    private static function computeTypeSetOfMergedArrayShapeTypes(
+        array $old_type_set,
+        array $new_type_set,
+        int $dim_depth,
+        bool $is_real,
+        bool $allow_generic_fallback = true,
+        bool $container_may_be_absent = false,
+        bool $from_generic_fallback = false
+    ): array {
         if ($is_real) {
             if (!$old_type_set || !$new_type_set) {
                 return [];
@@ -2782,7 +2787,7 @@ class AssignmentVisitor extends AnalysisVisitor
             if ($type instanceof ArrayShapeType) {
                 $old_array_shape_types[] = $type;
             } else {
-                if (!$is_real && $type instanceof GenericArrayType) {
+                if (!$is_real && $allow_generic_fallback && $type instanceof GenericArrayType) {
                     $old_generic_array_types[] = $type;
                 }
                 $result[] = $type;
@@ -2803,41 +2808,49 @@ class AssignmentVisitor extends AnalysisVisitor
         }
         foreach ($new_array_shape_type->getFieldTypes() as $field => $field_type) {
             $old_field_type = $combined_fields[$field] ?? null;
-            $element_may_be_null = false;
+            $field_from_generic_fallback = $from_generic_fallback;
             if ($old_field_type === null && $old_generic_array_types && $field_type->hasTopLevelArrayShapeTypeInstances()) {
-                $old_field_type = self::genericArrayElementTypeForField($code_base, $old_generic_array_types, $field, $element_may_be_null);
+                $old_field_type = self::genericArrayElementTypeForField($old_generic_array_types, $field, $dim_depth);
+                if ($old_field_type !== null) {
+                    $field_from_generic_fallback = true;
+                }
             }
             if ($old_field_type) {
                 $field_may_be_absent = false;
                 if (!$is_real) {
-                    $field_may_be_absent = $container_may_be_absent || $element_may_be_null || self::fieldMayBeAbsentOrNull($old_field_type);
-                    $adjusted_types = $old_field_type->getTypeSet();
-                    $did_adjust = false;
-                    $widened_types = self::normalizePreservedShapes($adjusted_types, $dim_depth < 3 && $field_may_be_absent);
-                    if ($widened_types !== null) {
-                        $adjusted_types = $widened_types;
-                        $did_adjust = true;
-                    }
-                    if ($did_adjust) {
-                        $old_field_type = UnionType::of($adjusted_types, $old_field_type->getRealTypeSet());
+                    $field_may_be_absent = $container_may_be_absent || self::fieldMayBeAbsentOrNull($old_field_type);
+                    $adjusted_types = self::normalizePreservedShapes(
+                        $old_field_type->getTypeSet(),
+                        $dim_depth < 3 && $field_may_be_absent,
+                        $field_from_generic_fallback
+                    );
+                    if ($adjusted_types !== null) {
+                        $old_field_type = $adjusted_types ? UnionType::of($adjusted_types, $old_field_type->getRealTypeSet()) : null;
                     }
                 }
-                if ($dim_depth >= 3) {
+                if ($old_field_type === null) {
+                    $combined_fields[$field] = $field_type;
+                } elseif ($dim_depth >= 3) {
+                    // A successful nested write makes intermediate containers non-null (PHP creates an array if null).
+                    $non_null_old_field = $is_real ? $old_field_type : $old_field_type->nonNullableClone();
                     $combined_fields[$field] = UnionType::of(
                         self::computeTypeSetOfMergedArrayShapeTypes(
-                            $code_base,
-                            $old_field_type->getTypeSet(),
+                            $non_null_old_field->getTypeSet(),
                             $field_type->getTypeSet(),
                             $dim_depth - 1,
                             $is_real,
-                            $field_may_be_absent
+                            !$is_real && !$field_may_be_absent,
+                            $field_may_be_absent,
+                            $field_from_generic_fallback
                         ),
                         $is_real ? [] : self::computeTypeSetOfMergedArrayShapeTypes(
-                            $code_base,
                             $old_field_type->getRealTypeSet(),
                             $field_type->getRealTypeSet(),
                             $dim_depth - 1,
-                            true
+                            true,
+                            false,
+                            false,
+                            false
                         )
                     );
                 } elseif ($old_field_type->hasPossiblyObjectTypes() || $old_field_type->isEmpty()) {
@@ -2859,18 +2872,19 @@ class AssignmentVisitor extends AnalysisVisitor
     }
 
     /**
-     * Returns the combined PHPDoc element type of any generic array types in $generic_array_types
-     * whose key type accepts $field and whose element type is an array, mixed, or an array-accessible
-     * object, so a nested assignment such as `$arr[0]['key2'] = 'new'` preserves sibling fields and
-     * object alternatives of `$arr[0]`.
+     * Returns the combined PHPDoc element type of compatible generic array types in $generic_array_types
+     * when every compatible element is a clean non-nullable array shape (or, for $dim_depth >= 3, a
+     * non-nullable generic array). Bails out when any compatible element is nullable, scalar, generic
+     * array (at depth 2), or object so a synthesized shape never shadows non-shape alternatives.
      *
      * @param non-empty-list<GenericArrayType> $generic_array_types
      */
-    private static function genericArrayElementTypeForField(CodeBase $code_base, array $generic_array_types, int|string $field, bool &$element_may_be_null): ?UnionType
+    private static function genericArrayElementTypeForField(array $generic_array_types, int|string $field, int $dim_depth): ?UnionType
     {
         $field_key_type = \is_int($field) ? GenericArrayType::KEY_INT : GenericArrayType::KEY_STRING;
         $element_types = [];
-        $object_alternatives = [];
+        $has_shape = false;
+        $has_generic = false;
         foreach ($generic_array_types as $generic_type) {
             if ($generic_type instanceof ListType) {
                 if (!\is_int($field) || $field < 0) {
@@ -2880,111 +2894,23 @@ class AssignmentVisitor extends AnalysisVisitor
                 continue;
             }
             $element_type = $generic_type->genericArrayElementType();
-            if ($element_type instanceof ArrayType) {
-                if ($element_type->isNullable()) {
-                    $element_may_be_null = true;
-                }
-                $element_types[] = $element_type->withIsNullable(false);
-            } elseif ($element_type instanceof MixedType) {
+            if ($element_type->isNullable()) {
+                return null;
+            }
+            if ($element_type instanceof ArrayShapeType) {
+                $has_shape = true;
                 $element_types[] = $element_type;
-            } elseif ($element_type instanceof NullType || $element_type instanceof FalseType || \get_class($element_type) === BoolType::class) {
-                $element_may_be_null = true;
-            } elseif (self::isPossiblyArrayAccessibleObject($element_type, $code_base)) {
-                if ($element_type->isNullable()) {
-                    $element_may_be_null = true;
-                }
-                $non_null = $element_type->withIsNullable(false);
-                $element_types[] = $non_null;
-                $object_alternatives[] = $non_null;
+            } elseif ($dim_depth >= 3 && $element_type instanceof GenericArrayType) {
+                $has_generic = true;
+                $element_types[] = $element_type;
+            } else {
+                return null;
             }
         }
-        if (!$element_types) {
+        if (!$element_types || ($has_shape && $has_generic)) {
             return null;
         }
-        if ($object_alternatives) {
-            $alt_value_union = UnionType::empty();
-            foreach ($object_alternatives as $alt) {
-                $alt_value_union = $alt_value_union->withUnionType(self::arrayAccessElementUnionType($alt, $code_base));
-            }
-            foreach ($element_types as $i => $type) {
-                if (!($type instanceof ArrayShapeType)) {
-                    continue;
-                }
-                $field_types = [];
-                foreach ($type->getFieldTypes() as $key => $field_type) {
-                    $field_types[$key] = $field_type->withUnionType($alt_value_union)->withIsPossiblyUndefined(true);
-                }
-                $element_types[$i] = ArrayShapeType::fromFieldTypes($field_types, false);
-            }
-        }
         return UnionType::of($element_types);
-    }
-
-    private static function isPossiblyArrayAccessibleObject(Type $type, CodeBase $code_base): bool
-    {
-        if ($type instanceof ObjectType || $type instanceof TemplateType) {
-            return true;
-        }
-        if ($type->isObjectWithKnownFQSEN() && \strcasecmp($type->getName(), 'SimpleXMLElement') === 0 && $type->getNamespace() === '\\') {
-            return true;
-        }
-        return $type->isArrayAccess($code_base);
-    }
-
-    private static function arrayAccessElementUnionType(Type $type, CodeBase $code_base): UnionType
-    {
-        if ($type->isArrayAccess($code_base)) {
-            if ($type->isObjectWithKnownFQSEN()) {
-                $fqsen = $type->asFQSEN();
-                if ($fqsen instanceof FullyQualifiedClassName && $code_base->hasClassWithFQSEN($fqsen)) {
-                    $class = $code_base->getClassByFQSEN($fqsen);
-                    $array_access_fqsen = FullyQualifiedClassName::fromType(Type::fromNamespaceAndName('\\', 'ArrayAccess', false));
-                    $interface_option = $class->getInterfaceType($array_access_fqsen);
-                    if ($interface_option->isDefined()) {
-                        $interface_params = $interface_option->get()->getTemplateParameterTypeList();
-                        if (\count($interface_params) >= 2) {
-                            $value_type = $interface_params[1];
-                            if ($value_type->hasTemplateTypeRecursive()) {
-                                $map = $type->getTemplateParameterTypeMap($code_base);
-                                if ($map) {
-                                    $value_type = $value_type->withTemplateParameterTypeMap($map);
-                                }
-                            }
-                            if (!$value_type->isEmpty()) {
-                                return $value_type;
-                            }
-                        }
-                    }
-                    if ($type->getNamespace() === '\\' && (\strcasecmp($type->getName(), 'ArrayObject') === 0 || \strcasecmp($type->getName(), 'ArrayAccess') === 0)) {
-                        $template_params = $type->getTemplateParameterTypeList();
-                        if (\count($template_params) >= 2 && !$template_params[1]->isEmpty()) {
-                            return $template_params[1];
-                        }
-                    }
-                    if ($class->hasMethodWithName($code_base, 'offsetGet', true)) {
-                        try {
-                            $return_type = $class->getMethodByName($code_base, 'offsetGet')->getUnionType();
-                            if ($return_type->hasTemplateTypeRecursive()) {
-                                $map = $type->getTemplateParameterTypeMap($code_base);
-                                if ($map) {
-                                    $return_type = $return_type->withTemplateParameterTypeMap($map);
-                                }
-                            }
-                            if (!$return_type->isEmpty()) {
-                                return $return_type;
-                            }
-                        } catch (CodeBaseException) {
-                        }
-                    }
-                }
-            } else {
-                $template_params = $type->getTemplateParameterTypeList();
-                if (\count($template_params) >= 2 && !$template_params[1]->isEmpty()) {
-                    return $template_params[1];
-                }
-            }
-        }
-        return MixedType::instance(false)->asPHPDocUnionType();
     }
 
     private static function fieldMayBeAbsentOrNull(UnionType $union_type): bool
@@ -3004,57 +2930,43 @@ class AssignmentVisitor extends AnalysisVisitor
 
     /**
      * Adjusts preserved ArrayShapeType instances in $types before a nested assignment merge:
+     * - When $from_generic_fallback is true and $types mixes shapes with non-shape alternatives
+     *   (other than null), strips the shapes so they cannot shadow those alternatives.
      * - If $all_fields_optional is true (the container may have been absent or null), marks all
      *   preserved shape fields possibly undefined.
-     * - If $types mixes shapes with generic array or mixed alternatives, widens each shape's fields
-     *   with compatible alternative element types and marks them possibly undefined (since shape
-     *   lookups take precedence over generic alternatives in the same union).
      * - If $types contains multiple shapes, marks any field not required in every shape as possibly
      *   undefined so merging shapes does not promote branch-specific keys to required.
      *
      * @param list<Type> $types
      * @return ?list<Type> null if no adjustment was needed
      */
-    private static function normalizePreservedShapes(array $types, bool $all_fields_optional): ?array
+    private static function normalizePreservedShapes(array $types, bool $all_fields_optional, bool $from_generic_fallback): ?array
     {
         $shape_indices = [];
-        $generic_alternatives = [];
+        $has_non_shape_alternative = false;
         foreach ($types as $i => $type) {
             if ($type instanceof ArrayShapeType) {
                 $shape_indices[] = $i;
-            } elseif ($type instanceof ArrayType || $type instanceof MixedType) {
-                $generic_alternatives[] = $type;
+            } elseif (!($type instanceof NullType)) {
+                $has_non_shape_alternative = true;
             }
         }
         if (!$shape_indices) {
             return null;
         }
+        if ($from_generic_fallback && $has_non_shape_alternative) {
+            return [];
+        }
         $multiple_shapes = \count($shape_indices) > 1;
-        if (!$all_fields_optional && !$generic_alternatives && !$multiple_shapes) {
+        if (!$all_fields_optional && !$multiple_shapes) {
             return null;
         }
-        $mark_all_optional = $all_fields_optional || (bool)$generic_alternatives;
         foreach ($shape_indices as $i) {
             $type = $types[$i];
             '@phan-var ArrayShapeType $type';
             $field_types = [];
             foreach ($type->getFieldTypes() as $key => $field_type) {
-                $widened = $field_type;
-                $is_optional = $mark_all_optional || $field_type->isPossiblyUndefined();
-                foreach ($generic_alternatives as $alt) {
-                    if ($alt instanceof ListType) {
-                        if (\is_int($key) && $key >= 0) {
-                            $widened = $widened->withType($alt->genericArrayElementType());
-                        }
-                    } elseif ($alt instanceof GenericArrayType) {
-                        $key_flag = \is_int($key) ? GenericArrayType::KEY_INT : GenericArrayType::KEY_STRING;
-                        if (($alt->getKeyType() & $key_flag) !== 0) {
-                            $widened = $widened->withType($alt->genericArrayElementType());
-                        }
-                    } else {
-                        $widened = $widened->withType(MixedType::instance(false));
-                    }
-                }
+                $is_optional = $all_fields_optional || $field_type->isPossiblyUndefined();
                 if (!$is_optional && $multiple_shapes) {
                     foreach ($shape_indices as $other_i) {
                         if ($other_i === $i) {
@@ -3069,7 +2981,7 @@ class AssignmentVisitor extends AnalysisVisitor
                         }
                     }
                 }
-                $field_types[$key] = $is_optional ? $widened->withIsPossiblyUndefined(true) : $widened;
+                $field_types[$key] = $is_optional ? $field_type->withIsPossiblyUndefined(true) : $field_type;
             }
             $types[$i] = ArrayShapeType::fromFieldTypes($field_types, false);
         }

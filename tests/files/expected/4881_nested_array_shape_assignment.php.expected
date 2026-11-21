@@ -11,18 +11,20 @@
 %s:67 PhanTypeSuspiciousEcho Suspicious argument $this->items[0]['missing'] of type null for an echo/print statement
 %s:78 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type array{x:\ArrayObject|array{y:'str',z:string}}(real=array{x:array{y:'str'}}|non-empty-array<mixed,mixed>)
 %s:149 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type array{x:\ArrayObject<string,int>|array{y:1}}(real=array{x:array{y:1}}|non-empty-array<mixed,mixed>)
-%s:161 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type array{0:array{a:1,b?:string}}|non-empty-array<mixed,?array{a:int,b:string}>(real=array{0:array{a:1}}|non-empty-array<mixed,mixed>)
-%s:164 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $a[0] of array type array{a:1,b?:string}
-%s:176 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $a[0][1] of array type array{a:1,b?:string}
-%s:186 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type 'x'
-%s:198 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type 'x'
-%s:211 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \stdClass|string
-%s:225 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $a[0] of array type array{a:1,b?:string,c?:bool}
-%s:237 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'other' of $a[0]['x'] of array type array{y:array{a:1,b?:string},other?:int}
-%s:238 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $a[0]['x']['y'] of array type array{a:1,b?:string}
-%s:250 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $a[0] of array type array{a:1,b?:string}
-%s:261 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \stdClass|int|string
-%s:261 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $a[0] of array type \ArrayObject<string,\stdClass|int>|array{a:1,b?:\stdClass|int|string}
-%s:286 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \stdClass|string
-%s:286 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $a[0] of array type \Issue4881\GenericArrayBox<int,string>|array{a:1,b?:\stdClass|string}
-%s:300 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $a[0] of array type array{a:1,b?:string}
+%s:163 PhanTypeInvalidDimOffset Invalid offset "b" of $a[0] of array type array{a:1}
+%s:163 PhanTypeMismatchReturn Returning $a[0]['b'] of type null but test_nullable_element_shape() is declared to return string
+%s:173 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type 'x'
+%s:185 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type 'x'
+%s:201 PhanTypeInvalidDimOffset Invalid offset "b" of $a[0] of array type array{a:1}
+%s:201 PhanTypeSuspiciousEcho Suspicious argument $a[0]['b'] of type null for an echo/print statement
+%s:203 PhanTypeInvalidDimOffset Invalid offset "b" of $b[0] of array type array{a:1}
+%s:203 PhanTypeSuspiciousEcho Suspicious argument $b[0]['b'] of type null for an echo/print statement
+%s:205 PhanTypeInvalidDimOffset Invalid offset 1 of $c[0] of array type array{0:'x'}
+%s:207 PhanTypeInvalidDimOffset Invalid offset "b" of $d[0] of array type array{a:1}
+%s:207 PhanTypeSuspiciousEcho Suspicious argument $d[0]['b'] of type null for an echo/print statement
+%s:219 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $a[0] of array type array{a:1,b?:string,c?:bool}
+%s:231 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'other' of $a[0]['x'] of array type array{y:array{a:1,b?:string},other?:int}
+%s:232 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $a[0]['x']['y'] of array type array{a:1,b?:string}
+%s:243 PhanTypeInvalidDimOffset Invalid offset "b" of $a[0] of array type array{a:1}
+%s:243 PhanTypeMismatchReturn Returning $a[0]['b'] of type null but test_nullable_outer_container() is declared to return string
+%s:253 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type 1
