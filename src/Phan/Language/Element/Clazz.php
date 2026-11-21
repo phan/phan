@@ -3178,7 +3178,14 @@ class Clazz extends AddressableElement
         );
     }
 
-    private function emitWrongInheritanceCategoryWarning(
+    /**
+     * Emits PhanAccessWrongInheritanceCategory (or the Internal variant) for an ancestor of the wrong kind,
+     * such as an interface that this class extends, or that this trait names with `@require-extends`.
+     *
+     * @param string $expected_inheritance_category 'Class', 'Interface' or 'Trait'
+     * @param int $lineno the line to report, or 0 for the line of this class
+     */
+    public function emitWrongInheritanceCategoryWarning(
         CodeBase $code_base,
         Clazz $ancestor,
         string $expected_inheritance_category,

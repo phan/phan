@@ -113,6 +113,12 @@ class Method extends ClassElement implements FunctionInterface
     private $static_property_set_types = [];
 
     /**
+     * @var array<string,array<string,true>> the static properties that this method assigns a value of an unknown type to,
+     * by class and by property name. No union type is recorded for those assignments.
+     */
+    private $static_property_set_unknown_types = [];
+
+    /**
      * @param Context $context
      * The context in which the structural element lives
      *
@@ -1640,6 +1646,11 @@ class Method extends ClassElement implements FunctionInterface
     public function recordStaticPropertyModification(FullyQualifiedClassName $class_fqsen, string $property_name, UnionType $union_type, bool $is_late_static): void
     {
         if ($union_type->isEmpty()) {
+            $class_key = $class_fqsen->__toString();
+            if (!isset($this->static_property_set_unknown_types[$class_key][$property_name])) {
+                $this->bumpStateVersion();
+                $this->static_property_set_unknown_types[$class_key][$property_name] = true;
+            }
             return;
         }
         $this->bumpStateVersion();
@@ -1677,5 +1688,14 @@ class Method extends ClassElement implements FunctionInterface
     public function getStaticPropertyModifications(): array
     {
         return $this->static_property_set_types;
+    }
+
+    /**
+     * @return bool whether this method assigns a value of an unknown type to the static property.
+     * The types of getStaticPropertyModifications() are then not all the types that it assigns.
+     */
+    public function hasStaticPropertyModificationOfUnknownType(FullyQualifiedClassName $class_fqsen, string $property_name): bool
+    {
+        return isset($this->static_property_set_unknown_types[$class_fqsen->__toString()][$property_name]);
     }
 }

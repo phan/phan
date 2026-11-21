@@ -1,0 +1,9 @@
+src/005_internal_and_args.php:11 PhanDebugAnnotation @phan-debug-var requested for variable $seen - it has union type 'a'|'b'(real=string)
+src/005_internal_and_args.php:11 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string
+src/005_internal_and_args.php:19 PhanDebugAnnotation @phan-debug-var requested for variable $checked - it has union type (undefined)
+src/005_internal_and_args.php:19 PhanRedundantCondition Redundant attempt to cast is_ready(...) of type Closure():bool to truthy
+src/005_internal_and_args.php:22 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int|string(real=int|string)
+src/005_internal_and_args.php:22 PhanRedundantCondition Redundant attempt to cast is_safe(...) of type Closure(int|string):bool to truthy
+src/005_internal_and_args.php:30 PhanDebugAnnotation @phan-debug-var requested for variable $args_seen - it has union type '0:$x; 1:$y'
+src/005_internal_and_args.php:30 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type string
+src/005_internal_and_args.php:30 PhanDebugAnnotation @phan-debug-var requested for variable $y - it has union type int|string(real=int|string)

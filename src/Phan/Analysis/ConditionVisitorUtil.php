@@ -68,6 +68,12 @@ trait ConditionVisitorUtil
     protected $code_base;
 
     /**
+     * @var bool true while this visitor analyzes the operand of `!== false` or `!== true` (analyzeOperandOfStrictInequality()).
+     * The closures of ConditionalCallCapability plugins then only run for a function or method that returns a bool.
+     */
+    private $is_operand_of_strict_inequality = false;
+
+    /**
      * @var Context
      * The context in which the node we're going to be looking
      * at exists.

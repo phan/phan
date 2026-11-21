@@ -1,0 +1,1 @@
+%s:49 PhanTypeMismatchReturnReal Returning self::$prop of type null but getAfterSettingGlobalClass() is declared to return \stdClass
