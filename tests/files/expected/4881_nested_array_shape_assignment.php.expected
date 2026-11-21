@@ -9,3 +9,4 @@
 %s:54 PhanTypeSuspiciousEcho Suspicious argument $deep[0][1]['nope'] of type null for an echo/print statement
 %s:67 PhanTypeInvalidDimOffset Invalid offset "missing" of $this->items[0] of array type array{key1:string,key2:'updated'}
 %s:67 PhanTypeSuspiciousEcho Suspicious argument $this->items[0]['missing'] of type null for an echo/print statement
+%s:78 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type array{x:\ArrayObject|array{y:'str',z:string}}(real=array{x:array{y:'str'}}|non-empty-array<mixed,mixed>)

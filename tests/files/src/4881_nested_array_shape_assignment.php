@@ -67,3 +67,74 @@ class Holder
         echo $this->items[0]['missing'];
     }
 }
+
+/**
+ * The field is a shape or an object: the shape gets y:'str' and keeps z, the object is kept,
+ * and no stale array{y:int,z:string} is left next to them.
+ * @param array{x:array{y:int,z:string}|\ArrayObject} $a
+ */
+function test_shape_or_object_field(array $a): void
+{
+    $a['x']['y'] = 'str';
+    '@phan-debug-var $a';
+}
+
+/**
+ * The field is an ArrayAccess object, which is still an object after the assignment: no PhanNonClassMethodCall.
+ * @param array{x:\ArrayObject<string,int>} $a
+ */
+function test_array_access_field(array $a): int
+{
+    $a['x']['y'] = 1;
+    return $a['x']->count();
+}
+
+/**
+ * The field is a template type, which is kept: no PhanTypeMismatchReturn.
+ * @template T
+ * @param array{x:T} $a
+ * @return T
+ */
+function test_template_field(array $a)
+{
+    $a['x']['y'] = 1;
+    return $a['x'];
+}
+
+/**
+ * The field is mixed, so it may have other keys: no PhanTypeInvalidDimOffset for z.
+ * @param array{x:mixed} $a
+ */
+function test_mixed_field(array $a): void
+{
+    $a['x']['y'] = 1;
+    echo $a['x']['z'];
+}
+
+/**
+ * A condition on one key of an element keeps the other keys of the element: no PhanTypeInvalidDimOffset for b.
+ * @param array<array{a:?int,b:int}> $x
+ */
+function test_condition_on_element(array $x): void
+{
+    if ($x[0]['a'] !== null) {
+        echo $x[0]['b'];
+    }
+}
+
+/**
+ * Static properties keep the sibling keys too: no PhanTypeInvalidDimOffset for key1.
+ */
+class StaticHolder
+{
+    /** @var array<array{key1:string,key2:string}> */
+    public static array $items = [];
+
+    public function update(): void
+    {
+        self::$items[0]['key2'] = 'updated';
+        echo self::$items[0]['key1'];
+        static::$items[1]['key2'] = 'updated';
+        echo static::$items[1]['key1'];
+    }
+}

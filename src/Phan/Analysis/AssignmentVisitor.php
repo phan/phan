@@ -2797,31 +2797,26 @@ class AssignmentVisitor extends AnalysisVisitor
             }
             if ($old_field_type) {
                 if ($dim_depth >= 3) {
-                    if ($is_real) {
-                        $combined_fields[$field] = UnionType::of(self::computeTypeSetOfMergedArrayShapeTypes(
+                    $combined_fields[$field] = UnionType::of(
+                        self::computeTypeSetOfMergedArrayShapeTypes(
                             $old_field_type->getTypeSet(),
                             $field_type->getTypeSet(),
                             $dim_depth - 1,
+                            $is_real
+                        ),
+                        $is_real ? [] : self::computeTypeSetOfMergedArrayShapeTypes(
+                            $old_field_type->getRealTypeSet(),
+                            $field_type->getRealTypeSet(),
+                            $dim_depth - 1,
                             true
-                        ));
-                    } else {
-                        $combined_fields[$field] = UnionType::of(
-                            self::computeTypeSetOfMergedArrayShapeTypes(
-                                $old_field_type->getTypeSet(),
-                                $field_type->getTypeSet(),
-                                $dim_depth - 1,
-                                false
-                            ),
-                            self::computeTypeSetOfMergedArrayShapeTypes(
-                                $old_field_type->getRealTypeSet(),
-                                $field_type->getRealTypeSet(),
-                                $dim_depth - 1,
-                                true
-                            )
-                        );
-                    }
+                        )
+                    );
                 } elseif ($old_field_type->hasPossiblyObjectTypes() || $old_field_type->isEmpty()) {
-                    $combined_fields[$field] = $old_field_type->withUnionType($field_type);
+                    // The field may be an object (e.g. an ArrayAccess), mixed or a template type, which can still be
+                    // an object after the assignment: keep those types, and override the fields of its array types.
+                    $combined_fields[$field] = $old_field_type->nonArrayTypes()->withUnionType(
+                        ArrayType::combineArrayTypesOverriding($field_type, $old_field_type->arrayTypes(), true)
+                    );
                 } else {
                     $combined_fields[$field] = ArrayType::combineArrayTypesOverriding($field_type, $old_field_type, true);
                 }
