@@ -37,6 +37,7 @@ use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\AssociativeArrayType;
+use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\ListType;
@@ -1662,13 +1663,14 @@ class AssignmentVisitor extends AnalysisVisitor
             // Copied from visitVar
             $old_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node);
             $right_type = $this->typeCheckDimAssignment($old_type, $node);
+            $container_may_be_absent = !$this->is_conditional_check && self::typeSetContainsNullOrFalse($old_type);
             $old_type = $old_type->nonNullableClone();
             if ($old_type->isEmpty()) {
                 $old_type = ArrayType::instance(false)->asPHPDocUnionType();
             }
 
             if ($this->dim_depth > 1) {
-                $new_type = $this->computeTypeOfMultiDimensionalAssignment($old_type, $right_type);
+                $new_type = $this->computeTypeOfMultiDimensionalAssignment($old_type, $right_type, $container_may_be_absent);
             } elseif ($old_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->isEmpty()) {
                 $new_type = $old_type->withUnionType($right_type);
             } else {
@@ -1733,13 +1735,14 @@ class AssignmentVisitor extends AnalysisVisitor
             // Copied from visitVar
             $old_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node);
             $right_type = $this->typeCheckDimAssignment($old_type, $node);
+            $container_may_be_absent = !$this->is_conditional_check && self::typeSetContainsNullOrFalse($old_type);
             $old_type = $old_type->nonNullableClone();
             if ($old_type->isEmpty()) {
                 $old_type = ArrayType::instance(false)->asPHPDocUnionType();
             }
 
             if ($this->dim_depth > 1) {
-                $new_type = $this->computeTypeOfMultiDimensionalAssignment($old_type, $right_type);
+                $new_type = $this->computeTypeOfMultiDimensionalAssignment($old_type, $right_type, $container_may_be_absent);
             } elseif ($old_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->hasTopLevelNonArrayShapeTypeInstances() || $right_type->isEmpty()) {
                 $new_type = $old_type->withUnionType($right_type);
             } else {
@@ -2604,6 +2607,7 @@ class AssignmentVisitor extends AnalysisVisitor
                     $node->phan_is_assignment_to_real_array = true;
                 }
                 $right_type = $this->typeCheckDimAssignment($old_variable_union_type, $node);
+                $container_may_be_absent = !$this->is_conditional_check && self::typeSetContainsNullOrFalse($old_variable_union_type);
                 if ($old_variable_union_type->isEmpty()) {
                     $old_variable_union_type = ArrayType::instance(false)->asPHPDocUnionType();
                 }
@@ -2611,7 +2615,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 $old_variable_union_type = $old_variable_union_type->nonNullableClone();
                 // TODO: Make the behavior more precise for $x['a']['b'] = ...; when $x is an array shape.
                 if ($this->dim_depth > 1) {
-                    $new_union_type = $this->computeTypeOfMultiDimensionalAssignment($old_variable_union_type, $right_type);
+                    $new_union_type = $this->computeTypeOfMultiDimensionalAssignment($old_variable_union_type, $right_type, $container_may_be_absent);
                 } elseif ($this->is_conditional_check && !$right_type->isEmpty() && !$right_type->hasTopLevelNonArrayShapeTypeInstances() && $old_variable_union_type->hasPossiblyObjectTypes() && $old_variable_union_type->hasArrayShapeTypeInstances()) {
                     // When a conditional check adds a new array shape field, merge it into
                     // existing shapes rather than adding as a separate union member.
@@ -2731,29 +2735,35 @@ class AssignmentVisitor extends AnalysisVisitor
         return $this->context;
     }
 
-    private function computeTypeOfMultiDimensionalAssignment(UnionType $old_union_type, UnionType $right_type): UnionType
+    private function computeTypeOfMultiDimensionalAssignment(UnionType $old_union_type, UnionType $right_type, bool $outer_may_be_absent = false): UnionType
     {
         if ($this->dim_depth <= 1) {
             throw new AssertionError("Expected dim_depth > 1, got $this->dim_depth");
         }
-        if (!$right_type->hasTopLevelArrayShapeTypeInstances() || !$old_union_type->hasTopLevelArrayShapeTypeInstances()) {
+        if (!$right_type->hasTopLevelArrayShapeTypeInstances() || !$old_union_type->hasGenericArray()) {
             return $old_union_type->withUnionType($right_type);
         }
 
         return UnionType::of(
-            self::computeTypeSetOfMergedArrayShapeTypes($old_union_type->getTypeSet(), $right_type->getTypeSet(), $this->dim_depth, false),
-            self::computeTypeSetOfMergedArrayShapeTypes($old_union_type->getRealTypeSet(), $right_type->getRealTypeSet(), $this->dim_depth, true)
+            $this->computeTypeSetOfMergedArrayShapeTypes($old_union_type->getTypeSet(), $right_type->getTypeSet(), $this->dim_depth, false, !$outer_may_be_absent, false, false),
+            $this->computeTypeSetOfMergedArrayShapeTypes($old_union_type->getRealTypeSet(), $right_type->getRealTypeSet(), $this->dim_depth, true, false, false, false)
         );
     }
 
     /**
-     * @param list<Type> $old_type_set may contain ArrayShapeType instances
+     * @param list<Type> $old_type_set may contain ArrayShapeType or GenericArrayType instances
      * @param list<Type> $new_type_set may contain ArrayShapeType instances
      * @return list<Type> possibly containing duplicates.
-     * TODO: Handle $this->dim_depth of more than 2
      */
-    private static function computeTypeSetOfMergedArrayShapeTypes(array $old_type_set, array $new_type_set, int $dim_depth, bool $is_real): array
-    {
+    private function computeTypeSetOfMergedArrayShapeTypes(
+        array $old_type_set,
+        array $new_type_set,
+        int $dim_depth,
+        bool $is_real,
+        bool $allow_generic_fallback = true,
+        bool $container_may_be_absent = false,
+        bool $from_generic_fallback = false
+    ): array {
         if ($is_real) {
             if (!$old_type_set || !$new_type_set) {
                 return [];
@@ -2772,30 +2782,118 @@ class AssignmentVisitor extends AnalysisVisitor
             return \array_merge($old_type_set, $new_type_set);
         }
         $old_array_shape_types = [];
+        $old_generic_array_types = [];
         foreach ($old_type_set as $type) {
             if ($type instanceof ArrayShapeType) {
                 $old_array_shape_types[] = $type;
-            } else {
-                $result[] = $type;
+                continue;
             }
+            if ($type instanceof GenericArrayType) {
+                $old_generic_array_types[] = $type;
+            } else {
+                // The container may also be an object (e.g. an ArrayAccess), a plain array, mixed or a scalar,
+                // whose elements need not have the fields of the element shape of a generic array alternative:
+                // do not take the old fields of an element from that shape.
+                $allow_generic_fallback = false;
+            }
+            $result[] = $type;
         }
-        if (!$old_array_shape_types) {
+        if ($is_real || !$allow_generic_fallback) {
+            $old_generic_array_types = [];
+        }
+        if (!$old_array_shape_types && !$old_generic_array_types) {
             return \array_merge($old_type_set, $new_type_set);
         }
-        // Postcondition: $old_array_shape_types and $new_array_shape_types are non-empty lists of ArrayShapeTypes
-        $old_array_shape_type = ArrayShapeType::union($old_array_shape_types);
+        // Postcondition: $new_array_shape_types is non-empty, and at least one of $old_array_shape_types or $old_generic_array_types is non-empty.
         $new_array_shape_type = ArrayShapeType::union($new_array_shape_types);
-        $combined_fields = $old_array_shape_type->getFieldTypes();
+        $combined_fields = $old_array_shape_types
+            ? ArrayShapeType::union($old_array_shape_types)->getFieldTypes()
+            : [];
+        if (!$is_real && $container_may_be_absent) {
+            foreach ($combined_fields as $k => $v) {
+                $combined_fields[$k] = $v->withIsPossiblyUndefined(true);
+            }
+        }
         foreach ($new_array_shape_type->getFieldTypes() as $field => $field_type) {
             $old_field_type = $combined_fields[$field] ?? null;
+            $field_from_generic_fallback = $from_generic_fallback;
+            if ($old_field_type === null && $old_generic_array_types && $field_type->hasTopLevelArrayShapeTypeInstances()) {
+                $old_field_type = self::genericArrayElementTypeForField($old_generic_array_types, $field, $dim_depth);
+                if ($old_field_type !== null) {
+                    $field_from_generic_fallback = true;
+                }
+            } elseif (
+                $old_field_type !== null
+                && $field_from_generic_fallback
+                && !$field_type->hasTopLevelArrayShapeTypeInstances()
+                && $old_field_type->hasTopLevelArrayShapeTypeInstances()
+            ) {
+                // The write to this field is an append or uses a key that is not a literal ($x[0]['field'][] = ...).
+                // Merging the assigned type with an array shape taken from the element type of the generic array
+                // would turn that shape into a generic array of all its field types: use the assigned type.
+                $old_field_type = null;
+            }
             if ($old_field_type) {
-                if ($dim_depth >= 3) {
-                    $combined_fields[$field] = UnionType::of(self::computeTypeSetOfMergedArrayShapeTypes(
-                        $old_field_type->getTypeSet(),
-                        $field_type->getTypeSet(),
-                        $dim_depth - 1,
-                        true
-                    ));
+                $field_may_be_absent = false;
+                if (!$is_real) {
+                    // A condition such as isset($x['field']['key']) or $x['field']['key'] !== null proves that the field exists
+                    // and is not null or false, so its other keys keep the types they had. A condition such as
+                    // is_null($x['field']['key']) does not prove it, but is treated the same way.
+                    $field_may_be_absent = !$this->is_conditional_check
+                        && ($container_may_be_absent || self::fieldMayBeAbsentNullOrFalse($old_field_type));
+                    // In a condition, the declared shapes of a field are merged with all their keys kept as they are:
+                    // the condition may rule out the shapes without a key (array{a:null,c:int} for $x['field']['a'] !== null),
+                    // and the merge cannot tell. Shapes taken from the element type of a generic array are still normalized.
+                    if (!$this->is_conditional_check || $field_from_generic_fallback) {
+                        $adjusted_types = self::normalizePreservedShapes(
+                            $old_field_type->getTypeSet(),
+                            $dim_depth < 3 && $field_may_be_absent,
+                            $field_from_generic_fallback
+                        );
+                        if ($adjusted_types !== null) {
+                            $old_field_type = $adjusted_types ? UnionType::of($adjusted_types, $old_field_type->getRealTypeSet()) : null;
+                        }
+                    }
+                }
+                // After a write, the containers on the path to the written key are neither null nor false.
+                // After a condition, that holds only if the condition is false when the key is read through a null
+                // or false container (isset(), !== null), not for empty() or is_null().
+                $containers_exist = !$this->is_conditional_check
+                    || ($old_field_type !== null && self::conditionRejectsNullKey($old_field_type, $field_type, $dim_depth - 1));
+                if ($old_field_type === null) {
+                    $combined_fields[$field] = $field_type;
+                } elseif ($dim_depth >= 3) {
+                    $kept_old_field = $is_real || !$containers_exist ? $old_field_type : self::typesAfterDimWrite($old_field_type);
+                    $combined_fields[$field] = UnionType::of(
+                        $this->computeTypeSetOfMergedArrayShapeTypes(
+                            $kept_old_field->getTypeSet(),
+                            $field_type->getTypeSet(),
+                            $dim_depth - 1,
+                            $is_real,
+                            !$is_real && $allow_generic_fallback && !$field_may_be_absent,
+                            $field_may_be_absent,
+                            $field_from_generic_fallback
+                        ),
+                        $is_real ? [] : $this->computeTypeSetOfMergedArrayShapeTypes(
+                            $old_field_type->getRealTypeSet(),
+                            $field_type->getRealTypeSet(),
+                            $dim_depth - 1,
+                            true,
+                            false,
+                            false,
+                            false
+                        )
+                    );
+                } elseif ($old_field_type->hasPossiblyObjectTypes() || $old_field_type->isEmpty()) {
+                    // The field may be an object (e.g. an ArrayAccess), mixed or a template type, which can still be
+                    // an object after the assignment: keep those types, and override the fields of its array types.
+                    $kept_non_array_types = $old_field_type->nonArrayTypes();
+                    if ($containers_exist) {
+                        $kept_non_array_types = self::typesAfterDimWrite($kept_non_array_types);
+                    }
+                    $combined_fields[$field] = $kept_non_array_types->withUnionType(
+                        ArrayType::combineArrayTypesOverriding($field_type, $old_field_type->arrayTypes(), true)
+                    );
                 } else {
                     $combined_fields[$field] = ArrayType::combineArrayTypesOverriding($field_type, $old_field_type, true);
                 }
@@ -2805,6 +2903,184 @@ class AssignmentVisitor extends AnalysisVisitor
         }
         $result[] = ArrayShapeType::fromFieldTypes($combined_fields, false);
         return $result;
+    }
+
+    /**
+     * Returns the combined PHPDoc element type of compatible generic array types in $generic_array_types
+     * when every compatible element is a clean non-nullable array shape (or, for $dim_depth >= 3, a
+     * non-nullable generic array). Bails out when any compatible element is nullable, scalar, generic
+     * array (at depth 2), or object so a synthesized shape never shadows non-shape alternatives.
+     *
+     * @param non-empty-list<GenericArrayType> $generic_array_types
+     */
+    private static function genericArrayElementTypeForField(array $generic_array_types, int|string $field, int $dim_depth): ?UnionType
+    {
+        $field_key_type = \is_int($field) ? GenericArrayType::KEY_INT : GenericArrayType::KEY_STRING;
+        $element_types = [];
+        $has_shape = false;
+        $has_generic = false;
+        foreach ($generic_array_types as $generic_type) {
+            if ($generic_type instanceof ListType) {
+                if (!\is_int($field) || $field < 0) {
+                    continue;
+                }
+            } elseif (($generic_type->getKeyType() & $field_key_type) === 0) {
+                continue;
+            }
+            $element_type = $generic_type->genericArrayElementType();
+            if ($element_type->isNullable()) {
+                return null;
+            }
+            if ($element_type instanceof ArrayShapeType) {
+                $has_shape = true;
+                $element_types[] = $element_type;
+            } elseif ($dim_depth >= 3 && $element_type instanceof GenericArrayType) {
+                $has_generic = true;
+                $element_types[] = $element_type;
+            } else {
+                return null;
+            }
+        }
+        if (!$element_types || ($has_shape && $has_generic)) {
+            return null;
+        }
+        return UnionType::of($element_types);
+    }
+
+    /**
+     * Returns the PHPDoc types that a container of type $union_type can have after a successful write to one of its keys.
+     * PHP replaces null and false (deprecated since PHP 8.1) with a new array, and throws an Error for true,
+     * so the result contains none of null, false, true or bool.
+     * The result is empty if $union_type only contains those types, and non-null-mixed if $union_type is empty.
+     */
+    private static function typesAfterDimWrite(UnionType $union_type): UnionType
+    {
+        if ($union_type->isEmpty()) {
+            return $union_type->nonNullableClone();
+        }
+        $result = $union_type->nonFalseClone()->nonTrueClone();
+        if ($result->isEmpty() || $result->isNull()) {
+            return UnionType::empty();
+        }
+        return $result->nonNullableClone();
+    }
+
+    /**
+     * Returns true if a condition on the key $depth levels below a field is false when that key is read through
+     * a container that is null, false or true (PHP reads null then), so that the containers on the path exist.
+     * $new_field_type is the type of the field after the condition, with one array shape per level down to the
+     * narrowed type of the key; $old_field_type is the type of the field before it.
+     * This is known when the condition removed null from the type of the key in the old array shapes. The narrowed
+     * type alone does not show it: empty() narrows an int key to 0, and !is_array() narrows an array|int key to int.
+     * Returns false for a key that is not a literal, and if a container on the path may be another type than an
+     * array shape, null or a bool (an object, a generic array or mixed).
+     */
+    private static function conditionRejectsNullKey(UnionType $old_field_type, UnionType $new_field_type, int $depth): bool
+    {
+        $old_key_type = $old_field_type;
+        $new_key_type = $new_field_type;
+        for (; $depth > 0; $depth--) {
+            $new_types = $new_key_type->getTypeSet();
+            $new_shape = \count($new_types) === 1 ? \reset($new_types) : null;
+            if (!$new_shape instanceof ArrayShapeType) {
+                return false;
+            }
+            $new_fields = $new_shape->getFieldTypes();
+            if (\count($new_fields) !== 1) {
+                return false;
+            }
+            $key = \array_key_first($new_fields);
+            $new_key_type = $new_fields[$key];
+            $old_types = [];
+            foreach ($old_key_type->getTypeSet() as $type) {
+                if ($type instanceof ArrayShapeType) {
+                    $old_field = $type->getFieldTypes()[$key] ?? null;
+                    if ($old_field !== null) {
+                        \array_push($old_types, ...$old_field->getTypeSet());
+                    }
+                } elseif (!($type instanceof NullType) && !$type->isInBoolFamily()) {
+                    return false;
+                }
+            }
+            $old_key_type = UnionType::of($old_types);
+        }
+        return $old_key_type->containsNullable() && !$new_key_type->isEmpty() && !$new_key_type->containsNullable();
+    }
+
+    private static function fieldMayBeAbsentNullOrFalse(UnionType $union_type): bool
+    {
+        return $union_type->isPossiblyUndefined() || self::typeSetContainsNullOrFalse($union_type);
+    }
+
+    /**
+     * Returns true if the PHPDoc type set contains null, false, bool or a nullable array type.
+     * PHP replaces a container that is null or false with a new array on a write to one of its keys.
+     */
+    private static function typeSetContainsNullOrFalse(UnionType $union_type): bool
+    {
+        foreach ($union_type->getTypeSet() as $type) {
+            if ($type instanceof NullType || $type instanceof FalseType || \get_class($type) === BoolType::class || ($type instanceof ArrayType && $type->isNullable())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Adjusts preserved ArrayShapeType instances in $types before a nested assignment merge:
+     * - When $from_generic_fallback is true and $types contains a shape and a type that is neither a shape
+     *   nor null, returns an empty list. The caller then drops all old types of the field and uses only
+     *   the assigned type, so that a shape merged with the assigned keys does not hide those other types.
+     * - If $all_fields_optional is true (the container may have been absent or null), marks all
+     *   preserved shape fields possibly undefined.
+     * - If $types contains multiple shapes, marks any field not required in every shape as possibly
+     *   undefined so merging shapes does not promote branch-specific keys to required.
+     *
+     * @param list<Type> $types
+     * @return ?list<Type> null if no adjustment was needed, an empty list if the old types of the field are not used
+     */
+    private static function normalizePreservedShapes(array $types, bool $all_fields_optional, bool $from_generic_fallback): ?array
+    {
+        $shapes = [];
+        $has_non_shape_alternative = false;
+        foreach ($types as $i => $type) {
+            if ($type instanceof ArrayShapeType) {
+                $shapes[$i] = $type;
+            } elseif (!($type instanceof NullType)) {
+                $has_non_shape_alternative = true;
+            }
+        }
+        if (!$shapes) {
+            return null;
+        }
+        if ($from_generic_fallback && $has_non_shape_alternative) {
+            return [];
+        }
+        $shape_count = \count($shapes);
+        if (!$all_fields_optional && $shape_count === 1) {
+            return null;
+        }
+        // A field stays required only if it is required in every shape:
+        // count, per key, the shapes in which the key is required.
+        $required_count = [];
+        if (!$all_fields_optional) {
+            foreach ($shapes as $shape) {
+                foreach ($shape->getFieldTypes() as $key => $field_type) {
+                    if (!$field_type->isPossiblyUndefined()) {
+                        $required_count[$key] = ($required_count[$key] ?? 0) + 1;
+                    }
+                }
+            }
+        }
+        foreach ($shapes as $i => $shape) {
+            $field_types = [];
+            foreach ($shape->getFieldTypes() as $key => $field_type) {
+                $is_optional = $all_fields_optional || $field_type->isPossiblyUndefined() || ($required_count[$key] ?? 0) < $shape_count;
+                $field_types[$key] = $is_optional ? $field_type->withIsPossiblyUndefined(true) : $field_type;
+            }
+            $types[$i] = ArrayShapeType::fromFieldTypes($field_types, false);
+        }
+        return $types;
     }
 
     /**

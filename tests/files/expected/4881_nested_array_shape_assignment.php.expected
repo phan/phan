@@ -1,0 +1,44 @@
+%s:14 PhanTypeInvalidDimOffset Invalid offset "bogus" of $myarray[0] of array type array{key1:string,key2:'anewvalue',key3:string}
+%s:14 PhanTypeSuspiciousEcho Suspicious argument $myarray[0]['bogus'] of type null for an echo/print statement
+%s:16 PhanDebugAnnotation @phan-debug-var requested for variable $myarray - it has union type array{0:array{key1:42,key2:'anewvalue',key3:string}}|non-empty-array<mixed,array{key1:string,key2:string,key3:string}>(real=array{0:array{key2:'anewvalue',key1:42}}|non-empty-array<mixed,mixed>)
+%s:21 PhanTypeInvalidDimOffset Invalid offset "bogus" of $myarray[1] of array type array{key1:string,key2:'other',key3:string}
+%s:21 PhanTypeSuspiciousEcho Suspicious argument $myarray[1]['bogus'] of type null for an echo/print statement
+%s:43 PhanTypeInvalidDimOffset Invalid offset "b" of $intKeyed['str'] of array type array{a:1}
+%s:43 PhanTypeSuspiciousEcho Suspicious argument $intKeyed['str']['b'] of type null for an echo/print statement
+%s:54 PhanTypeInvalidDimOffset Invalid offset "nope" of $deep[0][1] of array type array{a:99,b:string}
+%s:54 PhanTypeSuspiciousEcho Suspicious argument $deep[0][1]['nope'] of type null for an echo/print statement
+%s:67 PhanTypeInvalidDimOffset Invalid offset "missing" of $this->items[0] of array type array{key1:string,key2:'updated'}
+%s:67 PhanTypeSuspiciousEcho Suspicious argument $this->items[0]['missing'] of type null for an echo/print statement
+%s:78 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type array{x:\ArrayObject|array{y:'str',z:string}}(real=array{x:array{y:'str'}}|non-empty-array<mixed,mixed>)
+%s:149 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type array{x:\ArrayObject<string,int>|array{y:1}}(real=array{x:array{y:1}}|non-empty-array<mixed,mixed>)
+%s:163 PhanTypeInvalidDimOffset Invalid offset "b" of $a[0] of array type array{a:1}
+%s:163 PhanTypeMismatchReturn Returning $a[0]['b'] of type null but test_nullable_element_shape() is declared to return string
+%s:173 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type 'x'
+%s:185 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type 'x'
+%s:201 PhanTypeInvalidDimOffset Invalid offset "b" of $a[0] of array type array{a:1}
+%s:201 PhanTypeSuspiciousEcho Suspicious argument $a[0]['b'] of type null for an echo/print statement
+%s:203 PhanTypeInvalidDimOffset Invalid offset "b" of $b[0] of array type array{a:1}
+%s:203 PhanTypeSuspiciousEcho Suspicious argument $b[0]['b'] of type null for an echo/print statement
+%s:205 PhanTypeInvalidDimOffset Invalid offset 1 of $c[0] of array type array{0:'x'}
+%s:207 PhanTypeInvalidDimOffset Invalid offset "b" of $d[0] of array type array{a:1}
+%s:207 PhanTypeSuspiciousEcho Suspicious argument $d[0]['b'] of type null for an echo/print statement
+%s:219 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $a[0] of array type array{a:1,b?:string,c?:bool}
+%s:231 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'other' of $a[0]['x'] of array type array{y:array{a:1,b?:string},other?:int}
+%s:232 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $a[0]['x']['y'] of array type array{a:1,b?:string}
+%s:243 PhanTypeInvalidDimOffset Invalid offset "b" of $a[0] of array type array{a:1}
+%s:243 PhanTypeMismatchReturn Returning $a[0]['b'] of type null but test_nullable_outer_container() is declared to return string
+%s:253 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type 1
+%s:267 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type array{0:array{x:array{y:array{z:1}}}}|non-empty-array<mixed,array{x:null}>(real=array{0:array{x:array{y:array{z:1}}}}|non-empty-array<mixed,mixed>)
+%s:269 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type array{0:array{x:array{y:array{z:1}}}}|non-empty-array<mixed,array{x:bool}>(real=array{0:array{x:array{y:array{z:1}}}}|non-empty-array<mixed,mixed>)
+%s:279 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type array{x:\ArrayObject<string,int>|array{y:1}}(real=array{x:array{y:1}}|non-empty-array<mixed,mixed>)
+%s:291 PhanTypeInvalidDimOffset Invalid offset "b" of $a[0] of array type array{a:1}
+%s:291 PhanTypeMismatchReturn Returning $a[0]['b'] of type null but test_outer_generic_array_or_object() is declared to return string
+%s:301 PhanTypeInvalidDimOffset Invalid offset "b" of $a[0]['x']['y'] of array type array{a:1}
+%s:301 PhanTypeMismatchReturn Returning $a[0]['x']['y']['b'] of type null but test_intermediate_generic_array_or_object() is declared to return string
+%s:330 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'x' of $a of array type array{x?:array{a:?int,b:string}}
+%s:344 PhanTypeInvalidDimOffset Invalid offset "b" of $a['x'][0] of array type array{a:1}
+%s:344 PhanTypeMismatchReturn Returning $a['x'][0]['b'] of type null but test_nullable_outer_shape_with_generic_field() is declared to return string
+%s:355 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type 'x'
+%s:373 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $b['x'] of array type array{a:1,b?:string,c?:int}
+%s:384 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type array{x:array{y:array{z:?0}}|false}(real=array{x:array{y:array{z:?0}}}|non-empty-array<mixed,mixed>)
+%s:387 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type array{x:array{y:array{z:int}}}(real=array{x:array{y:array{z:int}}}|non-empty-array<mixed,mixed>)
