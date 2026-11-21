@@ -38,6 +38,8 @@ use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope\ClassScope;
 use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Type;
+use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\IntersectionType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
@@ -1722,7 +1724,7 @@ class Clazz extends AddressableElement
         ClassConstant $overriding_constant
     ): void {
         if ($inherited_constant->isFinal() && $inherited_constant->getRealDefiningFQSEN() !== $overriding_constant->getRealDefiningFQSEN()) {
-            $issue_context = $overriding_constant->getFQSEN() === $overriding_constant->getRealDefiningFQSEN() ? $overriding_constant->getContext() : $this->getContext();
+            $issue_context = $this->getContextForOverridingConstantIssue($overriding_constant);
             Issue::maybeEmit(
                 $code_base,
                 $issue_context,
@@ -1737,13 +1739,14 @@ class Clazz extends AddressableElement
         // Traits don't have constants, thankfully, so the logic is simple.
         // FIXME now they do
         if ($inherited_constant->isStrictlyMoreVisibleThan($overriding_constant)) {
+            $issue_context = $this->getContextForOverridingConstantIssue($overriding_constant);
             if ($inherited_constant->isPHPInternal()) {
                 if (!$overriding_constant->checkHasSuppressIssueAndIncrementCount(Issue::ConstantAccessSignatureMismatchInternal)) {
                     Issue::maybeEmit(
                         $code_base,
-                        $overriding_constant->getContext(),
+                        $issue_context,
                         Issue::ConstantAccessSignatureMismatchInternal,
-                        $overriding_constant->getFileRef()->getLineNumberStart(),
+                        $issue_context->getLineNumberStart(),
                         $overriding_constant->asVisibilityAndFQSENString(),
                         $inherited_constant->asVisibilityAndFQSENString()
                     );
@@ -1752,9 +1755,9 @@ class Clazz extends AddressableElement
                 if (!$overriding_constant->checkHasSuppressIssueAndIncrementCount(Issue::ConstantAccessSignatureMismatchInternal)) {
                     Issue::maybeEmit(
                         $code_base,
-                        $overriding_constant->getContext(),
+                        $issue_context,
                         Issue::ConstantAccessSignatureMismatch,
-                        $overriding_constant->getFileRef()->getLineNumberStart(),
+                        $issue_context->getLineNumberStart(),
                         $overriding_constant->asVisibilityAndFQSENString(),
                         $inherited_constant->asVisibilityAndFQSENString(),
                         $inherited_constant->getFileRef()->getFile(),
@@ -1763,6 +1766,22 @@ class Clazz extends AddressableElement
                 }
             }
         }
+    }
+
+    /**
+     * Returns the context in which to report an issue with $overriding_constant, a constant of this class
+     * that overrides an inherited constant.
+     *
+     * The copy of a constant imported from a trait has the context of its declaration in the trait,
+     * so issues with it are reported at the declaration of this class, in the scope of this class:
+     * they are reported in the file of this class and can be suppressed there.
+     */
+    private function getContextForOverridingConstantIssue(ClassConstant $overriding_constant): Context
+    {
+        if ($overriding_constant->getFQSEN() === $overriding_constant->getRealDefiningFQSEN()) {
+            return $overriding_constant->getContext();
+        }
+        return $this->getContext()->withScope($this->getInternalScope());
     }
 
     /**
@@ -2818,7 +2837,9 @@ class Clazz extends AddressableElement
             return;
         }
 
-        foreach ($this->interface_fqsen_list as $fqsen) {
+        // Trait constants take precedence over implemented interface constants.
+        // Import traits first so their aliases occupy the class constant map.
+        foreach ($this->trait_fqsen_list as $fqsen) {
             if (!$code_base->hasClassWithFQSEN($fqsen)) {
                 continue;
             }
@@ -2830,7 +2851,7 @@ class Clazz extends AddressableElement
             );
         }
 
-        foreach ($this->trait_fqsen_list as $fqsen) {
+        foreach ($this->interface_fqsen_list as $fqsen) {
             if (!$code_base->hasClassWithFQSEN($fqsen)) {
                 continue;
             }
@@ -4430,6 +4451,13 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * @var list<array{0:FullyQualifiedClassName,1:ClassConstant,2:FullyQualifiedClassName,3:ClassConstant,4:string}>
+     * Composition constant pairs whose declared-type check was deferred on this trait because one of
+     * the types contains `self`, to be rechecked in each concrete class using this trait.
+     */
+    private $deferred_trait_constant_checks = [];
+
+    /**
      * Check for incompatible trait constant redefinitions (PHP 8.2+).
      * This detects fatal errors caused by:
      * - Multiple traits defining the same constant
@@ -4446,13 +4474,35 @@ class Clazz extends AddressableElement
         // Build a map of constant name -> list of (source_fqsen, constant) pairs
         $constant_sources = [];
 
-        // Collect constants from all traits
+        // Collect constants from all traits and propagate/recheck any deferred self-typed pairs
         foreach ($trait_fqsen_list as $trait_fqsen) {
             if (!$code_base->hasClassWithFQSEN($trait_fqsen)) {
                 continue;
             }
             $trait = $code_base->getClassByFQSENWithoutHydrating($trait_fqsen);
             $trait->hydrate($code_base);
+
+            foreach ($trait->deferred_trait_constant_checks as $deferred) {
+                if ($this->isTrait()) {
+                    $this->deferred_trait_constant_checks[] = $deferred;
+                } else {
+                    [$fqsen1, $const1, $fqsen2, $const2, $deferred_name] = $deferred;
+                    if (!self::areConstantsCompatible($code_base, $const1, $const2, $this, $this)) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $this->getContext(),
+                            Issue::IncompatibleCompositionConstant,
+                            $this->getContext()->getLineNumberStart(),
+                            (string)$fqsen1,
+                            (string)$fqsen2,
+                            $deferred_name,
+                            $this->fqsen,
+                            $this->getContext()->getFile(),
+                            $this->getContext()->getLineNumberStart()
+                        );
+                    }
+                }
+            }
 
             foreach ($trait->getConstantMap($code_base) as $constant) {
                 $name = $constant->getName();
@@ -4495,7 +4545,8 @@ class Clazz extends AddressableElement
                     if (!$other_constant instanceof ClassConstant) {
                         continue;
                     }
-                    if (!self::areConstantsCompatible($first_constant, $other_constant)) {
+                    $was_deferred = false;
+                    if (!self::areConstantsCompatible($code_base, $first_constant, $other_constant, $this, $this, $was_deferred)) {
                         Issue::maybeEmit(
                             $code_base,
                             $this->getContext(),
@@ -4509,6 +4560,9 @@ class Clazz extends AddressableElement
                             $this->getContext()->getLineNumberStart()
                         );
                         break;
+                    }
+                    if ($was_deferred) {
+                        $this->deferred_trait_constant_checks[] = [$first_fqsen, $first_constant, $other_fqsen, $other_constant, $name];
                     }
                 }
             }
@@ -4535,7 +4589,8 @@ class Clazz extends AddressableElement
                     // If the class constant is compatible with the trait constant, it's likely just inherited
                     // from the trait (not explicitly redefined). Only emit an error if they're incompatible,
                     // which indicates the class tried to redefine it with a different visibility or value.
-                    if (!self::areConstantsCompatible($class_constant, $trait_constant)) {
+                    $was_deferred = false;
+                    if (!self::areConstantsCompatible($code_base, $class_constant, $trait_constant, $this, $this, $was_deferred)) {
                         Issue::maybeEmit(
                             $code_base,
                             $this->getContext(),
@@ -4548,12 +4603,14 @@ class Clazz extends AddressableElement
                             $this->getContext()->getFile(),
                             $this->getContext()->getLineNumberStart()
                         );
+                    } elseif ($was_deferred) {
+                        $this->deferred_trait_constant_checks[] = [$this->fqsen, $class_constant, $trait_fqsen, $trait_constant, $name];
                     }
                 }
             }
         }
 
-        // Check for conflicts between parent class constants and trait constants
+        // Check for conflicts between parent class constants and trait constants.
         if ($this->parent_type) {
             $parent_fqsen = $this->parent_type->asFQSEN();
             if ($parent_fqsen instanceof \Phan\Language\FQSEN\FullyQualifiedClassName && $code_base->hasClassWithFQSEN($parent_fqsen)) {
@@ -4563,6 +4620,11 @@ class Clazz extends AddressableElement
 
                 foreach ($constant_sources as $name => $sources) {
                     if (isset($parent_constants[$name])) {
+                        // A constant declared in the class itself overrides the parent constant
+                        // (its conflicts with the trait constant are checked above).
+                        if (isset($class_constant_map[$name]) && $class_constant_map[$name]->getRealDefiningFQSEN()->getFullyQualifiedClassName() === $this->fqsen) {
+                            continue;
+                        }
                         $source = $sources[0];
                         // @phan-suppress-next-line PhanSuspiciousTruthyCondition
                         if (!$source) {
@@ -4572,8 +4634,7 @@ class Clazz extends AddressableElement
                         if (!$trait_constant instanceof ClassConstant) {
                             continue;
                         }
-                        $parent_constant = $parent_constants[$name];
-                        if (!self::areConstantsCompatible($parent_constant, $trait_constant)) {
+                        if (self::isTraitConstantConflictingWith($code_base, $this, $trait_constant, $parent, $parent_constants[$name])) {
                             Issue::maybeEmit(
                                 $code_base,
                                 $this->getContext(),
@@ -4594,40 +4655,219 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * Check if two constants are compatible (same visibility and equivalent value).
-     * In PHP 8.2+, constants with different visibility or values cannot coexist in composition.
+     * Returns true if PhanIncompatibleCompositionConstant is reported for $trait_constant, a constant that $class
+     * imports from a trait, and $other_constant, the constant with the same name of $other_class (either another
+     * trait used by $class, or the parent class of $class).
+     * The caller checks that $class does not declare the constant itself.
+     *
+     * Constants of two traits conflict in every PHP version unless they are compatible.
+     * Before PHP 8.5, trait constants were bound after parent class inheritance, so an inherited
+     * non-private parent constant conflicted with a trait constant unless they were compatible.
+     * From PHP 8.5 on, trait constants override parent class constants like class constants.
+     */
+    public static function isTraitConstantConflictingWith(
+        CodeBase $code_base,
+        Clazz $class,
+        ClassConstant $trait_constant,
+        Clazz $other_class,
+        ClassConstant $other_constant
+    ): bool {
+        if (!$other_class->isTrait()) {
+            if ($other_constant->isPrivate() || Config::get_closest_minimum_target_php_version_id() >= 80500) {
+                return false;
+            }
+            $other_binding_class = $other_class->getClassBindingSelfOfConstant($code_base, $other_constant);
+        } else {
+            $other_binding_class = $class;
+        }
+        return !self::areConstantsCompatible($code_base, $other_constant, $trait_constant, $other_binding_class, $class);
+    }
+
+    /**
+     * Returns the class that `self` refers to in the type of $constant, a constant of this class.
+     *
+     * PHP binds `self` of a constant of a trait to the class using the trait, and subclasses inherit the constant
+     * with that binding. This is the nearest class from this class up the parent chain that imports $constant from
+     * one of its traits ($this if there is none).
+     */
+    public function getClassBindingSelfOfConstant(CodeBase $code_base, ClassConstant $constant): Clazz
+    {
+        $class = $this;
+        $name = $constant->getName();
+        $real_defining_fqsen = $constant->getRealDefiningFQSEN();
+        $seen = [];
+        // $seen guards against inheritance cycles
+        while (!isset($seen[\spl_object_id($class)])) {
+            $seen[\spl_object_id($class)] = true;
+            foreach ($class->getTraitFQSENList() as $trait_fqsen) {
+                if (!$code_base->hasClassWithFQSEN($trait_fqsen)) {
+                    continue;
+                }
+                $trait_constant = $code_base->getClassByFQSEN($trait_fqsen)->getConstantMap($code_base)[$name] ?? null;
+                if ($trait_constant && $trait_constant->getRealDefiningFQSEN() === $real_defining_fqsen) {
+                    return $class;
+                }
+            }
+            if (!$class->hasParentType()) {
+                break;
+            }
+            $parent_fqsen = $class->getParentClassFQSEN();
+            if (!$code_base->hasClassWithFQSEN($parent_fqsen)) {
+                break;
+            }
+            $parent = $code_base->getClassByFQSEN($parent_fqsen);
+            $parent_constant = $parent->getConstantMap($code_base)[$name] ?? null;
+            if (!$parent_constant || $parent_constant->getRealDefiningFQSEN() !== $real_defining_fqsen) {
+                break;
+            }
+            // $class inherits $constant from its parent
+            $class = $parent;
+        }
+        return $class;
+    }
+
+    /**
+     * Check if two constants are compatible (same visibility, final modifier, declared type, and equivalent value).
+     * In PHP 8.2+, constants with different visibility, modifiers, types, or values cannot coexist in composition.
      *
      * @param ClassConstant $const1 the first constant to compare
      * @param ClassConstant $const2 the second constant to compare
-     * @return bool true if constants are compatible (same visibility and value)
+     * @param Clazz $binding_class1 the class that `self` binds to in $const1's declared type
+     * @param Clazz $binding_class2 the class that `self` binds to in $const2's declared type
+     * @return bool true if constants are compatible
      */
-    private static function areConstantsCompatible(ClassConstant $const1, ClassConstant $const2): bool
-    {
-        // Check visibility compatibility
+    private static function areConstantsCompatible(
+        CodeBase $code_base,
+        ClassConstant $const1,
+        ClassConstant $const2,
+        Clazz $binding_class1,
+        Clazz $binding_class2,
+        bool &$was_deferred = false
+    ): bool {
+        if ($const1->getRealDefiningFQSEN() === $const2->getRealDefiningFQSEN()) {
+            return true;
+        }
+
+        // Check visibility and final modifier compatibility
         if ($const1->isPrivate() !== $const2->isPrivate() ||
             $const1->isProtected() !== $const2->isProtected() ||
-            $const1->isPublic() !== $const2->isPublic()) {
+            $const1->isPublic() !== $const2->isPublic() ||
+            $const1->isFinal() !== $const2->isFinal()) {
             return false;
+        }
+
+        // Check declared type compatibility (composition requires invariant declared types, not covariance).
+        // For internal constants when targeting PHP 8.3, reflected or stubbed types may reflect PHP 8.4+.
+        $skip_internal_type_check = ($const1->isPHPInternal() || $const2->isPHPInternal())
+            && Config::get_closest_target_php_version_id() < 80400;
+        $defer_self_check = false;
+        if (!$skip_internal_type_check) {
+            if ($const1->hasDeclaredType() !== $const2->hasDeclaredType()) {
+                return false;
+            }
+            if ($const1->hasDeclaredType()) {
+                $raw_type1 = $const1->getUnionType()->getRealUnionType();
+                $raw_type2 = $const2->getUnionType()->getRealUnionType();
+                // When composing nested traits, `self` is not yet bound to a concrete class;
+                // defer the declared-type check to each concrete class that uses the trait.
+                if (($binding_class1->isTrait() && $raw_type1->hasSelfType())
+                    || ($binding_class2->isTrait() && $raw_type2->hasSelfType())
+                ) {
+                    $defer_self_check = true;
+                } else {
+                    $type1 = self::canonicalizeDeclaredConstantType($code_base, $raw_type1, $binding_class1);
+                    $type2 = self::canonicalizeDeclaredConstantType($code_base, $raw_type2, $binding_class2);
+                    if (!$type1->isEqualTo($type2)
+                        && !($type1->isStrictSubtypeOf($code_base, $type2) && $type2->isStrictSubtypeOf($code_base, $type1))
+                    ) {
+                        return false;
+                    }
+                }
+            }
         }
 
         // Check if values are equivalent by comparing AST nodes
         $node1 = $const1->getNodeForValue();
         $node2 = $const2->getNodeForValue();
 
-        // If both have no nodes or both nodes are identical, they're compatible
         if ($node1 === $node2) {
+            $was_deferred = $defer_self_check;
             return true;
         }
 
-        // If one has a node and the other doesn't, they're incompatible
         if ($node1 === null || $node2 === null) {
             return false;
         }
 
-        // Compare AST nodes for value equivalence
-        // For simplicity, we use string representation comparison
-        // This may have false positives for complex expressions, but catches most cases
-        return \var_export($node1, true) === \var_export($node2, true);
+        if (\var_export($node1, true) === \var_export($node2, true)) {
+            $was_deferred = $defer_self_check;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Canonicalizes a declared constant type for PHP composition equality:
+     * - Resolves `self` in the binding class context.
+     * - Expands `iterable` to `array|\Traversable`.
+     * - Resolves class aliases to their canonical FQSEN.
+     * - Normalizes nullable representations (`?T` vs `T|null`).
+     */
+    private static function canonicalizeDeclaredConstantType(CodeBase $code_base, UnionType $type, Clazz $binding_class): UnionType
+    {
+        if ($type->hasSelfType()) {
+            $type = $type->withSelfResolvedInContext(
+                $binding_class->getContext()->withScope($binding_class->getInternalScope())
+            );
+        }
+        $expanded = [];
+        $changed = false;
+        foreach ($type->getTypeSet() as $t) {
+            if (\get_class($t) === IterableType::class) {
+                $changed = true;
+                $is_nullable = $t->isNullable();
+                $expanded[] = ArrayType::instance($is_nullable);
+                $expanded[] = Type::fromNamespaceAndName('\\', 'Traversable', $is_nullable);
+            } else {
+                $canonical = self::canonicalizeConstantTypePart($code_base, $t);
+                if ($canonical !== $t) {
+                    $changed = true;
+                }
+                $expanded[] = $canonical;
+            }
+        }
+        if ($changed) {
+            $type = UnionType::of($expanded);
+        }
+        return $type->asNormalizedTypes();
+    }
+
+    private static function canonicalizeConstantTypePart(CodeBase $code_base, Type $t): Type
+    {
+        if ($t instanceof IntersectionType) {
+            $parts = [];
+            $changed = false;
+            foreach ($t->getTypeParts() as $part) {
+                $canonical_part = self::canonicalizeConstantTypePart($code_base, $part);
+                if ($canonical_part !== $part) {
+                    $changed = true;
+                }
+                $parts[] = $canonical_part;
+            }
+            return $changed
+                ? IntersectionType::createFromTypes($parts, $code_base, null, true)->withIsNullable($t->isNullable())
+                : $t;
+        }
+        if ($t->isObjectWithKnownFQSEN()) {
+            $fqsen = $t->asFQSEN();
+            if ($fqsen instanceof FullyQualifiedClassName && $code_base->hasClassWithFQSEN($fqsen)) {
+                $canonical_fqsen = $code_base->getClassByFQSENWithoutHydrating($fqsen)->getFQSEN();
+                if ($canonical_fqsen !== $fqsen) {
+                    return $canonical_fqsen->asType()->withIsNullable($t->isNullable());
+                }
+            }
+        }
+        return $t;
     }
 
     public function setDidFinishParsing(bool $did_finish_parsing): void
