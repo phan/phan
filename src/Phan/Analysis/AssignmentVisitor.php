@@ -2855,10 +2855,15 @@ class AssignmentVisitor extends AnalysisVisitor
                         }
                     }
                 }
+                // After a write, the containers on the path to the written key are neither null nor false.
+                // After a condition, that holds only if the condition is false when the key is read through a null
+                // or false container (isset(), !== null), not for empty() or is_null().
+                $containers_exist = !$this->is_conditional_check
+                    || ($old_field_type !== null && self::conditionRejectsNullKey($old_field_type, $field_type, $dim_depth - 1));
                 if ($old_field_type === null) {
                     $combined_fields[$field] = $field_type;
                 } elseif ($dim_depth >= 3) {
-                    $kept_old_field = $is_real ? $old_field_type : self::typesAfterDimWrite($old_field_type);
+                    $kept_old_field = $is_real || !$containers_exist ? $old_field_type : self::typesAfterDimWrite($old_field_type);
                     $combined_fields[$field] = UnionType::of(
                         $this->computeTypeSetOfMergedArrayShapeTypes(
                             $kept_old_field->getTypeSet(),
@@ -2882,7 +2887,11 @@ class AssignmentVisitor extends AnalysisVisitor
                 } elseif ($old_field_type->hasPossiblyObjectTypes() || $old_field_type->isEmpty()) {
                     // The field may be an object (e.g. an ArrayAccess), mixed or a template type, which can still be
                     // an object after the assignment: keep those types, and override the fields of its array types.
-                    $combined_fields[$field] = self::typesAfterDimWrite($old_field_type->nonArrayTypes())->withUnionType(
+                    $kept_non_array_types = $old_field_type->nonArrayTypes();
+                    if ($containers_exist) {
+                        $kept_non_array_types = self::typesAfterDimWrite($kept_non_array_types);
+                    }
+                    $combined_fields[$field] = $kept_non_array_types->withUnionType(
                         ArrayType::combineArrayTypesOverriding($field_type, $old_field_type->arrayTypes(), true)
                     );
                 } else {
@@ -2954,6 +2963,48 @@ class AssignmentVisitor extends AnalysisVisitor
             return UnionType::empty();
         }
         return $result->nonNullableClone();
+    }
+
+    /**
+     * Returns true if a condition on the key $depth levels below a field is false when that key is read through
+     * a container that is null, false or true (PHP reads null then), so that the containers on the path exist.
+     * $new_field_type is the type of the field after the condition, with one array shape per level down to the
+     * narrowed type of the key; $old_field_type is the type of the field before it.
+     * This is known when the condition removed null from the type of the key in the old array shapes. The narrowed
+     * type alone does not show it: empty() narrows an int key to 0, and !is_array() narrows an array|int key to int.
+     * Returns false for a key that is not a literal, and if a container on the path may be another type than an
+     * array shape, null or a bool (an object, a generic array or mixed).
+     */
+    private static function conditionRejectsNullKey(UnionType $old_field_type, UnionType $new_field_type, int $depth): bool
+    {
+        $old_key_type = $old_field_type;
+        $new_key_type = $new_field_type;
+        for (; $depth > 0; $depth--) {
+            $new_types = $new_key_type->getTypeSet();
+            $new_shape = \count($new_types) === 1 ? \reset($new_types) : null;
+            if (!$new_shape instanceof ArrayShapeType) {
+                return false;
+            }
+            $new_fields = $new_shape->getFieldTypes();
+            if (\count($new_fields) !== 1) {
+                return false;
+            }
+            $key = \array_key_first($new_fields);
+            $new_key_type = $new_fields[$key];
+            $old_types = [];
+            foreach ($old_key_type->getTypeSet() as $type) {
+                if ($type instanceof ArrayShapeType) {
+                    $old_field = $type->getFieldTypes()[$key] ?? null;
+                    if ($old_field !== null) {
+                        \array_push($old_types, ...$old_field->getTypeSet());
+                    }
+                } elseif (!($type instanceof NullType) && !$type->isInBoolFamily()) {
+                    return false;
+                }
+            }
+            $old_key_type = UnionType::of($old_types);
+        }
+        return $old_key_type->containsNullable() && !$new_key_type->isEmpty() && !$new_key_type->containsNullable();
     }
 
     private static function fieldMayBeAbsentNullOrFalse(UnionType $union_type): bool

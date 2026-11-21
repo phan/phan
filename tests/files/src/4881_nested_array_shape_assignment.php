@@ -372,3 +372,19 @@ function test_union_of_declared_shapes(array $a, array $b): void
     $b['x']['a'] = 1;
     echo $b['x']['b'];
 }
+
+/**
+ * PHP reads null through a field that is false. empty($a['x']['y']['z']) is true then, so x may still be false
+ * in the branch. $b['x']['y']['z'] !== null is false then, so x is not false in the branch.
+ * @param array{x:false|array{y:array{z:?int}}} $a
+ * @param array{x:false|array{y:array{z:?int}}} $b
+ */
+function test_condition_on_key_below_false_field(array $a, array $b): void
+{
+    if (empty($a['x']['y']['z'])) {
+        '@phan-debug-var $a';
+    }
+    if ($b['x']['y']['z'] !== null) {
+        '@phan-debug-var $b';
+    }
+}
