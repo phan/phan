@@ -4750,7 +4750,7 @@ class Clazz extends AddressableElement
         }
 
         // PHP evaluates both values and compares them with `===`.
-        self::$is_class_name_case_unknown = false;
+        self::$class_names_of_unknown_case = [];
         self::$evaluation_budget = self::EVALUATION_BUDGET;
         try {
             $value1 = $this->evaluateConstantValueInComposition($code_base, $const1, $node1, $const1_is_inherited);
@@ -4769,34 +4769,44 @@ class Clazz extends AddressableElement
         if ($value1 === $value2) {
             return true;
         }
-        // Phan may know a class name with another letter case than PHP uses (see evaluateClassName()): values that differ
-        // only in letter case may be the same in PHP.
-        return self::$is_class_name_case_unknown
-            && self::lowercaseStringsOfConstantValue($value1) === self::lowercaseStringsOfConstantValue($value2);
+        // Phan may know a class name with another letter case than PHP (see evaluateClassName()). The values may be the same in PHP
+        // if they differ only in the letter case of strings that are such a class name.
+        return self::$class_names_of_unknown_case !== []
+            && self::lowercaseClassNamesOfUnknownCase($value1) === self::lowercaseClassNamesOfUnknownCase($value2);
     }
 
     /**
-     * True if evaluateConstantExpression() evaluated a class name whose letter case in PHP may differ from the case Phan knows it with.
-     * Reset before the values of two constants are compared.
-     * @var bool
+     * The class names that evaluateClassName() gave in the current comparison with a letter case that may differ from PHP's,
+     * in lowercase. Reset before the values of two constants are compared.
+     * @var array<string,true>
      */
-    private static $is_class_name_case_unknown = false;
+    private static $class_names_of_unknown_case = [];
 
     /**
-     * Returns $value (an evaluated constant value) with its strings and string keys in lowercase.
+     * Returns $value (an evaluated constant value) with each string and string key whose lowercase form is in
+     * $class_names_of_unknown_case changed to that lowercase form. Other strings keep their letter case.
+     * Keys that become the same are one key, as in PHP: the element has the position of the first and the value of the last.
+     *
      * @return EnumCase|array|bool|float|int|string|null
      */
-    private static function lowercaseStringsOfConstantValue(mixed $value): mixed
+    private static function lowercaseClassNamesOfUnknownCase(mixed $value): mixed
     {
         if (is_string($value)) {
-            return strtolower($value);
+            $lowercase_value = strtolower($value);
+            return isset(self::$class_names_of_unknown_case[$lowercase_value]) ? $lowercase_value : $value;
         }
         if (!\is_array($value)) {
             return $value;
         }
         $result = [];
         foreach ($value as $key => $element) {
-            $result[is_string($key) ? strtolower($key) : $key] = self::lowercaseStringsOfConstantValue($element);
+            if (is_string($key)) {
+                $lowercase_key = strtolower($key);
+                if (isset(self::$class_names_of_unknown_case[$lowercase_key])) {
+                    $key = $lowercase_key;
+                }
+            }
+            $result[$key] = self::lowercaseClassNamesOfUnknownCase($element);
         }
         return $result;
     }
@@ -5180,7 +5190,7 @@ class Clazz extends AddressableElement
 
     /**
      * Returns the value of $node, an operand of an operator (see evaluateConstantExpression()), or $node if Phan does not know it.
-     * The value is not known if it contains a class name with a letter case that Phan does not know (see evaluateClassName()):
+     * The value is not known if its evaluation gave a class name whose letter case Phan does not know (see evaluateClassName()):
      * the result of the operator may depend on it.
      *
      * @return Node|EnumCase|array|bool|float|int|string|null
@@ -5188,13 +5198,13 @@ class Clazz extends AddressableElement
      */
     private static function evaluateOperand(CodeBase $code_base, Context $context, FullyQualifiedClassName $self_fqsen, mixed $node, int $depth): mixed
     {
-        $outer_is_class_name_case_unknown = self::$is_class_name_case_unknown;
-        self::$is_class_name_case_unknown = false;
+        $outer_class_names_of_unknown_case = self::$class_names_of_unknown_case;
+        self::$class_names_of_unknown_case = [];
         try {
             $value = self::evaluateConstantExpression($code_base, $context, $self_fqsen, $node, $depth);
-            return self::$is_class_name_case_unknown && $node instanceof Node ? $node : $value;
+            return self::$class_names_of_unknown_case !== [] && $node instanceof Node ? $node : $value;
         } finally {
-            self::$is_class_name_case_unknown = $outer_is_class_name_case_unknown;
+            self::$class_names_of_unknown_case = $outer_class_names_of_unknown_case;
         }
     }
 
@@ -5204,7 +5214,8 @@ class Clazz extends AddressableElement
      *
      * PHP resolves a name with the namespace and the `use` statements of the code that declares the constant, and keeps
      * the letters as they are written there. Phan knows the target of a `use` statement and the names of the classes of `self`
-     * and `parent` with the letter case it saw first, so that case may differ from PHP's (see areConstantsCompatible()).
+     * and `parent` with the letter case it saw first, so that case may differ from PHP's: such a name is added to
+     * $class_names_of_unknown_case (see areConstantsCompatible()).
      */
     private static function evaluateClassName(CodeBase $code_base, Context $context, FullyQualifiedClassName $self_fqsen, Node $node): Node|string
     {
@@ -5238,9 +5249,10 @@ class Clazz extends AddressableElement
                 if ($class_node->flags & ast\flags\NAME_NOT_FQ) {
                     $parts = \explode('\\', $name, 2);
                     if ($context->hasNamespaceMapFor(ast\flags\USE_NORMAL, $parts[0])) {
-                        self::$is_class_name_case_unknown = true;
-                        return \ltrim((string)$context->getNamespaceMapFor(ast\flags\USE_NORMAL, $parts[0]), '\\')
+                        $class_name = \ltrim((string)$context->getNamespaceMapFor(ast\flags\USE_NORMAL, $parts[0]), '\\')
                             . (isset($parts[1]) ? '\\' . $parts[1] : '');
+                        self::$class_names_of_unknown_case[strtolower($class_name)] = true;
+                        return $class_name;
                     }
                     return \ltrim(\rtrim($context->getNamespace(), '\\') . '\\' . $name, '\\');
                 }
@@ -5249,8 +5261,9 @@ class Clazz extends AddressableElement
                 }
                 return $name;
         }
-        self::$is_class_name_case_unknown = true;
-        return \ltrim((string)$class_fqsen, '\\');
+        $class_name = \ltrim((string)$class_fqsen, '\\');
+        self::$class_names_of_unknown_case[strtolower($class_name)] = true;
+        return $class_name;
     }
 
     /**

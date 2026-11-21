@@ -825,3 +825,75 @@ class ChildOfParentWithTraitUsed extends ParentWithTrait {
     public const X_FROM_TRAIT = 2;
 }
 echo ChildOfParentWithTraitUsed::X_FROM_TRAIT;
+
+// 26. Phan knows a class name of `self`, `parent` or a `use` statement with the letter case it saw first, which may differ from PHP's.
+// Values that differ only in the letter case of such class names are not reported; other strings are compared with their letter case.
+// PHP 8.2 to 8.5 reject ClassCaseElement and ClassCaseKey ("CaseElementFirst and CaseElementSecond define the same constant (CASE_ELEMENT) ...",
+// "CaseKeyFirst and CaseKeySecond define the same constant (CASE_KEY) ..."): 'UPPER' and 'upper' are different strings.
+trait CaseElementFirst {
+    public const CASE_ELEMENT = [self::class, 'UPPER'];
+}
+
+trait CaseElementSecond {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const CASE_ELEMENT = [self::class, 'upper'];
+}
+
+class ClassCaseElement {
+    use CaseElementFirst, CaseElementSecond;
+}
+var_dump(ClassCaseElement::CASE_ELEMENT);
+
+trait CaseKeyFirst {
+    public const CASE_KEY = [self::class => 1, 'UPPER' => 2];
+}
+
+trait CaseKeySecond {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const CASE_KEY = [self::class => 1, 'upper' => 2];
+}
+
+class ClassCaseKey {
+    use CaseKeyFirst, CaseKeySecond;
+}
+var_dump(ClassCaseKey::CASE_KEY);
+
+// PHP 8.2 to 8.5 accept ClassAliasLowercase: `LowercaseAlias::class` is 'issue5661php82\aliastarget', as written in the `use` statement,
+// while Phan knows the class as `Issue5661Php82\AliasTarget` from its declaration.
+class AliasTarget {
+}
+
+use issue5661php82\aliastarget as LowercaseAlias;
+
+trait AliasLowercaseFirst {
+    /** @phan-suppress-next-line PhanPluginMixedKeyNoKey */
+    public const ALIAS_NAME = [LowercaseAlias::class, 'x', LowercaseAlias::class => 1];
+}
+
+trait AliasLowercaseSecond {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant, PhanPluginMixedKeyNoKey */
+    public const ALIAS_NAME = ['issue5661php82\aliastarget', 'x', 'issue5661php82\aliastarget' => 1];
+}
+
+class ClassAliasLowercase {
+    use AliasLowercaseFirst, AliasLowercaseSecond;
+}
+var_dump(ClassAliasLowercase::ALIAS_NAME, new AliasTarget());
+
+// PHP 8.2 to 8.5 accept SelfCaseHolder: `self::class` is 'Issue5661Php82\SelfCaseHolder', while Phan knows the class with the letter case
+// of the `use` statement that comes before its declaration.
+use issue5661php82\selfcaseholder as LowercaseSelfCaseHolder;
+
+trait SelfCaseFirst {
+    public const SELF_CASE = [self::class, 'x'];
+}
+
+trait SelfCaseSecond {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const SELF_CASE = ['Issue5661Php82\SelfCaseHolder', 'x'];
+}
+
+class SelfCaseHolder {
+    use SelfCaseFirst, SelfCaseSecond;
+}
+var_dump(SelfCaseHolder::SELF_CASE, LowercaseSelfCaseHolder::class);
