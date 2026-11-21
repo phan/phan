@@ -94,3 +94,28 @@ class ChildUntypedAllowed extends ParentUntypedOrPrivate {
     public const I = 'x';
 }
 echo ChildUntypedAllowed::H, ChildUntypedAllowed::I;
+
+// 8. `self` in the type of a trait constant is bound to the class using the trait, and subclasses inherit the constant
+// with that binding: a constant declared in a subclass can override it with the type of the class using the trait (PHP accepts this).
+trait TraitSelfBound {
+    public const ?self J = null;
+}
+
+class SelfBoundBase {
+    use TraitSelfBound;
+}
+var_dump(SelfBoundBase::J);
+
+class SelfBoundMiddle extends SelfBoundBase {}
+
+class SelfBoundChildClass extends SelfBoundMiddle {
+    public const ?SelfBoundBase J = null;
+}
+var_dump(SelfBoundChildClass::J);
+
+// 9. An untyped constant can override DateTime::ATOM in PHP 8.3, where it has no type (it has one since PHP 8.4).
+// It is not reported for this target version, also when the PHP version running Phan is newer.
+class ChildOfDateTime extends \DateTime {
+    public const ATOM = 'custom';
+}
+var_dump(ChildOfDateTime::ATOM);

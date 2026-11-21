@@ -171,3 +171,88 @@ class ChildFinalSuppressed extends ParentFinal {
     use TraitPublic;
 }
 echo ChildFinalSuppressed::C;
+
+// 14. `self` in the type of a trait constant is bound to the class using the trait, and subclasses inherit the constant
+// with that binding: a trait of a subclass can override it with the type of the class using the trait (PHP accepts this).
+trait TraitSelfBound {
+    public const ?self C = null;
+}
+
+class SelfBoundBase {
+    use TraitSelfBound;
+}
+var_dump(SelfBoundBase::C);
+
+class SelfBoundMiddle extends SelfBoundBase {}
+
+trait TraitSelfBoundOverride {
+    public const ?SelfBoundBase C = null;
+}
+
+class SelfBoundChildTrait extends SelfBoundMiddle {
+    use TraitSelfBoundOverride;
+}
+var_dump(SelfBoundChildTrait::C);
+
+// 15. A constant declared in a subclass can override it with the type of the class using the trait (PHP accepts this).
+class SelfBoundChildClass extends SelfBoundMiddle {
+    public const ?SelfBoundBase C = null;
+}
+var_dump(SelfBoundChildClass::C);
+
+// 16. A subclass that uses the trait again binds `self` to itself, so its subclass cannot override the constant with the type
+// of the first class using the trait (PHP: "Type of SelfBoundReimportedChild::C must be compatible with SelfBoundReimported::C
+// of type ?SelfBoundReimported").
+class SelfBoundReimported extends SelfBoundBase {
+    use TraitSelfBound;
+}
+
+class SelfBoundReimportedChild extends SelfBoundReimported {
+    public const ?SelfBoundBase C = null;
+}
+var_dump(SelfBoundReimportedChild::C);
+
+// 17. `self` in the type of a constant that a trait imports from another trait is bound to the class using the outer trait.
+// PHP accepts the override with the type of that class, and rejects the override with an unrelated class
+// ("Type of SelfBoundOuterChildBad::C must be compatible with SelfBoundOuterBase::C of type ?SelfBoundOuterBase").
+trait TraitSelfBoundOuter {
+    use TraitSelfBound;
+}
+
+class SelfBoundOuterBase {
+    use TraitSelfBoundOuter;
+}
+
+class SelfBoundOuterMiddle extends SelfBoundOuterBase {}
+
+class SelfBoundOuterChild extends SelfBoundOuterMiddle {
+    public const ?SelfBoundOuterBase C = null;
+}
+var_dump(SelfBoundOuterChild::C);
+
+class SelfBoundOuterChildBad extends SelfBoundOuterMiddle {
+    public const ?SelfBoundBase C = null;
+}
+var_dump(SelfBoundOuterChildBad::C);
+
+// 18. The binding is inherited three levels below the class using the trait (PHP accepts this).
+class SelfBoundLevel1 extends SelfBoundBase {}
+
+class SelfBoundLevel2 extends SelfBoundLevel1 {}
+
+class SelfBoundLevel3 extends SelfBoundLevel2 {
+    public const ?SelfBoundBase C = null;
+}
+var_dump(SelfBoundLevel3::C);
+
+// 19. An untyped trait constant cannot override a typed constant of an internal class
+// (PHP: "Type of ChildOfDateTimeWithTrait::ATOM must be compatible with DateTimeInterface::ATOM of type string").
+// This is also reported when the PHP version running Phan is newer than the target version: DateTime::ATOM has its type since PHP 8.4.
+trait TraitUntypedAtom {
+    public const ATOM = 'custom';
+}
+
+class ChildOfDateTimeWithTrait extends \DateTime {
+    use TraitUntypedAtom;
+}
+var_dump(ChildOfDateTimeWithTrait::ATOM);

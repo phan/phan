@@ -1,0 +1,1 @@
+%s:9 PhanConstantTypeMismatchInheritance Class constant \Issue5647Php84\ChildOfDateTime::ATOM is declared with type (none) which is not covariant with type string inherited from \DateTime (constant types must be invariant or covariant)
