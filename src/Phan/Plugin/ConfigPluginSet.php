@@ -412,8 +412,16 @@ final class ConfigPluginSet extends PluginV3 implements
      */
     public function beforeAnalyze(CodeBase $code_base): void
     {
-        foreach ($this->before_analyze_plugin_set as $plugin) {
-            $plugin->beforeAnalyze($code_base);
+        // Parsing is done, so a function or class that a plugin loads here is handled like one loaded during the analysis.
+        // The flag is restored afterwards because files are parsed again after this in daemon mode and by the language server.
+        $did_analyze_phase_start = $this->did_analyze_phase_start;
+        $this->did_analyze_phase_start = true;
+        try {
+            foreach ($this->before_analyze_plugin_set as $plugin) {
+                $plugin->beforeAnalyze($code_base);
+            }
+        } finally {
+            $this->did_analyze_phase_start = $did_analyze_phase_start;
         }
     }
 
@@ -427,7 +435,6 @@ final class ConfigPluginSet extends PluginV3 implements
      */
     public function beforeAnalyzePhase(CodeBase $code_base): void
     {
-        $this->did_analyze_phase_start = true;
         foreach ($this->before_analyze_phase_plugin_set as $plugin) {
             $plugin->beforeAnalyzePhase($code_base);
         }
