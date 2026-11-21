@@ -39,6 +39,7 @@ use Phan\Language\Scope\ClassScope;
 use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\IntersectionType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
@@ -4515,7 +4516,7 @@ class Clazz extends AddressableElement
                     if (!$other_constant instanceof ClassConstant) {
                         continue;
                     }
-                    if (!self::areConstantsCompatible($first_constant, $other_constant, $this, $this)) {
+                    if (!self::areConstantsCompatible($code_base, $first_constant, $other_constant, $this, $this)) {
                         Issue::maybeEmit(
                             $code_base,
                             $this->getContext(),
@@ -4555,7 +4556,7 @@ class Clazz extends AddressableElement
                     // If the class constant is compatible with the trait constant, it's likely just inherited
                     // from the trait (not explicitly redefined). Only emit an error if they're incompatible,
                     // which indicates the class tried to redefine it with a different visibility or value.
-                    if (!self::areConstantsCompatible($class_constant, $trait_constant, $this, $this)) {
+                    if (!self::areConstantsCompatible($code_base, $class_constant, $trait_constant, $this, $this)) {
                         Issue::maybeEmit(
                             $code_base,
                             $this->getContext(),
@@ -4643,7 +4644,7 @@ class Clazz extends AddressableElement
         } else {
             $other_binding_class = $class;
         }
-        return !self::areConstantsCompatible($other_constant, $trait_constant, $other_binding_class, $class);
+        return !self::areConstantsCompatible($code_base, $other_constant, $trait_constant, $other_binding_class, $class);
     }
 
     /**
@@ -4700,6 +4701,7 @@ class Clazz extends AddressableElement
      * @return bool true if constants are compatible
      */
     private static function areConstantsCompatible(
+        CodeBase $code_base,
         ClassConstant $const1,
         ClassConstant $const2,
         Clazz $binding_class1,
@@ -4726,10 +4728,17 @@ class Clazz extends AddressableElement
                 return false;
             }
             if ($const1->hasDeclaredType()) {
-                $type1 = self::canonicalizeDeclaredConstantType($const1->getUnionType()->getRealUnionType(), $binding_class1);
-                $type2 = self::canonicalizeDeclaredConstantType($const2->getUnionType()->getRealUnionType(), $binding_class2);
-                if (!$type1->isEqualTo($type2)) {
-                    return false;
+                $raw_type1 = $const1->getUnionType()->getRealUnionType();
+                $raw_type2 = $const2->getUnionType()->getRealUnionType();
+                // When composing nested traits, `self` is not yet bound to a concrete class.
+                if (!($binding_class1->isTrait() && $raw_type1->hasSelfType())
+                    && !($binding_class2->isTrait() && $raw_type2->hasSelfType())
+                ) {
+                    $type1 = self::canonicalizeDeclaredConstantType($code_base, $raw_type1, $binding_class1);
+                    $type2 = self::canonicalizeDeclaredConstantType($code_base, $raw_type2, $binding_class2);
+                    if (!$type1->isEqualTo($type2)) {
+                        return false;
+                    }
                 }
             }
         }
@@ -4758,36 +4767,64 @@ class Clazz extends AddressableElement
      * Canonicalizes a declared constant type for PHP composition equality:
      * - Resolves `self` in the binding class context.
      * - Expands `iterable` to `array|\Traversable`.
+     * - Resolves class aliases to their canonical FQSEN.
      * - Normalizes nullable representations (`?T` vs `T|null`).
      */
-    private static function canonicalizeDeclaredConstantType(UnionType $type, Clazz $binding_class): UnionType
+    private static function canonicalizeDeclaredConstantType(CodeBase $code_base, UnionType $type, Clazz $binding_class): UnionType
     {
         if ($type->hasSelfType()) {
             $type = $type->withSelfResolvedInContext(
                 $binding_class->getContext()->withScope($binding_class->getInternalScope())
             );
         }
-        $has_iterable = false;
+        $expanded = [];
+        $changed = false;
         foreach ($type->getTypeSet() as $t) {
             if (\get_class($t) === IterableType::class) {
-                $has_iterable = true;
-                break;
+                $changed = true;
+                $is_nullable = $t->isNullable();
+                $expanded[] = ArrayType::instance($is_nullable);
+                $expanded[] = Type::fromNamespaceAndName('\\', 'Traversable', $is_nullable);
+            } else {
+                $canonical = self::canonicalizeConstantTypePart($code_base, $t);
+                if ($canonical !== $t) {
+                    $changed = true;
+                }
+                $expanded[] = $canonical;
             }
         }
-        if ($has_iterable) {
-            $expanded = [];
-            foreach ($type->getTypeSet() as $t) {
-                if (\get_class($t) === IterableType::class) {
-                    $is_nullable = $t->isNullable();
-                    $expanded[] = ArrayType::instance($is_nullable);
-                    $expanded[] = Type::fromNamespaceAndName('\\', 'Traversable', $is_nullable);
-                } else {
-                    $expanded[] = $t;
-                }
-            }
+        if ($changed) {
             $type = UnionType::of($expanded);
         }
         return $type->asNormalizedTypes();
+    }
+
+    private static function canonicalizeConstantTypePart(CodeBase $code_base, Type $t): Type
+    {
+        if ($t instanceof IntersectionType) {
+            $parts = [];
+            $changed = false;
+            foreach ($t->getTypeParts() as $part) {
+                $canonical_part = self::canonicalizeConstantTypePart($code_base, $part);
+                if ($canonical_part !== $part) {
+                    $changed = true;
+                }
+                $parts[] = $canonical_part;
+            }
+            return $changed
+                ? IntersectionType::createFromTypes($parts, $code_base, null, true)->withIsNullable($t->isNullable())
+                : $t;
+        }
+        if ($t->isObjectWithKnownFQSEN()) {
+            $fqsen = $t->asFQSEN();
+            if ($fqsen instanceof FullyQualifiedClassName && $code_base->hasClassWithFQSEN($fqsen)) {
+                $canonical_fqsen = $code_base->getClassByFQSENWithoutHydrating($fqsen)->getFQSEN();
+                if ($canonical_fqsen !== $fqsen) {
+                    return $canonical_fqsen->asType()->withIsNullable($t->isNullable());
+                }
+            }
+        }
+        return $t;
     }
 
     public function setDidFinishParsing(bool $did_finish_parsing): void

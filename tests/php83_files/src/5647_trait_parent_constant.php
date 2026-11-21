@@ -219,3 +219,19 @@ class ClassStaticP {
     use TraitStaticP, TraitExplicitP;
 }
 var_dump(ClassStaticP::P);
+
+// 16. Nested trait composition defers `self` resolution until a concrete class uses the trait.
+trait TraitNestedSelfQ {
+    public const self|int Q = 0;
+}
+trait TraitNestedExplicitQ {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const ClassNestedQ|int Q = 0;
+}
+trait TraitNestedCombinedQ {
+    use TraitNestedSelfQ, TraitNestedExplicitQ;
+}
+class ClassNestedQ {
+    use TraitNestedCombinedQ;
+}
+var_dump(ClassNestedQ::Q);

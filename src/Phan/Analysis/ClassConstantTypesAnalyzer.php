@@ -284,13 +284,20 @@ class ClassConstantTypesAnalyzer
 
             $constant_has_declared_type = $constant->hasDeclaredType();
             $constant_real_type = null;
+            $constant_has_self_type = false;
             if ($constant_has_declared_type) {
                 $constant_union_type = $constant->getUnionType();
                 if (!$constant_union_type->hasRealTypeSet()) {
                     continue;
                 }
-                $class_context ??= $clazz->getContext()->withScope($clazz->getInternalScope());
-                $constant_real_type = $constant_union_type->getRealUnionType()->withSelfResolvedInContext($class_context);
+                $constant_raw_real_type = $constant_union_type->getRealUnionType();
+                $constant_has_self_type = $constant_raw_real_type->hasSelfType();
+                if ($clazz->isTrait()) {
+                    $constant_real_type = $constant_raw_real_type;
+                } else {
+                    $class_context ??= $clazz->getContext()->withScope($clazz->getInternalScope());
+                    $constant_real_type = $constant_raw_real_type->withSelfResolvedInContext($class_context);
+                }
             } elseif (!$check_untyped_constants) {
                 continue;
             }
@@ -318,6 +325,10 @@ class ClassConstantTypesAnalyzer
                 }
 
                 $inherited_real_type = $inherited_union_type->getRealUnionType();
+                // In a trait, `self` is not yet bound to a concrete class; defer checks involving `self` until a class uses the trait.
+                if ($clazz->isTrait() && ($constant_has_self_type || $inherited_real_type->hasSelfType())) {
+                    continue;
+                }
                 // Only the type of a constant of a trait keeps `self` unresolved (it is resolved when a class or interface is parsed).
                 if ($inherited_real_type->hasSelfType()) {
                     $self_class = $inherited_class->getClassBindingSelfOfConstant($code_base, $inherited_constant);
