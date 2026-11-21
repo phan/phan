@@ -113,18 +113,25 @@ class SelfBoundChildClass extends SelfBoundMiddle {
 }
 var_dump(SelfBoundChildClass::J);
 
-// 9. An untyped constant can override DateTime::ATOM in PHP 8.3, where it has no type (it has one since PHP 8.4).
-// It is not reported for this target version, also when the PHP version running Phan is newer.
+// 9. An untyped constant can override DateTime::ATOM or ArrayObject::STD_PROP_LIST in PHP 8.3,
+// where they have no type (they got types in PHP 8.4; bundled SPL stubs declare 8.4+ types).
+// Neither is reported for this target version, regardless of the PHP version running Phan.
 class ChildOfDateTime extends \DateTime {
     public const ATOM = 'custom';
 }
 var_dump(ChildOfDateTime::ATOM);
+
+class ChildOfArrayObject extends \ArrayObject {
+    public const STD_PROP_LIST = 1;
+}
+var_dump(ChildOfArrayObject::STD_PROP_LIST);
 
 // 10. A trait constant must remain covariant with an interface constant, even when their values differ.
 // Interfaces are not checked by the trait/parent class composition conflict check.
 interface InterfaceTypedInt {
     public const int K = 0;
 }
+echo InterfaceTypedInt::K;
 
 trait TraitTypedStringK {
     public const string K = 'x';

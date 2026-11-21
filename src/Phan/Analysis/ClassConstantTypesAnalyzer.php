@@ -333,13 +333,13 @@ class ClassConstantTypesAnalyzer
                 }
 
                 if ($constant_real_type === null) {
-                    // The type of an internal constant is the one of the PHP version running Phan, which may be newer than the target version.
-                    // PHP 8.4 added types to the constants of internal classes that existed before it (few had one in PHP 8.3),
-                    // and PHP 8.5 and 8.6 only added new constants with a type. So for a target of 8.4 or newer, an internal constant
-                    // with a type also has it in the target version, if it exists there. For a target of 8.3 that is not known.
+                    // The type of an internal constant comes from the PHP version running Phan or from bundled stubs
+                    // (e.g. spl.phan_php), both of which may reflect PHP 8.4+ where most internal class constants gained types
+                    // (few had one in PHP 8.3). PHP 8.5 and 8.6 only added new constants with a type. So for a target of 8.4
+                    // or newer, an internal constant with a type also has it in the target version, if it exists there.
+                    // For a target of 8.3 that is not known.
                     if ($inherited_constant->isPHPInternal()
                         && Config::get_closest_target_php_version_id() < 80400
-                        && Config::get_closest_target_php_version_id() < Config::get_closest_runtime_php_version_id()
                     ) {
                         continue;
                     }
