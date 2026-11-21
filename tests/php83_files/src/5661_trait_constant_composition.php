@@ -208,8 +208,8 @@ class ClassConvertedReference {
 var_dump(ClassConvertedReference::N);
 
 // 11. PHP converts the value of a constant when it evaluates the value at compile time. It does not evaluate `self::ONE` in a trait
-// at compile time, and compares 1 with 1.0: PHP 8.3 to 8.5 reject ClassRuntimeValue
-// ("RuntimeValueFirst and RuntimeValueSecond define the same constant (O) in the composition of ClassRuntimeValue").
+// at compile time, and compares 1 with 1.0: PHP 8.3 to 8.5 reject ClassRuntimeValue ("RuntimeValueFirst and RuntimeValueSecond ...").
+// Phan does not know whether PHP replaces a class constant at compile time, and does not report a converted value with a class constant.
 trait RuntimeValueFirst {
     public const ONE = 1;
     public const float O = self::ONE;
@@ -224,3 +224,27 @@ class ClassRuntimeValue {
     use RuntimeValueFirst, RuntimeValueSecond;
 }
 var_dump(ClassRuntimeValue::ONE, ClassRuntimeValue::O);
+
+// 12. PHP replaces `IntHolder::ONE` at compile time and converts the value of the constant P that ClassNestedConverted gets
+// through OuterConverted to 1.0: PHP 8.3 to 8.5 accept ClassNestedConverted. Phan does not report it.
+class IntHolder {
+    public const ONE = 1;
+}
+
+trait InnerConverted {
+    public const float P = IntHolder::ONE;
+}
+
+trait OuterConverted {
+    use InnerConverted;
+}
+
+trait FloatP {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const float P = 1.0;
+}
+
+class ClassNestedConverted {
+    use OuterConverted, FloatP;
+}
+var_dump(ClassNestedConverted::P);

@@ -407,13 +407,16 @@ class ClassConstantTypesAnalyzer
     }
 
     /**
-     * Returns the class that `self` refers to in the type of $constant, a constant of $class.
+     * Returns the class that `self` refers to in the type of $constant, a constant of $class that comes from a trait.
+     * PHP also evaluates the value of such a constant in the scope of that class when it fetches the constant.
      *
      * PHP binds `self` of a constant of a trait to the class using the trait, and subclasses inherit the constant
      * with that binding. This is the nearest class from $class up the parent chain that imports $constant from
      * one of its traits ($class itself if there is none).
+     *
+     * @internal used by Clazz
      */
-    private static function getClassBindingSelfOfConstant(CodeBase $code_base, Clazz $class, ClassConstant $constant): Clazz
+    public static function getClassBindingSelfOfConstant(CodeBase $code_base, Clazz $class, ClassConstant $constant): Clazz
     {
         $name = $constant->getName();
         $real_defining_fqsen = $constant->getRealDefiningFQSEN();

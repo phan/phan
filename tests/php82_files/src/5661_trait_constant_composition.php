@@ -589,3 +589,91 @@ class ClassShortCircuit {
     use ShortCircuitFirst, ShortCircuitSecond;
 }
 var_dump(ClassShortCircuit::SHORT);
+
+// 17. The constant SELF_NAME_P that ChildSelfName inherits from ParentSelfName has the value `self::class` of SelfNameTrait. When PHP has not
+// evaluated it before, it evaluates it in the scope of ChildSelfName and rejects ChildSelfName (PHP 8.2 to 8.4:
+// "ParentSelfName and OtherNameTrait define the same constant (SELF_NAME_P) ..."). When `ParentSelfName::SELF_NAME_P` was evaluated before
+// ChildSelfName is declared, it is 'Issue5661Php82\ParentSelfName' and PHP accepts ChildSelfName. Phan does not know which, and does not report it.
+trait SelfNameTrait {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const SELF_NAME_P = self::class;
+}
+
+class ParentSelfName {
+    use SelfNameTrait;
+}
+
+trait OtherNameTrait {
+    public const SELF_NAME_P = 'Issue5661Php82\ParentSelfName';
+}
+
+class ChildSelfName extends ParentSelfName {
+    use OtherNameTrait;
+}
+var_dump(ChildSelfName::SELF_NAME_P);
+
+// 18. PHP evaluates a constant that it fetches in the scope of the class that the constant is bound to, whether or not it evaluated it before:
+// `ChildBoundName::BOUND_NAME` is 'Issue5661Php82\ParentBoundName' (the class using BoundNameTrait). PHP 8.2 to 8.5 reject ClassBoundName
+// ("BoundNameReference and ChildNameLiteral define the same constant (REFERENCED_NAME) in the composition of ClassBoundName").
+trait BoundNameTrait {
+    public const BOUND_NAME = self::class;
+}
+
+class ParentBoundName {
+    use BoundNameTrait;
+}
+
+class ChildBoundName extends ParentBoundName {
+}
+
+trait BoundNameReference {
+    public const REFERENCED_NAME = ChildBoundName::BOUND_NAME;
+}
+
+trait ChildNameLiteral {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const REFERENCED_NAME = 'Issue5661Php82\ChildBoundName';
+}
+
+class ClassBoundName {
+    use BoundNameReference, ChildNameLiteral;
+}
+var_dump(ClassBoundName::REFERENCED_NAME);
+
+// 19. `AliasedStdClass::class` is 'stdclass', as written in the `use` statement, and PHP 8.2 to 8.5 accept ClassAliasComparison.
+// Phan knows the class as `stdClass`, and does not evaluate an operator applied to a class name whose letter case it does not know.
+use stdclass as AliasedStdClass;
+
+trait AliasComparisonFirst {
+    /** @phan-suppress-next-line PhanImpossibleValueComparison */
+    public const SAME_NAME = AliasedStdClass::class === 'stdclass';
+}
+
+trait AliasComparisonSecond {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const SAME_NAME = true;
+}
+
+class ClassAliasComparison {
+    use AliasComparisonFirst, AliasComparisonSecond;
+}
+var_dump(ClassAliasComparison::SAME_NAME);
+
+// 20. PHP throws "Cannot add element to the array as the next element is already occupied" when it evaluates OVERFLOW of OverflowFirst
+// (the element without a key follows the key PHP_INT_MAX), and rejects ClassOverflow (PHP 8.2 to 8.5:
+// "OverflowFirst and OverflowSecond define the same constant (OVERFLOW) in the composition of ClassOverflow").
+// Phan does not know the value and does not report it.
+trait OverflowFirst {
+    /** @phan-suppress-next-line PhanPluginMixedKeyNoKey */
+    public const OVERFLOW = [(1 << 62) + ((1 << 62) - 1) => 1, 2];
+}
+
+trait OverflowSecond {
+    /** @phan-suppress-next-line PhanUnreferencedPublicClassConstant */
+    public const OVERFLOW = [1];
+}
+
+class ClassOverflow {
+    use OverflowFirst, OverflowSecond;
+}
+var_dump(ClassOverflow::OVERFLOW);

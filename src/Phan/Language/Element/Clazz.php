@@ -4647,7 +4647,7 @@ class Clazz extends AddressableElement
                 return false;
             }
         }
-        return !$this->areConstantsCompatible($code_base, $other_constant, $trait_constant);
+        return !$this->areConstantsCompatible($code_base, $other_constant, $trait_constant, !$other_is_trait);
     }
 
     /**
@@ -4657,9 +4657,10 @@ class Clazz extends AddressableElement
      *
      * @param ClassConstant $const1 the first constant to compare
      * @param ClassConstant $const2 the second constant to compare
+     * @param bool $const1_is_inherited true if $const1 is a constant that this class inherits from its parent class
      * @return bool true if constants are compatible
      */
-    private function areConstantsCompatible(CodeBase $code_base, ClassConstant $const1, ClassConstant $const2): bool
+    private function areConstantsCompatible(CodeBase $code_base, ClassConstant $const1, ClassConstant $const2, bool $const1_is_inherited = false): bool
     {
         if ($const1->getRealDefiningFQSEN() === $const2->getRealDefiningFQSEN()) {
             return true;
@@ -4711,11 +4712,14 @@ class Clazz extends AddressableElement
         // PHP evaluates both values and compares them with `===`.
         self::$is_class_name_case_unknown = false;
         try {
-            $value1 = $this->evaluateConstantValueInComposition($code_base, $const1, $node1);
-            $value2 = $this->evaluateConstantValueInComposition($code_base, $const2, $node2);
+            $value1 = $this->evaluateConstantValueInComposition($code_base, $const1, $node1, $const1_is_inherited);
+            $value2 = $this->evaluateConstantValueInComposition($code_base, $const2, $node2, false);
         } catch (NodeException) {
             // PHP throws an Error when it evaluates one of the values, and rejects the composition
             return false;
+        } catch (Error) {
+            // An operation that Phan evaluated threw: Phan does not know the value
+            return true;
         }
         if ($value1 instanceof Node || $value2 instanceof Node) {
             // Phan does not know one of the values, which may be the same as the other one
@@ -4763,23 +4767,63 @@ class Clazz extends AddressableElement
      * `self` in the value of a constant of a trait is the class or trait using the trait (this class or trait),
      * and in the value of a constant of a class it is that class.
      *
+     * PHP evaluates the value of a constant that this class inherits from its parent class (if $is_inherited is true)
+     * in the scope of this class, unless the value was evaluated before: then it is the value in the scope of the class
+     * the constant is bound to (see getClassOfConstantScope()). Phan does not know which, so the value is not known
+     * if the two differ (e.g. for `self::class` in a constant of a trait, or `self::A` where this class declares its own `A`).
+     *
      * @param mixed $node the value of $constant (see getNodeForValue())
      * @return Node|EnumCase|array|bool|float|int|string|null see evaluateConstantExpression()
      * @throws NodeException if PHP throws an Error when it evaluates the value
      */
-    private function evaluateConstantValueInComposition(CodeBase $code_base, ClassConstant $constant, mixed $node): mixed
+    private function evaluateConstantValueInComposition(CodeBase $code_base, ClassConstant $constant, mixed $node, bool $is_inherited): mixed
     {
-        $self_fqsen = self::isConstantOfTrait($code_base, $constant)
-            ? $this->fqsen
-            : $constant->getRealDefiningFQSEN()->getFullyQualifiedClassName();
-        $value = self::evaluateConstantExpression($code_base, $constant->getContext(), $self_fqsen, $node, 0);
-        // PHP converts the value of a typed constant when it can evaluate the value at compile time, which it always can for a value
-        // without class constants. It compares a value that it evaluates later (e.g. with `self::X` in a trait) without converting it.
-        // Phan does not know which class constants PHP replaces at compile time, and leaves values with class constants as they are.
-        if ($node instanceof Node && self::hasClassConstantReference($node)) {
+        if (!$is_inherited) {
+            $self_fqsen = self::isConstantOfTrait($code_base, $constant)
+                ? $this->fqsen
+                : $constant->getRealDefiningFQSEN()->getFullyQualifiedClassName();
+            return self::evaluateConstantValueWithSelf($code_base, $constant, $node, $self_fqsen);
+        }
+        $value = self::evaluateConstantValueWithSelf($code_base, $constant, $node, self::getClassOfConstantScope($code_base, $constant));
+        if (!$node instanceof Node || $value instanceof Node) {
             return $value;
         }
-        return self::convertToDeclaredFloatType($constant, $value);
+        return self::evaluateConstantValueWithSelf($code_base, $constant, $node, $this->fqsen) === $value ? $value : $node;
+    }
+
+    /**
+     * Returns the value of $constant (see evaluateConstantValueInComposition()), where `self` is $self_fqsen.
+     *
+     * @param mixed $node the value of $constant (see getNodeForValue())
+     * @return Node|EnumCase|array|bool|float|int|string|null see evaluateConstantExpression()
+     * @throws NodeException if PHP throws an Error when it evaluates the value
+     */
+    private static function evaluateConstantValueWithSelf(CodeBase $code_base, ClassConstant $constant, mixed $node, FullyQualifiedClassName $self_fqsen): mixed
+    {
+        $value = self::evaluateConstantExpression($code_base, $constant->getContext(), $self_fqsen, $node, 0);
+        $converted_value = self::convertToDeclaredFloatType($constant, $value);
+        // PHP converts the value of a typed constant when it can evaluate the value at compile time, which it always can for a value
+        // without class constants. It compares a value that it evaluates later (e.g. with `self::X` in a trait) without converting it.
+        // Phan does not know which class constants PHP replaces at compile time.
+        if (is_int($value) && !is_int($converted_value) && $node instanceof Node && self::hasClassConstantReference($node)) {
+            return $node;
+        }
+        return $converted_value;
+    }
+
+    /**
+     * Returns the class in whose scope PHP evaluates the value of $constant when it fetches the constant: the class that
+     * declares it, or for a constant of a trait, the class that imports it from the trait. That is not the class
+     * that $constant belongs to if it inherits $constant.
+     */
+    private static function getClassOfConstantScope(CodeBase $code_base, ClassConstant $constant): FullyQualifiedClassName
+    {
+        $class_fqsen = $constant->getFQSEN()->getFullyQualifiedClassName();
+        if (!self::isConstantOfTrait($code_base, $constant) || !$code_base->hasClassWithFQSEN($class_fqsen)) {
+            return $constant->getRealDefiningFQSEN()->getFullyQualifiedClassName();
+        }
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        return ClassConstantTypesAnalyzer::getClassBindingSelfOfConstant($code_base, $code_base->getClassByFQSEN($class_fqsen), $constant)->getFQSEN();
     }
 
     /**
@@ -4875,12 +4919,17 @@ class Clazz extends AddressableElement
                             return $node;
                         }
                         // Unpacking appends the elements with integer keys and sets the elements with string keys
-                        foreach ($value as $key => $element_value) {
-                            if (is_int($key)) {
-                                $result[] = $element_value;
-                            } else {
-                                $result[$key] = $element_value;
+                        try {
+                            foreach ($value as $key => $element_value) {
+                                if (is_int($key)) {
+                                    $result[] = $element_value;
+                                } else {
+                                    $result[$key] = $element_value;
+                                }
                             }
+                        } catch (Error) {
+                            // "Cannot add element to the array as the next element is already occupied" (after the key PHP_INT_MAX)
+                            return $node;
                         }
                         continue;
                     }
@@ -4890,7 +4939,12 @@ class Clazz extends AddressableElement
                     }
                     $key_node = $element->children['key'];
                     if ($key_node === null) {
-                        $result[] = $value;
+                        try {
+                            $result[] = $value;
+                        } catch (Error) {
+                            // "Cannot add element to the array as the next element is already occupied" (after the key PHP_INT_MAX)
+                            return $node;
+                        }
                         continue;
                     }
                     $key = self::evaluateConstantExpression($code_base, $context, $self_fqsen, $key_node, $depth);
@@ -4902,7 +4956,7 @@ class Clazz extends AddressableElement
                 }
                 return $result;
             case ast\AST_UNARY_OP:
-                $operand = self::evaluateConstantExpression($code_base, $context, $self_fqsen, $node->children['expr'], $depth);
+                $operand = self::evaluateOperand($code_base, $context, $self_fqsen, $node->children['expr'], $depth);
                 if ($node->flags === ast\flags\UNARY_BITWISE_NOT) {
                     // PHP also applies `~` to floats and to the bytes of strings, which is not evaluated here
                     return is_int($operand) ? ~$operand : $node;
@@ -4918,7 +4972,7 @@ class Clazz extends AddressableElement
                 }
                 return $result instanceof Node ? $node : $result;
             case ast\AST_BINARY_OP:
-                $left = self::evaluateConstantExpression($code_base, $context, $self_fqsen, $node->children['left'], $depth);
+                $left = self::evaluateOperand($code_base, $context, $self_fqsen, $node->children['left'], $depth);
                 // PHP does not evaluate the right operand of these operators when the left operand determines the result.
                 // When Phan does not know the left operand, the right operand is not evaluated either: it could throw.
                 switch ($node->flags) {
@@ -4947,7 +5001,7 @@ class Clazz extends AddressableElement
                         }
                         break;
                 }
-                $right = self::evaluateConstantExpression($code_base, $context, $self_fqsen, $node->children['right'], $depth);
+                $right = self::evaluateOperand($code_base, $context, $self_fqsen, $node->children['right'], $depth);
                 switch ($node->flags) {
                     case ast\flags\BINARY_MOD:
                     case ast\flags\BINARY_BITWISE_OR:
@@ -5005,17 +5059,40 @@ class Clazz extends AddressableElement
                 if ($constant instanceof EnumCase) {
                     return $constant;
                 }
-                // A constant of a trait is evaluated with `self` being the class or trait it was found in.
-                $constant_self_fqsen = self::isConstantOfTrait($code_base, $constant)
-                    ? $constant->getFQSEN()->getFullyQualifiedClassName()
-                    : $constant->getRealDefiningFQSEN()->getFullyQualifiedClassName();
-                // PHP converts the value of a constant that it fetches to the declared type of the constant
+                // PHP evaluates the value of a constant that it fetches in the scope of the class the constant is bound to,
+                // whether or not it evaluated the constant before, and converts it to the declared type of the constant
                 return self::convertToDeclaredFloatType(
                     $constant,
-                    self::evaluateConstantExpression($code_base, $constant->getContext(), $constant_self_fqsen, $constant->getNodeForValue(), $depth + 1)
+                    self::evaluateConstantExpression(
+                        $code_base,
+                        $constant->getContext(),
+                        self::getClassOfConstantScope($code_base, $constant),
+                        $constant->getNodeForValue(),
+                        $depth + 1
+                    )
                 );
         }
         return $node;
+    }
+
+    /**
+     * Returns the value of $node, an operand of an operator (see evaluateConstantExpression()), or $node if Phan does not know it.
+     * The value is not known if it contains a class name with a letter case that Phan does not know (see evaluateClassName()):
+     * the result of the operator may depend on it.
+     *
+     * @return Node|EnumCase|array|bool|float|int|string|null
+     * @throws NodeException if PHP throws an Error when it evaluates $node
+     */
+    private static function evaluateOperand(CodeBase $code_base, Context $context, FullyQualifiedClassName $self_fqsen, mixed $node, int $depth): mixed
+    {
+        $outer_is_class_name_case_unknown = self::$is_class_name_case_unknown;
+        self::$is_class_name_case_unknown = false;
+        try {
+            $value = self::evaluateConstantExpression($code_base, $context, $self_fqsen, $node, $depth);
+            return self::$is_class_name_case_unknown && $node instanceof Node ? $node : $value;
+        } finally {
+            self::$is_class_name_case_unknown = $outer_is_class_name_case_unknown;
+        }
     }
 
     /**
@@ -5038,13 +5115,14 @@ class Clazz extends AddressableElement
         }
         switch (strtolower($name)) {
             case 'self':
-                $class_fqsen = $self_fqsen;
+                $class_fqsen = self::getClassOfSelfInClassName($code_base, $context, $self_fqsen);
                 break;
             case 'parent':
-                if (!$code_base->hasClassWithFQSEN($self_fqsen)) {
+                $self_class_fqsen = self::getClassOfSelfInClassName($code_base, $context, $self_fqsen);
+                if (!$code_base->hasClassWithFQSEN($self_class_fqsen)) {
                     return $node;
                 }
-                $self_class = $code_base->getClassByFQSEN($self_fqsen);
+                $self_class = $code_base->getClassByFQSEN($self_class_fqsen);
                 if (!$self_class->hasParentType()) {
                     return $node;
                 }
@@ -5070,6 +5148,23 @@ class Clazz extends AddressableElement
         }
         self::$is_class_name_case_unknown = true;
         return \ltrim((string)$class_fqsen, '\\');
+    }
+
+    /**
+     * Returns the class that `self` is in `self::class` and `parent::class` in a constant expression declared in $context:
+     * PHP resolves them when it compiles the code in a class or an interface (as the class or interface that declares the constant),
+     * and when it evaluates the value in a trait ($self_fqsen).
+     */
+    private static function getClassOfSelfInClassName(CodeBase $code_base, Context $context, FullyQualifiedClassName $self_fqsen): FullyQualifiedClassName
+    {
+        if (!$context->isInClassScope()) {
+            return $self_fqsen;
+        }
+        $declaring_fqsen = $context->getClassFQSEN();
+        if (!$code_base->hasClassWithFQSEN($declaring_fqsen) || $code_base->getClassByFQSEN($declaring_fqsen)->isTrait()) {
+            return $self_fqsen;
+        }
+        return $declaring_fqsen;
     }
 
     /**
