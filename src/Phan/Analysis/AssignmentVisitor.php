@@ -2841,13 +2841,18 @@ class AssignmentVisitor extends AnalysisVisitor
                     // is_null($x['field']['key']) does not prove it, but is treated the same way.
                     $field_may_be_absent = !$this->is_conditional_check
                         && ($container_may_be_absent || self::fieldMayBeAbsentNullOrFalse($old_field_type));
-                    $adjusted_types = self::normalizePreservedShapes(
-                        $old_field_type->getTypeSet(),
-                        $dim_depth < 3 && $field_may_be_absent,
-                        $field_from_generic_fallback
-                    );
-                    if ($adjusted_types !== null) {
-                        $old_field_type = $adjusted_types ? UnionType::of($adjusted_types, $old_field_type->getRealTypeSet()) : null;
+                    // In a condition, the declared shapes of a field are merged with all their keys kept as they are:
+                    // the condition may rule out the shapes without a key (array{a:null,c:int} for $x['field']['a'] !== null),
+                    // and the merge cannot tell. Shapes taken from the element type of a generic array are still normalized.
+                    if (!$this->is_conditional_check || $field_from_generic_fallback) {
+                        $adjusted_types = self::normalizePreservedShapes(
+                            $old_field_type->getTypeSet(),
+                            $dim_depth < 3 && $field_may_be_absent,
+                            $field_from_generic_fallback
+                        );
+                        if ($adjusted_types !== null) {
+                            $old_field_type = $adjusted_types ? UnionType::of($adjusted_types, $old_field_type->getRealTypeSet()) : null;
+                        }
                     }
                 }
                 if ($old_field_type === null) {

@@ -39,3 +39,4 @@
 %s:344 PhanTypeInvalidDimOffset Invalid offset "b" of $a['x'][0] of array type array{a:1}
 %s:344 PhanTypeMismatchReturn Returning $a['x'][0]['b'] of type null but test_nullable_outer_shape_with_generic_field() is declared to return string
 %s:355 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type 'x'
+%s:373 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'b' of $b['x'] of array type array{a:1,b?:string,c?:int}

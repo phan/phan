@@ -356,3 +356,19 @@ function test_append_to_field_of_generic_element(array $a): string
     '@phan-debug-var $v';
     return $v;
 }
+
+/**
+ * x is one of two declared shapes. $a['x']['a'] !== null rules out the shape without b (its a is null);
+ * in a condition the declared shapes keep their keys as declared, so b is not reported for $a.
+ * After the write $b['x']['a'] = 1, x may still be the shape without b: b is possibly undefined.
+ * @param array{x:array{a:?int,b:string}|array{a:null,c:int}} $a
+ * @param array{x:array{a:?int,b:string}|array{a:null,c:int}} $b
+ */
+function test_union_of_declared_shapes(array $a, array $b): void
+{
+    if ($a['x']['a'] !== null) {
+        echo $a['x']['b'];
+    }
+    $b['x']['a'] = 1;
+    echo $b['x']['b'];
+}
