@@ -9,8 +9,8 @@
 # and with --processes 2 if pcntl is available. Each run must print the expected output, verify mode must find no violation,
 # the extended state digests of the runs without lazy entries and in verify mode must be identical, and the run with
 # lazy entries must have created a copy of a method lazily.
-# Then it checks the issues of UnusedSuppressionPlugin, the output of --help-annotations, and that Phan fails to load
-# a plugin that declares a name without the prefix phan-x- or not in lowercase.
+# Then it checks the issues of UnusedSuppressionPlugin, the output of --help-annotations (also with --output and --init),
+# and that Phan fails to load a plugin that declares a name without the prefix phan-x- or not in lowercase.
 EXPECTED_PATH=expected/all_output.expected
 if [ ! -d expected  ]; then
 	echo "Error: must run this script from tests/custom_annotation_test folder" 1>&2
@@ -136,6 +136,30 @@ exit_code=$?
 if [[ "$exit_code" != 0 || -s "$TMP_DIR/help.out" ]] || ! diff "$TMP_DIR/help.expected" "$TMP_DIR/help.err"; then
 	echo "Unexpected output of phan --help-annotations with the test plugins (exit code $exit_code), expected the output of phan -n --help-annotations followed by expected/help_annotations_plugins.expected" 1>&2
 	cat "$TMP_DIR/help.out" 1>&2
+	FAILURES=$((FAILURES + 1))
+fi
+
+# --help-annotations takes precedence over --init and does not open the file of --output (nothing is analyzed).
+echo "Checking --help-annotations with --output and --init ..."
+printf 'existing content\n' > "$TMP_DIR/output.txt"
+../../phan -n --help-annotations --output "$TMP_DIR/output.txt" > "$TMP_DIR/help_output.out" 2> "$TMP_DIR/help_output.err"
+exit_code=$?
+if [[ "$exit_code" != 0 || -s "$TMP_DIR/help_output.out" || "$(cat "$TMP_DIR/output.txt")" != 'existing content' ]] || ! diff "$TMP_DIR/help_builtin.err" "$TMP_DIR/help_output.err"; then
+	echo "Expected phan --help-annotations --output to print the help (exit code $exit_code) and to leave the file unchanged, which contains:" 1>&2
+	cat "$TMP_DIR/output.txt" 1>&2
+	FAILURES=$((FAILURES + 1))
+fi
+PHAN_PATH="$(cd ../.. && pwd)/phan"
+mkdir "$TMP_DIR/init_project"
+(
+	cd "$TMP_DIR/init_project" || exit 1
+	"$PHAN_PATH" --help-annotations --init --init-no-composer --init-level 3 > ../help_init.out 2> ../help_init.err
+)
+exit_code=$?
+if [[ "$exit_code" != 0 || -s "$TMP_DIR/help_init.out" || -e "$TMP_DIR/init_project/.phan" ]] || ! diff "$TMP_DIR/help_builtin.err" "$TMP_DIR/help_init.err"; then
+	echo "Expected phan --help-annotations --init to print the help (exit code $exit_code) and to create no .phan/config.php:" 1>&2
+	cat "$TMP_DIR/help_init.out" 1>&2
+	ls -la "$TMP_DIR/init_project" 1>&2
 	FAILURES=$((FAILURES + 1))
 fi
 

@@ -332,6 +332,53 @@ PHP;
     }
 
     /**
+     * Each occurrence of a custom annotation gets its own line, also when the following lines of the comment are identical
+     * (guessActualLineLocation() alone returns the line of the last identical line for them).
+     */
+    public function testLinesOfIdenticalLines(): void
+    {
+        $this->loadPlugin();
+        $file = $this->writeFile('lines.php', <<<'PHP'
+<?php
+/**
+ * @phan-x-a
+ * @phan-x-a
+ */
+function custom_annotation_two() {}
+
+/** @phan-x-a on one line */
+function custom_annotation_one_line() {}
+
+/**
+ * @phan-x-a last
+ * @phan-x-a last */
+function custom_annotation_tag_on_last_line() {}
+
+/**
+ * @phan-x-a merged
+ * @phan-x-a merged
+ * @param array{
+ *   a: int
+ * } $x
+ */
+function custom_annotation_merged(array $x) {}
+PHP);
+        $code_base = new CodeBase([], [], [], [], []);
+        Analysis::parseFile($code_base, $file);
+        $this->assertSame([
+            '\custom_annotation_two: @phan-x-a (3)',
+            '\custom_annotation_two: @phan-x-a (4)',
+            '\custom_annotation_one_line: @phan-x-a on one line (8)',
+            '\custom_annotation_tag_on_last_line: @phan-x-a last (12)',
+            '\custom_annotation_tag_on_last_line: @phan-x-a last (13)',
+            // reduceMultiline() merged the lines of the (at)param, so the lines of the comment are not those of the source:
+            // the lines are the guesses of guessActualLineLocation(), as for the annotations of Phan.
+            '\custom_annotation_merged: @phan-x-a merged (18)',
+            '\custom_annotation_merged: @phan-x-a merged (18)',
+        ], $this->takeCalls());
+    }
+
+    /**
      * In daemon mode, a file that changed is parsed again: the plugin is called for its new annotations,
      * and the elements return the new annotations.
      */

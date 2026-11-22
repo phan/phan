@@ -417,7 +417,11 @@ class CLI
         if (array_key_exists('h', $opts) || array_key_exists('help', $opts)) {
             throw new UsageException('', EXIT_SUCCESS, UsageException::PRINT_NORMAL);  // --help prints help and calls exit(0)
         }
-        if (array_key_exists('v', $opts) || array_key_exists('version', $opts)) {
+        // --help-annotations is handled after the config file and the other options are read (they can add plugins),
+        // but it still takes precedence over --version and --init, and nothing that it does not need is done for it
+        // (such as opening the --output file).
+        $is_help_annotations = array_key_exists('help-annotations', $opts);
+        if ((array_key_exists('v', $opts) || array_key_exists('version', $opts)) && !$is_help_annotations) {
             printf("Phan %s" . PHP_EOL, self::PHAN_VERSION);
             $ast_version = (string) phpversion('ast');
             $ast_version_repr = $ast_version !== '' ? "version $ast_version" : "is not installed";
@@ -448,7 +452,7 @@ class CLI
         // Initially set project root to cwd (may be updated by config discovery)
         Config::setProjectRootDirectory($cwd);
 
-        if (array_key_exists('init', $opts)) {
+        if (array_key_exists('init', $opts) && !$is_help_annotations) {
             Initializer::initPhanConfig($opts);
             exit(EXIT_SUCCESS);
         }
@@ -489,7 +493,7 @@ class CLI
             }
         } else {
             // (--help-annotations analyzes nothing)
-            $this->maybeReadConfigFile(array_key_exists('require-config-exists', $opts), $search_parents, !array_key_exists('help-annotations', $opts));
+            $this->maybeReadConfigFile(array_key_exists('require-config-exists', $opts), $search_parents, !$is_help_annotations);
         }
 
         // We need to know the process count after `--processes N` is parsed if that CLI flag is passed in,
@@ -497,7 +501,7 @@ class CLI
         // Before that, we need to have parsed the config file to override config settings.
         PhaseTimer::begin('restart_check');
         self::parseProcessCountOverride($opts);
-        if (!array_key_exists('help-annotations', $opts)) {
+        if (!$is_help_annotations) {
             // (--help-annotations only loads the plugins and prints, which these extensions do not affect)
             self::restartWithoutProblematicExtensions();
         }
@@ -689,6 +693,10 @@ class CLI
                 case 'output':
                     if (!is_string($value)) {
                         throw new UsageException(sprintf("Invalid arguments to --output: args=%s\n", StringUtil::jsonEncode($value)), EXIT_FAILURE);
+                    }
+                    if ($is_help_annotations) {
+                        // The help is printed to stderr: do not create or truncate the file.
+                        break;
                     }
                     $output_file = \fopen($value, 'w');
                     if (!$output_file) {
@@ -1025,6 +1033,11 @@ class CLI
                     Config::setValue('__always_exit_successfully_after_analysis', true);
                     break;
                 default:
+                    if ($is_help_annotations) {
+                        // --help-annotations takes precedence over the options that are handled before this loop
+                        // (--version, --init and its options) and over the other options that this loop does not handle.
+                        break;
+                    }
                     // All of phan's long options are currently at least 2 characters long.
                     $key_repr = strlen($key) >= 2 ? "--$key" : "-$key";
                     if ($value === false && in_array($key . ':', self::GETOPT_LONG_OPTIONS, true)) {
@@ -1041,7 +1054,7 @@ class CLI
                 Config::setValue('color_issue_messages', true);
             }
         }
-        if (array_key_exists('help-annotations', $opts)) {
+        if ($is_help_annotations) {
             // After the config file and the options that add plugins were read: plugins can declare annotations.
             self::checkPluginsExist();
             throw new ExitException(self::getHelpAnnotationsText(), EXIT_SUCCESS);

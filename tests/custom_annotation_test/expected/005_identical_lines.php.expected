@@ -1,0 +1,13 @@
+src/005_identical_lines.php:6 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on function \two_identical_lines with the text "" (2 annotation(s) on the element)
+src/005_identical_lines.php:7 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on function \two_identical_lines with the text "" (2 annotation(s) on the element)
+src/005_identical_lines.php:16 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on property \IdenticalLinesOnProperty::prop with the text "the same text" (2 annotation(s) on the element)
+src/005_identical_lines.php:17 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on property \IdenticalLinesOnProperty::prop with the text "the same text" (2 annotation(s) on the element)
+src/005_identical_lines.php:23 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on function \three_identical_lines with the text "three times" (3 annotation(s) on the element)
+src/005_identical_lines.php:24 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on function \three_identical_lines with the text "three times" (3 annotation(s) on the element)
+src/005_identical_lines.php:25 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on function \three_identical_lines with the text "three times" (3 annotation(s) on the element)
+src/005_identical_lines.php:40 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on function \identical_lines_and_attribute with the text "separated" (2 annotation(s) on the element)
+src/005_identical_lines.php:42 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on function \identical_lines_and_attribute with the text "separated" (2 annotation(s) on the element)
+src/005_identical_lines.php:53 PhanPluginCustomAnnotationRead Read function \two_identical_lines: @phan-x-test-mark("") on line 6, @phan-x-test-mark("") on line 7
+src/005_identical_lines.php:54 PhanPluginCustomAnnotationRead Read property \IdenticalLinesOnProperty::prop: @phan-x-test-mark("the same text") on line 16, @phan-x-test-mark("the same text") on line 17
+src/005_identical_lines.php:55 PhanPluginCustomAnnotationRead Read function \three_identical_lines: @phan-x-test-mark("three times") on line 23, @phan-x-test-mark("three times") on line 24, @phan-x-test-mark("three times") on line 25
+src/005_identical_lines.php:56 PhanPluginCustomAnnotationRead Read function \identical_lines_and_attribute: @phan-x-test-mark("separated") on line 40, @phan-x-test-mark("separated") on line 42

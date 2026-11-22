@@ -21,6 +21,7 @@ use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use Phan\Library\FileCache;
+use Phan\Library\FileCacheEntry;
 use Phan\Library\None;
 use Phan\Library\Option;
 use Phan\Library\Some;
@@ -104,6 +105,9 @@ final class Builder
 
     /** @var list<CustomAnnotation> the annotations that plugins declared (CustomAnnotationCapability) */
     private $custom_annotations = [];
+
+    /** @var ?int the line of the last line of the comment in the file (see guessCustomAnnotationLineLocation()) */
+    private $last_line_location = null;
 
     /** @var bool did we add template types already */
     protected $did_add_template_types;
@@ -1292,7 +1296,7 @@ final class Builder
                     $this->custom_annotations[] = new CustomAnnotation(
                         $type,
                         self::extractCustomAnnotationText($trimmed, $case_sensitive_type),
-                        $this->guessActualLineLocation($i)
+                        $this->guessCustomAnnotationLineLocation($i)
                     );
                     return;
                 }
@@ -1432,7 +1436,10 @@ final class Builder
      */
     private static $last_project_path = null;
 
-    private function guessActualLineLocation(int $i): int
+    /**
+     * Returns the entry of FileCache for the file of the comment, if it is cached.
+     */
+    private function getFileCacheEntry(): ?FileCacheEntry
     {
         $file = $this->context->getFile();
         $root = Config::getProjectRootDirectory();
@@ -1444,7 +1451,12 @@ final class Builder
             $path = Config::projectPath($file);
             self::$last_project_path = [$root, $file, $path];
         }
-        $entry = FileCache::getEntry($path);
+        return FileCache::getEntry($path);
+    }
+
+    private function guessActualLineLocation(int $i): int
+    {
+        $entry = $this->getFileCacheEntry();
         $declaration_lineno = $this->lineno;
         if (!$entry) {
             return $declaration_lineno;
@@ -1474,6 +1486,39 @@ final class Builder
         }
         // We couldn't identify the line;
         return $declaration_lineno;
+    }
+
+    /**
+     * Returns the line of line $i of the comment in the file, for a custom annotation (CustomAnnotation::getLineno()).
+     *
+     * guessActualLineLocation() searches upwards from a line that is below line $i by the distance between the end of
+     * the comment and the declaration, so it returns the line of a later line of the comment with the same text
+     * if there is one within that distance. This also derives the line from the line of the last line of the comment
+     * (found by guessActualLineLocation(), as no line of the comment follows it), and uses that when it differs and
+     * has the text of line $i. That is only possible when the lines of the comment are the lines of the source:
+     * reduceMultiline() did not merge any. The lines of the annotations of Phan are not changed.
+     */
+    private function guessCustomAnnotationLineLocation(int $i): int
+    {
+        $guess = $this->guessActualLineLocation($i);
+        $last_index = $this->comment_lines_count - 1;
+        if ($i === $last_index || \substr_count($this->comment, "\n") !== $last_index) {
+            return $guess;
+        }
+        $this->last_line_location ??= $this->guessActualLineLocation($last_index);
+        $lineno = $this->last_line_location - ($last_index - $i);
+        if ($lineno === $guess || $lineno < 1) {
+            return $guess;
+        }
+        $entry = $this->getFileCacheEntry();
+        if (!$entry) {
+            return $guess;
+        }
+        $source_line = $entry->getLinesWithoutNewlines()[$lineno] ?? null;
+        if ($source_line === null || \trim($source_line) !== \trim($this->lines[$i])) {
+            return $guess;
+        }
+        return $lineno;
     }
 
     /**
