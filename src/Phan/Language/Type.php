@@ -2578,6 +2578,10 @@ class Type implements Stringable
             }
             // TODO: If this is a subclass of iterator, look up the signature of MyClass->key()
         }
+        if (!$this->isObjectWithKnownFQSEN()) {
+            // e.g. `value-of<T>`
+            return null;
+        }
 
         $fqsen = FullyQualifiedClassName::fromType($this);
         if (!$code_base->hasClassWithFQSEN($fqsen)) {

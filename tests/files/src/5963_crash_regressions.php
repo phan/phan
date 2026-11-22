@@ -77,6 +77,9 @@ function value_of_5963($v) {
     foreach ($v as $i) {
         echo $i;
     }
+    foreach ($v as $k => $i) {
+        echo $k, $i;
+    }
 }
 
 // Named arguments that skip a parameter used to cause "Undefined array key" in internal plugins
@@ -84,6 +87,12 @@ echo implode(array: ",");
 sort(flags: SORT_STRING);
 $filtered5963 = array_filter([], mode: 999);
 var_export(in_array(1, strict: true));
+// Named arguments that skip an optional parameter are still analyzed: this defines $foo5963 (the prefix is unused without EXTR_PREFIX_*)
+function extract_named_5963() {
+    $a = ['foo5963' => 123];
+    extract($a, prefix: 'p');
+    echo $foo5963;
+}
 
 // A match arm in a loop used to cause "Undefined array key" in RedundantConditionVisitor
 $flag5963 = false;
