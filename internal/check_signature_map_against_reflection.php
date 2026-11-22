@@ -39,6 +39,23 @@ final class SignatureMapReflectionChecker
     ];
 
     /**
+     * Entries that Phan models differently from Reflection on purpose. The checker skips them and the updater does not change them.
+     */
+    public const DELIBERATE_DIFFERENCES = [
+        // Phan models the interleaved array and flag arguments.
+        'array_multisort' => true,
+        // __invoke() of a closure accepts the closure's parameters, Reflection reports none.
+        'closure::__invoke' => true,
+        // The extra parameters are only available with Oracle LDAP (build dependent).
+        'ldap_connect' => true,
+        // Reflection says `mixed &...$vars`, but at least one variable is required (`O+`, or as many as the non-empty $types).
+        'mysqli_stmt::bind_param' => true,
+        'mysqli_stmt::bind_result' => true,
+        'mysqli_stmt_bind_param' => true,
+        'mysqli_stmt_bind_result' => true,
+    ];
+
+    /**
      * Parse a parameter spec of Phan's signature map, e.g. `'&w_matches='` or `'...values'`
      * @return array{name:string,optional:bool,by_ref:bool,variadic:bool}
      */
@@ -129,7 +146,8 @@ final class SignatureMapReflectionChecker
         }
         $n = min(count($map_params), count($reflection_params));
         for ($i = 0; $i < $n; $i++) {
-            if (strcasecmp($map_params[$i]['name'], $reflection_params[$i]['name']) !== 0) {
+            // Named arguments are case-sensitive
+            if ($map_params[$i]['name'] !== $reflection_params[$i]['name']) {
                 $kinds[] = 'name';
                 break;
             }
@@ -192,8 +210,8 @@ final class SignatureMapReflectionChecker
                 $report['counts']['missing']++;
                 continue;
             }
-            if (isset($map[$key . "'1"])) {
-                // Phan models this function with several alternative signatures (e.g. implode()).
+            if (isset($map[$key . "'1"]) || isset(self::DELIBERATE_DIFFERENCES[$key])) {
+                // Phan models this function with several alternative signatures (e.g. implode()), or differently on purpose.
                 $report['counts']['skipped_alternates']++;
                 continue;
             }

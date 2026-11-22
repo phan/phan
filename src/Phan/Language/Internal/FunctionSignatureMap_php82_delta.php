@@ -92,7 +92,7 @@ return [
     ],
     'dba_popen' => [
       'old' => ['resource', 'path'=>'string', 'mode'=>'string', 'handler='=>'string', '...handler_params='=>'string'],
-      'new' => ['resource', 'path'=>'string', 'mode'=>'string', 'handler='=>'string', 'permission='=>'string', 'map_size='=>'int', 'flags='=>'?int'],
+      'new' => ['resource', 'path'=>'string', 'mode'=>'string', 'handler='=>'string', 'permission='=>'int', 'map_size='=>'int', 'flags='=>'?int'],
     ],
     'gmp::__construct' => [
       'old' => ['void'],

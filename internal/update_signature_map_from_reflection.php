@@ -33,18 +33,6 @@ use Phan\Language\UnionType;
  */
 final class SignatureMapUpdater
 {
-    /**
-     * Entries that Phan models differently from Reflection on purpose.
-     */
-    private const EXCLUDED = [
-        // Phan models the interleaved array and flag arguments.
-        'array_multisort' => true,
-        // __invoke() of a closure accepts the closure's parameters, Reflection reports none.
-        'closure::__invoke' => true,
-        // The extra parameters are only available with Oracle LDAP (build dependent).
-        'ldap_connect' => true,
-    ];
-
     private const INTERNAL_DIR = __DIR__ . '/../src/Phan/Language/Internal';
 
     /**
@@ -76,13 +64,17 @@ final class SignatureMapUpdater
             $match = null;
             // Match the old parameter by name, or by position if the old parameter at that position was renamed.
             foreach ($old_params as $old_param) {
-                if (strcasecmp($old_param['parsed']['name'], $parsed['name']) === 0) {
+                if (strcasecmp($old_param['parsed']['name'], $parsed['name']) === 0 && !($old_param['parsed']['variadic'] && !$parsed['variadic'])) {
                     $match = $old_param;
                     break;
                 }
             }
-            if ($match === null && isset($old_params[$i]) && !in_array(strtolower($old_params[$i]['parsed']['name']), $reflection_names, true)) {
-                $match = $old_params[$i];
+            // A renamed parameter at the same position keeps its type, unless a variadic parameter was replaced by fixed ones
+            // (e.g. dba_popen()'s `string ...$handler_params` became `int $permission, ...`).
+            $old_param_at_position = $old_params[$i] ?? null;
+            if ($match === null && $old_param_at_position !== null && !($old_param_at_position['parsed']['variadic'] && !$parsed['variadic'])
+                && !in_array(strtolower($old_param_at_position['parsed']['name']), $reflection_names, true)) {
+                $match = $old_param_at_position;
             }
             $name = $parsed['name'];
             if ($parsed['by_ref'] && $match !== null && $match['parsed']['by_ref'] && preg_match('/^&(?:\.\.\.)?(rw_|w_|r_)/', $match['spec'], $m)) {
@@ -187,7 +179,7 @@ final class SignatureMapUpdater
         $updates = [];
         foreach (SignatureMapReflectionChecker::collectReflection() as $key => $reflection) {
             $entry = $map[$key] ?? null;
-            if ($entry === null || isset($map[$key . "'1"]) || isset(self::EXCLUDED[$key])) {
+            if ($entry === null || isset($map[$key . "'1"]) || isset(SignatureMapReflectionChecker::DELIBERATE_DIFFERENCES[$key])) {
                 continue;
             }
             $reflection_params = array_map([SignatureMapReflectionChecker::class, 'describeReflectionParameter'], $reflection->getParameters());

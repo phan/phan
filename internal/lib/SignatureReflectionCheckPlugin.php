@@ -29,7 +29,7 @@ final class SignatureReflectionCheckPlugin extends PluginV3 implements BeforeAna
         $report = ['missing' => [], 'differences' => []];
         $map = UnionType::internalFunctionSignatureMap(Config::get_closest_target_php_version_id());
         foreach (SignatureMapReflectionChecker::collectReflection() as $key => $reflection) {
-            if (isset($map[$key . "'1"])) {
+            if (isset($map[$key . "'1"]) || isset(SignatureMapReflectionChecker::DELIBERATE_DIFFERENCES[$key])) {
                 // Phan models this function with several alternative signatures (e.g. implode()), checked separately.
                 continue;
             }
