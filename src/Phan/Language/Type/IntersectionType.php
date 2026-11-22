@@ -653,7 +653,7 @@ final class IntersectionType extends Type
         if ($type_parts === $this->type_parts) {
             return $this;
         }
-        return self::makeCanonicalized($type_parts);
+        return self::createFromTypes($type_parts, null, null);
     }
 
     /**
@@ -684,7 +684,8 @@ final class IntersectionType extends Type
         if ($type_parts === $this->type_parts) {
             return $this;
         }
-        return self::makeCanonicalized($type_parts);
+        // static may resolve to another intersection type (e.g. `A&M1` for `M2&static`), so flatten the parts.
+        return self::createFromTypes($type_parts, null, null);
     }
 
     /**

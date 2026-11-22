@@ -460,6 +460,10 @@ class AssignmentVisitor extends AnalysisVisitor
                     $key_value = $key_node;
                 }
                 if (\is_scalar($key_value)) {
+                    if (\is_float($key_value)) {
+                        // PHP truncates float keys (with a deprecation notice that Phan should not emit itself)
+                        $key_value = (int)$key_value;
+                    }
                     $key_set[$key_value] = true;
                     if (\is_int($key_value)) {
                         $expect_int_keys_lineno = $child_node->lineno;

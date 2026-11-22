@@ -292,7 +292,7 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
         $code_base = $this->code_base;
         $check_as_if_in_loop_scope = $this->shouldCheckScalarAsIfInLoopScope($node, \reset($unique_results));
         if ($check_as_if_in_loop_scope) {
-            ['left' => $left_node, 'right' => $right_node] = $node->children;
+            // Use the operands that were passed in: $node may be a match arm, which has no 'left'/'right'.
             $left_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($code_base, $left_node);
             $right_type_fetcher = RedundantCondition::getLoopNodeTypeFetcher($code_base, $right_node);
             if ($left_type_fetcher || $right_type_fetcher) {

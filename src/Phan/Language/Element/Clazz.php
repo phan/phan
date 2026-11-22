@@ -806,27 +806,28 @@ class Clazz extends AddressableElement
      */
     public function getHierarchyDepth(CodeBase $code_base): int
     {
-        if (!$this->hasParentType()) {
-            return 0;
+        $depth = 0;
+        $visited = [];
+        for ($current = $this; $current->hasParentType(); $current = $parent) {
+            if (!$code_base->hasClassWithFQSEN(
+                $current->getParentClassFQSEN()
+            )) {
+                // Let this emit an issue elsewhere for the
+                // parent not existing
+                break;
+            }
+            $visited[\spl_object_id($current)] = true;
+
+            // Get the parent class
+            $parent = $current->getParentClass($code_base);
+
+            // Prevent infinite loops on circular inheritance (`class A extends B {} class B extends A {}`)
+            if (isset($visited[\spl_object_id($parent)])) {
+                break;
+            }
+            $depth++;
         }
-
-        if (!$code_base->hasClassWithFQSEN(
-            $this->getParentClassFQSEN()
-        )) {
-            // Let this emit an issue elsewhere for the
-            // parent not existing
-            return 0;
-        }
-
-        // Get the parent class
-        $parent = $this->getParentClass($code_base);
-
-        // Prevent infinite loops
-        if ($parent === $this) {
-            return 0;
-        }
-
-        return (1 + $parent->getHierarchyDepth($code_base));
+        return $depth;
     }
 
     /**

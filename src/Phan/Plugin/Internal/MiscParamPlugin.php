@@ -57,6 +57,22 @@ final class MiscParamPlugin extends PluginV3 implements
     AnalyzeFunctionCallCapability
 {
     /**
+     * Returns true if the first $count arguments were passed.
+     * $args may be sparse when named arguments skip a parameter (see ArgumentType::normalizeNamedArgs()), e.g. `sort(flags: SORT_STRING)`.
+     *
+     * @param array<int,Node|string|int|float> $args
+     */
+    private static function hasLeadingArgs(array $args, int $count): bool
+    {
+        for ($i = 0; $i < $count; $i++) {
+            if (!isset($args[$i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * @param list<Node|string|int|float> $args
      */
     private static function isInArrayCheckStrict(CodeBase $code_base, Context $context, array $args): bool
@@ -358,7 +374,7 @@ final class MiscParamPlugin extends PluginV3 implements
             array $args,
             ?Node $_
         ): void {
-            if (\count($args) !== 1) {
+            if (\count($args) !== 1 || !isset($args[0])) {
                 return;
             }
             if (($args[0]->kind ?? null) === ast\AST_UNPACK) {
@@ -454,6 +470,10 @@ final class MiscParamPlugin extends PluginV3 implements
             array $args,
             ?Node $_
         ) use ($stop_exception): void {
+            if (!\array_is_list($args)) {
+                // A named argument skipped the separator, e.g. `implode(array: $pieces)`
+                return;
+            }
             $argcount = \count($args);
             // (string glue, string[] pieces),
             // (string[] pieces, string glue) or
@@ -699,7 +719,7 @@ final class MiscParamPlugin extends PluginV3 implements
         ): void {
             // TODO: support nested adds, like AssignmentVisitor
             // TODO: support properties, like AssignmentVisitor
-            if (count($args) < 2) {
+            if (!self::hasLeadingArgs($args, 2)) {
                 return;
             }
             $modified_array_node = $args[0];
@@ -755,7 +775,7 @@ final class MiscParamPlugin extends PluginV3 implements
         ) use ($get_variable): void {
             // TODO: support nested adds, like AssignmentVisitor
             // TODO: Could be more specific for arrays with known length and order
-            if (count($args) < 1) {
+            if (!self::hasLeadingArgs($args, 1)) {
                 return;
             }
             $arg_node = $args[0];
@@ -793,7 +813,7 @@ final class MiscParamPlugin extends PluginV3 implements
         ) use ($get_variable): void {
             // TODO: support nested adds, like AssignmentVisitor
             // TODO: Could be more specific for arrays with known length and order
-            if (count($args) < 4) {
+            if (!self::hasLeadingArgs($args, 4)) {
                 return;
             }
             $variable = $get_variable($code_base, $context, $args[0]);
@@ -825,7 +845,7 @@ final class MiscParamPlugin extends PluginV3 implements
         ) use ($get_variable): void {
             // TODO: support nested adds, like AssignmentVisitor
             // TODO: Could be more specific for arrays with known length and order
-            if (count($args) < 1) {
+            if (!self::hasLeadingArgs($args, 1)) {
                 return;
             }
             $variable = $get_variable($code_base, $context, $args[0]);
@@ -872,7 +892,7 @@ final class MiscParamPlugin extends PluginV3 implements
         ) use ($get_variable): void {
             // TODO: support nested adds, like AssignmentVisitor
             // TODO: Could be more specific for arrays with known length and order
-            if (count($args) < 1) {
+            if (!self::hasLeadingArgs($args, 1)) {
                 return;
             }
             $variable = $get_variable($code_base, $context, $args[0]);
@@ -919,7 +939,7 @@ final class MiscParamPlugin extends PluginV3 implements
         ): void {
             // TODO: support nested adds, like AssignmentVisitor
             // TODO: Could be more specific for arrays with known length and order
-            if (count($args) < 1) {
+            if (!self::hasLeadingArgs($args, 1)) {
                 return;
             }
             $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
@@ -1029,7 +1049,7 @@ final class MiscParamPlugin extends PluginV3 implements
             array $args,
             ?Node $_
         ): void {
-            if (count($args) < 2) {
+            if (!self::hasLeadingArgs($args, 2)) {
                 return;
             }
             $name = $args[0];
@@ -1085,7 +1105,7 @@ final class MiscParamPlugin extends PluginV3 implements
             array $args,
             ?Node $_
         ): void {
-            if (count($args) < 2) {
+            if (!self::hasLeadingArgs($args, 2)) {
                 return;
             }
 
@@ -1137,7 +1157,7 @@ final class MiscParamPlugin extends PluginV3 implements
             array $args,
             ?Node $node
         ): void {
-            if (count($args) < 2) {
+            if (!self::hasLeadingArgs($args, 2)) {
                 return;
             }
             if (!self::shouldWarnAboutImpossibleInArray($code_base, $context, $args)) {
@@ -1155,7 +1175,7 @@ final class MiscParamPlugin extends PluginV3 implements
             array $args,
             ?Node $node
         ): void {
-            if (count($args) < 2) {
+            if (!self::hasLeadingArgs($args, 2)) {
                 return;
             }
             if (!self::shouldWarnAboutImpossibleArrayKeyExists($code_base, $context, $args)) {

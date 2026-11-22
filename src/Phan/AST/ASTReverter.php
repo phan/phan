@@ -195,7 +195,12 @@ class ASTReverter
                 return implode(', ', array_map([self::class, 'toShortString'], $node->children));
             },
             ast\AST_CLASS_CONST => static function (Node $node): string {
-                return self::toShortString($node->children['class']) . '::' . $node->children['const'];
+                $const = $node->children['const'];
+                if ($const instanceof Node) {
+                    // Dynamic class constant fetch (PHP 8.3+), e.g. `Foo::{$name}`
+                    return self::toShortString($node->children['class']) . '::{' . self::toShortString($const) . '}';
+                }
+                return self::toShortString($node->children['class']) . '::' . $const;
             },
             ast\AST_CLASS_NAME => static function (Node $node): string {
                 return self::toShortString($node->children['class']) . '::class';

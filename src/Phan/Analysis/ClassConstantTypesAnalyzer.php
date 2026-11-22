@@ -456,7 +456,8 @@ class ClassConstantTypesAnalyzer
         if (Config::get_closest_minimum_target_php_version_id() < 80100) {
             return false;
         }
-        if (!$type->isObject()) {
+        if (!$type->isObjectWithKnownFQSEN()) {
+            // e.g. an intersection type such as `self&B`
             return false;
         }
         $class_fqsen = FullyQualifiedClassName::fromType($type);

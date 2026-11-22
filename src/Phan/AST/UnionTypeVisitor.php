@@ -733,10 +733,18 @@ class UnionTypeVisitor extends AnalysisVisitor
                         continue;
                     }
                 }
-                $types[] = $this->visitName($c);
+                $name_type = $this->visitName($c);
+                if ($name_type->typeCount() !== 1) {
+                    // E.g. `parent` in a trait or outside of a class can't be resolved to a single type.
+                    continue;
+                }
+                $types[] = $name_type;
             } else {
                 throw new AssertionError("Expected intersection type to be composed of types and names");
             }
+        }
+        if (!$types) {
+            return UnionType::empty();
         }
         $result = [IntersectionType::createFromTypes($types, $this->code_base, $this->context)];
         return UnionType::of($result, $result);
@@ -1185,7 +1193,10 @@ class UnionTypeVisitor extends AnalysisVisitor
             $key_set = $this->getEquivalentArraySet($node);
             if (\is_array($key_set)) {
                 // XXX decide how to deal with array components when the top level array is real
-                return $this->createArrayShapeType($key_set)->asRealUnionType();
+                $array_shape_type = $this->createArrayShapeType($key_set);
+                if ($array_shape_type) {
+                    return $array_shape_type->asRealUnionType();
+                }
             }
 
             $value_types_builder = new UnionTypeBuilder();
@@ -1380,6 +1391,9 @@ class UnionTypeVisitor extends AnalysisVisitor
                 if ($this->getPackedArrayFieldTypes($child_node->children['expr']) !== null) {
                     // This is a placeholder of a deliberately - the caller checks that the count of elements matches the count of AST child nodes.
                     // TODO: Refactor to handle edge cases such as `[...[1], 0 => 2]`
+                    if (!self::canAppendToArray($elements)) {
+                        return null;
+                    }
                     $elements[] = $child_node;
                     continue;
                 }
@@ -1389,6 +1403,9 @@ class UnionTypeVisitor extends AnalysisVisitor
             $key_node = $child_node->children['key'];
             // NOTE: this has some overlap with DuplicateKeyPlugin
             if ($key_node === null) {
+                if (!self::canAppendToArray($elements)) {
+                    return null;
+                }
                 $elements[] = $child_node;
                 continue;
             }
@@ -1463,9 +1480,21 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param array<int|string,Node> $key_set
+     * Returns false if `$array[] = $value` would throw an Error because the next integer key is already occupied
+     * (e.g. `[PHP_INT_MAX => 1, 2]`). Elements are never removed from the arrays this is used with.
+     *
+     * @param array<int|string,mixed> $array
      */
-    private function createArrayShapeType(array $key_set): ArrayShapeType
+    private static function canAppendToArray(array $array): bool
+    {
+        return !\array_key_exists(\PHP_INT_MAX, $array);
+    }
+
+    /**
+     * @param array<int|string,Node> $key_set
+     * @return ?ArrayShapeType null if the array literal would throw an Error at runtime because an integer key overflowed
+     */
+    private function createArrayShapeType(array $key_set): ?ArrayShapeType
     {
         $field_types = [];
 
@@ -1479,6 +1508,9 @@ class UnionTypeVisitor extends AnalysisVisitor
                     continue;
                 }
                 foreach ($element_value_type as $type) {
+                    if (!self::canAppendToArray($field_types)) {
+                        return null;
+                    }
                     $field_types[] = $type;
                 }
                 continue;
@@ -1501,6 +1533,9 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $element_value_type = Type::fromObject($value)->asRealUnionType();
             }
             if ($child->children['key'] === null) {
+                if (!self::canAppendToArray($field_types)) {
+                    return null;
+                }
                 $field_types[] = $element_value_type;
             } else {
                 $field_types[$key] = $element_value_type;
@@ -1569,7 +1604,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // RedundantConditionCallPlugin contains unrelated checks of whether this is redundant.
         $expr = $node->children['expr'];
         $expr_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $expr, $this->should_catch_issue_exception);
-        if ($expr_type->isVoidType()) {
+        if ($expr_type->isVoidType() && $node->flags !== \ast\flags\TYPE_VOID) {
             $this->emitIssue(
                 Issue::TypeVoidExpression,
                 $expr->lineno ?? $node->lineno,
@@ -1592,6 +1627,9 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return ArrayType::instance(false)->asRealUnionType();
             case \ast\flags\TYPE_OBJECT:
                 return $this->typeAfterCastToObject($expr_type);
+            case \ast\flags\TYPE_VOID:
+                // (void) cast (PHP 8.5+), e.g. in a for loop expression list
+                return VoidType::instance(false)->asRealUnionType();
             default:
                 throw new NodeException(
                     $node,

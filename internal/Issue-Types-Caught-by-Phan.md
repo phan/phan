@@ -569,6 +569,8 @@ Currently unused.
 Saw a parse notice: {DETAILS}
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php85_files/expected/5963_cast_crashes.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php85_files/src/5963_cast_crashes.php#L8).
+
 ## PhanCompatibleTraitConstant
 
 ```

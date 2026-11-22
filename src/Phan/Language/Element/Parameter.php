@@ -800,6 +800,21 @@ class Parameter extends Variable
         return $string;
     }
 
+    /**
+     * Render a default value that was not parsed from an AST, e.g. one obtained through reflection of an internal function.
+     */
+    private static function representNonNodeDefaultValue(mixed $default_value): string
+    {
+        if ($default_value instanceof \UnitEnum) {
+            // e.g. `RoundingMode::HalfAwayFromZero` for round()
+            return '\\' . \get_class($default_value) . '::' . $default_value->name;
+        }
+        if (\is_object($default_value) || \is_resource($default_value)) {
+            return 'unknown';
+        }
+        return StringUtil::varExportPretty($default_value);
+    }
+
     private function generateDefaultNodeRepresentation(bool $is_internal = true): string
     {
         if (is_string($this->default_value_representation)) {
@@ -824,7 +839,7 @@ class Parameter extends Variable
                 }
             }
         } else {
-            $default_repr = StringUtil::varExportPretty($default_value);
+            $default_repr = self::representNonNodeDefaultValue($default_value);
         }
         if (\strtolower($default_repr) === 'null') {
             $default_repr = 'null';
@@ -890,7 +905,7 @@ class Parameter extends Variable
                     }
                 }
             } else {
-                $default_repr = StringUtil::varExportPretty($default_value);
+                $default_repr = self::representNonNodeDefaultValue($default_value);
                 if (strlen($default_repr) >= 50) {
                     $default_repr = 'unknown';
                 }
