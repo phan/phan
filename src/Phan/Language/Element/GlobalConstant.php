@@ -7,8 +7,10 @@ namespace Phan\Language\Element;
 use Closure;
 use InvalidArgumentException;
 use Phan\AST\ASTReverter;
+use Phan\CodeBase;
 use Phan\Exception\FQSENException;
 use Phan\Language\Context;
+use Phan\Language\Element\Comment\CustomAnnotation;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\Type;
 use Phan\Language\Type\BoolType;
@@ -56,6 +58,33 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
      * @var UnionType|null the cached union of this constant's type and the types of all alternate declarations.
      */
     private ?UnionType $combined_union_type = null;
+
+    /**
+     * @var list<CustomAnnotation> the annotations that plugins declared (CustomAnnotationCapability) in the doc comment
+     */
+    private array $custom_annotations = [];
+
+    /**
+     * Sets the annotations that plugins declared (CustomAnnotationCapability) in the doc comment. Called in the parse phase.
+     *
+     * @param list<CustomAnnotation> $custom_annotations
+     * @internal
+     */
+    public function setCustomAnnotations(array $custom_annotations): void
+    {
+        $this->custom_annotations = $custom_annotations;
+    }
+
+    /**
+     * Returns the annotations that plugins declared (CustomAnnotationCapability) in the doc comment.
+     *
+     * @return list<CustomAnnotation>
+     * @unused-param $code_base
+     */
+    public function getCustomAnnotations(CodeBase $code_base): array
+    {
+        return $this->custom_annotations;
+    }
 
     /**
      * Sets whether this is a global constant that was declared with `define()` instead of `const`.

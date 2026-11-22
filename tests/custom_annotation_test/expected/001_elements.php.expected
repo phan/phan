@@ -1,0 +1,33 @@
+src/001_elements.php:7 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on class \AnnotatedClass with the text "on the class" (1 annotation(s) on the element)
+src/001_elements.php:11 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on class constant \AnnotatedClass::MARKED with the text "on a class constant" (1 annotation(s) on the element)
+src/001_elements.php:15 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on property \AnnotatedClass::marked_property with the text "on a property" (1 annotation(s) on the element)
+src/001_elements.php:19 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on property \AnnotatedClass::marked_static with the text "on a static property" (1 annotation(s) on the element)
+src/001_elements.php:25 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on promoted property \AnnotatedClass::promoted with the text "on a promoted property" (1 annotation(s) on the element)
+src/001_elements.php:32 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on method \AnnotatedClass::markedMethod with the text "on a method" (1 annotation(s) on the element)
+src/001_elements.php:39 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on method \AnnotatedClass::markedStaticMethod with the text "on a static method" (1 annotation(s) on the element)
+src/001_elements.php:45 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on interface \AnnotatedInterface with the text "on the interface" (1 annotation(s) on the element)
+src/001_elements.php:48 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on method \AnnotatedInterface::interfaceMethod with the text "on an interface method" (1 annotation(s) on the element)
+src/001_elements.php:52 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on trait \AnnotatedTrait with the text "on the trait" (1 annotation(s) on the element)
+src/001_elements.php:57 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on enum \AnnotatedEnum with the text "on the enum" (1 annotation(s) on the element)
+src/001_elements.php:60 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on enum case \AnnotatedEnum::First with the text "on an enum case" (1 annotation(s) on the element)
+src/001_elements.php:63 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on class constant \AnnotatedEnum::OTHER with the text "on an enum constant" (1 annotation(s) on the element)
+src/001_elements.php:67 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on global constant \ANNOTATED_CONSTANT with the text "on a global constant" (1 annotation(s) on the element)
+src/001_elements.php:70 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on function \annotated_function with the text "on a function" (1 annotation(s) on the element)
+src/001_elements.php:78 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on closure \closure_19a13ed053df with the text "on a closure" (1 annotation(s) on the element)
+src/001_elements.php:81 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on closure \closure_b318f49ca7f1 with the text "on an arrow function" (1 annotation(s) on the element)
+src/001_elements.php:82 PhanPluginCustomAnnotationRead Read closure \closure_19a13ed053df: @phan-test-mark("on a closure") on line 78
+src/001_elements.php:82 PhanPluginCustomAnnotationRead Read closure \closure_b318f49ca7f1: @phan-test-mark("on an arrow function") on line 81
+src/001_elements.php:83 PhanPluginCustomAnnotationRead Read method \AnnotatedClass::markedMethod: @phan-test-mark("on a method") on line 32
+src/001_elements.php:84 PhanPluginCustomAnnotationRead Read method \AnnotatedClass::markedStaticMethod: @phan-test-mark("on a static method") on line 39
+src/001_elements.php:85 PhanPluginCustomAnnotationRead Read method \AnnotatedInterface::interfaceMethod: @phan-test-mark("on an interface method") on line 48
+src/001_elements.php:86 PhanPluginCustomAnnotationRead Read promoted property \AnnotatedClass::promoted: @phan-test-mark("on a promoted property") on line 25
+src/001_elements.php:86 PhanPluginCustomAnnotationRead Read property \AnnotatedClass::marked_property: @phan-test-mark("on a property") on line 15
+src/001_elements.php:86 PhanPluginCustomAnnotationRead Read property \AnnotatedClass::marked_static: @phan-test-mark("on a static property") on line 19
+src/001_elements.php:86 PhanPluginCustomAnnotationRead Read property \AnnotatedClass::unmarked_property: no custom annotations
+src/001_elements.php:87 PhanPluginCustomAnnotationRead Read class constant \AnnotatedClass::MARKED: @phan-test-mark("on a class constant") on line 11
+src/001_elements.php:88 PhanPluginCustomAnnotationRead Read class constant \AnnotatedEnum::OTHER: @phan-test-mark("on an enum constant") on line 63
+src/001_elements.php:88 PhanPluginCustomAnnotationRead Read enum case \AnnotatedEnum::First: @phan-test-mark("on an enum case") on line 60
+src/001_elements.php:88 PhanPluginCustomAnnotationRead Read property \AnnotatedEnum::value: no custom annotations
+src/001_elements.php:89 PhanPluginCustomAnnotationRead Read global constant \ANNOTATED_CONSTANT: @phan-test-mark("on a global constant") on line 67
+src/001_elements.php:90 PhanPluginCustomAnnotationRead Read function \annotated_function: @phan-test-mark("on a function") on line 70
+src/001_elements.php:95 PhanPluginCustomAnnotationRead Read class \AnnotatedClass: @phan-test-mark("on the class") on line 7

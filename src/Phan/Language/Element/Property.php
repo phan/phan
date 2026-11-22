@@ -11,6 +11,7 @@ use Phan\CodeBase;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Language\Element\Comment\CustomAnnotation;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope\PropertyScope;
@@ -137,6 +138,23 @@ class Property extends ClassElement
     public function getRealDefiningFQSEN(): FullyQualifiedPropertyName
     {
         return $this->real_defining_fqsen ?? $this->getDefiningFQSEN();
+    }
+
+    /**
+     * Returns the annotations that plugins declared (CustomAnnotationCapability) in the doc comment of the declaration.
+     * They are kept by the class that declares the property (Clazz::getCustomAnnotationsOfProperty()), which is found
+     * through getRealDefiningFQSEN(), also for inherited copies and the copies imported from traits.
+     *
+     * @return list<CustomAnnotation>
+     */
+    public function getCustomAnnotations(CodeBase $code_base): array
+    {
+        $fqsen = $this->getRealDefiningFQSEN();
+        $class_fqsen = $fqsen->getFullyQualifiedClassName();
+        if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+            return [];
+        }
+        return $code_base->getClassByFQSENWithoutHydrating($class_fqsen)->getCustomAnnotationsOfProperty($fqsen->getName());
     }
 
     /**

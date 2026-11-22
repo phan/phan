@@ -12,6 +12,7 @@ use Phan\Language\Context;
 use Phan\Language\Element\AddressableElementInterface;
 use Phan\Language\Element\Comment;
 use Phan\Language\Element\Comment\ConditionalReturnType;
+use Phan\Language\Element\Comment\CustomAnnotation;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Parameter;
 use Phan\Language\FileRef;
@@ -1020,6 +1021,16 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     public function getDocComment(): ?string
     {
         return null;
+    }
+
+    /**
+     * A closure or callable type has no doc comment (CustomAnnotationCapability)
+     * @return list<CustomAnnotation>
+     * @unused-param $code_base
+     */
+    public function getCustomAnnotations(CodeBase $code_base): array
+    {
+        return [];
     }
 
     public function getMarkupDescription(): string

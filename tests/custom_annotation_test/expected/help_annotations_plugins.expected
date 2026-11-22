@@ -1,0 +1,7 @@
+
+Annotations declared by plugins:
+- @phan-test-empty (CustomAnnotationTestPlugin)
+- @phan-test-mark (CustomAnnotationTestPlugin): Marks an element for the test plugin
+- @phan-test-second (CustomAnnotationSecondTestPlugin): Declared by the second test plugin
+- @phan-test-shared (CustomAnnotationTestPlugin): Declared by both test plugins
+- @phan-test-shared (CustomAnnotationSecondTestPlugin): Also declared by the first test plugin

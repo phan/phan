@@ -6,6 +6,7 @@ namespace Phan\Language\Element;
 
 use Phan\CodeBase;
 use Phan\Language\Context;
+use Phan\Language\Element\Comment\CustomAnnotation;
 use Phan\Language\FileRef;
 use Phan\Language\FQSEN;
 
@@ -84,6 +85,15 @@ interface AddressableElementInterface extends TypedElementInterface
      * @return ?string the 'docComment' for this element, if any exists.
      */
     public function getDocComment(): ?string;
+
+    /**
+     * Returns the annotations that plugins declared (CustomAnnotationCapability) in the doc comment of the declaration
+     * of this element, in the order of the comment. For a copy of a member that a class inherits or imports from a trait,
+     * these are the annotations of the declaration it was copied from.
+     *
+     * @return list<CustomAnnotation>
+     */
+    public function getCustomAnnotations(CodeBase $code_base): array;
 
     /**
      * @return Context

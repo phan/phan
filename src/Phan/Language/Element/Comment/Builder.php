@@ -24,6 +24,7 @@ use Phan\Library\FileCache;
 use Phan\Library\None;
 use Phan\Library\Option;
 use Phan\Library\Some;
+use Phan\Plugin\ConfigPluginSet;
 use Phan\Suggestion;
 
 use function count;
@@ -100,6 +101,9 @@ final class Builder
 
     /** @var list<Type> */
     private $required_implements_types = [];
+
+    /** @var list<CustomAnnotation> the annotations that plugins declared (CustomAnnotationCapability) */
+    private $custom_annotations = [];
 
     /** @var bool did we add template types already */
     protected $did_add_template_types;
@@ -494,13 +498,15 @@ final class Builder
             !$this->phan_overrides &&
             $this->closure_scope instanceof None &&
             $this->throw_union_type->isEmpty() &&
-            !$this->param_assertion_map
+            !$this->param_assertion_map &&
+            !$this->custom_annotations
         ) {
             // Don't create an extra object if the string contained `@` but nothing of use was actually extracted.
             return NullComment::instance();
         }
-        // @phan-suppress-next-line PhanAccessMethodInternal
-        return new Comment(
+        // Only the comments with annotations that plugins declared have a property for them.
+        $comment_class = $this->custom_annotations ? CommentWithCustomAnnotations::class : Comment::class;
+        $comment = new $comment_class(
             $this->comment_flags,
             $this->variable_list,
             $this->parameter_list,
@@ -522,6 +528,10 @@ final class Builder
             $this->code_base,
             $this->context
         );
+        if ($comment instanceof CommentWithCustomAnnotations && $this->custom_annotations) {
+            $comment->setCustomAnnotations($this->custom_annotations);
+        }
+        return $comment;
     }
 
     private function buildWithTemplateTypes(): Comment
@@ -652,7 +662,7 @@ final class Builder
                     break;
                 default:
                     if (str_starts_with($type, 'phan-')) {
-                        $this->maybeParsePhanCustomAnnotation($i, $line, $type, $case_sensitive_type);
+                        $this->maybeParsePhanCustomAnnotation($i, $line, $type, $case_sensitive_type, $trimmed);
                     }
                     break;
             }
@@ -1128,7 +1138,10 @@ final class Builder
         }
     }
 
-    private function maybeParsePhanCustomAnnotation(int $i, string $line, string $type, string $case_sensitive_type): void
+    /**
+     * @param string $trimmed the line without the leading `/**`, `*` and whitespace, starting with the first tag of the line
+     */
+    private function maybeParsePhanCustomAnnotation(int $i, string $line, string $type, string $case_sensitive_type, string $trimmed): void
     {
         switch ($type) {
             case 'phan-forbid-undeclared-magic-properties':
@@ -1273,6 +1286,16 @@ final class Builder
                 $this->parsePhanType($i, $line);
                 return;
             default:
+                // This is only reached for a tag that Phan does not know, so plugins are only loaded here for such a tag.
+                $plugin_annotations = ConfigPluginSet::instance()->getCustomAnnotationPluginMap();
+                if (isset($plugin_annotations[$type])) {
+                    $this->custom_annotations[] = new CustomAnnotation(
+                        $type,
+                        self::extractCustomAnnotationText($trimmed, $case_sensitive_type),
+                        $this->guessActualLineLocation($i)
+                    );
+                    return;
+                }
                 $this->emitIssueWithSuggestion(
                     Issue::MisspelledAnnotation,
                     $this->guessActualLineLocation($i),
@@ -1280,19 +1303,82 @@ final class Builder
                         '@' . $case_sensitive_type,
                         "The annotations that this version of Phan supports can be seen by running 'phan --help-annotations' or by visiting https://github.com/phan/phan/wiki/Annotating-Your-Source-Code",
                     ],
-                    self::generateSuggestionForMisspelledAnnotation($case_sensitive_type)
+                    self::generateSuggestionForMisspelledAnnotation($case_sensitive_type, $plugin_annotations)
                 );
                 return;
         }
     }
 
-    private static function generateSuggestionForMisspelledAnnotation(string $annotation): ?Suggestion
+    /**
+     * Returns the text of a custom annotation (CustomAnnotation::getText()).
+     *
+     * @param string $trimmed the line, starting with its first tag. The tag of the annotation is either at the start
+     * or the first inline tag `{(at)$case_sensitive_type` (the main regex of parseCommentLine() matched the same position).
+     */
+    private static function extractCustomAnnotationText(string $trimmed, string $case_sensitive_type): string
     {
-        $suggestions = IssueFixSuggester::getSuggestionsForStringSet('@' . $annotation, self::SUPPORTED_ANNOTATIONS);
+        if (!\preg_match('/(?:^|(\{))@' . \preg_quote($case_sensitive_type, '/') . '(?![a-zA-Z0-9_\x7f-\xff-])(.*)$/D', $trimmed, $match)) {
+            // Should not happen
+            return '';
+        }
+        $rest = $match[2];
+        if ($match[1] !== '') {
+            // The inline form `{(at)phan-name text}`: the text ends before the `}` that closes the tag.
+            $depth = 1;
+            for ($offset = 0, $length = \strlen($rest); $offset < $length; $offset++) {
+                $c = $rest[$offset];
+                if ($c === '{') {
+                    $depth++;
+                } elseif ($c === '}' && --$depth === 0) {
+                    return \trim(\substr($rest, 0, $offset));
+                }
+            }
+        }
+        // The rest of the line, without the end of a doc comment on one line
+        return \trim((string)\preg_replace('@\s*\*+/$@D', '', $rest));
+    }
+
+    /**
+     * @param array<string,mixed> $plugin_annotations maps the names of the annotations that plugins declared to the plugins
+     */
+    private static function generateSuggestionForMisspelledAnnotation(string $annotation, array $plugin_annotations): ?Suggestion
+    {
+        $candidates = self::SUPPORTED_ANNOTATIONS;
+        foreach ($plugin_annotations as $name => $_) {
+            $candidates['@' . $name] = '';
+        }
+        $suggestions = IssueFixSuggester::getSuggestionsForStringSet('@' . $annotation, $candidates);
         if (!$suggestions) {
             return null;
         }
         return Suggestion::fromString('Did you mean ' . \implode(' or ', \array_keys($suggestions)));
+    }
+
+    /**
+     * The names of the annotations starting with `phan-` that Phan gives a meaning to and that SUPPORTED_ANNOTATIONS
+     * does not list: in doc comments, in parts of (at)param lines, and in string literals used as statements.
+     */
+    private const OTHER_PHAN_ANNOTATIONS = [
+        'phan-abstract' => true,
+        'phan-debug-var' => true,
+        'phan-ignore-reference' => true,
+        'phan-immutable' => true,
+        'phan-mandatory-param' => true,
+        'phan-output-reference' => true,
+        'phan-side-effect-free' => true,
+        'phan-transient' => true,
+        'phan-unused-param' => true,
+        'phan-var-force' => true,
+    ];
+
+    /**
+     * Returns true if $name (in lowercase, without '@') is the name of an annotation of Phan itself,
+     * which plugins cannot declare (CustomAnnotationCapability).
+     * @internal
+     */
+    public static function isPhanAnnotationName(string $name): bool
+    {
+        return isset(self::SUPPORTED_ANNOTATIONS['@' . $name]) || isset(self::OTHER_PHAN_ANNOTATIONS[$name]);
     }
 
     /**

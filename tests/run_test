@@ -66,6 +66,11 @@ case "$TEST_SUITE" in
 		./test.sh
 		exit $?
 		;;
+	__FakeCustomAnnotationTest)
+		cd tests/custom_annotation_test
+		./test.sh
+		exit $?
+		;;
 	__FakeRealTypesTest)
 		cd tests/real_types_test
 		./test.sh
