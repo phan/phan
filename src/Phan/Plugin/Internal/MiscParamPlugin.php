@@ -1220,7 +1220,26 @@ final class MiscParamPlugin extends PluginV3 implements
         // Unit tests invoke this repeatedly. Cache it.
         static $analyzers = null;
         if ($analyzers === null) {
-            $analyzers = self::getAnalyzeFunctionCallClosuresStatic();
+            $analyzers = \array_map(
+                /**
+                 * @param Closure(CodeBase,Context,FunctionInterface,array,?Node):void $closure
+                 * @return Closure(CodeBase,Context,FunctionInterface,array,?Node):void
+                 */
+                static function (Closure $closure): Closure {
+                    /**
+                     * @param array<int,Node|int|string|float> $args the arguments in declaration order (may be sparse, see ArgumentType::normalizeNamedArgs)
+                     */
+                    return static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args, ?Node $node = null) use ($closure): void {
+                        if (!\array_is_list($args)) {
+                            // Named arguments skipped a parameter (e.g. `sort(flags: SORT_STRING)` or `implode(array: $a)`).
+                            // These checks look up the arguments by position, so skip them.
+                            return;
+                        }
+                        $closure($code_base, $context, $function, $args, $node);
+                    };
+                },
+                self::getAnalyzeFunctionCallClosuresStatic()
+            );
         }
         return $analyzers;
     }

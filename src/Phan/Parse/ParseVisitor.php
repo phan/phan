@@ -239,9 +239,16 @@ class ParseVisitor extends ScopeVisitor
 
             // Look to see if we have a parent class
             $extends_node = $node->children['extends'] ?? null;
+            $parent_class_name = '';
             if ($extends_node instanceof Node) {
-                $parent_class_name = UnionTypeVisitor::unionTypeFromClassNode($this->code_base, $this->context, $extends_node)->__toString();
-
+                try {
+                    $parent_class_name = UnionTypeVisitor::unionTypeFromClassNode($this->code_base, $this->context, $extends_node)->__toString();
+                } catch (IssueException $e) {
+                    // E.g. `class A extends parent {}`
+                    Issue::maybeEmitInstance($this->code_base, $this->context, $e->getIssueInstance());
+                }
+            }
+            if ($extends_node instanceof Node && $parent_class_name !== '') {
                 // The name is fully qualified.
                 // This will throw an FQSENException if php-ast or the polyfill unexpectedly parsed an invalid class name.
                 $parent_fqsen = FullyQualifiedClassName::fromFullyQualifiedString(
@@ -258,7 +265,8 @@ class ParseVisitor extends ScopeVisitor
             // If the class explicitly sets its overriding extension type,
             // set that on the class
             $inherited_type_option = $comment->getInheritedTypeOption();
-            if ($inherited_type_option->isDefined()) {
+            // Ignore `@extends` with a type that is not a class, e.g. `@extends class-string<C>`
+            if ($inherited_type_option->isDefined() && $inherited_type_option->get()->isObjectWithKnownFQSEN()) {
                 if ($class->isClass()) {
                     // TODO: Emit issue if this does not match `class ... extends`
                     $class->setParentType($inherited_type_option->get());
@@ -282,7 +290,13 @@ class ParseVisitor extends ScopeVisitor
                 if (!$name_node instanceof Node) {
                     throw new AssertionError('Expected list of AST_NAME nodes');
                 }
-                $name = (string)UnionTypeVisitor::unionTypeFromClassNode($this->code_base, $this->context, $name_node);
+                try {
+                    $name = (string)UnionTypeVisitor::unionTypeFromClassNode($this->code_base, $this->context, $name_node);
+                } catch (IssueException $e) {
+                    // E.g. `class A implements parent {}`
+                    Issue::maybeEmitInstance($this->code_base, $this->context, $e->getIssueInstance());
+                    continue;
+                }
                 $interface_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($name);
                 $class->addInterfaceClassFQSEN(
                     $interface_fqsen,
@@ -295,6 +309,10 @@ class ParseVisitor extends ScopeVisitor
 
             // Process @implements annotations to provide template parameters for interfaces
             foreach ($comment->getImplementedTypes() as $implemented_type) {
+                if (!$implemented_type->isObjectWithKnownFQSEN()) {
+                    // e.g. `@implements class-string<T>`
+                    continue;
+                }
                 // Extract the FQSEN from the type (e.g., Iterator<int, T> -> Iterator)
                 $interface_fqsen = FullyQualifiedClassName::fromType($implemented_type);
                 $class->setInterfaceType($interface_fqsen, $implemented_type);
@@ -302,6 +320,10 @@ class ParseVisitor extends ScopeVisitor
 
             // Process @use annotations to provide template parameters for traits
             foreach ($comment->getUsedTraitTypes() as $used_trait_type) {
+                if (!$used_trait_type->isObjectWithKnownFQSEN()) {
+                    // e.g. `@use class-string<T>`
+                    continue;
+                }
                 // Extract the FQSEN from the type (e.g., Repository<User> -> Repository)
                 $trait_fqsen = FullyQualifiedClassName::fromType($used_trait_type);
                 $class->setTraitType($trait_fqsen, $used_trait_type);

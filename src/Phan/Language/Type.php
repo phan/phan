@@ -617,6 +617,13 @@ class Type implements Stringable
                     case 'self':
                         $value = new SelfType($is_nullable);
                         break;
+                    case 'static':
+                        if (!$template_parameter_type_list) {
+                            // Share the cache entry with StaticType::instance(), whichever is created first (e.g. for `\static`).
+                            // `static<T>` in phpdoc keeps its template parameters.
+                            $value = new StaticType('\\', 'static', [], $is_nullable);
+                        }
+                        break;
                     case 'value-of':
                         $value = new ValueOfType(
                             '\\',
@@ -1759,15 +1766,18 @@ class Type implements Stringable
             );
         }
     }
-    /**
-     * @throws IssueException (TODO: Catch, emit, and proceed?
-     */
     private static function maybeFindParentType(bool $is_nullable, Context $context, ?CodeBase $code_base = null): Type
     {
         if ($code_base === null) {
             return NonNullMixedType::instance($is_nullable);
         }
-        $parent_type = UnionTypeVisitor::findParentType($context, $code_base);
+        try {
+            $parent_type = UnionTypeVisitor::findParentType($context, $code_base);
+        } catch (IssueException $e) {
+            // E.g. `@return parent` outside of a class
+            Issue::maybeEmitInstance($code_base, $context, $e->getIssueInstance());
+            return NonNullMixedType::instance($is_nullable);
+        }
         if (!$parent_type) {
             return NonNullMixedType::instance($is_nullable);
         }
@@ -2669,6 +2679,10 @@ class Type implements Stringable
                 return $this->valueTypeOfGenerator();
             }
             // TODO: If this is a subclass of iterator, look up the signature of MyClass->current()
+        }
+        if (!$this->isObjectWithKnownFQSEN()) {
+            // e.g. `value-of<T>`
+            return null;
         }
         $fqsen = FullyQualifiedClassName::fromType($this);
         if (!$code_base->hasClassWithFQSEN($fqsen)) {

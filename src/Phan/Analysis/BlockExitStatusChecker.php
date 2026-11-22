@@ -369,7 +369,9 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         if ($status) {
             return $status;
         }
-        $cond_status = $this->check($node->children['cond']);
+        $cond = $node->children['cond'];
+        // The subject may be a literal, e.g. `match (1) { ... }`
+        $cond_status = $cond instanceof Node ? $this->check($cond) : self::STATUS_PROCEED;
         if (($cond_status & self::STATUS_PROCEED) === 0) {
             return $cond_status;
         }
@@ -727,6 +729,10 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         if ($normalized_class_name === 'self' || $normalized_class_name === 'static') {
             $class_fqsen = $this->context->getClassFQSENOrNull();
         } elseif ($normalized_class_name === 'parent') {
+            if (!$this->context->isInClassScope()) {
+                // `parent::f()` outside of a class: reported elsewhere.
+                return self::STATUS_PROCEED;
+            }
             try {
                 $class = $this->context->getClassInScope($this->code_base);
             } catch (CodeBaseException $e) {

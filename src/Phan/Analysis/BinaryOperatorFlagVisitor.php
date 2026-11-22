@@ -349,73 +349,90 @@ final class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                     }
                     return UnionType::of([$result], $default_types);
                 };
-                switch ($node->flags) {
-                    case ast\flags\BINARY_BITWISE_OR:
-                        return $make_literal_union_type(
-                            LiteralIntType::instanceForValue($left_value | $right_value, false),
-                            $real_int
-                        );
-                    case ast\flags\BINARY_BITWISE_AND:
-                        return $make_literal_union_type(
-                            LiteralIntType::instanceForValue($left_value & $right_value, false),
-                            $real_int
-                        );
-                    case ast\flags\BINARY_BITWISE_XOR:
-                        return $make_literal_union_type(
-                            LiteralIntType::instanceForValue($left_value ^ $right_value, false),
-                            $real_int
-                        );
-                    case ast\flags\BINARY_MUL:
-                        $value = $left_value * $right_value;
-                        return $make_literal_union_type(
-                            is_int($value) ? LiteralIntType::instanceForValue($value, false)
-                                           : LiteralFloatType::instanceForValue($value, false),
-                            $real_int_or_float
-                        );
-                    case ast\flags\BINARY_DIV:
-                        // @phan-suppress-next-line PhanSuspiciousTruthyString deliberate check - this possible string is implicitly cast to a number.
-                        if (!$right_value) {
-                            // TODO: Emit warning about division by zero.
-                            return FloatType::instance(false)->asRealUnionType();
-                        }
-                        $value = $left_value / $right_value;
-                        return $make_literal_union_type(
-                            is_int($value) ? LiteralIntType::instanceForValue($value, false)
-                                           : LiteralFloatType::instanceForValue($value, false),
-                            $real_int_or_float
-                        );
-                    case ast\flags\BINARY_MOD:
-                        // @phan-suppress-next-line PhanSuspiciousTruthyString deliberate check - this possible string is implicitly cast to a number.
-                        if (!$right_value) {
-                            // TODO: Emit warning about division by zero.
-                            return IntType::instance(false)->asRealUnionType();
-                        }
-                        $value = ((int)$left_value) % (int)($right_value);
-                        return $make_literal_union_type(
-                            LiteralIntType::instanceForValue($value, false),
-                            $real_int
-                        );
-                    case ast\flags\BINARY_SUB:
-                        $value = $left_value - $right_value;
-                        return $make_literal_union_type(
-                            is_int($value) ? LiteralIntType::instanceForValue($value, false)
-                                           : LiteralFloatType::instanceForValue($value, false),
-                            $real_int_or_float
-                        );
-                    case ast\flags\BINARY_ADD:
-                        $value = $left_value + $right_value;
-                        return $make_literal_union_type(
-                            is_int($value) ? LiteralIntType::instanceForValue($value, false)
-                                           : LiteralFloatType::instanceForValue($value, false),
-                            $real_int_or_float
-                        );
-                    case ast\flags\BINARY_POW:
-                        $value = $left_value ** $right_value;
-                        return $make_literal_union_type(
-                            is_int($value) ? LiteralIntType::instanceForValue($value, false)
-                                           : LiteralFloatType::instanceForValue($value, false),
-                            $real_int_or_float
-                        );
+                // Folding constants can emit PHP notices or throw (e.g. `0 ** -1`, `1.5 | 1`, `1 << -1`).
+                // Fall back to the type inferred without the value instead of crashing.
+                \set_error_handler(
+                    /**
+                     * @throws \ErrorException
+                     * @suppress PhanPluginNeverReturnFunction set_error_handler requires a callback returning bool
+                     */
+                    static function (int $errno, string $errstr): bool {
+                        throw new \ErrorException($errstr, 0, $errno);
+                    }
+                );
+                try {
+                    switch ($node->flags) {
+                        case ast\flags\BINARY_BITWISE_OR:
+                            return $make_literal_union_type(
+                                LiteralIntType::instanceForValue($left_value | $right_value, false),
+                                $real_int
+                            );
+                        case ast\flags\BINARY_BITWISE_AND:
+                            return $make_literal_union_type(
+                                LiteralIntType::instanceForValue($left_value & $right_value, false),
+                                $real_int
+                            );
+                        case ast\flags\BINARY_BITWISE_XOR:
+                            return $make_literal_union_type(
+                                LiteralIntType::instanceForValue($left_value ^ $right_value, false),
+                                $real_int
+                            );
+                        case ast\flags\BINARY_MUL:
+                            $value = $left_value * $right_value;
+                            return $make_literal_union_type(
+                                is_int($value) ? LiteralIntType::instanceForValue($value, false)
+                                               : LiteralFloatType::instanceForValue($value, false),
+                                $real_int_or_float
+                            );
+                        case ast\flags\BINARY_DIV:
+                            // @phan-suppress-next-line PhanSuspiciousTruthyString deliberate check - this possible string is implicitly cast to a number.
+                            if (!$right_value) {
+                                // TODO: Emit warning about division by zero.
+                                return FloatType::instance(false)->asRealUnionType();
+                            }
+                            $value = $left_value / $right_value;
+                            return $make_literal_union_type(
+                                is_int($value) ? LiteralIntType::instanceForValue($value, false)
+                                               : LiteralFloatType::instanceForValue($value, false),
+                                $real_int_or_float
+                            );
+                        case ast\flags\BINARY_MOD:
+                            // @phan-suppress-next-line PhanSuspiciousTruthyString deliberate check - this possible string is implicitly cast to a number.
+                            if (!$right_value) {
+                                // TODO: Emit warning about division by zero.
+                                return IntType::instance(false)->asRealUnionType();
+                            }
+                            $value = ((int)$left_value) % (int)($right_value);
+                            return $make_literal_union_type(
+                                LiteralIntType::instanceForValue($value, false),
+                                $real_int
+                            );
+                        case ast\flags\BINARY_SUB:
+                            $value = $left_value - $right_value;
+                            return $make_literal_union_type(
+                                is_int($value) ? LiteralIntType::instanceForValue($value, false)
+                                               : LiteralFloatType::instanceForValue($value, false),
+                                $real_int_or_float
+                            );
+                        case ast\flags\BINARY_ADD:
+                            $value = $left_value + $right_value;
+                            return $make_literal_union_type(
+                                is_int($value) ? LiteralIntType::instanceForValue($value, false)
+                                               : LiteralFloatType::instanceForValue($value, false),
+                                $real_int_or_float
+                            );
+                        case ast\flags\BINARY_POW:
+                            $value = $left_value ** $right_value;
+                            return $make_literal_union_type(
+                                is_int($value) ? LiteralIntType::instanceForValue($value, false)
+                                               : LiteralFloatType::instanceForValue($value, false),
+                                $real_int_or_float
+                            );
+                    }
+                } catch (\Throwable) {
+                    // Use the fallback below.
+                } finally {
+                    \restore_error_handler();
                 }
             }
         }

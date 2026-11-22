@@ -292,7 +292,17 @@ class AttributeAnalyzer
                 }
                 $attribute_node = $attribute->getNode();
 
-                if ($attribute_node) {
+                $args_node = $attribute_node->children['args'] ?? null;
+                if ($args_node instanceof Node && $args_node->kind === ast\AST_CALLABLE_CONVERT) {
+                    // `#[Attr(...)]` and partial application such as `#[Attr(?)]`
+                    Issue::maybeEmit(
+                        $code_base,
+                        $declaration->getContext(),
+                        Issue::InvalidNode,
+                        $attribute_lineno,
+                        'Cannot create Closure as attribute argument'
+                    );
+                } elseif ($attribute_node) {
                     $attribute_context = $declaration instanceof Clazz
                         ? $declaration->getInternalContext()
                         : $declaration->getContext();

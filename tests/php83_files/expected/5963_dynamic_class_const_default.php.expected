@@ -1,0 +1,9 @@
+%s:4 PhanPluginUnknownMethodReturnType Method \A5963::test() has no declared or inferred return type
+%s:4 PhanUnreferencedPublicMethod Possibly zero references to public method \A5963::test()
+%s:4 PhanUnusedPublicMethodParameter Parameter $x is never used
+%s:6 PhanUnreferencedClass Possibly zero references to class \B5963
+%s:7 PhanParamSignatureMismatch Declaration of function test(string $x = Foo::{C}) should be compatible with function test(int $x) defined in %s:4 (Expected string $x = Foo::{C} to have the same type as int $x or a supertype)
+%s:7 PhanParamSignatureRealMismatchParamType Declaration of function test(string $x = Foo::{C}) should be compatible with function test(int $x) (parameter #1 of real signature type 'string' cannot replace original parameter of real signature type 'int') defined in %s:4
+%s:7 PhanPluginUnknownMethodReturnType Method \B5963::test() has no declared or inferred return type
+%s:7 PhanUndeclaredConstant Reference to undeclared constant \C. This would throw an Error.
+%s:7 PhanUnusedPublicMethodParameter Parameter $x is never used

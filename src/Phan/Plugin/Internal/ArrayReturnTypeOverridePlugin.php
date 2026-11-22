@@ -263,12 +263,13 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
          * @param list<Node|int|string|float> $args
          */
         $array_filter_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($nullable_array_type_set, $probably_real_assoc_array): UnionType {
-            if (\count($args) >= 1) {
+            // $args may be sparse when named arguments are used, e.g. `array_filter($a, mode: ARRAY_FILTER_USE_KEY)`
+            if (isset($args[0])) {
                 $passed_array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
                 $generic_passed_array_type = $passed_array_type->genericArrayTypes();
                 if (!$generic_passed_array_type->isEmpty()) {
                     $generic_passed_array_type = $generic_passed_array_type->withRealTypeSet($nullable_array_type_set);
-                    if (\count($args) >= 2) {
+                    if (isset($args[1])) {
                         // As a side effect of getting the list of callables, this warns about invalid callables
                         $filter_function_list = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $args[1], true);
                         if (Config::get_track_references()) {
@@ -276,7 +277,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                                 $filter_function->addReference($context);
                             }
                         }
-                        if (count($args) === 2) {
+                        if (!isset($args[2])) {
                             foreach ($filter_function_list as $filter_function) {
                                 // Analyze that the individual elements passed to array_filter()'s callback make sense.
                                 // TODO: analyze ARRAY_FILTER_USE_KEY, ARRAY_FILTER_USE_BOTH
@@ -307,8 +308,8 @@ final class ArrayReturnTypeOverridePlugin extends PluginV3 implements
                         //
                         // ARRAY_FILTER_USE_KEY - pass key as the only argument to callback instead of the value
                         // ARRAY_FILTER_USE_BOTH - pass both value and key as arguments to callback instead of the value
-                    } elseif (\count($args) === 1) {
-                        // array_filter with count($args) === 1 implies elements of the resulting array aren't falsey
+                    } else {
+                        // array_filter without a callback implies elements of the resulting array aren't falsey
                         return $generic_passed_array_type->withFlattenedTopLevelArrayShapeTypeInstances()
                                                          ->withMappedElementTypes(static function (UnionType $union_type): UnionType {
                                                             return $union_type->nonFalseyClone();

@@ -133,28 +133,38 @@ class Parser
         // and those errors might mess up language servers, etc. if ever printed to stdout
         $original_error_reporting = error_reporting();
         error_reporting($original_error_reporting & ~\E_COMPILE_WARNING);
-        $__no_echo_phan_errors = static function (int $errno, string $errstr, string $unused_errfile, int $errline) use ($code_base, $context): bool {
+        $deprecations = [];
+        $__no_echo_phan_errors = static function (int $errno, string $errstr, string $unused_errfile, int $errline) use (&$deprecations): bool {
             if ($errno === \E_DEPRECATED && \preg_match('/Version.*is deprecated/i', $errstr)) {
                 return false;
             }
             // Catch errors such as E_DEPRECATED for the (real) cast.
-            Issue::maybeEmit(
-                $code_base,
-                $context,
-                Issue::CompatibleSyntaxNotice,
-                $errline,
-                $errstr
-            );
+            // Emit these after parsing: this handler runs in the middle of compilation,
+            // and emitting an issue may tokenize files (for suppressions), which corrupts the line numbers of the AST being built.
+            $deprecations[] = [$errline, $errstr];
             // Return true to prevent printing to stderr
             return true;
         };
         try {
             error_clear_last();
-            $root_node = \ast\parse_code(
-                $file_contents,
-                Config::AST_VERSION,
-                $file_path
-            );
+            try {
+                $root_node = \ast\parse_code(
+                    $file_contents,
+                    Config::AST_VERSION,
+                    $file_path
+                );
+            } finally {
+                foreach ($deprecations as [$errline, $errstr]) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::CompatibleSyntaxNotice,
+                        $errline,
+                        $errstr
+                    );
+                }
+                $deprecations = [];
+            }
             $error = error_get_last();
             if ($error && $error['type'] === \E_COMPILE_WARNING) {
                 Issue::maybeEmit(

@@ -1,0 +1,5 @@
+%s:4 PhanWriteOnlyPublicProperty Possibly zero read references to public property \Attr009->a
+%s:7 PhanInvalidNode Cannot create Closure as attribute argument
+%s:8 PhanEmptyFunction Empty function \f009()
+%s:8 PhanPluginUseReturnValueNoopVoid The function/method \f009() is declared to return void and it has no side effects
+%s:8 PhanUnreferencedFunction Possibly zero references to function \f009()
