@@ -5655,7 +5655,7 @@ return [
 'PDOStatement::errorInfo' => ['array'],
 'PDOStatement::execute' => ['bool', 'params='=>'?array'],
 'PDOStatement::fetch' => ['mixed', 'mode='=>'int', 'cursorOrientation='=>'int', 'cursorOffset='=>'int'],
-'PDOStatement::fetchAll' => ['array', 'mode='=>'int', '...args='=>'int|string|callable'],
+'PDOStatement::fetchAll' => ['array', 'mode='=>'int', '...args='=>'int|string|callable|?array'],
 'PDOStatement::fetchColumn' => ['string|null|false', 'column='=>'int'],
 'PDOStatement::fetchObject' => ['object|false', 'class='=>'string', 'constructorArgs='=>'?array'],
 'PDOStatement::getAttribute' => ['mixed', 'name'=>'int'],

@@ -98,7 +98,19 @@ final class SignatureMapUpdater
             if ($parsed['by_ref']) {
                 $name = '&' . $name;
             }
-            $result[$name] = $match !== null ? $match['type'] : $reflection_type;
+            $type = $match !== null ? $match['type'] : $reflection_type;
+            if ($parsed['variadic'] && $match !== null) {
+                // A variadic parameter may replace several old parameters (e.g. fetchAll($mode, $args, $ctor_args) became fetchAll($mode, ...$args)):
+                // accept the types of all of them.
+                $types = explode('|', $type);
+                for ($j = $i + 1; $j < count($old_params); $j++) {
+                    if (!in_array(strtolower($old_params[$j]['parsed']['name']), $reflection_names, true)) {
+                        $types = array_merge($types, explode('|', $old_params[$j]['type']));
+                    }
+                }
+                $type = implode('|', array_unique($types));
+            }
+            $result[$name] = $type;
             $i++;
         }
         return $result;

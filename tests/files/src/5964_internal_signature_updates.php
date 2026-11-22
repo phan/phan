@@ -21,6 +21,11 @@ function signatures_5964(string $file, array $a, ArrayObject $ao, DOMElement $el
     echo hash_file('sha256', $file, false, [], 'extra'); // still reported: too many arguments
 }
 
+function fetch_all_5964(PDOStatement $stmt) {
+    var_export($stmt->fetchAll(PDO::FETCH_CLASS, stdClass::class, ['prefix'])); // ...$args includes the constructor arguments
+    var_export($stmt->fetchAll(PDO::FETCH_COLUMN, 0));
+}
+
 function fiber_5964() {
     $fiber = new Fiber(function (int $x): int {
         return Fiber::suspend($x);                    // $value
