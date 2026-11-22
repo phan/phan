@@ -1,0 +1,1 @@
+src/004_phpdoc_properties.php:55 UnusedSuppression Element \SuppressedPhpDocAndReal::suppressed_real suppresses issue PhanUndeclaredClassMethod but does not use it

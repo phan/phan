@@ -22,6 +22,7 @@ use Phan\IssueFixSuggester;
 use Phan\Language\Context;
 use Phan\Language\Element\Comment\Assertion;
 use Phan\Language\Element\Comment\ConditionalReturnType;
+use Phan\Language\Element\Comment\CustomAnnotation;
 use Phan\Language\FileRef;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -1601,6 +1602,18 @@ trait FunctionTrait
     {
         $this->bumpStateVersion();
         $this->comment = $comment;
+    }
+
+    /**
+     * Returns the annotations that plugins declared (CustomAnnotationCapability) in the doc comment of the declaration.
+     * (Inherited copies and the copies imported from traits share the comment of the declaration)
+     *
+     * @return list<CustomAnnotation>
+     * @unused-param $code_base
+     */
+    public function getCustomAnnotations(CodeBase $code_base): array
+    {
+        return $this->comment ? $this->comment->getCustomAnnotations() : [];
     }
 
     public function getOwnThrowsUnionType(): UnionType

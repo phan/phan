@@ -34,6 +34,7 @@ use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
+use Phan\Language\Element\Comment\CustomAnnotation;
 use Phan\Language\Element\Comment\Property as CommentProperty;
 use Phan\Language\ElementContext;
 use Phan\Language\FileRef;
@@ -203,6 +204,17 @@ class Clazz extends AddressableElement
      * @var list<Type>
      */
     private $mixin_types = [];
+
+    /**
+     * @var list<CustomAnnotation> the annotations that plugins declared (CustomAnnotationCapability) in the doc comment of this class
+     */
+    private $custom_annotations = [];
+
+    /**
+     * @var array<string,non-empty-list<CustomAnnotation>> maps the names of the properties declared in this class
+     * to the annotations that plugins declared in their doc comments (see Property::getCustomAnnotations())
+     */
+    private $property_custom_annotations = [];
 
     /**
      * @var array<mixed,string> maps value to the name of the case declaring that value
@@ -700,6 +712,52 @@ class Clazz extends AddressableElement
     public function getMixinTypes(): array
     {
         return $this->mixin_types;
+    }
+
+    /**
+     * Sets the annotations that plugins declared (CustomAnnotationCapability) in the doc comment of this class.
+     * Called in the parse phase.
+     *
+     * @param list<CustomAnnotation> $custom_annotations
+     * @internal
+     */
+    public function setCustomAnnotations(array $custom_annotations): void
+    {
+        $this->custom_annotations = $custom_annotations;
+    }
+
+    /**
+     * Returns the annotations that plugins declared (CustomAnnotationCapability) in the doc comment of this class.
+     *
+     * @return list<CustomAnnotation>
+     * @unused-param $code_base
+     */
+    public function getCustomAnnotations(CodeBase $code_base): array
+    {
+        return $this->custom_annotations;
+    }
+
+    /**
+     * Records the annotations that plugins declared (CustomAnnotationCapability) in the doc comment of the property
+     * $property_name, which this class declares. Called in the parse phase.
+     *
+     * @param non-empty-list<CustomAnnotation> $custom_annotations
+     * @internal
+     */
+    public function setCustomAnnotationsOfProperty(string $property_name, array $custom_annotations): void
+    {
+        $this->property_custom_annotations[$property_name] = $custom_annotations;
+    }
+
+    /**
+     * Returns the annotations that plugins declared (CustomAnnotationCapability) in the doc comment of the property
+     * $property_name that this class declares (not of an inherited property: see Property::getCustomAnnotations()).
+     *
+     * @return list<CustomAnnotation>
+     */
+    public function getCustomAnnotationsOfProperty(string $property_name): array
+    {
+        return $this->property_custom_annotations[$property_name] ?? [];
     }
 
     /**

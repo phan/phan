@@ -30,6 +30,7 @@ use Phan\Output\Filter\SubdirectoryIssueFilter;
 use Phan\Output\PrinterFactory;
 use Phan\Plugin\ConfigPluginSet;
 use Phan\Plugin\Internal\MethodSearcherPlugin;
+use Phan\PluginV3\CustomAnnotationCapability;
 use ReflectionExtension;
 use SplFileInfo;
 use Symfony\Component\Console\Output\ConsoleOutput;
@@ -416,17 +417,11 @@ class CLI
         if (array_key_exists('h', $opts) || array_key_exists('help', $opts)) {
             throw new UsageException('', EXIT_SUCCESS, UsageException::PRINT_NORMAL);  // --help prints help and calls exit(0)
         }
-        if (array_key_exists('help-annotations', $opts)) {
-            $result = "See https://github.com/phan/phan/wiki/Annotating-Your-Source-Code for more details." . PHP_EOL . PHP_EOL;
-
-            $result .= "Annotations specific to Phan:" . PHP_EOL;
-            // @phan-suppress-next-line PhanAccessClassConstantInternal
-            foreach (Builder::SUPPORTED_ANNOTATIONS as $key => $_) {
-                $result .= "- " . $key . PHP_EOL;
-            }
-            throw new ExitException($result, EXIT_SUCCESS);
-        }
-        if (array_key_exists('v', $opts) || array_key_exists('version', $opts)) {
+        // --help-annotations is handled after the config file and the other options are read (they can add plugins),
+        // but it still takes precedence over --version and --init, and nothing that it does not need is done for it
+        // (such as opening the --output file).
+        $is_help_annotations = array_key_exists('help-annotations', $opts);
+        if ((array_key_exists('v', $opts) || array_key_exists('version', $opts)) && !$is_help_annotations) {
             printf("Phan %s" . PHP_EOL, self::PHAN_VERSION);
             $ast_version = (string) phpversion('ast');
             $ast_version_repr = $ast_version !== '' ? "version $ast_version" : "is not installed";
@@ -457,7 +452,7 @@ class CLI
         // Initially set project root to cwd (may be updated by config discovery)
         Config::setProjectRootDirectory($cwd);
 
-        if (array_key_exists('init', $opts)) {
+        if (array_key_exists('init', $opts) && !$is_help_annotations) {
             Initializer::initPhanConfig($opts);
             exit(EXIT_SUCCESS);
         }
@@ -497,7 +492,8 @@ class CLI
                 throw new ExitException('no-config-file/-n conflicts with --config-file');
             }
         } else {
-            $this->maybeReadConfigFile(array_key_exists('require-config-exists', $opts), $search_parents);
+            // (--help-annotations analyzes nothing)
+            $this->maybeReadConfigFile(array_key_exists('require-config-exists', $opts), $search_parents, !$is_help_annotations);
         }
 
         // We need to know the process count after `--processes N` is parsed if that CLI flag is passed in,
@@ -505,7 +501,10 @@ class CLI
         // Before that, we need to have parsed the config file to override config settings.
         PhaseTimer::begin('restart_check');
         self::parseProcessCountOverride($opts);
-        self::restartWithoutProblematicExtensions();
+        if (!$is_help_annotations) {
+            // (--help-annotations only loads the plugins and prints, which these extensions do not affect)
+            self::restartWithoutProblematicExtensions();
+        }
         PhaseTimer::begin('cli_options');
 
         // Only after restarting, emit output.
@@ -593,6 +592,9 @@ class CLI
                 case 'n':
                 case 'no-config-file':
                     // Config loading and positional args are handled earlier
+                    break;
+                case 'help-annotations':
+                    // Handled after the other options, which can add plugins
                     break;
                 case 'm':
                 case 'output-mode':
@@ -691,6 +693,10 @@ class CLI
                 case 'output':
                     if (!is_string($value)) {
                         throw new UsageException(sprintf("Invalid arguments to --output: args=%s\n", StringUtil::jsonEncode($value)), EXIT_FAILURE);
+                    }
+                    if ($is_help_annotations) {
+                        // The help is printed to stderr: do not create or truncate the file.
+                        break;
                     }
                     $output_file = \fopen($value, 'w');
                     if (!$output_file) {
@@ -1027,6 +1033,11 @@ class CLI
                     Config::setValue('__always_exit_successfully_after_analysis', true);
                     break;
                 default:
+                    if ($is_help_annotations) {
+                        // --help-annotations takes precedence over the options that are handled before this loop
+                        // (--version, --init and its options) and over the other options that this loop does not handle.
+                        break;
+                    }
                     // All of phan's long options are currently at least 2 characters long.
                     $key_repr = strlen($key) >= 2 ? "--$key" : "-$key";
                     if ($value === false && in_array($key . ':', self::GETOPT_LONG_OPTIONS, true)) {
@@ -1042,6 +1053,11 @@ class CLI
             if (Config::getValue('color_issue_messages_if_supported') && self::supportsColor(\STDOUT)) {
                 Config::setValue('color_issue_messages', true);
             }
+        }
+        if ($is_help_annotations) {
+            // After the config file and the options that add plugins were read: plugins can declare annotations.
+            self::checkPluginsExist();
+            throw new ExitException(self::getHelpAnnotationsText(), EXIT_SUCCESS);
         }
         self::ensureASTParserExists();
         self::checkPluginsExist();
@@ -1383,6 +1399,46 @@ class CLI
         $stat = \fstat($output);
         // Check if formatted mode is S_IFCHR
         return $stat ? 0020000 === ($stat['mode'] & 0170000) : false;
+    }
+
+    /**
+     * Returns the output of `phan --help-annotations`: the annotations of Phan,
+     * then those that the configured plugins declare (CustomAnnotationCapability), if any.
+     */
+    private static function getHelpAnnotationsText(): string
+    {
+        $result = "See https://github.com/phan/phan/wiki/Annotating-Your-Source-Code for more details." . PHP_EOL . PHP_EOL;
+
+        $result .= "Annotations specific to Phan:" . PHP_EOL;
+        // @phan-suppress-next-line PhanAccessClassConstantInternal
+        foreach (Builder::SUPPORTED_ANNOTATIONS as $key => $_) {
+            $result .= "- " . $key . PHP_EOL;
+        }
+        if (!Config::getValue('plugins')) {
+            // Only the plugins of the config file and the CLI options declare annotations.
+            return $result;
+        }
+        // This exits with an error if a plugin cannot be loaded or declares an invalid name.
+        $descriptions = ConfigPluginSet::instance()->getCustomAnnotationDescriptions();
+        if (!$descriptions) {
+            return $result;
+        }
+        // (usort() is stable: the plugins that declare the same name stay in the order they are loaded)
+        \usort(
+            $descriptions,
+            /**
+             * @param array{0:string,1:string,2:string} $a
+             * @param array{0:string,1:string,2:string} $b
+             */
+            static function (array $a, array $b): int {
+                return \strcmp($a[0], $b[0]);
+            }
+        );
+        $result .= PHP_EOL . "Annotations declared by plugins (their names start with @" . CustomAnnotationCapability::NAME_PREFIX . "):" . PHP_EOL;
+        foreach ($descriptions as [$name, $plugin_name, $description]) {
+            $result .= "- @$name ($plugin_name)" . ($description !== '' ? ": $description" : '') . PHP_EOL;
+        }
+        return $result;
     }
 
     private static function checkPluginsExist(): void
@@ -2113,7 +2169,7 @@ Extended help:
   Exit immediately with an error code if `.phan/config.php` does not exist.
 
  --help-annotations
-  Print details on annotations supported by Phan.
+  Print details on annotations supported by Phan and by the configured plugins.
 
 EOB
                 ,
@@ -3001,9 +3057,10 @@ EOB
      * Similar to how Git searches for `.git` directory.
      * @param bool $require_config_exists Whether to throw if config not found
      * @param bool $search_parents Whether to search parent directories
+     * @param bool $print_notes Whether to print the notes about the config file that is used for the analysis
      * @throws UsageException
      */
-    private function maybeReadConfigFile(bool $require_config_exists, bool $search_parents): void
+    private function maybeReadConfigFile(bool $require_config_exists, bool $search_parents, bool $print_notes = true): void
     {
         $config_file_name = $this->config_file;
 
@@ -3023,7 +3080,7 @@ EOB
 
                     // Show helpful message if running from subdirectory
                     $working_dir = Config::getWorkingDirectory();
-                    if ($working_dir !== $result['project_root']) {
+                    if ($working_dir !== $result['project_root'] && $print_notes) {
                         $relative_working = \str_replace($result['project_root'] . DIRECTORY_SEPARATOR, '', $working_dir);
                         $subdirectory_only = Config::getValue('__subdirectory_only');
                         \fwrite(
@@ -3058,7 +3115,7 @@ EOB
             }
 
             // No config file found - show helpful hint if not in special modes
-            if (!$this->file_list_only) {
+            if (!$this->file_list_only && $print_notes) {
                 \fwrite(
                     STDERR,
                     "No .phan/config.php found. Run 'phan --init' to create one.\n" .

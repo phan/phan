@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Phan\Language\Element;
 
 use Phan\AST\ASTReverter;
+use Phan\CodeBase;
 use Phan\Language\Context;
+use Phan\Language\Element\Comment\CustomAnnotation;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\UnionType;
@@ -317,5 +319,28 @@ class ClassConstant extends ClassElement implements ConstantInterface
     public function getComment(): ?Comment
     {
         return $this->comment;
+    }
+
+    /**
+     * Returns the annotations that plugins declared (CustomAnnotationCapability) in the doc comment of the declaration.
+     * An inherited copy shares the comment of the declaration. The copy imported from a trait (createUseAlias())
+     * has no comment, so the annotations are read from the declaration in the trait.
+     *
+     * @return list<CustomAnnotation>
+     */
+    public function getCustomAnnotations(CodeBase $code_base): array
+    {
+        $comment = $this->comment;
+        if (!$comment) {
+            $real_defining_fqsen = $this->real_defining_fqsen;
+            if ($real_defining_fqsen === $this->fqsen || !$code_base->hasClassConstantWithFQSEN($real_defining_fqsen)) {
+                return [];
+            }
+            $comment = $code_base->getClassConstantByFQSEN($real_defining_fqsen)->getComment();
+            if (!$comment) {
+                return [];
+            }
+        }
+        return $comment->getCustomAnnotations();
     }
 }

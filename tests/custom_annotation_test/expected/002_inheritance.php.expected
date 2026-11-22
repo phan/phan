@@ -1,0 +1,35 @@
+src/002_inheritance.php:8 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on class constant \BaseWithMarks::INHERITED with the text "on a base constant" (1 annotation(s) on the element)
+src/002_inheritance.php:11 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on property \BaseWithMarks::inherited_property with the text "on a base property" (1 annotation(s) on the element)
+src/002_inheritance.php:14 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on property \BaseWithMarks::inherited_static with the text "on a base static property" (1 annotation(s) on the element)
+src/002_inheritance.php:17 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on method \BaseWithMarks::inheritedMethod with the text "on a base method" (1 annotation(s) on the element)
+src/002_inheritance.php:22 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on method \BaseWithMarks::overridden with the text "on a base method that the child overrides" (1 annotation(s) on the element)
+src/002_inheritance.php:40 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on trait \MarkedMembers with the text "on a trait with members" (1 annotation(s) on the element)
+src/002_inheritance.php:43 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on class constant \MarkedMembers::TRAIT_CONSTANT with the text "on a trait constant" (1 annotation(s) on the element)
+src/002_inheritance.php:46 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on property \MarkedMembers::trait_property with the text "on a trait property" (1 annotation(s) on the element)
+src/002_inheritance.php:49 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on property \MarkedMembers::private_trait_property with the text "on a private trait property" (1 annotation(s) on the element)
+src/002_inheritance.php:52 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on method \MarkedMembers::traitMethod with the text "on a trait method" (1 annotation(s) on the element)
+src/002_inheritance.php:55 PhanPluginCustomAnnotationRead Read property \MarkedMembers::private_trait_property: @phan-x-test-mark("on a private trait property") on line 49
+src/002_inheritance.php:58 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on method \MarkedMembers::staticTraitMethod with the text "on a static trait method" (1 annotation(s) on the element)
+src/002_inheritance.php:76 PhanPluginCustomAnnotationRead Read property \UsesTrait::private_trait_property: @phan-x-test-mark("on a private trait property") on line 49
+src/002_inheritance.php:95 PhanPluginCustomAnnotationRead Read method \ChildWithoutMarks::inheritedMethod: @phan-x-test-mark("on a base method") on line 17
+src/002_inheritance.php:96 PhanPluginCustomAnnotationRead Read method \ChildWithoutMarks::overridden: no custom annotations
+src/002_inheritance.php:97 PhanPluginCustomAnnotationRead Read method \GrandChild::inheritedMethod: @phan-x-test-mark("on a base method") on line 17
+src/002_inheritance.php:98 PhanPluginCustomAnnotationRead Read method \GrandChild::overridden: no custom annotations
+src/002_inheritance.php:99 PhanPluginCustomAnnotationRead Read property \BaseWithMarks::inherited_static: @phan-x-test-mark("on a base static property") on line 14
+src/002_inheritance.php:99 PhanPluginCustomAnnotationRead Read property \ChildWithoutMarks::inherited_property: @phan-x-test-mark("on a base property") on line 11
+src/002_inheritance.php:99 PhanPluginCustomAnnotationRead Read property \GrandChild::inherited_property: @phan-x-test-mark("on a base property") on line 11
+src/002_inheritance.php:100 PhanPluginCustomAnnotationRead Read class constant \ChildWithoutMarks::INHERITED: @phan-x-test-mark("on a base constant") on line 8
+src/002_inheritance.php:100 PhanPluginCustomAnnotationRead Read class constant \GrandChild::INHERITED: @phan-x-test-mark("on a base constant") on line 8
+src/002_inheritance.php:101 PhanPluginCustomAnnotationRead Read method \UsesTrait::readPrivate: no custom annotations
+src/002_inheritance.php:101 PhanPluginCustomAnnotationRead Read method \UsesTrait::traitMethod: @phan-x-test-mark("on a trait method") on line 52
+src/002_inheritance.php:102 PhanPluginCustomAnnotationRead Read property \UsesTrait::trait_property: @phan-x-test-mark("on a trait property") on line 46
+src/002_inheritance.php:103 PhanPluginCustomAnnotationRead Read class constant \UsesTrait::TRAIT_CONSTANT: @phan-x-test-mark("on a trait constant") on line 43
+src/002_inheritance.php:104 PhanPluginCustomAnnotationRead Read method \UsesTrait::staticTraitMethod: @phan-x-test-mark("on a static trait method") on line 58
+src/002_inheritance.php:105 PhanPluginCustomAnnotationRead Read method \UsesNestedTrait::aliasedTraitMethod: @phan-x-test-mark("on a trait method") on line 52
+src/002_inheritance.php:105 PhanPluginCustomAnnotationRead Read method \UsesNestedTrait::traitMethod: @phan-x-test-mark("on a trait method") on line 52
+src/002_inheritance.php:106 PhanPluginCustomAnnotationRead Read class constant \UsesNestedTrait::TRAIT_CONSTANT: @phan-x-test-mark("on a trait constant") on line 43
+src/002_inheritance.php:106 PhanPluginCustomAnnotationRead Read property \UsesNestedTrait::trait_property: @phan-x-test-mark("on a trait property") on line 46
+src/002_inheritance.php:107 PhanPluginCustomAnnotationRead Read method \LocalChild::externalMethod: @phan-x-test-mark("on an external method") on line 13
+src/002_inheritance.php:108 PhanPluginCustomAnnotationRead Read method \LocalChild::unmarkedExternalMethod: no custom annotations
+src/002_inheritance.php:109 PhanPluginCustomAnnotationRead Read class constant \LocalChild::EXTERNAL_CONSTANT: @phan-x-test-mark("on an external constant") on line 7
+src/002_inheritance.php:109 PhanPluginCustomAnnotationRead Read property \LocalChild::external_property: @phan-x-test-mark("on an external property") on line 10

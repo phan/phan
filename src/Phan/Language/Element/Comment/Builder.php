@@ -21,9 +21,11 @@ use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use Phan\Library\FileCache;
+use Phan\Library\FileCacheEntry;
 use Phan\Library\None;
 use Phan\Library\Option;
 use Phan\Library\Some;
+use Phan\Plugin\ConfigPluginSet;
 use Phan\Suggestion;
 
 use function count;
@@ -100,6 +102,12 @@ final class Builder
 
     /** @var list<Type> */
     private $required_implements_types = [];
+
+    /** @var list<CustomAnnotation> the annotations that plugins declared (CustomAnnotationCapability) */
+    private $custom_annotations = [];
+
+    /** @var ?int the line of the last line of the comment in the file (see guessCustomAnnotationLineLocation()) */
+    private $last_line_location = null;
 
     /** @var bool did we add template types already */
     protected $did_add_template_types;
@@ -494,13 +502,15 @@ final class Builder
             !$this->phan_overrides &&
             $this->closure_scope instanceof None &&
             $this->throw_union_type->isEmpty() &&
-            !$this->param_assertion_map
+            !$this->param_assertion_map &&
+            !$this->custom_annotations
         ) {
             // Don't create an extra object if the string contained `@` but nothing of use was actually extracted.
             return NullComment::instance();
         }
-        // @phan-suppress-next-line PhanAccessMethodInternal
-        return new Comment(
+        // Only the comments with annotations that plugins declared have a property for them.
+        $comment_class = $this->custom_annotations ? CommentWithCustomAnnotations::class : Comment::class;
+        $comment = new $comment_class(
             $this->comment_flags,
             $this->variable_list,
             $this->parameter_list,
@@ -522,6 +532,10 @@ final class Builder
             $this->code_base,
             $this->context
         );
+        if ($comment instanceof CommentWithCustomAnnotations && $this->custom_annotations) {
+            $comment->setCustomAnnotations($this->custom_annotations);
+        }
+        return $comment;
     }
 
     private function buildWithTemplateTypes(): Comment
@@ -652,7 +666,7 @@ final class Builder
                     break;
                 default:
                     if (str_starts_with($type, 'phan-')) {
-                        $this->maybeParsePhanCustomAnnotation($i, $line, $type, $case_sensitive_type);
+                        $this->maybeParsePhanCustomAnnotation($i, $line, $type, $case_sensitive_type, $trimmed);
                     }
                     break;
             }
@@ -1128,7 +1142,10 @@ final class Builder
         }
     }
 
-    private function maybeParsePhanCustomAnnotation(int $i, string $line, string $type, string $case_sensitive_type): void
+    /**
+     * @param string $trimmed the line without the leading `/**`, `*` and whitespace, starting with the first tag of the line
+     */
+    private function maybeParsePhanCustomAnnotation(int $i, string $line, string $type, string $case_sensitive_type, string $trimmed): void
     {
         switch ($type) {
             case 'phan-forbid-undeclared-magic-properties':
@@ -1273,6 +1290,16 @@ final class Builder
                 $this->parsePhanType($i, $line);
                 return;
             default:
+                // This is only reached for a tag that Phan does not know, so plugins are only loaded here for such a tag.
+                $plugin_annotations = ConfigPluginSet::instance()->getCustomAnnotationPluginMap();
+                if (isset($plugin_annotations[$type])) {
+                    $this->custom_annotations[] = new CustomAnnotation(
+                        $type,
+                        self::extractCustomAnnotationText($trimmed, $case_sensitive_type),
+                        $this->guessCustomAnnotationLineLocation($i)
+                    );
+                    return;
+                }
                 $this->emitIssueWithSuggestion(
                     Issue::MisspelledAnnotation,
                     $this->guessActualLineLocation($i),
@@ -1280,15 +1307,51 @@ final class Builder
                         '@' . $case_sensitive_type,
                         "The annotations that this version of Phan supports can be seen by running 'phan --help-annotations' or by visiting https://github.com/phan/phan/wiki/Annotating-Your-Source-Code",
                     ],
-                    self::generateSuggestionForMisspelledAnnotation($case_sensitive_type)
+                    self::generateSuggestionForMisspelledAnnotation($case_sensitive_type, $plugin_annotations)
                 );
                 return;
         }
     }
 
-    private static function generateSuggestionForMisspelledAnnotation(string $annotation): ?Suggestion
+    /**
+     * Returns the text of a custom annotation (CustomAnnotation::getText()).
+     *
+     * @param string $trimmed the line, starting with its first tag. The tag of the annotation is either at the start
+     * or the first inline tag `{(at)$case_sensitive_type` (the main regex of parseCommentLine() matched the same position).
+     */
+    private static function extractCustomAnnotationText(string $trimmed, string $case_sensitive_type): string
     {
-        $suggestions = IssueFixSuggester::getSuggestionsForStringSet('@' . $annotation, self::SUPPORTED_ANNOTATIONS);
+        if (!\preg_match('/(?:^|(\{))@' . \preg_quote($case_sensitive_type, '/') . '(?![a-zA-Z0-9_\x7f-\xff-])(.*)$/D', $trimmed, $match)) {
+            // Should not happen
+            return '';
+        }
+        $rest = $match[2];
+        if ($match[1] !== '') {
+            // The inline form `{(at)phan-x-name text}`: the text ends before the `}` that closes the tag.
+            $depth = 1;
+            for ($offset = 0, $length = \strlen($rest); $offset < $length; $offset++) {
+                $c = $rest[$offset];
+                if ($c === '{') {
+                    $depth++;
+                } elseif ($c === '}' && --$depth === 0) {
+                    return \trim(\substr($rest, 0, $offset));
+                }
+            }
+        }
+        // The rest of the line, without the end of a doc comment on one line
+        return \trim((string)\preg_replace('@\s*\*+/$@D', '', $rest));
+    }
+
+    /**
+     * @param array<string,mixed> $plugin_annotations maps the names of the annotations that plugins declared to the plugins
+     */
+    private static function generateSuggestionForMisspelledAnnotation(string $annotation, array $plugin_annotations): ?Suggestion
+    {
+        $candidates = self::SUPPORTED_ANNOTATIONS;
+        foreach ($plugin_annotations as $name => $_) {
+            $candidates['@' . $name] = '';
+        }
+        $suggestions = IssueFixSuggester::getSuggestionsForStringSet('@' . $annotation, $candidates);
         if (!$suggestions) {
             return null;
         }
@@ -1297,6 +1360,9 @@ final class Builder
 
     /**
      * Maps supported annotations starting with phan- to the empty string or a description
+     *
+     * The names starting with `phan-x-` (CustomAnnotationCapability::NAME_PREFIX) are reserved for the annotations
+     * that plugins declare: Phan must not give a meaning of its own to such a name, here or elsewhere.
      */
     public const SUPPORTED_ANNOTATIONS = [
         '@phan-assert' => '',
@@ -1370,7 +1436,10 @@ final class Builder
      */
     private static $last_project_path = null;
 
-    private function guessActualLineLocation(int $i): int
+    /**
+     * Returns the entry of FileCache for the file of the comment, if it is cached.
+     */
+    private function getFileCacheEntry(): ?FileCacheEntry
     {
         $file = $this->context->getFile();
         $root = Config::getProjectRootDirectory();
@@ -1382,7 +1451,12 @@ final class Builder
             $path = Config::projectPath($file);
             self::$last_project_path = [$root, $file, $path];
         }
-        $entry = FileCache::getEntry($path);
+        return FileCache::getEntry($path);
+    }
+
+    private function guessActualLineLocation(int $i): int
+    {
+        $entry = $this->getFileCacheEntry();
         $declaration_lineno = $this->lineno;
         if (!$entry) {
             return $declaration_lineno;
@@ -1412,6 +1486,39 @@ final class Builder
         }
         // We couldn't identify the line;
         return $declaration_lineno;
+    }
+
+    /**
+     * Returns the line of line $i of the comment in the file, for a custom annotation (CustomAnnotation::getLineno()).
+     *
+     * guessActualLineLocation() searches upwards from a line that is below line $i by the distance between the end of
+     * the comment and the declaration, so it returns the line of a later line of the comment with the same text
+     * if there is one within that distance. This also derives the line from the line of the last line of the comment
+     * (found by guessActualLineLocation(), as no line of the comment follows it), and uses that when it differs and
+     * has the text of line $i. That is only possible when the lines of the comment are the lines of the source:
+     * reduceMultiline() did not merge any. The lines of the annotations of Phan are not changed.
+     */
+    private function guessCustomAnnotationLineLocation(int $i): int
+    {
+        $guess = $this->guessActualLineLocation($i);
+        $last_index = $this->comment_lines_count - 1;
+        if ($i === $last_index || \substr_count($this->comment, "\n") !== $last_index) {
+            return $guess;
+        }
+        $this->last_line_location ??= $this->guessActualLineLocation($last_index);
+        $lineno = $this->last_line_location - ($last_index - $i);
+        if ($lineno === $guess || $lineno < 1) {
+            return $guess;
+        }
+        $entry = $this->getFileCacheEntry();
+        if (!$entry) {
+            return $guess;
+        }
+        $source_line = $entry->getLinesWithoutNewlines()[$lineno] ?? null;
+        if ($source_line === null || \trim($source_line) !== \trim($this->lines[$i])) {
+            return $guess;
+        }
+        return $lineno;
     }
 
     /**

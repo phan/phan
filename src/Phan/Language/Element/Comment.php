@@ -13,6 +13,7 @@ use Phan\Language\Context;
 use Phan\Language\Element\Comment\Assertion;
 use Phan\Language\Element\Comment\Builder;
 use Phan\Language\Element\Comment\ConditionalReturnType;
+use Phan\Language\Element\Comment\CustomAnnotation;
 use Phan\Language\Element\Comment\Method as CommentMethod;
 use Phan\Language\Element\Comment\NullComment;
 use Phan\Language\Element\Comment\Parameter as CommentParameter;
@@ -765,6 +766,16 @@ class Comment
     public function getMixinTypes(): array
     {
         return $this->mixin_types;
+    }
+
+    /**
+     * @return list<CustomAnnotation>
+     * The annotations of this comment that plugins declared (CustomAnnotationCapability), in the order of the comment.
+     * (Only CommentWithCustomAnnotations has any)
+     */
+    public function getCustomAnnotations(): array
+    {
+        return [];
     }
 
     /**

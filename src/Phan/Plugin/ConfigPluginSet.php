@@ -16,7 +16,9 @@ use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\IssueInstance;
 use Phan\Language\Context;
+use Phan\Language\Element\AddressableElementInterface;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\Comment;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
@@ -35,6 +37,7 @@ use Phan\LanguageServer\CompletionResolver;
 use Phan\LanguageServer\DefinitionResolver;
 use Phan\LanguageServer\GoToDefinitionRequest;
 use Phan\Library\RAII;
+use Phan\Library\StringUtil;
 use Phan\Plugin\Internal\ArrayReturnTypeOverridePlugin;
 use Phan\Plugin\Internal\BaselineLoadingPlugin;
 use Phan\Plugin\Internal\BaselineSavingPlugin;
@@ -71,6 +74,7 @@ use Phan\PluginV3\BeforeAnalyzePhaseCapability;
 use Phan\PluginV3\BeforeLoopBodyAnalysisCapability;
 use Phan\PluginV3\BeforeLoopBodyAnalysisVisitor;
 use Phan\PluginV3\ConditionalCallCapability;
+use Phan\PluginV3\CustomAnnotationCapability;
 use Phan\PluginV3\FinalizeProcessCapability;
 use Phan\PluginV3\HandleLazyLoadInternalFunctionCapability;
 use Phan\PluginV3\HandleLazyLoadInternalMethodCapability;
@@ -177,6 +181,18 @@ final class ConfigPluginSet extends PluginV3 implements
 
     /** @var list<PluginV3&ConditionalCallCapability> - plugins to change the context when calls of functions and methods are used as conditions. */
     private $conditional_call_plugin_set = [];
+
+    /**
+     * @var array<string,non-empty-list<PluginV3&CustomAnnotationCapability>> - maps the names of the annotations that plugins declared
+     * (in lowercase, without '@') to the plugins that declared them, in the order the plugins are loaded.
+     */
+    private $custom_annotation_plugin_map = [];
+
+    /**
+     * @var list<array{0:string,1:string,2:string}> - [name, plugin class, description] of each annotation that a plugin declared,
+     * in the order the plugins are loaded (for `phan --help-annotations`)
+     */
+    private $custom_annotation_descriptions = [];
 
     /** @var list<AnalyzeFunctionCapability>|null - plugins to analyze function declarations. */
     private $analyze_function_plugin_set;
@@ -1193,6 +1209,9 @@ final class ConfigPluginSet extends PluginV3 implements
         }
         $plugin_set = \array_values(\array_filter($plugin_set));
 
+        // Before the set is registered, so that a failure leaves the plugins unloaded.
+        [$this->custom_annotation_plugin_map, $this->custom_annotation_descriptions] = self::loadCustomAnnotations($plugin_set);
+
         // Register the entire set.
         $this->plugin_set = $plugin_set;
 
@@ -1271,6 +1290,74 @@ final class ConfigPluginSet extends PluginV3 implements
                 $c($variable, $child_scopes, $var_exists_in_all_branches);
             }
         };
+    }
+
+    /**
+     * Reads and checks the annotations that the plugins declare with CustomAnnotationCapability.
+     *
+     * @param list<PluginV3> $plugin_set
+     * @return array{0:array<string,non-empty-list<PluginV3&CustomAnnotationCapability>>,1:list<array{0:string,1:string,2:string}>}
+     * the map from names to plugins, and [name, plugin class, description] of each declaration
+     * @throws AssertionError if a plugin declares an invalid name (see CustomAnnotationCapability::NAME_PREFIX)
+     */
+    private static function loadCustomAnnotations(array $plugin_set): array
+    {
+        $plugin_map = [];
+        $descriptions = [];
+        $prefix = CustomAnnotationCapability::NAME_PREFIX;
+        foreach (self::filterByClass($plugin_set, CustomAnnotationCapability::class) as $plugin) {
+            $plugin_name = \str_replace("\0", ' ', get_class($plugin));
+            foreach ($plugin->getCustomAnnotations() as $name => $description) {
+                // Phan does not give a meaning to the names with this prefix, so the names of plugins and of Phan cannot collide.
+                if (!\is_string($name) || !\str_starts_with($name, $prefix) || !\preg_match('/^[a-z0-9][a-z0-9_-]*$/D', \substr($name, \strlen($prefix)))) {
+                    throw new AssertionError(\sprintf(
+                        "Plugin %s declares the annotation %s in getCustomAnnotations(): the name of an annotation declared by a plugin must start with '%s', followed by a lowercase letter or digit and then lowercase letters, digits, '_' or '-' (/^%s[a-z0-9][a-z0-9_-]*$/, without '@')",
+                        $plugin_name,
+                        StringUtil::jsonEncode($name),
+                        $prefix,
+                        $prefix
+                    ));
+                }
+                if (!\is_string($description)) {
+                    throw new AssertionError("Plugin $plugin_name must map the annotation '$name' to a string (its description) in getCustomAnnotations()");
+                }
+                $plugin_map[$name][] = $plugin;
+                $descriptions[] = [$name, $plugin_name, $description];
+            }
+        }
+        return [$plugin_map, $descriptions];
+    }
+
+    /**
+     * @return array<string,non-empty-list<PluginV3&CustomAnnotationCapability>> maps the names of the annotations
+     * that plugins declared (in lowercase, without '@') to the plugins that declared them (CustomAnnotationCapability)
+     */
+    public function getCustomAnnotationPluginMap(): array
+    {
+        return $this->custom_annotation_plugin_map;
+    }
+
+    /**
+     * @return list<array{0:string,1:string,2:string}> [name, plugin class, description] of each annotation that a plugin declared
+     * (CustomAnnotationCapability), in the order the plugins are loaded
+     */
+    public function getCustomAnnotationDescriptions(): array
+    {
+        return $this->custom_annotation_descriptions;
+    }
+
+    /**
+     * Calls the plugins that declared the annotations of $comment (CustomAnnotationCapability), for each annotation
+     * in the order of the comment and the plugins in the order they are loaded.
+     * Called in the parse phase, once $element, the element that $comment belongs to, has been added to the code base.
+     */
+    public function handleCustomAnnotations(CodeBase $code_base, AddressableElementInterface $element, Comment $comment): void
+    {
+        foreach ($comment->getCustomAnnotations() as $annotation) {
+            foreach ($this->custom_annotation_plugin_map[$annotation->getName()] ?? [] as $plugin) {
+                $plugin->handleCustomAnnotation($code_base, $element, $annotation);
+            }
+        }
     }
 
     private static function requiresPluginBasedBuiltinSuppressions(): bool

@@ -1,0 +1,17 @@
+src/004_phpdoc_properties.php:14 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on property \PhpDocAndReal::magic_and_real with the text "on a declaration of a property that the class also declares with @property" (1 annotation(s) on the element)
+src/004_phpdoc_properties.php:18 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on promoted property \PhpDocAndReal::magic_and_promoted with the text "on a promoted property that the class also declares with @property" (1 annotation(s) on the element)
+src/004_phpdoc_properties.php:36 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on property \RedeclaredProperty::twice with the text "on the first declaration" (1 annotation(s) on the element)
+src/004_phpdoc_properties.php:40 PhanRedefineProperty Property $twice defined at src/004_phpdoc_properties.php:40 was previously defined at src/004_phpdoc_properties.php:37
+src/004_phpdoc_properties.php:45 PhanPluginCustomAnnotationRead Read promoted property \PhpDocAndReal::magic_and_promoted: @phan-x-test-mark("on a promoted property that the class also declares with @property") on line 18
+src/004_phpdoc_properties.php:45 PhanPluginCustomAnnotationRead Read property \PhpDocAndReal::magic_and_real: @phan-x-test-mark("on a declaration of a property that the class also declares with @property") on line 14
+src/004_phpdoc_properties.php:45 PhanPluginCustomAnnotationRead Read property \PhpDocAndReal::magic_only: no custom annotations
+src/004_phpdoc_properties.php:46 PhanPluginCustomAnnotationRead Read promoted property \PhpDocAndRealChild::magic_and_promoted: @phan-x-test-mark("on a promoted property that the class also declares with @property") on line 18
+src/004_phpdoc_properties.php:46 PhanPluginCustomAnnotationRead Read property \PhpDocAndRealChild::magic_and_real: @phan-x-test-mark("on a declaration of a property that the class also declares with @property") on line 14
+src/004_phpdoc_properties.php:46 PhanPluginCustomAnnotationRead Read property \PhpDocAndRealChild::magic_only: no custom annotations
+src/004_phpdoc_properties.php:47 PhanPluginCustomAnnotationRead Read property \RedeclaredProperty::twice: @phan-x-test-mark("on the first declaration") on line 36
+src/004_phpdoc_properties.php:94 PhanPluginCustomAnnotationRead Read promoted property \SuppressedPhpDocAndReal::suppressed_promoted: @phan-x-test-mark("on a promoted property with a suppression, that the class also declares with @property") on line 76
+src/004_phpdoc_properties.php:94 PhanPluginCustomAnnotationRead Read property \SuppressedPhpDocAndReal::suppressed_real: @phan-x-test-mark("on a declaration with a suppression, of a property that the class also declares with @property") on line 64
+src/004_phpdoc_properties.php:94 PhanPluginCustomAnnotationRead Read property \SuppressedPhpDocAndReal::suppressed_without_annotation: no custom annotations
+src/004_phpdoc_properties.php:95 PhanPluginCustomAnnotationRead Read promoted property \SuppressedPhpDocAndRealChild::suppressed_promoted: @phan-x-test-mark("on a promoted property with a suppression, that the class also declares with @property") on line 76
+src/004_phpdoc_properties.php:95 PhanPluginCustomAnnotationRead Read property \SuppressedPhpDocAndRealChild::suppressed_real: @phan-x-test-mark("on a declaration with a suppression, of a property that the class also declares with @property") on line 64
+src/004_phpdoc_properties.php:95 PhanPluginCustomAnnotationRead Read property \SuppressedPhpDocAndRealChild::suppressed_without_annotation: no custom annotations

@@ -21,6 +21,7 @@ use Phan\Exception\IssueException;
 use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Language\Element\AddressableElementInterface;
 use Phan\Language\Element\Attribute;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Clazz;
@@ -53,6 +54,7 @@ use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 use Phan\Library\IncrementalAnalysis\DependencyTracker;
 use Phan\Library\None;
+use Phan\Plugin\ConfigPluginSet;
 
 use function count;
 
@@ -318,6 +320,14 @@ class ParseVisitor extends ScopeVisitor
                 }
                 $class->addRequiredImplementsFQSEN(FullyQualifiedClassName::fromType($required_type));
             }
+
+            $custom_annotations = $comment->getCustomAnnotations();
+            if ($custom_annotations) {
+                // @phan-suppress-next-line PhanAccessMethodInternal
+                $class->setCustomAnnotations($custom_annotations);
+                // The members of the class are parsed after this.
+                $this->handleCustomAnnotations($class, $comment);
+            }
         } finally {
             $class->setDidFinishParsing(true);
         }
@@ -494,9 +504,11 @@ class ParseVisitor extends ScopeVisitor
                     throw new AssertionError("Expected variants of Method to be Method");
                 }
                 $class->addMethod($code_base, $method_variant, None::instance());
+                $this->handleCustomAnnotations($method_variant, $method_variant->getComment());
             }
         } else {
             $class->addMethod($code_base, $method, None::instance());
+            $this->handleCustomAnnotations($method, $method->getComment());
         }
 
         $this->emitOverrideAttributeCompatibility(
@@ -607,18 +619,7 @@ class ParseVisitor extends ScopeVisitor
         if (!$property) {
             // Might be added via PHP doc comments, in which case we still want
             // to handle it
-            $property_fqsen = FullyQualifiedPropertyName::make(
-                $class->getFQSEN(),
-                $parameter->getName()
-            );
-            if ($this->code_base->hasPropertyWithFQSEN($property_fqsen)) {
-                $old_property = $this->code_base->getPropertyByFQSEN($property_fqsen);
-                if ($old_property->getDefiningFQSEN() === $property_fqsen
-                    && $old_property->isFromPHPDoc()
-                ) {
-                    $property = $old_property;
-                }
-            }
+            $property = $this->getPHPDocPropertyDeclaredByClass($class, $parameter->getName());
         }
         if (!$property) {
             return;
@@ -642,6 +643,7 @@ class ParseVisitor extends ScopeVisitor
                 $default_node
             ));
         }
+        $this->handlePropertyCustomAnnotations($class, $property, $property_comment);
     }
 
     /**
@@ -726,13 +728,80 @@ class ParseVisitor extends ScopeVisitor
                 $attributes,
                 false
             );
+            if (!$property) {
+                // The doc comment of the class declared the property with (at)property, which takes precedence:
+                // the custom annotations of this declaration are recorded for that property.
+                // (Not for a second declaration of the same property, which is PhanRedefineProperty.)
+                $phpdoc_property = $this->getPHPDocPropertyDeclaredByClass($class, $property_name);
+                if ($phpdoc_property) {
+                    $this->handlePropertyCustomAnnotations($class, $phpdoc_property, $comment);
+                }
+                continue;
+            }
             // Parse property hooks (PHP 8.4+)
-            if ($hooks_node instanceof Node && $property) {
+            if ($hooks_node instanceof Node) {
                 $this->parsePropertyHooks($property, $hooks_node, $default_node);
             }
+            // A comment shared by several properties (`public $a, $b;`) is handled for each of them.
+            $this->handlePropertyCustomAnnotations($class, $property, $comment);
         }
 
         return $this->context;
+    }
+
+    /**
+     * Returns the property $property_name that the doc comment of $class declared with (at)property, if there is one.
+     * addProperty() returns null for a declaration of such a property in the class: the property from the doc comment
+     * takes precedence.
+     */
+    private function getPHPDocPropertyDeclaredByClass(Clazz $class, string $property_name): ?Property
+    {
+        $property_fqsen = FullyQualifiedPropertyName::make(
+            $class->getFQSEN(),
+            $property_name
+        );
+        if (!$this->code_base->hasPropertyWithFQSEN($property_fqsen)) {
+            return null;
+        }
+        $property = $this->code_base->getPropertyByFQSEN($property_fqsen);
+        if ($property->getDefiningFQSEN() !== $property_fqsen || !$property->isFromPHPDoc()) {
+            return null;
+        }
+        return $property;
+    }
+
+    /**
+     * Calls the plugins that declared the annotations of $comment (CustomAnnotationCapability), once $element
+     * (the element that $comment belongs to) has been added to the code base.
+     */
+    private function handleCustomAnnotations(AddressableElementInterface $element, ?Comment $comment): void
+    {
+        if ($comment && $comment->getCustomAnnotations()) {
+            ConfigPluginSet::instance()->handleCustomAnnotations($this->code_base, $element, $comment);
+        }
+    }
+
+    /**
+     * Records the annotations that plugins declared in the doc comment of $property in $class, which declares it,
+     * and calls the plugins (CustomAnnotationCapability).
+     */
+    private function handlePropertyCustomAnnotations(Clazz $class, Property $property, Comment $comment): void
+    {
+        $custom_annotations = $comment->getCustomAnnotations();
+        if ($custom_annotations) {
+            if ($property->isFromPHPDoc()) {
+                // $comment belongs to a declaration of a property that the doc comment of the class declared with
+                // (at)property, which takes precedence: addProperty() did not give the suppressions of $comment to it.
+                // Add them, so that they apply to the issues that the plugins emit for the property.
+                $suppress_issue_set = $comment->getSuppressIssueSet();
+                if ($suppress_issue_set) {
+                    $property->setSuppressIssueSet($property->getSuppressIssueList() + $suppress_issue_set);
+                }
+            }
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $class->setCustomAnnotationsOfProperty($property->getName(), $custom_annotations);
+            ConfigPluginSet::instance()->handleCustomAnnotations($this->code_base, $property, $comment);
+        }
     }
 
     /**
@@ -1379,6 +1448,7 @@ class ParseVisitor extends ScopeVisitor
             $constant->setNodeForValue($value_node);
 
             $class->addConstant($this->code_base, $constant);
+            $this->handleCustomAnnotations($constant, $comment);
         }
 
         return $this->context;
@@ -1487,6 +1557,7 @@ class ParseVisitor extends ScopeVisitor
         $constant->setHasDeclaredType(true);
 
         $class->addEnumCase($this->code_base, $constant);
+        $this->handleCustomAnnotations($constant, $comment);
 
         foreach ($comment->getVariableList() as $var) {
             if ($var->getUnionType()->hasTemplateTypeRecursive()) {
@@ -1666,9 +1737,11 @@ class ParseVisitor extends ScopeVisitor
                 $code_base->addFunction($func_variant);
                 // Notify plugins about the stub-loaded function (e.g., for CallableParamPlugin)
                 $code_base->notifyPluginsOnInternalFunctionLoad($func_variant);
+                $this->handleCustomAnnotations($func_variant, $func_variant->getComment());
             }
         } else {
             $code_base->addFunction($func);
+            $this->handleCustomAnnotations($func, $func->getComment());
         }
 
         // Track function declaration for incremental analysis
@@ -1707,6 +1780,7 @@ class ParseVisitor extends ScopeVisitor
         );
 
         $this->code_base->addFunction($func);
+        $this->handleCustomAnnotations($func, $func->getComment());
 
         // Send the context into the function and reset the scope
         // (E.g. to properly check for the presence of `return` statements.
@@ -2090,6 +2164,11 @@ class ParseVisitor extends ScopeVisitor
 
         $constant->setIsDeprecated($comment->isDeprecated());
         $constant->setIsNSInternal($comment->isNSInternal());
+        $custom_annotations = $comment->getCustomAnnotations();
+        if ($custom_annotations) {
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $constant->setCustomAnnotations($custom_annotations);
+        }
 
         if ($primary_constant) {
             $primary_constant->addAlternateDeclaration($constant);
@@ -2104,6 +2183,9 @@ class ParseVisitor extends ScopeVisitor
             $code_base->addGlobalConstant(
                 $constant
             );
+        }
+        if ($custom_annotations) {
+            ConfigPluginSet::instance()->handleCustomAnnotations($code_base, $constant, $comment);
         }
 
         // Track constant declaration for incremental analysis

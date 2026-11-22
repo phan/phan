@@ -462,5 +462,5 @@ Extended help:
   Exit immediately with an error code if `.phan/config.php` does not exist.
 
  --help-annotations
-  Print details on annotations supported by Phan.
+  Print details on annotations supported by Phan and by the configured plugins.
 ```

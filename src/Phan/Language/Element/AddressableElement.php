@@ -9,6 +9,7 @@ use Closure;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
+use Phan\Language\Element\Comment\CustomAnnotation;
 use Phan\Language\FileRef;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
@@ -322,6 +323,18 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     public function getDocComment(): ?string
     {
         return $this->doc_comment;
+    }
+
+    /**
+     * Returns the annotations that plugins declared (CustomAnnotationCapability) in the doc comment of the declaration
+     * of this element. The subclasses of Phan override this.
+     *
+     * @return list<CustomAnnotation>
+     * @unused-param $code_base
+     */
+    public function getCustomAnnotations(CodeBase $code_base): array
+    {
+        return [];
     }
 
     /**
