@@ -1,0 +1,1 @@
+%s:21 PhanParamTooManyInternal Call with 5 arg(s) to \hash_file(string $algo, string $filename, bool $binary = false, array $options = []) which only takes 4 arg(s). This would throw an ArgumentCountError.

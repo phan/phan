@@ -90,6 +90,14 @@ return [
       'old' => ['resource|false', 'path'=>'string', 'mode'=>'string', 'handler='=>'?string', '...handler_params='=>'string'],
       'new' => ['resource|false', 'path'=>'string', 'mode'=>'string', 'handler='=>'?string', 'permission='=>'int', 'map_size='=>'int', 'flags='=>'?int'],
     ],
+    'dba_popen' => [
+      'old' => ['resource', 'path'=>'string', 'mode'=>'string', 'handler='=>'string', '...handler_params='=>'string'],
+      'new' => ['resource', 'path'=>'string', 'mode'=>'string', 'handler='=>'string', 'permission='=>'string', 'map_size='=>'int', 'flags='=>'?int'],
+    ],
+    'gmp::__construct' => [
+      'old' => ['void'],
+      'new' => ['void', 'num='=>'string|int', 'base='=>'int'],
+    ],
     'iterator_apply' => [
       'old' => ['int', 'iterator'=>'Traversable', 'callback'=>'callable(mixed):bool', 'args='=>'array'],
       'new' => ['int', 'iterator'=>'Traversable|array|iterable', 'callback'=>'callable(mixed):bool', 'args='=>'array'],
@@ -103,12 +111,16 @@ return [
       'new' => ['array', 'iterator'=>'Traversable|array|iterable', 'preserve_keys='=>'bool'],
     ],
     'iteratoriterator::__construct' => [
-      'old' => ['void', 'iterator'=>'Traversable'],
-      'new' => ['void', 'iterator'=>'Traversable|array|iterable'],
+      'old' => ['void', 'iterator'=>'Traversable', 'class='=>'?string'],
+      'new' => ['void', 'iterator'=>'Traversable|array|iterable', 'class='=>'?string'],
     ],
     'pg_close' => [
       'old' => ['bool', 'connection='=>'?pgsql\connection'],
       'new' => ['true', 'connection='=>'?pgsql\connection'],
+    ],
+    'register_shutdown_function' => [
+      'old' => ['?bool', 'callback'=>'callable():void', '...args='=>'mixed'],
+      'new' => ['void', 'callback'=>'callable():void', '...args='=>'mixed'],
     ],
   ],
   'removed' => [

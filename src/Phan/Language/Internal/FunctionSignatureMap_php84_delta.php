@@ -64,13 +64,33 @@ return [
       'sodium_crypto_aead_aegis128l_keygen' => ['string'],
   ],
   'changed' => [
+      'bind_textdomain_codeset' => [
+          'old' => ['string', 'domain'=>'string', 'codeset'=>'string'],
+          'new' => ['string', 'domain'=>'string', 'codeset='=>'string'],
+      ],
+      'bindtextdomain' => [
+          'old' => ['string', 'domain'=>'string', 'directory'=>'string'],
+          'new' => ['string', 'domain'=>'string', 'directory='=>'string'],
+      ],
       'exit' => [
           'old' => ['', 'status='=>'string|int'],
           'new' => ['never', 'status='=>'string|int'],
       ],
+      'openssl_csr_sign' => [
+          'old' => ['OpenSSLCertificate|false', 'csr'=>'string|OpenSSLCertificateSigningRequest', 'ca_certificate'=>'string|OpenSSLCertificate|null', 'private_key'=>'string|OpenSSLAsymmetricKey|OpenSSLCertificate|array', 'days'=>'int', 'options='=>'array', 'serial='=>'int'],
+          'new' => ['OpenSSLCertificate|false', 'csr'=>'string|OpenSSLCertificateSigningRequest', 'ca_certificate'=>'string|OpenSSLCertificate|null', 'private_key'=>'string|OpenSSLAsymmetricKey|OpenSSLCertificate|array', 'days'=>'int', 'options='=>'array', 'serial='=>'int', 'serial_hex='=>'?string'],
+      ],
+      'pg_select' => [
+          'old' => ['string|bool', 'connection'=>'pgsql\connection', 'table_name'=>'string', 'conditions'=>'array', 'flags='=>'int', 'mode='=>'int'],
+          'new' => ['string|bool', 'connection'=>'pgsql\connection', 'table_name'=>'string', 'conditions='=>'array', 'flags='=>'int', 'mode='=>'int'],
+      ],
       'round' => [
           'old' => ['float', 'num'=>'float', 'precision='=>'int', 'mode='=>'int'],
-          'new' => ['float', 'num'=>'float', 'precision='=>'int', 'mode='=>'int|\\RoundingMode'],
+          'new' => ['float', 'num'=>'float', 'precision='=>'int', 'mode='=>'int|\RoundingMode'],
+      ],
+      'textdomain' => [
+          'old' => ['string', 'domain'=>'string'],
+          'new' => ['string', 'domain='=>'string'],
       ],
   ],
   'removed' => [
