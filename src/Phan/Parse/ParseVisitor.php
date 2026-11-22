@@ -789,6 +789,15 @@ class ParseVisitor extends ScopeVisitor
     {
         $custom_annotations = $comment->getCustomAnnotations();
         if ($custom_annotations) {
+            if ($property->isFromPHPDoc()) {
+                // $comment belongs to a declaration of a property that the doc comment of the class declared with
+                // (at)property, which takes precedence: addProperty() did not give the suppressions of $comment to it.
+                // Add them, so that they apply to the issues that the plugins emit for the property.
+                $suppress_issue_set = $comment->getSuppressIssueSet();
+                if ($suppress_issue_set) {
+                    $property->setSuppressIssueSet($property->getSuppressIssueList() + $suppress_issue_set);
+                }
+            }
             // @phan-suppress-next-line PhanAccessMethodInternal
             $class->setCustomAnnotationsOfProperty($property->getName(), $custom_annotations);
             ConfigPluginSet::instance()->handleCustomAnnotations($this->code_base, $property, $comment);

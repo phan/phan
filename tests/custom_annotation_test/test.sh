@@ -9,8 +9,8 @@
 # and with --processes 2 if pcntl is available. Each run must print the expected output, verify mode must find no violation,
 # the extended state digests of the runs without lazy entries and in verify mode must be identical, and the run with
 # lazy entries must have created a copy of a method lazily.
-# Then it checks the output of --help-annotations, and that Phan fails to load a plugin that declares a name
-# without the prefix phan-x- or not in lowercase.
+# Then it checks the issues of UnusedSuppressionPlugin, the output of --help-annotations, and that Phan fails to load
+# a plugin that declares a name without the prefix phan-x- or not in lowercase.
 EXPECTED_PATH=expected/all_output.expected
 if [ ! -d expected  ]; then
 	echo "Error: must run this script from tests/custom_annotation_test folder" 1>&2
@@ -107,6 +107,17 @@ if "$PHP_BINARY" -r 'exit(function_exists("pcntl_fork") ? 0 : 1);'; then
 	done
 else
 	echo "Skipping the runs with --processes 2 (pcntl is not available)"
+fi
+
+# UnusedSuppressionPlugin (with one process only): the suppressions of a declaration with custom annotations,
+# of a property that the class also declares with @property, are given to that property, and the unused ones are reported.
+echo "Checking the output of UnusedSuppressionPlugin ..."
+../../phan --no-progress-bar --memory-limit 1G --plugin UnusedSuppressionPlugin > "$TMP_DIR/unused_suppression.out" 2> "$TMP_DIR/unused_suppression.err"
+sed -i -e 's/src\\/src\//g' "$TMP_DIR/unused_suppression.out"
+grep ' UnusedSuppression ' "$TMP_DIR/unused_suppression.out" > "$TMP_DIR/unused_suppression.actual"
+if ! diff expected/unused_suppression.expected "$TMP_DIR/unused_suppression.actual"; then
+	echo "The UnusedSuppression issues differ from expected/unused_suppression.expected" 1>&2
+	FAILURES=$((FAILURES + 1))
 fi
 
 # --help-annotations prints (to stderr) the annotations of Phan, then those that the plugins declare.
