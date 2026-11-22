@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Phan\Language\Element\Comment;
 
 /**
- * An occurrence of an annotation that a plugin declared with CustomAnnotationCapability, e.g. `(at)phan-my-assert $x`.
+ * An occurrence of an annotation that a plugin declared with CustomAnnotationCapability, e.g. `(at)phan-x-my-assert $x`.
  *
- * - getName() is the name of the annotation in lowercase, without `@` (e.g. `phan-my-assert`).
- * - getText() is the text after the name, trimmed. For `(at)phan-my-assert $x` it is the rest of the line,
- *   without the `*` + `/` that ends a doc comment on one line. For the inline form `{(at)phan-my-assert $x}`,
+ * - getName() is the name of the annotation in lowercase, without `@` (e.g. `phan-x-my-assert`).
+ * - getText() is the text after the name, trimmed. For `(at)phan-x-my-assert $x` it is the rest of the line,
+ *   without the `*` + `/` that ends a doc comment on one line. For the inline form `{(at)phan-x-my-assert $x}`,
  *   it is the text before the `}` that closes the tag (braces in the text must be balanced), or the rest of the line
  *   if there is no such `}`. The text does not continue on the next lines of the doc comment.
  * - getLineno() is the line of the annotation in the file.
@@ -36,7 +36,7 @@ final class CustomAnnotation
     }
 
     /**
-     * Returns the name of the annotation in lowercase, without '@' (e.g. 'phan-my-assert').
+     * Returns the name of the annotation in lowercase, without '@' (e.g. 'phan-x-my-assert').
      */
     public function getName(): string
     {
@@ -60,7 +60,7 @@ final class CustomAnnotation
     }
 
     /**
-     * Returns the annotation as it could be written, e.g. '@phan-my-assert $x'.
+     * Returns the annotation as it could be written, e.g. '@phan-x-my-assert $x'.
      */
     public function __toString(): string
     {

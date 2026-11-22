@@ -4,70 +4,70 @@
 // and getCustomAnnotations() of the element returns it in the analysis phase (PhanPluginCustomAnnotationRead).
 
 /**
- * @phan-test-mark on the class
+ * @phan-x-test-mark on the class
  */
 class AnnotatedClass
 {
-    /** @phan-test-mark on a class constant */
+    /** @phan-x-test-mark on a class constant */
     public const MARKED = 1;
 
     /**
-     * @phan-test-mark on a property
+     * @phan-x-test-mark on a property
      */
     public $marked_property = 1;
 
-    /** @phan-test-mark on a static property */
+    /** @phan-x-test-mark on a static property */
     public static $marked_static = 2;
 
     public $unmarked_property = 3;
 
     public function __construct(
-        /** @phan-test-mark on a promoted property */
+        /** @phan-x-test-mark on a promoted property */
         public int $promoted = 0
     ) {
     }
 
     /**
      * @param int $x
-     * @phan-test-mark on a method
+     * @phan-x-test-mark on a method
      */
     public function markedMethod(int $x): int
     {
         return $x;
     }
 
-    /** @phan-test-mark on a static method */
+    /** @phan-x-test-mark on a static method */
     public static function markedStaticMethod(): void
     {
     }
 }
 
-/** @phan-test-mark on the interface */
+/** @phan-x-test-mark on the interface */
 interface AnnotatedInterface
 {
-    /** @phan-test-mark on an interface method */
+    /** @phan-x-test-mark on an interface method */
     public function interfaceMethod(): void;
 }
 
-/** @phan-test-mark on the trait */
+/** @phan-x-test-mark on the trait */
 trait AnnotatedTrait
 {
 }
 
-/** @phan-test-mark on the enum */
+/** @phan-x-test-mark on the enum */
 enum AnnotatedEnum: string
 {
-    /** @phan-test-mark on an enum case */
+    /** @phan-x-test-mark on an enum case */
     case First = 'first';
 
-    /** @phan-test-mark on an enum constant */
+    /** @phan-x-test-mark on an enum constant */
     public const OTHER = 'other';
 }
 
-/** @phan-test-mark on a global constant */
+/** @phan-x-test-mark on a global constant */
 const ANNOTATED_CONSTANT = 3;
 
-/** @phan-test-mark on a function */
+/** @phan-x-test-mark on a function */
 function annotated_function(): int
 {
     return 1;
@@ -75,10 +75,10 @@ function annotated_function(): int
 
 function use_elements(AnnotatedClass $a, AnnotatedInterface $i): void
 {
-    $closure = /** @phan-test-mark on a closure */ function (): int {
+    $closure = /** @phan-x-test-mark on a closure */ function (): int {
         return 1;
     };
-    $arrow = /** @phan-test-mark on an arrow function */ fn(): int => 2;
+    $arrow = /** @phan-x-test-mark on an arrow function */ fn(): int => 2;
     echo $closure() + $arrow();
     echo $a->markedMethod(1);
     AnnotatedClass::markedStaticMethod();

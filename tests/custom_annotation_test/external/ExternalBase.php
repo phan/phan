@@ -4,13 +4,13 @@
 // (The issues that the plugins emit for this file in the parse phase are not reported.)
 class ExternalBase
 {
-    /** @phan-test-mark on an external constant */
+    /** @phan-x-test-mark on an external constant */
     public const EXTERNAL_CONSTANT = 1;
 
-    /** @phan-test-mark on an external property */
+    /** @phan-x-test-mark on an external property */
     public $external_property = 1;
 
-    /** @phan-test-mark on an external method */
+    /** @phan-x-test-mark on an external method */
     public function externalMethod(): void
     {
     }

@@ -14,16 +14,16 @@ use Phan\PluginV3\CustomAnnotationCapability;
 /**
  * The second test plugin of the custom annotation fixture suite (see test.sh), loaded after CustomAnnotationTestPlugin.
  *
- * It declares `(at)phan-test-shared`, which CustomAnnotationTestPlugin declares too (both plugins are called),
- * and `(at)phan-test-second`, and emits PhanPluginCustomAnnotationSecond for each occurrence.
+ * It declares `(at)phan-x-test-shared`, which CustomAnnotationTestPlugin declares too (both plugins are called),
+ * and `(at)phan-x-test-second`, and emits PhanPluginCustomAnnotationSecond for each occurrence.
  */
 final class CustomAnnotationSecondTestPlugin extends PluginV3 implements CustomAnnotationCapability
 {
     public function getCustomAnnotations(): array
     {
         return [
-            'phan-test-shared' => 'Also declared by the first test plugin',
-            'phan-test-second' => 'Declared by the second test plugin',
+            'phan-x-test-shared' => 'Also declared by the first test plugin',
+            'phan-x-test-second' => 'Declared by the second test plugin',
         ];
     }
 

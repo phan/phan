@@ -9,25 +9,34 @@ use Phan\Language\Element\AddressableElementInterface;
 use Phan\Language\Element\Comment\CustomAnnotation;
 
 /**
- * CustomAnnotationCapability lets a plugin declare annotations of its own in doc comments, such as `(at)phan-my-assert $x`.
+ * CustomAnnotationCapability lets a plugin declare annotations of its own in doc comments, such as `(at)phan-x-my-assert $x`.
+ *
+ * The names of these annotations start with `phan-x-` (NAME_PREFIX). Phan does not give a meaning of its own to any name
+ * with that prefix, so a later version of Phan cannot add an annotation with the name of an annotation of a plugin.
  *
  * Phan does not emit PhanMisspelledAnnotation for a declared annotation, lists it in the output of `phan --help-annotations`,
  * calls handleCustomAnnotation() for each occurrence in the parse phase, and keeps the occurrences for the element
  * (AddressableElementInterface::getCustomAnnotations()).
  *
  * The names are matched case-insensitively, like the annotations of Phan itself.
- * Only annotations at the start of a line of a doc comment are recognized, and the inline form `{(at)phan-name ...}`
+ * Only annotations at the start of a line of a doc comment are recognized, and the inline form `{(at)phan-x-name ...}`
  * after another tag at the start of the line (as for the annotations of Phan itself). See CustomAnnotation for the text.
  * Doc comments are only read when the config setting `read_type_annotations` is enabled.
  */
 interface CustomAnnotationCapability
 {
     /**
+     * The prefix of the names of the annotations that plugins declare. Phan does not add annotations with this prefix.
+     */
+    public const NAME_PREFIX = 'phan-x-';
+
+    /**
      * @return array<string,string> maps the name of each annotation that this plugin declares, in lowercase and without `@`
-     * (e.g. `'phan-my-assert'`), to a description of one line for `phan --help-annotations` (may be empty).
+     * (e.g. `'phan-x-my-assert'`), to a description of one line for `phan --help-annotations` (may be empty).
      *
-     * A name must match `/^phan-[a-z0-9_-]+$/` and must not be the name of an annotation of Phan itself (e.g. `phan-param`),
-     * or Phan fails to load the plugins. Several plugins may declare the same name: each of them is called.
+     * A name must be NAME_PREFIX followed by a lowercase letter or digit and then lowercase letters, digits, `_` and `-`
+     * (`/^phan-x-[a-z0-9][a-z0-9_-]*$/`), or Phan fails to load the plugins.
+     * Several plugins may declare the same name: each of them is called.
      * This is called once, when Phan loads the plugins.
      */
     public function getCustomAnnotations(): array;

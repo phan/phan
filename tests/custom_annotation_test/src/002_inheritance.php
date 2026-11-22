@@ -5,21 +5,21 @@
 
 class BaseWithMarks
 {
-    /** @phan-test-mark on a base constant */
+    /** @phan-x-test-mark on a base constant */
     public const INHERITED = 1;
 
-    /** @phan-test-mark on a base property */
+    /** @phan-x-test-mark on a base property */
     public $inherited_property = 1;
 
-    /** @phan-test-mark on a base static property */
+    /** @phan-x-test-mark on a base static property */
     public static $inherited_static = 2;
 
-    /** @phan-test-mark on a base method */
+    /** @phan-x-test-mark on a base method */
     public function inheritedMethod(): void
     {
     }
 
-    /** @phan-test-mark on a base method that the child overrides */
+    /** @phan-x-test-mark on a base method that the child overrides */
     public function overridden(): void
     {
     }
@@ -37,25 +37,25 @@ class GrandChild extends ChildWithoutMarks
 {
 }
 
-/** @phan-test-mark on a trait with members */
+/** @phan-x-test-mark on a trait with members */
 trait MarkedMembers
 {
-    /** @phan-test-mark on a trait constant */
+    /** @phan-x-test-mark on a trait constant */
     public const TRAIT_CONSTANT = 2;
 
-    /** @phan-test-mark on a trait property */
+    /** @phan-x-test-mark on a trait property */
     public $trait_property = 1;
 
-    /** @phan-test-mark on a private trait property */
+    /** @phan-x-test-mark on a private trait property */
     private $private_trait_property = 1;
 
-    /** @phan-test-mark on a trait method */
+    /** @phan-x-test-mark on a trait method */
     public function traitMethod(): int
     {
         return $this->private_trait_property;
     }
 
-    /** @phan-test-mark on a static trait method */
+    /** @phan-x-test-mark on a static trait method */
     public static function staticTraitMethod(): void
     {
     }

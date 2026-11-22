@@ -157,8 +157,9 @@ use Phan\PluginV3\IssueEmitter;
  *     (implement \Phan\PluginV3\ConditionalCallCapability)
  * 24. public function getCustomAnnotations() : array<string,string>
  *     public function handleCustomAnnotation(CodeBase $code_base, AddressableElementInterface $element, CustomAnnotation $annotation) : void
- *     Declares annotations of the plugin in doc comments, such as `(at)phan-my-assert $x`: getCustomAnnotations() maps
- *     each name (lowercase, without `(at)`, matching `phan-[a-z0-9_-]+`) to a description for `phan --help-annotations`.
+ *     Declares annotations of the plugin in doc comments, such as `(at)phan-x-my-assert $x`: getCustomAnnotations() maps
+ *     each name (lowercase, without `(at)`, starting with `phan-x-`, which Phan does not use for annotations of its own)
+ *     to a description for `phan --help-annotations`.
  *     Phan does not emit PhanMisspelledAnnotation for these names, and calls handleCustomAnnotation() in the parse phase
  *     for each occurrence, once the element that the doc comment belongs to exists.
  *     AddressableElementInterface::getCustomAnnotations() returns the annotations of an element later (also for inherited copies).

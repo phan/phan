@@ -9,8 +9,8 @@
 # and with --processes 2 if pcntl is available. Each run must print the expected output, verify mode must find no violation,
 # the extended state digests of the runs without lazy entries and in verify mode must be identical, and the run with
 # lazy entries must have created a copy of a method lazily.
-# Then it checks the output of --help-annotations, and that Phan fails to load a plugin that declares an invalid name
-# or the name of an annotation of Phan.
+# Then it checks the output of --help-annotations, and that Phan fails to load a plugin that declares a name
+# without the prefix phan-x- or not in lowercase.
 EXPECTED_PATH=expected/all_output.expected
 if [ ! -d expected  ]; then
 	echo "Error: must run this script from tests/custom_annotation_test folder" 1>&2
@@ -143,12 +143,13 @@ function expect_plugin_failure {
 		FAILURES=$((FAILURES + 1))
 	fi
 }
-INVALID_NAME_MESSAGE='Plugin InvalidNameTestPlugin declares the annotation "phan-Invalid-Name" in getCustomAnnotations(): the name of an annotation must match /^phan-[a-z0-9_-]+$/'
-BUILTIN_NAME_MESSAGE='Plugin BuiltinNameTestPlugin declares the annotation "phan-param" in getCustomAnnotations(), which is an annotation of Phan itself'
+RULE="the name of an annotation declared by a plugin must start with 'phan-x-', followed by a lowercase letter or digit and then lowercase letters, digits, '_' or '-' (/^phan-x-[a-z0-9][a-z0-9_-]*\$/, without '@')"
+INVALID_NAME_MESSAGE="Plugin InvalidNameTestPlugin declares the annotation \"phan-x-Invalid-Name\" in getCustomAnnotations(): $RULE"
+UNPREFIXED_NAME_MESSAGE="Plugin UnprefixedNameTestPlugin declares the annotation \"phan-my-assert\" in getCustomAnnotations(): $RULE"
 expect_plugin_failure invalid_name "$INVALID_NAME_MESSAGE" --plugin invalid_plugins/InvalidNameTestPlugin.php
-expect_plugin_failure builtin_name "$BUILTIN_NAME_MESSAGE" --plugin invalid_plugins/BuiltinNameTestPlugin.php
+expect_plugin_failure unprefixed_name "$UNPREFIXED_NAME_MESSAGE" --plugin invalid_plugins/UnprefixedNameTestPlugin.php
 expect_plugin_failure help_invalid_name "$INVALID_NAME_MESSAGE" --help-annotations --plugin invalid_plugins/InvalidNameTestPlugin.php
-expect_plugin_failure help_builtin_name "$BUILTIN_NAME_MESSAGE" -n --help-annotations --plugin invalid_plugins/BuiltinNameTestPlugin.php
+expect_plugin_failure help_unprefixed_name "$UNPREFIXED_NAME_MESSAGE" -n --help-annotations --plugin invalid_plugins/UnprefixedNameTestPlugin.php
 
 if [[ "$FAILURES" != 0 ]]; then
 	echo "$FAILURES check(s) of the custom annotation fixture suite failed" 1>&2

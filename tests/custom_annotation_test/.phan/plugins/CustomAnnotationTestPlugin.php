@@ -38,9 +38,9 @@ final class CustomAnnotationTestPlugin extends PluginV3 implements CustomAnnotat
     public function getCustomAnnotations(): array
     {
         return [
-            'phan-test-mark' => 'Marks an element for the test plugin',
-            'phan-test-shared' => 'Declared by both test plugins',
-            'phan-test-empty' => '',
+            'phan-x-test-mark' => 'Marks an element for the test plugin',
+            'phan-x-test-shared' => 'Declared by both test plugins',
+            'phan-x-test-empty' => '',
         ];
     }
 

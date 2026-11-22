@@ -27,11 +27,13 @@ use Phan\Library\FileCache;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Phan;
 use Phan\Plugin\ConfigPluginSet;
+use Phan\PluginV3\CustomAnnotationCapability;
 use Phan\Tests\TestBase;
 
 /**
- * Tests of CustomAnnotationCapability that tests/custom_annotation_test does not cover: the text of the forms of an
- * annotation, the checks of the declared names, and the annotations after a file is parsed again in daemon mode.
+ * Tests of CustomAnnotationCapability that tests/custom_annotation_test does not cover: the prefix of the names,
+ * the text of the forms of an annotation, the checks of the declared names, and the annotations after a file is parsed
+ * again in daemon mode.
  *
  * @phan-file-suppress PhanThrowTypeAbsentForCall, PhanAccessMethodInternal, PhanAccessClassConstantInternal
  */
@@ -83,7 +85,7 @@ PHP;
         Config::reset();
         ConfigPluginSet::reset();
         Phan::setIssueCollector(new BufferingCollector());
-        $GLOBALS[self::NAMES_KEY] = ['phan-x' => 'The test annotation'];
+        $GLOBALS[self::NAMES_KEY] = ['phan-x-a' => 'The test annotation'];
         $GLOBALS[self::CALLS_KEY] = [];
         $this->mtime = \time() - 1000;
     }
@@ -168,25 +170,58 @@ PHP;
     }
 
     /**
-     * Every annotation that Builder handles is an annotation of Phan, which plugins cannot declare.
+     * The files other than Builder.php that give a meaning to annotations starting with `phan-`
+     * (in string literals used as statements, in suppression comments, and in doc comments read by a plugin).
      */
-    public function testAnnotationsOfPhanAreReserved(): void
+    private const OTHER_FILES_WITH_PHAN_ANNOTATIONS = [
+        'src/Phan/BlockAnalysisVisitor.php',
+        'src/Phan/Parse/ParseVisitor.php',
+        'src/Phan/Plugin/Internal/BuiltinSuppressionPlugin.php',
+        '.phan/plugins/SleepCheckerPlugin.php',
+    ];
+
+    /**
+     * Phan gives no meaning of its own to the names with the prefix of the annotations of plugins.
+     */
+    public function testPhanDoesNotUseThePrefixOfPlugins(): void
     {
-        $source = \file_get_contents(\dirname(__DIR__, 3) . '/src/Phan/Language/Element/Comment/Builder.php');
+        $prefix = CustomAnnotationCapability::NAME_PREFIX;
+        $this->assertSame('phan-x-', $prefix);
+        $root = \dirname(__DIR__, 3);
+        $builder_path = $root . '/src/Phan/Language/Element/Comment/Builder.php';
+        $source = \file_get_contents($builder_path);
         $this->assertIsString($source);
         \preg_match_all("/case '(phan-[a-z0-9_-]+)':/", $source, $matches);
         $this->assertNotEmpty($matches[1]);
         foreach ($matches[1] as $name) {
-            $this->assertTrue(Builder::isPhanAnnotationName($name), "$name is handled by Builder but not reserved");
+            $this->assertStringStartsNotWith($prefix, $name, "Builder handles $name");
         }
         foreach (Builder::SUPPORTED_ANNOTATIONS as $annotation => $_) {
-            $this->assertTrue(Builder::isPhanAnnotationName(\substr($annotation, 1)), "$annotation is not reserved");
+            $this->assertStringStartsNotWith('@' . $prefix, $annotation);
         }
-        foreach (['phan-debug-var', 'phan-var-force', 'phan-output-reference', 'phan-ignore-reference', 'phan-mandatory-param'] as $name) {
-            $this->assertTrue(Builder::isPhanAnnotationName($name), "$name is not reserved");
+        // No string literal of these files (which includes their regular expressions) contains the prefix.
+        foreach (\array_merge([$builder_path], \array_map(static fn(string $path): string => "$root/$path", self::OTHER_FILES_WITH_PHAN_ANNOTATIONS)) as $path) {
+            $contents = \file_get_contents($path);
+            $this->assertIsString($contents, $path);
+            $this->assertStringContainsString('phan-', $contents, $path);
+            foreach (\token_get_all($contents) as $token) {
+                if (\is_array($token) && \in_array($token[0], [\T_CONSTANT_ENCAPSED_STRING, \T_ENCAPSED_AND_WHITESPACE], true)) {
+                    $this->assertStringNotContainsStringIgnoringCase($prefix, $token[1], "$path:$token[2]");
+                }
+            }
         }
-        $this->assertFalse(Builder::isPhanAnnotationName('phan-my-assert'));
-        $this->assertFalse(Builder::isPhanAnnotationName('phan-param-x'));
+        // An annotation with the prefix that no plugin declares is reported as misspelled.
+        $collector = new BufferingCollector();
+        Phan::setIssueCollector($collector);
+        $this->assertSame([], self::annotationsOf("/**\n * @phan-x-param int \$x\n * @phan-x-suppress PhanUndeclaredClass\n */"));
+        $messages = \array_map(static function (IssueInstance $instance): string {
+            return $instance->getIssue()->getType() . ' ' . \explode(' The annotations', $instance->getMessage())[0];
+        }, $collector->getCollectedIssues());
+        \sort($messages);
+        $this->assertSame([
+            Issue::MisspelledAnnotation . ' Saw misspelled annotation @phan-x-param.',
+            Issue::MisspelledAnnotation . ' Saw misspelled annotation @phan-x-suppress.',
+        ], $messages);
     }
 
     /**
@@ -209,22 +244,38 @@ PHP;
      */
     public static function invalidDeclarationProvider(): array
     {
-        $pattern = 'the name of an annotation must match /^phan-[a-z0-9_-]+$/';
-        $reserved = 'which is an annotation of Phan itself';
+        $rule = " in getCustomAnnotations(): the name of an annotation declared by a plugin must start with 'phan-x-', "
+            . "followed by a lowercase letter or digit and then lowercase letters, digits, '_' or '-' (/^phan-x-[a-z0-9][a-z0-9_-]*$/, without '@')";
         return [
-            [['phan-Upper' => ''], '"phan-Upper" in getCustomAnnotations(): ' . $pattern],
-            [['@phan-x' => ''], '"@phan-x" in getCustomAnnotations(): ' . $pattern],
-            [['my-assert' => ''], '"my-assert" in getCustomAnnotations(): ' . $pattern],
-            [['phan-' => ''], '"phan-" in getCustomAnnotations(): ' . $pattern],
-            [['phan-x y' => ''], '"phan-x y" in getCustomAnnotations(): ' . $pattern],
-            [['phan-x' => '', 'psalm-x' => ''], '"psalm-x" in getCustomAnnotations(): ' . $pattern],
-            [[0 => 'phan-x'], '0 in getCustomAnnotations(): ' . $pattern],
-            [['phan-param' => ''], '"phan-param" in getCustomAnnotations(), ' . $reserved],
-            [['phan-suppress-next-line' => ''], '"phan-suppress-next-line" in getCustomAnnotations(), ' . $reserved],
-            [['phan-immutable' => ''], '"phan-immutable" in getCustomAnnotations(), ' . $reserved],
-            [['phan-debug-var' => ''], '"phan-debug-var" in getCustomAnnotations(), ' . $reserved],
-            [['phan-x' => null], "must map the annotation 'phan-x' to a string"],
+            // Without the prefix
+            [['phan-my-assert' => ''], '"phan-my-assert"' . $rule],
+            [['my-assert' => ''], '"my-assert"' . $rule],
+            // An annotation of Phan is rejected by the same rule
+            [['phan-param' => ''], '"phan-param"' . $rule],
+            // The prefix alone, or without its last character
+            [['phan-x-' => ''], '"phan-x-"' . $rule],
+            [['phan-x' => ''], '"phan-x"' . $rule],
+            // Not in lowercase
+            [['phan-x-Upper' => ''], '"phan-x-Upper"' . $rule],
+            [['PHAN-X-UPPER' => ''], '"PHAN-X-UPPER"' . $rule],
+            // With '@'
+            [['@phan-x-a' => ''], '"@phan-x-a"' . $rule],
+            // Other characters
+            [['phan-x-a b' => ''], '"phan-x-a b"' . $rule],
+            [['phan-x-a.b' => ''], '"phan-x-a.b"' . $rule],
+            [['phan-x--a' => ''], '"phan-x--a"' . $rule],
+            [['phan-x-a' => '', 'phan-x-é' => ''], '"phan-x-é"' . $rule],
+            // Not a string
+            [[0 => 'phan-x-a'], '0' . $rule],
+            [['phan-x-a' => null], "must map the annotation 'phan-x-a' to a string"],
         ];
+    }
+
+    public function testValidDeclaration(): void
+    {
+        $GLOBALS[self::NAMES_KEY] = ['phan-x-a' => '', 'phan-x-0' => '', 'phan-x-my_assert-2' => 'Description'];
+        $this->loadPlugin();
+        $this->assertSame(['phan-x-a', 'phan-x-0', 'phan-x-my_assert-2'], \array_keys(ConfigPluginSet::instance()->getCustomAnnotationPluginMap()));
     }
 
     /**
@@ -241,36 +292,43 @@ PHP;
     public function testTextOfTheForms(): void
     {
         $this->loadPlugin();
-        $this->assertSame(['phan-x|'], self::annotationsOf('/** @phan-x */'));
-        $this->assertSame(['phan-x|a  b'], self::annotationsOf('/** @phan-x a  b**/'));
-        $this->assertSame(['phan-x|Upper case'], self::annotationsOf("/**\n * @PHAN-X Upper case\n */"));
+        $this->assertSame(['phan-x-a|'], self::annotationsOf('/** @phan-x-a */'));
+        $this->assertSame(['phan-x-a|a  b'], self::annotationsOf('/** @phan-x-a a  b**/'));
+        $this->assertSame(['phan-x-a|Upper case'], self::annotationsOf("/**\n * @PHAN-X-A Upper case\n */"));
         // The inline form ends before the brace that closes the tag.
-        $this->assertSame(['phan-x|inline {nested}'], self::annotationsOf("/**\n * @see {@phan-x inline {nested}} rest\n */"));
-        $this->assertSame(['phan-x|unclosed {brace'], self::annotationsOf("/**\n * @see {@phan-x unclosed {brace\n */"));
+        $this->assertSame(['phan-x-a|inline {nested}'], self::annotationsOf("/**\n * @see {@phan-x-a inline {nested}} rest\n */"));
+        $this->assertSame(['phan-x-a|unclosed {brace'], self::annotationsOf("/**\n * @see {@phan-x-a unclosed {brace\n */"));
         // A line that does not start with a tag is not read, as for the annotations of Phan.
-        $this->assertSame([], self::annotationsOf("/**\n * {@phan-x at the start of the line}\n * Text @phan-x in the text\n */"));
+        $this->assertSame([], self::annotationsOf("/**\n * {@phan-x-a at the start of the line}\n * Text @phan-x-a in the text\n */"));
         // Only the first tag of a line is read, as for the annotations of Phan.
-        $this->assertSame(['phan-x|one @phan-x two'], self::annotationsOf("/**\n * @phan-x one @phan-x two\n */"));
+        $this->assertSame(['phan-x-a|one @phan-x-a two'], self::annotationsOf("/**\n * @phan-x-a one @phan-x-a two\n */"));
         // The text does not continue on the next line.
-        $this->assertSame(['phan-x|first', 'phan-x|second'], self::annotationsOf("/**\n * @phan-x first\n *   continued\n * @phan-x second\n */"));
-        // A name ends before a character that cannot be part of it, as for the annotations of Phan.
-        $this->assertSame(['phan-x|.y'], self::annotationsOf("/**\n * @phan-x.y\n * @phan-x-y\n */"));
+        $this->assertSame(['phan-x-a|first', 'phan-x-a|second'], self::annotationsOf("/**\n * @phan-x-a first\n *   continued\n * @phan-x-a second\n */"));
+        // A name ends before a character that cannot be part of it, as for the annotations of Phan:
+        // a longer name that starts with the declared name is another annotation.
+        $this->assertSame(['phan-x-a|.y'], self::annotationsOf("/**\n * @phan-x-a.y\n * @phan-x-a-y\n * @phan-x-ab\n */"));
         $this->assertSame([], $this->takeCalls(), 'The plugin is not called when a comment is built');
     }
 
     public function testMisspelledAnnotationSuggestsDeclaredName(): void
     {
+        $GLOBALS[self::NAMES_KEY] = ['phan-x-a' => '', 'phan-x-test-mark' => ''];
         $this->loadPlugin();
         $collector = new BufferingCollector();
         Phan::setIssueCollector($collector);
-        self::annotationsOf("/**\n * @phan-xy\n * @phan-zzzzzzzz\n */");
+        self::annotationsOf("/**\n * @phan-x-ab\n * @phan-zzzzzzzz\n * @phan-test-mark the old form without the prefix\n */");
         $messages = \array_map(static function (IssueInstance $instance): string {
             return $instance->getIssue()->getType() . ' ' . $instance->getMessageAndMaybeSuggestion();
         }, $collector->getCollectedIssues());
-        $this->assertCount(2, $messages);
-        $this->assertStringStartsWith(Issue::MisspelledAnnotation . ' Saw misspelled annotation @phan-xy.', $messages[0]);
-        $this->assertStringEndsWith('(Did you mean @phan-x)', $messages[0]);
-        $this->assertStringNotContainsString('Did you mean', $messages[1]);
+        \sort($messages);
+        $this->assertCount(3, $messages);
+        // A plugin annotation used without the prefix is not that annotation: it is misspelled, and the suggestion names it.
+        $this->assertStringStartsWith(Issue::MisspelledAnnotation . ' Saw misspelled annotation @phan-test-mark.', $messages[0]);
+        $this->assertStringEndsWith('(Did you mean @phan-x-test-mark)', $messages[0]);
+        $this->assertStringStartsWith(Issue::MisspelledAnnotation . ' Saw misspelled annotation @phan-x-ab.', $messages[1]);
+        $this->assertStringEndsWith('(Did you mean @phan-x-a)', $messages[1]);
+        $this->assertStringStartsWith(Issue::MisspelledAnnotation . ' Saw misspelled annotation @phan-zzzzzzzz.', $messages[2]);
+        $this->assertStringNotContainsString('Did you mean', $messages[2]);
     }
 
     /**
@@ -282,38 +340,38 @@ PHP;
         $this->loadPlugin();
         $a = $this->writeFile('a.php', <<<'PHP'
 <?php
-/** @phan-x on A */
+/** @phan-x-a on A */
 class CustomAnnotationA
 {
-    /** @phan-x on the property */
+    /** @phan-x-a on the property */
     public $prop;
 
     public function __construct(
-        /** @phan-x on the promoted property */
+        /** @phan-x-a on the promoted property */
         public int $promoted = 0
     ) {
     }
 
-    /** @phan-x on the method */
+    /** @phan-x-a on the method */
     public function method(): void
     {
     }
 
-    /** @phan-x on the constant */
+    /** @phan-x-a on the constant */
     const C = 1;
 }
 
-/** @phan-x on the function */
+/** @phan-x-a on the function */
 function custom_annotation_f(): void
 {
 }
 
-/** @phan-x on the global constant */
+/** @phan-x-a on the global constant */
 const CUSTOM_ANNOTATION_G = 1;
 PHP);
         $b = $this->writeFile('b.php', <<<'PHP'
 <?php
-/** @phan-x on B */
+/** @phan-x-a on B */
 class CustomAnnotationB extends CustomAnnotationA
 {
 }
@@ -328,14 +386,14 @@ PHP);
             Analysis::parseFile($code_base, $file);
         }
         $this->assertSame([
-            '\CUSTOM_ANNOTATION_G: @phan-x on the global constant (28)',
-            '\CustomAnnotationA: @phan-x on A (2)',
-            '\CustomAnnotationA::C: @phan-x on the constant (19)',
-            '\CustomAnnotationA::method: @phan-x on the method (14)',
-            '\CustomAnnotationA::promoted: @phan-x on the promoted property (9)',
-            '\CustomAnnotationA::prop: @phan-x on the property (5)',
-            '\CustomAnnotationB: @phan-x on B (2)',
-            '\custom_annotation_f: @phan-x on the function (23)',
+            '\CUSTOM_ANNOTATION_G: @phan-x-a on the global constant (28)',
+            '\CustomAnnotationA: @phan-x-a on A (2)',
+            '\CustomAnnotationA::C: @phan-x-a on the constant (19)',
+            '\CustomAnnotationA::method: @phan-x-a on the method (14)',
+            '\CustomAnnotationA::promoted: @phan-x-a on the promoted property (9)',
+            '\CustomAnnotationA::prop: @phan-x-a on the property (5)',
+            '\CustomAnnotationB: @phan-x-a on B (2)',
+            '\custom_annotation_f: @phan-x-a on the function (23)',
         ], self::sorted($this->takeCalls()));
 
         $class_a = FullyQualifiedClassName::fromFullyQualifiedString('\CustomAnnotationA');
@@ -359,19 +417,19 @@ PHP);
             ];
         };
         $this->assertSame([
-            ['@phan-x on A (2)'],
-            ['@phan-x on the property (5)'],
-            ['@phan-x on the promoted property (9)'],
-            ['@phan-x on the method (14)'],
-            ['@phan-x on the constant (19)'],
-            ['@phan-x on the function (23)'],
-            ['@phan-x on the global constant (28)'],
-            ['@phan-x on B (2)'],
+            ['@phan-x-a on A (2)'],
+            ['@phan-x-a on the property (5)'],
+            ['@phan-x-a on the promoted property (9)'],
+            ['@phan-x-a on the method (14)'],
+            ['@phan-x-a on the constant (19)'],
+            ['@phan-x-a on the function (23)'],
+            ['@phan-x-a on the global constant (28)'],
+            ['@phan-x-a on B (2)'],
         ], $describe_all());
 
         // a.php changes: the annotations move one line down, two of them change, and the property has none.
         $this->writeFile('a.php', \str_replace(
-            ["<?php\n", '/** @phan-x on the property */', 'on the method', 'on the function'],
+            ["<?php\n", '/** @phan-x-a on the property */', 'on the method', 'on the function'],
             ["<?php\n\n", '/** Not annotated */', 'on the changed method', 'on the changed function'],
             (string)\file_get_contents($a)
         ));
@@ -382,22 +440,22 @@ PHP);
         }
         // The plugin is only called for the file that was parsed again.
         $this->assertSame([
-            '\CUSTOM_ANNOTATION_G: @phan-x on the global constant (29)',
-            '\CustomAnnotationA: @phan-x on A (3)',
-            '\CustomAnnotationA::C: @phan-x on the constant (20)',
-            '\CustomAnnotationA::method: @phan-x on the changed method (15)',
-            '\CustomAnnotationA::promoted: @phan-x on the promoted property (10)',
-            '\custom_annotation_f: @phan-x on the changed function (24)',
+            '\CUSTOM_ANNOTATION_G: @phan-x-a on the global constant (29)',
+            '\CustomAnnotationA: @phan-x-a on A (3)',
+            '\CustomAnnotationA::C: @phan-x-a on the constant (20)',
+            '\CustomAnnotationA::method: @phan-x-a on the changed method (15)',
+            '\CustomAnnotationA::promoted: @phan-x-a on the promoted property (10)',
+            '\custom_annotation_f: @phan-x-a on the changed function (24)',
         ], self::sorted($this->takeCalls()));
         $this->assertSame([
-            ['@phan-x on A (3)'],
+            ['@phan-x-a on A (3)'],
             [],
-            ['@phan-x on the promoted property (10)'],
-            ['@phan-x on the changed method (15)'],
-            ['@phan-x on the constant (20)'],
-            ['@phan-x on the changed function (24)'],
-            ['@phan-x on the global constant (29)'],
-            ['@phan-x on B (2)'],
+            ['@phan-x-a on the promoted property (10)'],
+            ['@phan-x-a on the changed method (15)'],
+            ['@phan-x-a on the constant (20)'],
+            ['@phan-x-a on the changed function (24)'],
+            ['@phan-x-a on the global constant (29)'],
+            ['@phan-x-a on B (2)'],
         ], $describe_all());
     }
 

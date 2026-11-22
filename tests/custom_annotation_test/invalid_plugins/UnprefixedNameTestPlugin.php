@@ -9,13 +9,13 @@ use Phan\PluginV3;
 use Phan\PluginV3\CustomAnnotationCapability;
 
 /**
- * A plugin that declares an annotation of Phan itself: Phan fails to load the plugins (see test.sh).
+ * A plugin that declares an annotation without the prefix `phan-x-`: Phan fails to load the plugins (see test.sh).
  */
-final class BuiltinNameTestPlugin extends PluginV3 implements CustomAnnotationCapability
+final class UnprefixedNameTestPlugin extends PluginV3 implements CustomAnnotationCapability
 {
     public function getCustomAnnotations(): array
     {
-        return ['phan-test-mark' => '', 'phan-param' => 'An annotation of Phan'];
+        return ['phan-x-test-mark' => '', 'phan-my-assert' => 'Without the prefix'];
     }
 
     public function handleCustomAnnotation(CodeBase $code_base, AddressableElementInterface $element, CustomAnnotation $annotation): void
@@ -23,4 +23,4 @@ final class BuiltinNameTestPlugin extends PluginV3 implements CustomAnnotationCa
     }
 }
 
-return new BuiltinNameTestPlugin();
+return new UnprefixedNameTestPlugin();

@@ -1323,7 +1323,7 @@ final class Builder
         }
         $rest = $match[2];
         if ($match[1] !== '') {
-            // The inline form `{(at)phan-name text}`: the text ends before the `}` that closes the tag.
+            // The inline form `{(at)phan-x-name text}`: the text ends before the `}` that closes the tag.
             $depth = 1;
             for ($offset = 0, $length = \strlen($rest); $offset < $length; $offset++) {
                 $c = $rest[$offset];
@@ -1355,34 +1355,10 @@ final class Builder
     }
 
     /**
-     * The names of the annotations starting with `phan-` that Phan gives a meaning to and that SUPPORTED_ANNOTATIONS
-     * does not list: in doc comments, in parts of (at)param lines, and in string literals used as statements.
-     */
-    private const OTHER_PHAN_ANNOTATIONS = [
-        'phan-abstract' => true,
-        'phan-debug-var' => true,
-        'phan-ignore-reference' => true,
-        'phan-immutable' => true,
-        'phan-mandatory-param' => true,
-        'phan-output-reference' => true,
-        'phan-side-effect-free' => true,
-        'phan-transient' => true,
-        'phan-unused-param' => true,
-        'phan-var-force' => true,
-    ];
-
-    /**
-     * Returns true if $name (in lowercase, without '@') is the name of an annotation of Phan itself,
-     * which plugins cannot declare (CustomAnnotationCapability).
-     * @internal
-     */
-    public static function isPhanAnnotationName(string $name): bool
-    {
-        return isset(self::SUPPORTED_ANNOTATIONS['@' . $name]) || isset(self::OTHER_PHAN_ANNOTATIONS[$name]);
-    }
-
-    /**
      * Maps supported annotations starting with phan- to the empty string or a description
+     *
+     * The names starting with `phan-x-` (CustomAnnotationCapability::NAME_PREFIX) are reserved for the annotations
+     * that plugins declare: Phan must not give a meaning of its own to such a name, here or elsewhere.
      */
     public const SUPPORTED_ANNOTATIONS = [
         '@phan-assert' => '',

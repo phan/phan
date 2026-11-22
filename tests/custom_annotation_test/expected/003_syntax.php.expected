@@ -1,32 +1,34 @@
-src/003_syntax.php:7 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on function \syntax_examples with the text "upper case name" (6 annotation(s) on the element)
-src/003_syntax.php:8 PhanPluginCustomAnnotationSecond The second plugin saw @phan-test-shared on \syntax_examples with the text "declared by both plugins: both are called"
-src/003_syntax.php:8 PhanPluginCustomAnnotationSeen Saw @phan-test-shared on function \syntax_examples with the text "declared by both plugins: both are called" (6 annotation(s) on the element)
-src/003_syntax.php:9 PhanPluginCustomAnnotationSeen Saw @phan-test-empty on function \syntax_examples with the text "" (6 annotation(s) on the element)
-src/003_syntax.php:10 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on function \syntax_examples with the text "inline {with braces} text" (6 annotation(s) on the element)
-src/003_syntax.php:11 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on function \syntax_examples with the text "inline without a closing brace" (6 annotation(s) on the element)
-src/003_syntax.php:12 PhanMisspelledAnnotation Saw misspelled annotation @phan-test-mrak. The annotations that this version of Phan supports can be seen by running 'phan --help-annotations' or by visiting https://github.com/phan/phan/wiki/Annotating-Your-Source-Code (Did you mean @phan-test-mark)
-src/003_syntax.php:13 PhanMisspelledAnnotation Saw misspelled annotation @phan-unknown-tag. The annotations that this version of Phan supports can be seen by running 'phan --help-annotations' or by visiting https://github.com/phan/phan/wiki/Annotating-Your-Source-Code
-src/003_syntax.php:15 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on function \syntax_examples with the text "text after three spaces" (6 annotation(s) on the element)
-src/003_syntax.php:22 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on function \one_line with the text "on a doc comment of one line" (1 annotation(s) on the element)
-src/003_syntax.php:28 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on function \continuation with the text "on the first line" (2 annotation(s) on the element)
-src/003_syntax.php:34 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on function \continuation with the text "after the multi-line parameter" (2 annotation(s) on the element)
-src/003_syntax.php:43 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on property \SharedComment::first with the text "shared by two properties" (1 annotation(s) on the element)
-src/003_syntax.php:43 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on property \SharedComment::second with the text "shared by two properties" (1 annotation(s) on the element)
-src/003_syntax.php:49 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on function \with_builtin with the text "next to annotations of Phan" (2 annotation(s) on the element)
-src/003_syntax.php:51 PhanPluginCustomAnnotationSecond The second plugin saw @phan-test-second on \with_builtin with the text "only the second plugin declares this"
-src/003_syntax.php:81 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on method \SuppressedClass::method with the text "the issue that the plugin emits for this method is not suppressed by the class" (1 annotation(s) on the element)
-src/003_syntax.php:89 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on function \two_occurrences with the text "first occurrence" (2 annotation(s) on the element)
-src/003_syntax.php:90 PhanPluginCustomAnnotationSeen Saw @phan-test-mark on function \two_occurrences with the text "second occurrence" (2 annotation(s) on the element)
-src/003_syntax.php:98 PhanDeprecatedFunction Call to deprecated function \syntax_examples() defined at src/003_syntax.php:17
-src/003_syntax.php:98 PhanPluginCustomAnnotationRead Read function \syntax_examples: @phan-test-mark("upper case name") on line 7, @phan-test-shared("declared by both plugins: both are called") on line 8, @phan-test-empty("") on line 9, @phan-test-mark("inline {with braces} text") on line 10, @phan-test-mark("inline without a closing brace") on line 11, @phan-test-mark("text after three spaces") on line 15
-src/003_syntax.php:99 PhanPluginCustomAnnotationRead Read function \one_line: @phan-test-mark("on a doc comment of one line") on line 22
-src/003_syntax.php:100 PhanPluginCustomAnnotationRead Read function \continuation: @phan-test-mark("on the first line") on line 28, @phan-test-mark("after the multi-line parameter") on line 34
-src/003_syntax.php:101 PhanPluginCustomAnnotationRead Read function \with_builtin: @phan-test-mark("next to annotations of Phan") on line 49, @phan-test-second("only the second plugin declares this") on line 51
-src/003_syntax.php:101 PhanTypeMismatchArgument Argument 1 ($s) is 2 of type int (value: 2) but \with_builtin() takes string defined at src/003_syntax.php:53
-src/003_syntax.php:102 PhanPluginCustomAnnotationRead Read property \SharedComment::first: @phan-test-mark("shared by two properties") on line 43
-src/003_syntax.php:102 PhanPluginCustomAnnotationRead Read property \SharedComment::second: @phan-test-mark("shared by two properties") on line 43
-src/003_syntax.php:103 PhanPluginCustomAnnotationRead Read function \suppressed: @phan-test-mark("the issue that the plugin emits for this is suppressed") on line 60
-src/003_syntax.php:104 PhanPluginCustomAnnotationRead Read function \two_occurrences: @phan-test-mark("first occurrence") on line 89, @phan-test-mark("second occurrence") on line 90
-src/003_syntax.php:105 PhanPluginCustomAnnotationRead Read class \SuppressedClass: @phan-test-mark("the issue that the plugin emits for this class is suppressed") on line 69
-src/003_syntax.php:106 PhanPluginCustomAnnotationRead Read property \SuppressedClass::suppressed_property: @phan-test-mark("the issue that the plugin emits for this property is suppressed") on line 76
-src/003_syntax.php:107 PhanPluginCustomAnnotationRead Read method \SuppressedClass::method: @phan-test-mark("the issue that the plugin emits for this method is not suppressed by the class") on line 81
+src/003_syntax.php:7 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on function \syntax_examples with the text "upper case name" (6 annotation(s) on the element)
+src/003_syntax.php:8 PhanPluginCustomAnnotationSecond The second plugin saw @phan-x-test-shared on \syntax_examples with the text "declared by both plugins: both are called"
+src/003_syntax.php:8 PhanPluginCustomAnnotationSeen Saw @phan-x-test-shared on function \syntax_examples with the text "declared by both plugins: both are called" (6 annotation(s) on the element)
+src/003_syntax.php:9 PhanPluginCustomAnnotationSeen Saw @phan-x-test-empty on function \syntax_examples with the text "" (6 annotation(s) on the element)
+src/003_syntax.php:10 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on function \syntax_examples with the text "inline {with braces} text" (6 annotation(s) on the element)
+src/003_syntax.php:11 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on function \syntax_examples with the text "inline without a closing brace" (6 annotation(s) on the element)
+src/003_syntax.php:12 PhanMisspelledAnnotation Saw misspelled annotation @phan-x-test-mrak. The annotations that this version of Phan supports can be seen by running 'phan --help-annotations' or by visiting https://github.com/phan/phan/wiki/Annotating-Your-Source-Code (Did you mean @phan-x-test-mark)
+src/003_syntax.php:13 PhanMisspelledAnnotation Saw misspelled annotation @phan-test-mark. The annotations that this version of Phan supports can be seen by running 'phan --help-annotations' or by visiting https://github.com/phan/phan/wiki/Annotating-Your-Source-Code (Did you mean @phan-x-test-mark)
+src/003_syntax.php:14 PhanMisspelledAnnotation Saw misspelled annotation @phan-x-unknown-tag. The annotations that this version of Phan supports can be seen by running 'phan --help-annotations' or by visiting https://github.com/phan/phan/wiki/Annotating-Your-Source-Code
+src/003_syntax.php:15 PhanMisspelledAnnotation Saw misspelled annotation @phan-unknown-tag. The annotations that this version of Phan supports can be seen by running 'phan --help-annotations' or by visiting https://github.com/phan/phan/wiki/Annotating-Your-Source-Code
+src/003_syntax.php:17 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on function \syntax_examples with the text "text after three spaces" (6 annotation(s) on the element)
+src/003_syntax.php:24 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on function \one_line with the text "on a doc comment of one line" (1 annotation(s) on the element)
+src/003_syntax.php:30 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on function \continuation with the text "on the first line" (2 annotation(s) on the element)
+src/003_syntax.php:36 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on function \continuation with the text "after the multi-line parameter" (2 annotation(s) on the element)
+src/003_syntax.php:45 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on property \SharedComment::first with the text "shared by two properties" (1 annotation(s) on the element)
+src/003_syntax.php:45 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on property \SharedComment::second with the text "shared by two properties" (1 annotation(s) on the element)
+src/003_syntax.php:51 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on function \with_builtin with the text "next to annotations of Phan" (2 annotation(s) on the element)
+src/003_syntax.php:53 PhanPluginCustomAnnotationSecond The second plugin saw @phan-x-test-second on \with_builtin with the text "only the second plugin declares this"
+src/003_syntax.php:83 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on method \SuppressedClass::method with the text "the issue that the plugin emits for this method is not suppressed by the class" (1 annotation(s) on the element)
+src/003_syntax.php:91 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on function \two_occurrences with the text "first occurrence" (2 annotation(s) on the element)
+src/003_syntax.php:92 PhanPluginCustomAnnotationSeen Saw @phan-x-test-mark on function \two_occurrences with the text "second occurrence" (2 annotation(s) on the element)
+src/003_syntax.php:100 PhanDeprecatedFunction Call to deprecated function \syntax_examples() defined at src/003_syntax.php:19
+src/003_syntax.php:100 PhanPluginCustomAnnotationRead Read function \syntax_examples: @phan-x-test-mark("upper case name") on line 7, @phan-x-test-shared("declared by both plugins: both are called") on line 8, @phan-x-test-empty("") on line 9, @phan-x-test-mark("inline {with braces} text") on line 10, @phan-x-test-mark("inline without a closing brace") on line 11, @phan-x-test-mark("text after three spaces") on line 17
+src/003_syntax.php:101 PhanPluginCustomAnnotationRead Read function \one_line: @phan-x-test-mark("on a doc comment of one line") on line 24
+src/003_syntax.php:102 PhanPluginCustomAnnotationRead Read function \continuation: @phan-x-test-mark("on the first line") on line 30, @phan-x-test-mark("after the multi-line parameter") on line 36
+src/003_syntax.php:103 PhanPluginCustomAnnotationRead Read function \with_builtin: @phan-x-test-mark("next to annotations of Phan") on line 51, @phan-x-test-second("only the second plugin declares this") on line 53
+src/003_syntax.php:103 PhanTypeMismatchArgument Argument 1 ($s) is 2 of type int (value: 2) but \with_builtin() takes string defined at src/003_syntax.php:55
+src/003_syntax.php:104 PhanPluginCustomAnnotationRead Read property \SharedComment::first: @phan-x-test-mark("shared by two properties") on line 45
+src/003_syntax.php:104 PhanPluginCustomAnnotationRead Read property \SharedComment::second: @phan-x-test-mark("shared by two properties") on line 45
+src/003_syntax.php:105 PhanPluginCustomAnnotationRead Read function \suppressed: @phan-x-test-mark("the issue that the plugin emits for this is suppressed") on line 62
+src/003_syntax.php:106 PhanPluginCustomAnnotationRead Read function \two_occurrences: @phan-x-test-mark("first occurrence") on line 91, @phan-x-test-mark("second occurrence") on line 92
+src/003_syntax.php:107 PhanPluginCustomAnnotationRead Read class \SuppressedClass: @phan-x-test-mark("the issue that the plugin emits for this class is suppressed") on line 71
+src/003_syntax.php:108 PhanPluginCustomAnnotationRead Read property \SuppressedClass::suppressed_property: @phan-x-test-mark("the issue that the plugin emits for this property is suppressed") on line 78
+src/003_syntax.php:109 PhanPluginCustomAnnotationRead Read method \SuppressedClass::method: @phan-x-test-mark("the issue that the plugin emits for this method is not suppressed by the class") on line 83

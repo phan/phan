@@ -619,18 +619,7 @@ class ParseVisitor extends ScopeVisitor
         if (!$property) {
             // Might be added via PHP doc comments, in which case we still want
             // to handle it
-            $property_fqsen = FullyQualifiedPropertyName::make(
-                $class->getFQSEN(),
-                $parameter->getName()
-            );
-            if ($this->code_base->hasPropertyWithFQSEN($property_fqsen)) {
-                $old_property = $this->code_base->getPropertyByFQSEN($property_fqsen);
-                if ($old_property->getDefiningFQSEN() === $property_fqsen
-                    && $old_property->isFromPHPDoc()
-                ) {
-                    $property = $old_property;
-                }
-            }
+            $property = $this->getPHPDocPropertyDeclaredByClass($class, $parameter->getName());
         }
         if (!$property) {
             return;
@@ -740,6 +729,13 @@ class ParseVisitor extends ScopeVisitor
                 false
             );
             if (!$property) {
+                // The doc comment of the class declared the property with (at)property, which takes precedence:
+                // the custom annotations of this declaration are recorded for that property.
+                // (Not for a second declaration of the same property, which is PhanRedefineProperty.)
+                $phpdoc_property = $this->getPHPDocPropertyDeclaredByClass($class, $property_name);
+                if ($phpdoc_property) {
+                    $this->handlePropertyCustomAnnotations($class, $phpdoc_property, $comment);
+                }
                 continue;
             }
             // Parse property hooks (PHP 8.4+)
@@ -751,6 +747,27 @@ class ParseVisitor extends ScopeVisitor
         }
 
         return $this->context;
+    }
+
+    /**
+     * Returns the property $property_name that the doc comment of $class declared with (at)property, if there is one.
+     * addProperty() returns null for a declaration of such a property in the class: the property from the doc comment
+     * takes precedence.
+     */
+    private function getPHPDocPropertyDeclaredByClass(Clazz $class, string $property_name): ?Property
+    {
+        $property_fqsen = FullyQualifiedPropertyName::make(
+            $class->getFQSEN(),
+            $property_name
+        );
+        if (!$this->code_base->hasPropertyWithFQSEN($property_fqsen)) {
+            return null;
+        }
+        $property = $this->code_base->getPropertyByFQSEN($property_fqsen);
+        if ($property->getDefiningFQSEN() !== $property_fqsen || !$property->isFromPHPDoc()) {
+            return null;
+        }
+        return $property;
     }
 
     /**

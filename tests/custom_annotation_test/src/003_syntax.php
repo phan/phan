@@ -4,34 +4,36 @@
 
 /**
  * Names are case-insensitive, like the annotations of Phan:
- * @PHAN-TEST-MARK upper case name
- * @Phan-Test-Shared declared by both plugins: both are called
- * @phan-test-empty
- * @see {@phan-test-mark inline {with braces} text} is the inline form
- * @todo {@phan-test-mark inline without a closing brace
- * @phan-test-mrak a misspelled custom annotation: the suggestion names the custom annotation
+ * @PHAN-X-TEST-MARK upper case name
+ * @Phan-X-Test-Shared declared by both plugins: both are called
+ * @phan-x-test-empty
+ * @see {@phan-x-test-mark inline {with braces} text} is the inline form
+ * @todo {@phan-x-test-mark inline without a closing brace
+ * @phan-x-test-mrak a misspelled custom annotation: the suggestion names the custom annotation
+ * @phan-test-mark the name without the prefix phan-x- is another annotation, which no plugin declares
+ * @phan-x-unknown-tag an annotation with the prefix that no plugin declares, without a suggestion
  * @phan-unknown-tag an unknown annotation without a suggestion
  * @deprecated
- * @phan-test-mark   text after three spaces
+ * @phan-x-test-mark   text after three spaces
  */
 function syntax_examples(int $x): int
 {
     return $x;
 }
 
-/** @phan-test-mark on a doc comment of one line */
+/** @phan-x-test-mark on a doc comment of one line */
 function one_line(): void
 {
 }
 
 /**
- * @phan-test-mark on the first line
+ * @phan-x-test-mark on the first line
  *   (a continuation line is not part of the text)
  * @param array{
  *   a: int,
  *   b: string
  * } $x a multi-line annotation of Phan, which Phan merges into one line
- * @phan-test-mark after the multi-line parameter
+ * @phan-x-test-mark after the multi-line parameter
  */
 function continuation(array $x): void
 {
@@ -40,15 +42,15 @@ function continuation(array $x): void
 
 class SharedComment
 {
-    /** @phan-test-mark shared by two properties */
+    /** @phan-x-test-mark shared by two properties */
     public $first = 1, $second = 2;
 }
 
 /**
  * @param string $s
- * @phan-test-mark next to annotations of Phan
+ * @phan-x-test-mark next to annotations of Phan
  * @return string
- * @phan-test-second only the second plugin declares this
+ * @phan-x-test-second only the second plugin declares this
  */
 function with_builtin($s)
 {
@@ -57,28 +59,28 @@ function with_builtin($s)
 
 /**
  * @phan-suppress PhanPluginCustomAnnotationSeen
- * @phan-test-mark the issue that the plugin emits for this is suppressed
+ * @phan-x-test-mark the issue that the plugin emits for this is suppressed
  * @suppress PhanMisspelledAnnotation
- * @phan-test-typo a suppressed misspelling
+ * @phan-x-test-typo a suppressed misspelling
  */
 function suppressed(): void
 {
 }
 
 /**
- * @phan-test-mark the issue that the plugin emits for this class is suppressed
+ * @phan-x-test-mark the issue that the plugin emits for this class is suppressed
  * @suppress PhanPluginCustomAnnotationSeen
  */
 class SuppressedClass
 {
     /**
      * @suppress PhanPluginCustomAnnotationSeen
-     * @phan-test-mark the issue that the plugin emits for this property is suppressed
+     * @phan-x-test-mark the issue that the plugin emits for this property is suppressed
      */
     public $suppressed_property = 1;
 
     /**
-     * @phan-test-mark the issue that the plugin emits for this method is not suppressed by the class
+     * @phan-x-test-mark the issue that the plugin emits for this method is not suppressed by the class
      */
     public function method(): void
     {
@@ -86,8 +88,8 @@ class SuppressedClass
 }
 
 /**
- * @phan-test-mark first occurrence
- * @phan-test-mark second occurrence
+ * @phan-x-test-mark first occurrence
+ * @phan-x-test-mark second occurrence
  */
 function two_occurrences(): void
 {

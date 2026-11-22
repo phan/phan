@@ -9,13 +9,13 @@ use Phan\PluginV3;
 use Phan\PluginV3\CustomAnnotationCapability;
 
 /**
- * A plugin that declares an annotation with an invalid name (not in lowercase): Phan fails to load the plugins (see test.sh).
+ * A plugin that declares an annotation with the prefix `phan-x-` but not in lowercase: Phan fails to load the plugins (see test.sh).
  */
 final class InvalidNameTestPlugin extends PluginV3 implements CustomAnnotationCapability
 {
     public function getCustomAnnotations(): array
     {
-        return ['phan-Invalid-Name' => 'Not in lowercase'];
+        return ['phan-x-Invalid-Name' => 'Not in lowercase'];
     }
 
     public function handleCustomAnnotation(CodeBase $code_base, AddressableElementInterface $element, CustomAnnotation $annotation): void

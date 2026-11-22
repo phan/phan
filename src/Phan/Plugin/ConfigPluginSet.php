@@ -19,7 +19,6 @@ use Phan\Language\Context;
 use Phan\Language\Element\AddressableElementInterface;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Comment;
-use Phan\Language\Element\Comment\Builder;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
@@ -1299,28 +1298,24 @@ final class ConfigPluginSet extends PluginV3 implements
      * @param list<PluginV3> $plugin_set
      * @return array{0:array<string,non-empty-list<PluginV3&CustomAnnotationCapability>>,1:list<array{0:string,1:string,2:string}>}
      * the map from names to plugins, and [name, plugin class, description] of each declaration
-     * @throws AssertionError if a plugin declares a name that is invalid or the name of an annotation of Phan itself
+     * @throws AssertionError if a plugin declares an invalid name (see CustomAnnotationCapability::NAME_PREFIX)
      */
     private static function loadCustomAnnotations(array $plugin_set): array
     {
         $plugin_map = [];
         $descriptions = [];
+        $prefix = CustomAnnotationCapability::NAME_PREFIX;
         foreach (self::filterByClass($plugin_set, CustomAnnotationCapability::class) as $plugin) {
             $plugin_name = \str_replace("\0", ' ', get_class($plugin));
             foreach ($plugin->getCustomAnnotations() as $name => $description) {
-                if (!\is_string($name) || !\preg_match('/^phan-[a-z0-9_-]+$/D', $name)) {
+                // Phan does not give a meaning to the names with this prefix, so the names of plugins and of Phan cannot collide.
+                if (!\is_string($name) || !\str_starts_with($name, $prefix) || !\preg_match('/^[a-z0-9][a-z0-9_-]*$/D', \substr($name, \strlen($prefix)))) {
                     throw new AssertionError(\sprintf(
-                        "Plugin %s declares the annotation %s in getCustomAnnotations(): the name of an annotation must match /^phan-[a-z0-9_-]+$/ (lowercase, without '@')",
+                        "Plugin %s declares the annotation %s in getCustomAnnotations(): the name of an annotation declared by a plugin must start with '%s', followed by a lowercase letter or digit and then lowercase letters, digits, '_' or '-' (/^%s[a-z0-9][a-z0-9_-]*$/, without '@')",
                         $plugin_name,
-                        StringUtil::jsonEncode($name)
-                    ));
-                }
-                // @phan-suppress-next-line PhanAccessMethodInternal
-                if (Builder::isPhanAnnotationName($name)) {
-                    throw new AssertionError(\sprintf(
-                        "Plugin %s declares the annotation %s in getCustomAnnotations(), which is an annotation of Phan itself",
-                        $plugin_name,
-                        StringUtil::jsonEncode($name)
+                        StringUtil::jsonEncode($name),
+                        $prefix,
+                        $prefix
                     ));
                 }
                 if (!\is_string($description)) {

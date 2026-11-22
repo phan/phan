@@ -30,6 +30,7 @@ use Phan\Output\Filter\SubdirectoryIssueFilter;
 use Phan\Output\PrinterFactory;
 use Phan\Plugin\ConfigPluginSet;
 use Phan\Plugin\Internal\MethodSearcherPlugin;
+use Phan\PluginV3\CustomAnnotationCapability;
 use ReflectionExtension;
 use SplFileInfo;
 use Symfony\Component\Console\Output\ConsoleOutput;
@@ -1420,7 +1421,7 @@ class CLI
                 return \strcmp($a[0], $b[0]);
             }
         );
-        $result .= PHP_EOL . "Annotations declared by plugins:" . PHP_EOL;
+        $result .= PHP_EOL . "Annotations declared by plugins (their names start with @" . CustomAnnotationCapability::NAME_PREFIX . "):" . PHP_EOL;
         foreach ($descriptions as [$name, $plugin_name, $description]) {
             $result .= "- @$name ($plugin_name)" . ($description !== '' ? ": $description" : '') . PHP_EOL;
         }
