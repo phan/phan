@@ -22,7 +22,7 @@ return [
     'libxml_get_external_entity_loader' => ['?callable'],
     'memory_reset_peak_usage' => ['void'],
     'mysqli::execute_query' => ['mysqli_result|bool', 'query'=>'string', 'params='=>'?array'],
-    'mysqli_execute_query' => ['mysqli_result|bool', 'query'=>'string', 'params='=>'?array'],
+    'mysqli_execute_query' => ['mysqli_result|bool', 'mysql'=>'mysqli', 'query'=>'string', 'params='=>'?array'],
     'openssl_cipher_key_length' => ['int|false', 'cipher_algo'=>'string'],
     'random\brokenrandomengineerror::__tostring' => ['string'],
     'random\brokenrandomengineerror::getfile' => ['string'],
@@ -82,9 +82,25 @@ return [
     'ziparchive::clearerror' => ['void'],
   ],
   'changed' => [
+    'dba_delete' => [
+      'old' => ['bool', 'key'=>'string', 'dba'=>'resource'],
+      'new' => ['bool', 'key'=>'string|array', 'dba'=>'resource'],
+    ],
+    'dba_exists' => [
+      'old' => ['bool', 'key'=>'string', 'dba'=>'resource'],
+      'new' => ['bool', 'key'=>'string|array', 'dba'=>'resource'],
+    ],
     'dba_fetch' => [
       'old' => ['string|false', 'key'=>'string|array', 'skip'=>'int', 'dba'=>'resource'],
       'new' => ['string|false', 'key'=>'string|array', 'dba'=>'resource', 'skip='=>'int'],
+    ],
+    'dba_insert' => [
+      'old' => ['bool', 'key'=>'string', 'value'=>'string', 'dba'=>'resource'],
+      'new' => ['bool', 'key'=>'string|array', 'value'=>'string', 'dba'=>'resource'],
+    ],
+    'dba_key_split' => [
+      'old' => ['array|false', 'key'=>'string'],
+      'new' => ['array|false', 'key'=>'string|false'],
     ],
     'dba_open' => [
       'old' => ['resource|false', 'path'=>'string', 'mode'=>'string', 'handler='=>'?string', '...handler_params='=>'string'],
@@ -93,6 +109,10 @@ return [
     'dba_popen' => [
       'old' => ['resource', 'path'=>'string', 'mode'=>'string', 'handler='=>'string', '...handler_params='=>'string'],
       'new' => ['resource', 'path'=>'string', 'mode'=>'string', 'handler='=>'string', 'permission='=>'int', 'map_size='=>'int', 'flags='=>'?int'],
+    ],
+    'dba_replace' => [
+      'old' => ['bool', 'key'=>'string', 'value'=>'string', 'dba'=>'resource'],
+      'new' => ['bool', 'key'=>'string|array', 'value'=>'string', 'dba'=>'resource'],
     ],
     'gmp::__construct' => [
       'old' => ['void'],

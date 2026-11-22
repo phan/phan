@@ -28,9 +28,13 @@ return [
       'ReflectionProperty::getMangledName' => ['string'],
       'Sqlite3Stmt::busy' => ['bool'],
       'Dom\Element::getElementsByClassName' => ['Dom\HTMLCollection', 'classNames'=>'string'],
-      'Dom\Element::insertAdjacentHTML' => ['void', 'where'=>'string', 'string'=>'string'],
+      'Dom\Element::insertAdjacentHTML' => ['void', 'where'=>'Dom\AdjacentPosition', 'string'=>'string'],
   ],
   'changed' => [
+      'datefmt_set_timezone' => [
+          'old' => ['bool', 'formatter'=>'IntlDateFormatter', 'timezone'=>'string'],
+          'new' => ['bool', 'formatter'=>'IntlDateFormatter', 'timezone'=>'string|IntlTimeZone|DateTimeZone'],
+      ],
       'grapheme_stripos' => [
           'old' => ['int|false', 'haystack'=>'string', 'needle'=>'string', 'offset='=>'int'],
           'new' => ['int|false', 'haystack'=>'string', 'needle'=>'string', 'offset='=>'int', 'locale='=>'?string'],
@@ -59,6 +63,18 @@ return [
           'old' => ['string|false', 'string'=>'string', 'offset'=>'int', 'length='=>'int'],
           'new' => ['string|false', 'string'=>'string', 'offset'=>'int', 'length='=>'int', 'locale='=>'string'],
       ],
+      'gzfile' => [
+          'old' => ['list<string>', 'filename'=>'string', 'use_include_path='=>'int'],
+          'new' => ['list<string>', 'filename'=>'string', 'use_include_path='=>'bool'],
+      ],
+      'gzopen' => [
+          'old' => ['resource|false', 'filename'=>'string', 'mode'=>'string', 'use_include_path='=>'int'],
+          'new' => ['resource|false', 'filename'=>'string', 'mode'=>'string', 'use_include_path='=>'bool'],
+      ],
+      'openssl_cms_encrypt' => [
+          'old' => ['bool', 'input_filename'=>'string', 'output_filename'=>'string', 'certificate'=>'mixed', 'headers'=>'?array', 'flags='=>'int', 'encoding='=>'int', 'cipher_algo='=>'int'],
+          'new' => ['bool', 'input_filename'=>'string', 'output_filename'=>'string', 'certificate'=>'mixed', 'headers'=>'?array', 'flags='=>'int', 'encoding='=>'int', 'cipher_algo='=>'int|string'],
+      ],
       'openssl_private_decrypt' => [
           'old' => ['bool', 'data'=>'string', '&w_decrypted_data'=>'string', 'private_key'=>'OpenSSLAsymmetricKey|OpenSSLCertificate|array|string', 'padding='=>'int'],
           'new' => ['bool', 'data'=>'string', '&w_decrypted_data'=>'string', 'private_key'=>'OpenSSLAsymmetricKey|OpenSSLCertificate|array|string', 'padding='=>'int', 'digest_algo='=>'?string'],
@@ -79,9 +95,17 @@ return [
           'old' => ['bool', 'idtype='=>'int', 'id='=>'?int', '&rw_info='=>'array', 'flags='=>'int'],
           'new' => ['bool', 'idtype='=>'int', 'id='=>'?int', '&rw_info='=>'array', 'flags='=>'int', '&resource_usage='=>'mixed'],
       ],
+      'pg_copy_from' => [
+          'old' => ['bool', 'connection'=>'pgsql\connection', 'table_name'=>'string', 'rows'=>'array', 'separator='=>'string', 'null_as='=>'string'],
+          'new' => ['bool', 'connection'=>'pgsql\connection', 'table_name'=>'string', 'rows'=>'array|Traversable', 'separator='=>'string', 'null_as='=>'string'],
+      ],
+      'readgzfile' => [
+          'old' => ['int|false', 'filename'=>'string', 'use_include_path='=>'int'],
+          'new' => ['int|false', 'filename'=>'string', 'use_include_path='=>'bool'],
+      ],
       'soapclient::__dorequest' => [
-          'old' => ['string', 'request'=>'string', 'location'=>'string', 'action'=>'string', 'version'=>'int', 'oneWay='=>'int'],
-          'new' => ['string', 'request'=>'string', 'location'=>'string', 'action'=>'string', 'version'=>'int', 'oneWay='=>'int', 'uriParserClass='=>'?string'],
+          'old' => ['string', 'request'=>'string', 'location'=>'string', 'action'=>'string', 'version'=>'int', 'oneWay='=>'bool'],
+          'new' => ['string', 'request'=>'string', 'location'=>'string', 'action'=>'string', 'version'=>'int', 'oneWay='=>'bool', 'uriParserClass='=>'?string'],
       ],
       'soapfault::__construct' => [
           'old' => ['void', 'code'=>'?string|?array{0:string,1:string}', 'string'=>'string', 'actor='=>'string', 'details='=>'mixed', 'name='=>'string', 'headerFault='=>'string'],

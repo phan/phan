@@ -14,7 +14,7 @@ return [
   'added' => [
       'clamp' => ['mixed', 'value'=>'mixed', 'min'=>'mixed', 'max'=>'mixed'],
       'gmp_powm_sec' => ['GMP', 'num'=>'GMP|int|string', 'exponent'=>'GMP|int|string', 'modulus'=>'GMP|int|string'],
-      'gmp_prevprime' => ['GMP', 'num'=>'GMP|int|string', '&definitely_prime='=>'bool'],
+      'gmp_prevprime' => ['GMP', 'num'=>'GMP|int|string', '&w_definitely_prime='=>'bool'],
       'grapheme_strrev' => ['string|false', 'string'=>'string'],
       'IntlDatePatternGenerator::getBaseSkeleton' => ['string|false', 'pattern'=>'string'],
       'IntlDatePatternGenerator::getSkeleton' => ['string|false', 'pattern'=>'string'],

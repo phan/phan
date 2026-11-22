@@ -40,7 +40,7 @@ final class SignatureMapUpdater
      * @param array<int|string,string> $reflection_spec the entry built from Reflection
      * @return array<int|string,string> the merged entry
      */
-    public static function merge(array $old, array $reflection_spec): array
+    public static function merge(array $old, array $reflection_spec, ?\Phan\CodeBase $code_base = null): array
     {
         $old_params = [];
         foreach ($old as $spec => $type) {
@@ -102,6 +102,9 @@ final class SignatureMapUpdater
                 }
                 $type = implode('|', array_unique($types));
             }
+            if ($match !== null && $code_base !== null) {
+                $type = self::correctedParameterType($type, $reflection_type, $code_base);
+            }
             $result[$name] = $type;
             $i++;
         }
@@ -117,6 +120,48 @@ final class SignatureMapUpdater
             return var_export($value, true);
         }
         return "'" . $value . "'";
+    }
+
+    /**
+     * Returns the type for a parameter that Phan's map types as $map_type and Reflection as $reflection_type:
+     * the map's type, unless PHP accepts values that it rejects. Then the types that PHP accepts are added,
+     * or Reflection's type is used if the two have nothing in common (e.g. `string` for an `int` parameter).
+     * Nullability is not changed: whether internal functions accept null is handled separately.
+     */
+    public static function correctedParameterType(string $map_type, string $reflection_type, \Phan\CodeBase $code_base): string
+    {
+        if ($reflection_type === 'mixed' || $map_type === 'mixed' || $map_type === '') {
+            return $map_type;
+        }
+        try {
+            $map_union_type = UnionType::fromStringInContext($map_type, new Context(), Type::FROM_PHPDOC);
+            $reflection_union_type = UnionType::fromStringInContext($reflection_type, new Context(), Type::FROM_TYPE)->nonNullableClone();
+        } catch (Throwable) {
+            return $map_type;
+        }
+        if ($map_union_type->hasTemplateTypeRecursive() || $reflection_union_type->isEmpty()) {
+            return $map_type;
+        }
+        $map_union_type = $map_union_type->nonNullableClone();
+        $missing = [];
+        $any_accepted = false;
+        foreach ($reflection_union_type->getTypeSet() as $type) {
+            if ($type->asPHPDocUnionType()->canCastToUnionTypeWithoutConfig($map_union_type, $code_base)) {
+                $any_accepted = true;
+            } else {
+                $missing[] = $type;
+            }
+        }
+        if (!$missing) {
+            return $map_type;
+        }
+        if (!$any_accepted) {
+            // Nothing in common: the map's type was wrong. Keep the map's nullability.
+            $result = implode('|', array_map(static fn(Type $type): string => ltrim((string)$type, '\\'), $reflection_union_type->getTypeSet()));
+            return str_starts_with($map_type, '?') || preg_match('/(^|\|)null(\||$)/D', $map_type) ? $result . '|null' : $result;
+        }
+        // Class names are written without a leading backslash, as in the rest of the signature map
+        return $map_type . '|' . implode('|', array_map(static fn(Type $type): string => ltrim((string)$type, '\\'), $missing));
     }
 
     /**
@@ -183,9 +228,23 @@ final class SignatureMapUpdater
                 continue;
             }
             $reflection_params = array_map([SignatureMapReflectionChecker::class, 'describeReflectionParameter'], $reflection->getParameters());
-            $new = $entry;
+            $reflection_spec = SignatureMapReflectionChecker::reflectionSpec($reflection);
             if (SignatureMapReflectionChecker::compare(SignatureMapReflectionChecker::paramsOfEntry($entry), $reflection_params)) {
-                $new = self::merge($entry, SignatureMapReflectionChecker::reflectionSpec($reflection));
+                $new = self::merge($entry, $reflection_spec, $code_base);
+            } else {
+                // The parameters agree: only correct the types that reject values PHP accepts, keeping the existing specs.
+                $new = $entry;
+                $reflection_types = array_values(array_filter($reflection_spec, 'is_string', ARRAY_FILTER_USE_KEY));
+                $i = 0;
+                foreach ($entry as $spec => $type) {
+                    if (!is_string($spec)) {
+                        continue;
+                    }
+                    if (isset($reflection_types[$i])) {
+                        $new[$spec] = self::correctedParameterType($type, $reflection_types[$i], $code_base);
+                    }
+                    $i++;
+                }
             }
             $corrected_return_type = self::correctedReturnType((string)($entry[0] ?? ''), $reflection, $code_base);
             if ($corrected_return_type !== null) {

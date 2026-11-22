@@ -29,13 +29,17 @@ use Phan\Language\UnionType;
 final class SignatureMapReflectionChecker
 {
     /**
-     * Extensions that are not bundled with php-src, or that are only used by php-src's own tests.
+     * The extensions bundled with php-src (lowercase Reflection extension names), including the ones removed since PHP 8.1.
+     * Other extensions (PECL, or php-src's own test extensions) are versioned independently of PHP, so they are not checked.
      */
-    private const EXCLUDED_EXTENSIONS = [
-        'ast', 'phan_helpers', 'zend_test', 'dl_test', 'xdebug', 'pcov', 'uopz', 'redis', 'llama', 'igbinary',
-        'msgpack', 'apcu', 'memcached', 'imagick', 'gmagick', 'yaml', 'event', 'inotify', 'protobuf', 'grpc',
-        'ds', 'swoole', 'xhprof', 'excimer', 'simdjson', 'vld', 'yac', 'xdiff', 'geoip', 'oauth', 'gearman',
-        'stats', 'sched', 'postal', 'thrift_protocol', 'injection', 'startup_script', 'shipment_builder', 'imap',
+    private const BUNDLED_EXTENSIONS = [
+        'bcmath', 'bz2', 'calendar', 'com_dotnet', 'core', 'ctype', 'curl', 'date', 'dba', 'dom', 'enchant', 'exif', 'ffi',
+        'fileinfo', 'filter', 'ftp', 'gd', 'gettext', 'gmp', 'hash', 'iconv', 'imap', 'intl', 'json', 'ldap', 'lexbor', 'libxml',
+        'mbstring', 'mysqli', 'mysqlnd', 'oci8', 'odbc', 'openssl', 'pcntl', 'pcre', 'pdo', 'pdo_dblib', 'pdo_firebird',
+        'pdo_mysql', 'pdo_oci', 'pdo_odbc', 'pdo_pgsql', 'pdo_sqlite', 'pgsql', 'phar', 'posix', 'pspell', 'random', 'readline',
+        'reflection', 'session', 'shmop', 'simplexml', 'snmp', 'soap', 'sockets', 'sodium', 'spl', 'sqlite3', 'standard',
+        'sysvmsg', 'sysvsem', 'sysvshm', 'tidy', 'tokenizer', 'uri', 'xml', 'xmlreader', 'xmlwriter', 'xsl', 'zend opcache',
+        'zip', 'zlib',
     ];
 
     /**
@@ -98,14 +102,14 @@ final class SignatureMapReflectionChecker
     }
 
     /**
-     * Returns true if the extension is bundled with php-src (and not only used by php-src's own tests)
+     * Returns true if the extension is bundled with php-src
      */
     public static function isBundledExtension(string|false|null $extension_name): bool
     {
         if (!is_string($extension_name) || $extension_name === '') {
             return false;
         }
-        return !in_array(strtolower($extension_name), self::EXCLUDED_EXTENSIONS, true);
+        return in_array(strtolower($extension_name), self::BUNDLED_EXTENSIONS, true);
     }
 
     /**

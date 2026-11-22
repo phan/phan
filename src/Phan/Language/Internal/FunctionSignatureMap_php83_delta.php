@@ -153,9 +153,17 @@ return [
       'old' => ['?bool', 'formatter'=>'IntlDateFormatter', 'timezone'=>'string'],
       'new' => ['bool', 'formatter'=>'IntlDateFormatter', 'timezone'=>'string'],
     ],
+    'deflate_init' => [
+      'old' => ['DeflateContext|false', 'encoding'=>'int', 'options='=>'array'],
+      'new' => ['DeflateContext|false', 'encoding'=>'int', 'options='=>'array|object'],
+    ],
     'imagerotate' => [
       'old' => ['false|GdImage', 'image'=>'GdImage', 'angle'=>'float', 'background_color'=>'int', 'ignore_transparent='=>'bool'],
       'new' => ['false|GdImage', 'image'=>'GdImage', 'angle'=>'float', 'background_color'=>'int'],
+    ],
+    'inflate_init' => [
+      'old' => ['InflateContext|false', 'encoding'=>'int', 'options='=>'array'],
+      'new' => ['InflateContext|false', 'encoding'=>'int', 'options='=>'array|object'],
     ],
     'intlchar::enumcharnames' => [
       'old' => ['?bool', 'start'=>'mixed', 'end'=>'mixed', 'callback'=>'callable', 'type='=>'int'],
@@ -171,7 +179,7 @@ return [
     ],
     'ldap_list' => [
       'old' => ['ldap\result|array|false', 'ldap'=>'ldap\connection|array', 'base'=>'string', 'filter'=>'string', 'attributes='=>'array', 'attributes_only='=>'int', 'sizelimit='=>'int', 'timelimit='=>'int', 'deref='=>'int'],
-      'new' => ['ldap\result|array|false', 'ldap'=>'ldap\connection|array', 'base'=>'string', 'filter'=>'string', 'attributes='=>'array', 'attributes_only='=>'int', 'sizelimit='=>'int', 'timelimit='=>'int', 'deref='=>'int', 'controls='=>'?array'],
+      'new' => ['ldap\result|array|false', 'ldap'=>'ldap\connection|array', 'base'=>'string|array', 'filter'=>'string|array', 'attributes='=>'array', 'attributes_only='=>'int', 'sizelimit='=>'int', 'timelimit='=>'int', 'deref='=>'int', 'controls='=>'?array'],
     ],
     'ldap_mod_add' => [
       'old' => ['bool', 'ldap'=>'ldap\connection', 'dn'=>'string', 'entry'=>'array'],
@@ -195,15 +203,15 @@ return [
     ],
     'ldap_read' => [
       'old' => ['ldap\result|array|false', 'ldap'=>'ldap\connection|array', 'base'=>'string', 'filter'=>'string', 'attributes='=>'array', 'attributes_only='=>'int', 'sizelimit='=>'int', 'timelimit='=>'int', 'deref='=>'int'],
-      'new' => ['ldap\result|array|false', 'ldap'=>'ldap\connection|array', 'base'=>'string', 'filter'=>'string', 'attributes='=>'array', 'attributes_only='=>'int', 'sizelimit='=>'int', 'timelimit='=>'int', 'deref='=>'int', 'controls='=>'?array'],
+      'new' => ['ldap\result|array|false', 'ldap'=>'ldap\connection|array', 'base'=>'string|array', 'filter'=>'string|array', 'attributes='=>'array', 'attributes_only='=>'int', 'sizelimit='=>'int', 'timelimit='=>'int', 'deref='=>'int', 'controls='=>'?array'],
     ],
     'ldap_rename' => [
       'old' => ['bool', 'ldap'=>'ldap\connection', 'dn'=>'string', 'new_rdn'=>'string', 'new_parent'=>'string', 'delete_old_rdn'=>'bool'],
       'new' => ['bool', 'ldap'=>'ldap\connection', 'dn'=>'string', 'new_rdn'=>'string', 'new_parent'=>'string', 'delete_old_rdn'=>'bool', 'controls='=>'?array'],
     ],
-    'mysqli_execute_query' => [
-      'old' => ['mysqli_result|bool', 'query'=>'string', 'params='=>'?array'],
-      'new' => ['mysqli_result|bool', 'mysql'=>'mysqli', 'query'=>'string', 'params='=>'?array'],
+    'ldap_search' => [
+      'old' => ['ldap\result|array|false', 'ldap'=>'ldap\connection|array', 'base'=>'string', 'filter'=>'string', 'attributes='=>'array', 'attributes_only='=>'int', 'sizelimit='=>'int', 'timelimit='=>'int', 'deref='=>'int', 'controls='=>'?array'],
+      'new' => ['ldap\result|array|false', 'ldap'=>'ldap\connection|array', 'base'=>'string|array', 'filter'=>'string|array', 'attributes='=>'array', 'attributes_only='=>'int', 'sizelimit='=>'int', 'timelimit='=>'int', 'deref='=>'int', 'controls='=>'?array'],
     ],
     'pg_trace' => [
       'old' => ['bool', 'filename'=>'string', 'mode='=>'string', 'connection='=>'pgsql\connection'],
