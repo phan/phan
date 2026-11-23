@@ -25,3 +25,16 @@ function g(int $y): int {
     return $y + $z;
 }
 echo g(1);
+
+function h(string $value, bool $cond): string {
+    if ($cond) {
+        $x = 1;
+    }
+    // null if $x is undefined
+    static $s = $x;
+    '@phan-debug-var $s';
+    static $cached = ($value = 42);
+    '@phan-debug-var $value';
+    return "$value $s $cached";
+}
+echo h('a', true);

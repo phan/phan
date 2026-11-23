@@ -468,6 +468,11 @@ class Parameter extends Variable
             try {
                 // @phan-suppress-next-line PhanAccessMethodInternal
                 ParseVisitor::checkIsAllowedInConstExpr($default_node, ParseVisitor::CONSTANT_EXPRESSION_IN_PARAMETER);
+                if (!($node->flags & self::PARAM_MODIFIER_FLAGS)) {
+                    // The default of a promoted property is checked along with the property.
+                    // @phan-suppress-next-line PhanAccessMethodInternal
+                    ParseVisitor::emitCompatibilityIssuesForConstExpr($code_base, $context, $default_node);
+                }
 
                 // We can't figure out default values during the
                 // parsing phase, unfortunately

@@ -4,3 +4,7 @@
 %s:9 PhanCompatibleCastInConstExpression Casts in constant expressions (e.g. (int)('5')) are only supported in PHP 8.5+.
 %s:12 PhanInvalidConstantExpression Constant expression contains invalid operations (A::compute())
 %s:20 PhanCompatibleCastInConstExpression Casts in constant expressions (e.g. (bool)(1)) are only supported in PHP 8.5+.
+%s:23 PhanCompatibleCastInConstExpression Casts in constant expressions (e.g. (string)(1)) are only supported in PHP 8.5+.
+%s:23 PhanCompatibleFirstClassCallableInConstExpression First-class callables in constant expressions (e.g. strlen(...)) are only supported in PHP 8.5+.
+%s:26 PhanCompatibleCastInConstExpression Casts in constant expressions (e.g. (string)(2)) are only supported in PHP 8.5+.
+%s:33 PhanCompatibleFirstClassCallableInConstExpression First-class callables in constant expressions (e.g. \strlen(...)) are only supported in PHP 8.5+.

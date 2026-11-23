@@ -731,6 +731,32 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * Visit a node with kind `\ast\AST_STATIC` (`static $var = initializer;`).
+     *
+     * The initializer only runs on the first call. In PHP 8.3+ it can be any expression,
+     * so the changes it makes to other variables (e.g. `static $a = ($b = 1);`) are merged with the context where it was skipped.
+     */
+    public function visitStatic(Node $node): Context
+    {
+        $default = $node->children['default'];
+        if (!($default instanceof Node) || ParseVisitor::isConstExpr($default, ParseVisitor::CONSTANT_EXPRESSION_IN_STATIC_VARIABLE)) {
+            return $this->visit($node);
+        }
+        $context = $this->context;
+        $context->setLineNumberStart($node->lineno);
+        $context = (new PreOrderAnalysisVisitor($this->code_base, $context))->visitStatic($node);
+        ConfigPluginSet::instance()->preAnalyzeNode($this->code_base, $context, $node);
+
+        $var_node = $node->children['var'];
+        if ($var_node instanceof Node) {
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $var_node);
+        }
+        $context_after_initializer = $this->analyzeAndGetUpdatedContext($context->withClonedScope(), $node, $default);
+        $context = (new ContextMergeVisitor($context, [$context, $context_after_initializer], $this->code_base))->combineChildContextList();
+        return $this->postOrderAnalyze($context, $node);
+    }
+
+    /**
      * This is an abstraction for getting a new, updated context for a child node.
      *
      * Effectively the same as (new BlockAnalysisVisitor(..., $context, $node, ...)child_node))

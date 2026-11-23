@@ -1,3 +1,6 @@
 %s:13 PhanUndeclaredVariable Variable $undefined is undeclared
 %s:14 PhanParamTooMany Call with 1 arg(s) to \NS009\compute() which only takes 0 arg(s) defined at %s:5
 %s:18 PhanTypeSuspiciousStringExpression Suspicious type null of a variable or expression $d used to build a string. (Expected type to be able to cast to a string)
+%s:34 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type ?1
+%s:34 PhanPossiblyUndeclaredVariable Variable $x is possibly undeclared
+%s:36 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type 42|string(real=42|string)

@@ -24,6 +24,7 @@ class A {
 }
 
 const G = (bool) 1;
+const CLASS_NAME = A::class;
 
 #[Attr((int) '3')]
 function test(): void {
@@ -52,8 +53,8 @@ class Invalid {
         return count($args);
     }
 
-    public function params($a = new A(...), $b = new A(...[1])): void {
-        var_export([$a, $b]);
+    public function params($a = new A(...), $b = new A(...[1]), $c = new (CLASS_NAME)): void {
+        var_export([$a, $b, $c]);
     }
 }
 var_export([Invalid::OBJECT_CAST, Invalid::CALL, Invalid::STATIC_CLASS, Invalid::STATIC_CONST, Invalid::STATIC_METHOD]);

@@ -2660,6 +2660,18 @@ class ParseVisitor extends ScopeVisitor
      */
     private function checkClosureInConstExpr(Node|bool|float|int|null|string $node): void
     {
+        self::emitCompatibilityIssuesForConstExpr($this->code_base, $this->context, $node);
+    }
+
+    /**
+     * Emits the compatibility issues for the forms of a valid constant expression that need a newer PHP version than the target:
+     * closures, casts and first-class callables (PHP 8.5+).
+     *
+     * @param Node|string|float|int|bool|null $node
+     * @internal
+     */
+    public static function emitCompatibilityIssuesForConstExpr(CodeBase $code_base, Context $context, Node|bool|float|int|null|string $node): void
+    {
         if (!($node instanceof Node)) {
             return;
         }
@@ -2669,7 +2681,9 @@ class ParseVisitor extends ScopeVisitor
             !($node->children['uses'] ?? null)
         ) {
             if (Config::get_closest_target_php_version_id() < 80500) {
-                $this->emitIssue(
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
                     Issue::CompatibleClosureInConstExpression,
                     $node->lineno,
                     ASTReverter::toShortString($node)
@@ -2680,7 +2694,9 @@ class ParseVisitor extends ScopeVisitor
         }
         if (Config::get_closest_minimum_target_php_version_id() < 80500) {
             if ($node->kind === ast\AST_CAST) {
-                $this->emitIssue(
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
                     Issue::CompatibleCastInConstExpression,
                     $node->lineno,
                     ASTReverter::toShortString($node)
@@ -2690,7 +2706,9 @@ class ParseVisitor extends ScopeVisitor
                 && !PartialApplication::isPartialApplication($node->children['args'])
             ) {
                 // Partial application (`f(?, 1)`) is PHP 8.6+ anywhere, which PhanCompatiblePartialApplication reports.
-                $this->emitIssue(
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
                     Issue::CompatibleFirstClassCallableInConstExpression,
                     $node->lineno,
                     ASTReverter::toShortString($node)
@@ -2699,7 +2717,7 @@ class ParseVisitor extends ScopeVisitor
         }
 
         foreach ($node->children as $child_node) {
-            $this->checkClosureInConstExpr($child_node);
+            self::emitCompatibilityIssuesForConstExpr($code_base, $context, $child_node);
         }
     }
 
@@ -2761,10 +2779,10 @@ class ParseVisitor extends ScopeVisitor
             case ast\AST_CALL:
                 // Only `f(...)` and `f(?, 1)` with a function name, not regular calls or dynamic function names.
                 return self::isNodeOfKind($n->children['args'] ?? null, ast\AST_CALLABLE_CONVERT)
-                    && self::isNodeOfKind($n->children['expr'] ?? null, ast\AST_NAME);
+                    && (self::isNodeOfKind($n->children['expr'] ?? null, ast\AST_NAME) || self::isFoldedToLiteral($n->children['expr'] ?? null));
             case ast\AST_STATIC_CALL:
                 return self::isNodeOfKind($n->children['args'] ?? null, ast\AST_CALLABLE_CONVERT)
-                    && \is_string($n->children['method'] ?? null)
+                    && (\is_string($n->children['method'] ?? null) || self::isFoldedToLiteral($n->children['method'] ?? null))
                     && self::isClassNameAllowedInConstExpr($n->children['class'] ?? null);
             case ast\AST_NEW:
                 return self::isClassNameAllowedInConstExpr($n->children['class'] ?? null)
@@ -2830,8 +2848,36 @@ class ParseVisitor extends ScopeVisitor
         if (\is_string($class_node)) {
             return \strcasecmp($class_node, 'static') !== 0;
         }
-        return $class_node instanceof Node && $class_node->kind === ast\AST_NAME
-            && \is_string($class_node->children['name']) && \strcasecmp($class_node->children['name'], 'static') !== 0;
+        if ($class_node instanceof Node && $class_node->kind === ast\AST_NAME) {
+            return \is_string($class_node->children['name']) && \strcasecmp($class_node->children['name'], 'static') !== 0;
+        }
+        // e.g. `new ('std' . 'Class')`, which PHP evaluates at compile time
+        return self::isFoldedToLiteral($class_node);
+    }
+
+    /**
+     * @param Node|string|float|int|bool|null $n
+     * @return bool whether PHP evaluates $n to a value at compile time: a literal, or operators applied to literals (e.g. `'str' . 'len'`).
+     * Constants such as PHP_VERSION are not evaluated there.
+     */
+    private static function isFoldedToLiteral(Node|bool|float|int|null|string $n): bool
+    {
+        if (!($n instanceof Node)) {
+            return $n !== null;
+        }
+        switch ($n->kind) {
+            case ast\AST_BINARY_OP:
+            case ast\AST_UNARY_OP:
+            case ast\AST_CONDITIONAL:
+                foreach ($n->children as $child_node) {
+                    if ($child_node !== null && !self::isFoldedToLiteral($child_node)) {
+                        return false;
+                    }
+                }
+                return true;
+            default:
+                return false;
+        }
     }
 
     /**
