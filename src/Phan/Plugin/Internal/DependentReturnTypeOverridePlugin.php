@@ -285,6 +285,10 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
                 return $mb_convert_encoding_any_type;
             }
             $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+            if ($union_type->isEmpty() || $union_type->hasMixedOrNonEmptyMixedType()) {
+                // An unknown or mixed value may be an array
+                return $mb_convert_encoding_any_type;
+            }
             $has_array = $union_type->hasArray();
             if ($union_type->canCastToUnionType($string_union_type, $code_base)) {
                 return $has_array ? $mb_convert_encoding_any_type : $mb_convert_encoding_string_type;

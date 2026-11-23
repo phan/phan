@@ -62,6 +62,18 @@ function convert_5964(array $lines, string $line): void {
     echo intdiv(mb_convert_encoding($line, 'UTF-8'), 2); // still reported: string|false is not an int
 }
 
+/** @param mixed $value */
+function convert_mixed_5964($value, $untyped): void {
+    $converted = mb_convert_encoding($value, 'UTF-8');   // may be an array
+    if (is_array($converted)) {
+        echo count($converted);
+    }
+    '@phan-debug-var $converted';
+    $other = mb_convert_encoding($untyped, 'UTF-8');
+    '@phan-debug-var $other';
+    var_export($other);
+}
+
 // The failure value of these factory methods is null
 function factories_5964(): void {
     $formatter = IntlDateFormatter::create('en_US');
