@@ -24,6 +24,8 @@ class PropertyHookScope extends BranchScope
     public function __construct(Scope $scope, FullyQualifiedPropertyName $property_fqsen, string $hook_name)
     {
         parent::__construct($scope);
+        // A hook of a class declared inside of a function (e.g. an anonymous class) is not part of that function.
+        $this->flags &= ~Scope::IN_FUNCTION_LIKE_SCOPE;
         $this->property_fqsen = $property_fqsen;
         $this->hook_name = $hook_name;
     }

@@ -9,3 +9,16 @@
 %s:34 PhanUndeclaredProperty Reference to undeclared property \NS5967\P->missing
 %s:38 PhanAccessPropertyNonStaticAsStatic Accessing non static property \NS5967\P->prop as static
 %s:49 PhanUndeclaredVariable Variable $other is undeclared
+%s:76 PhanReadOnlyPublicProperty Possibly zero write references to public property \NS5967\NoParent->p
+%s:77 PhanParentlessClass Reference to parent of class \NS5967\NoParent that does not extend anything
+%s:82 PhanUnreferencedPrivateProperty Possibly zero references to private property \NS5967\Base2->priv
+%s:83 PhanWriteOnlyPublicProperty Possibly zero read references to public property \NS5967\Base2->hooked
+%s:88 PhanWriteOnlyPublicProperty Possibly zero read references to public property \NS5967\Base2->backed
+%s:93 PhanAccessPropertyPrivate Cannot access private property \NS5967\Base2->priv defined at %s:82
+%s:98 PhanDebugAnnotation @phan-debug-var requested for variable $r - it has union type null(real=null)
+%s:105 PhanDebugAnnotation @phan-debug-var requested for variable $r - it has union type int(real=int)
+%s:107 PhanUndeclaredVariable Variable $undefined is undeclared
+%s:115 PhanReadOnlyPublicProperty Possibly zero write references to public property \NS5967\Generic->v
+%s:120 PhanPluginUnknownPropertyType Property \NS5967\IntGeneric->v has an initial type that cannot be inferred
+%s:122 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int
+%s:132 PhanReadOnlyPublicProperty Possibly zero write references to public property \NS5967\LocalClass5967->x

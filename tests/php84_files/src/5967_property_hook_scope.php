@@ -71,3 +71,76 @@ $p = new Promoted(1);
 $p->q = 3;
 $p->foo = 'x';
 var_dump($c->prop, $c->other, $c->missing, $c->method(), $p->q, $p->foo);
+
+class NoParent {
+    public int $p {
+        get => parent::$p::get();
+    }
+}
+
+class Base2 {
+    private int $priv = 1;
+    public int $hooked = 1 {
+        set {
+            $this->hooked = $value;
+        }
+    }
+    public int $backed = 1;
+}
+
+class Child2 extends Base2 {
+    public int $priv {
+        get => parent::$priv::get();
+    }
+    public int $hooked {
+        set {
+            // A set hook returns nothing
+            $r = parent::$hooked::set($value);
+            '@phan-debug-var $r';
+        }
+    }
+    public int $backed {
+        set {
+            // Without a set hook in the parent, this is the value that was assigned
+            $r = parent::$backed::set($value);
+            '@phan-debug-var $r';
+            parent::$backed::set($undefined);
+        }
+    }
+}
+
+/** @template T */
+class Generic {
+    /** @var T */
+    public $v;
+}
+
+/** @extends Generic<int> */
+class IntGeneric extends Generic {
+    public $v {
+        get {
+            $x = parent::$v::get();
+            '@phan-debug-var $x';
+            return $x;
+        }
+    }
+}
+
+function declares_class_5967(): void {
+    // The hooks of a class declared in a function are not part of that function
+    class LocalClass5967 {
+        public int $x {
+            get {
+                echo __FUNCTION__;
+                return 1;
+            }
+        }
+    }
+    $o = new LocalClass5967();
+    echo $o->x;
+}
+declares_class_5967();
+$child2 = new Child2();
+$child2->hooked = 1;
+$child2->backed = 2;
+var_dump((new NoParent())->p, $child2->priv, (new IntGeneric())->v);

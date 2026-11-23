@@ -93,6 +93,17 @@ class BranchScope extends Scope
     }
 
     /**
+     * @return BranchScope a branch of $scope that is not in a function-like scope,
+     * for the body of a property hook of a class declared inside of a function, or of a promoted constructor property.
+     */
+    public static function outsideOfFunctionLike(Scope $scope): BranchScope
+    {
+        $result = new self($scope);
+        $result->flags &= ~Scope::IN_FUNCTION_LIKE_SCOPE;
+        return $result;
+    }
+
+    /**
      * @override
      */
     public function getPropertyHookScopeOrNull(): ?PropertyHookScope

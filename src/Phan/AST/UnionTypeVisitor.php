@@ -3630,9 +3630,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     public function visitStaticCall(Node $node): UnionType
     {
         if (ParentPropertyHookCall::isParentHookCall($this->context, $node)) {
-            // `parent::$prop::get()` returns the value of the parent's property, and `parent::$prop::set($value)` the value that was set.
-            $property = ParentPropertyHookCall::getParentProperty($this->code_base, $this->context, $node);
-            return $property ? $property->getUnionType() : UnionType::empty();
+            return ParentPropertyHookCall::getUnionType($this->code_base, $this->context, $node);
         }
         return $this->visitMethodCall($node);
     }

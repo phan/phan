@@ -745,6 +745,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         }
         $context = $this->context;
         $context->setLineNumberStart($node->lineno);
+        $context = $this->preOrderAnalyze($context, $node);
         $args_node = $node->children['args'];
         if ($args_node instanceof Node) {
             $context = $this->analyzeAndGetUpdatedContext($context, $node, $args_node);

@@ -9,6 +9,8 @@ use ast\Node;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Element\Property;
+use Phan\Language\Type\NullType;
+use Phan\Language\UnionType;
 
 /**
  * Utilities for calls of the hook of the parent class's property from a property hook (PHP 8.4+):
@@ -70,5 +72,30 @@ final class ParentPropertyHookCall
             return null;
         }
         return $parent_class->getPropertyByName($code_base, $prop_name);
+    }
+
+    /**
+     * @param Node $node a node for which isParentHookCall() is true
+     * @return UnionType the type of the call: the type of the parent's property for `get`,
+     * and for `set` when the parent's property has no set hook (the value that was assigned). A set hook returns nothing.
+     */
+    public static function getUnionType(CodeBase $code_base, Context $context, Node $node): UnionType
+    {
+        $property = self::getParentProperty($code_base, $context, $node);
+        if (!$property || $property->isPrivate()) {
+            return UnionType::empty();
+        }
+        if (\strcasecmp((string)$node->children['method'], 'set') === 0 && $property->hasSetHook()) {
+            return NullType::instance(false)->asRealUnionType();
+        }
+        $union_type = $property->getUnionType();
+        if ($union_type->hasTemplateTypeRecursive()) {
+            // Resolve the template types of the parent class, e.g. with (at)extends ParentClass<int>
+            $parent_type_option = $context->getClassInScope($code_base)->getParentTypeOption();
+            if ($parent_type_option->isDefined()) {
+                $union_type = $union_type->withTemplateParameterTypeMap($parent_type_option->get()->getTemplateParameterTypeMap($code_base));
+            }
+        }
+        return $union_type;
     }
 }

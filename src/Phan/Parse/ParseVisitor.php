@@ -2467,15 +2467,15 @@ class ParseVisitor extends ScopeVisitor
      * Visit a node with kind `\ast\AST_PROPERTY_HOOK`
      * Property hooks are parsed in parsePropertyHooks().
      *
-     * The body of a hook of a promoted constructor property is not part of the constructor:
-     * e.g. a `return` in it must not be recorded as a return statement of the constructor.
+     * The body of a hook is not part of the constructor that declares it as a promoted property,
+     * or of the function that the class is declared in: e.g. a `return` in it must not be recorded as a return statement of that function.
      * Analysis::parseNodeInContext() does not pass the context returned for a hook on to the nodes after it.
      */
     public function visitPropertyHook(Node $node): Context
     {
         $context = $this->context;
         if ($context->isInFunctionLikeScope() && $context->isInClassScope()) {
-            return $context->withScope(new BranchScope($context->getClassInScope($this->code_base)->getInternalScope()));
+            return $context->withScope(BranchScope::outsideOfFunctionLike($context->getClassInScope($this->code_base)->getInternalScope()));
         }
         return $context;
     }

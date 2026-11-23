@@ -5124,16 +5124,42 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     private function analyzeParentPropertyHookCall(Node $node): void
     {
+        // Check the arguments, e.g. for undeclared variables
+        foreach ($node->children['args']->children ?? [] as $arg) {
+            if ($arg instanceof Node) {
+                UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $arg);
+            }
+        }
+        $class = $this->context->getClassInScope($this->code_base);
+        if (!$class->hasParentType()) {
+            if (!$class->isTrait()) {
+                $this->emitIssue(
+                    Issue::ParentlessClass,
+                    $node->lineno,
+                    (string)$class->getFQSEN()
+                );
+            }
+            return;
+        }
         $property = ParentPropertyHookCall::getParentProperty($this->code_base, $this->context, $node);
         if (!$property) {
-            $class = $this->context->getClassInScope($this->code_base);
-            if ($class->hasParentType() && $this->code_base->hasClassWithFQSEN($class->getParentClassFQSEN())) {
+            if ($this->code_base->hasClassWithFQSEN($class->getParentClassFQSEN())) {
                 $this->emitIssue(
                     Issue::UndeclaredProperty,
                     $node->lineno,
                     $class->getParentClassFQSEN() . '->' . $node->children['class']->children['prop']
                 );
             }
+            return;
+        }
+        if ($property->isPrivate()) {
+            $this->emitIssue(
+                Issue::AccessPropertyPrivate,
+                $node->lineno,
+                $property->asPropertyFQSENString(),
+                $property->getContext()->getFile(),
+                $property->getContext()->getLineNumberStart()
+            );
             return;
         }
         $property->addReference($this->context);
