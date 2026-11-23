@@ -264,7 +264,33 @@ final class SignatureMapReflectionChecker
      */
     public static function isNullableMapType(string $type): bool
     {
-        return $type === '' || str_starts_with($type, '?') || preg_match('/(^|\|)(null|mixed|\?[^|]*)(\||$)/D', $type) === 1;
+        if ($type === '') {
+            return true;
+        }
+        // Only the top level counts: `array<string,int|null>` does not accept null
+        $depth = 0;
+        $part = '';
+        $parts = [];
+        foreach (str_split($type) as $char) {
+            if ($char === '|' && $depth === 0) {
+                $parts[] = $part;
+                $part = '';
+                continue;
+            }
+            if ($char === '<' || $char === '{' || $char === '(' || $char === '[') {
+                $depth++;
+            } elseif ($char === '>' || $char === '}' || $char === ')' || $char === ']') {
+                $depth--;
+            }
+            $part .= $char;
+        }
+        $parts[] = $part;
+        foreach ($parts as $part) {
+            if ($part === 'null' || $part === 'mixed' || str_starts_with($part, '?')) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
