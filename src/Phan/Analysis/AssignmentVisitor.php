@@ -2917,8 +2917,15 @@ class AssignmentVisitor extends AnalysisVisitor
         if (!\is_string($variable_name)) {
             return null;
         }
+        $keys = \array_reverse($keys);
         $scope = $this->context->getScope();
-        if ($scope->hasVariableWithName($variable_name)) {
+        $global_name = $variable_name === 'GLOBALS' ? ($keys[0] ?? null) : null;
+        if (\is_string($global_name) && $scope->hasGlobalVariableWithName($global_name)) {
+            // $GLOBALS['cache'] is the global variable $cache: use its type, not the element type of $GLOBALS (mixed),
+            // so that after `$GLOBALS['cache'] = []`, a write to $GLOBALS['cache']['ok'] keeps $cache a closed array shape.
+            $union_type = $scope->getGlobalVariableByName($global_name)->getUnionType();
+            \array_shift($keys);
+        } elseif ($scope->hasVariableWithName($variable_name)) {
             $union_type = $scope->getVariableByName($variable_name)->getUnionType();
         } else {
             $union_type = Variable::getUnionTypeOfHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope());
@@ -2928,7 +2935,7 @@ class AssignmentVisitor extends AnalysisVisitor
             }
         }
         $types = $union_type->isEmpty() ? [MixedType::instance(false)] : $union_type->getTypeSet();
-        foreach (\array_reverse($keys) as $key) {
+        foreach ($keys as $key) {
             $types = self::getTypeSetOfOldElement($types, $key);
             if (!$types) {
                 return [];

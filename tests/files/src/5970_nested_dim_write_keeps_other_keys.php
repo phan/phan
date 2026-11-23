@@ -113,3 +113,19 @@ function writeCallableArray(array $callbacks): void {
     echo strlen($callbacks[1][1]);
     takesCallable($callbacks[1]);  // true positive: an array with 3 elements is not callable
 }
+
+/** @param array<string,mixed> $settings */
+function writeGlobals(array $settings): void {
+    // $GLOBALS['initialized'] is the global $initialized, which is known to be an empty array.
+    $GLOBALS['initialized'] = [];
+    $GLOBALS['initialized']['ok'] = 1;
+    // $GLOBALS['settings'] holds an array with unknown keys.
+    $GLOBALS['settings'] = ['options' => $settings];
+    $GLOBALS['settings']['options']['ok'] = 1;
+    // $GLOBALS['unknown'] may have been set by code that is not analyzed.
+    $GLOBALS['unknown']['ok'] = 1;
+}
+writeGlobals([]);
+echo $initialized['missing'];  // true positive
+echo $settings['options']['other'];
+echo $unknown['other'];
