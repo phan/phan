@@ -1,0 +1,2 @@
+%s:6 PhanWriteOnlyPublicProperty Possibly zero read references to public property \NS009\Base->promoted
+%s:11 PhanAccessOverridesFinalProperty Declaration of property \NS009\Invalid->promoted overrides final property \NS009\Base->promoted defined at %s:6

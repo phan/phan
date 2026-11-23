@@ -186,6 +186,14 @@ Declaration of phpdoc method {METHOD} is an unnecessary override of final method
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0318_override_final_method.php.expected#L6) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0318_override_final_method.php#L49).
 
+## PhanAccessOverridesFinalProperty
+
+```
+Declaration of property {PROPERTY} overrides final property {PROPERTY} defined at {FILE}:{LINE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php84_files/expected/5968_property_hook_checks.php.expected#L4) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php84_files/src/5968_property_hook_checks.php#L70).
+
 ## PhanAccessOwnConstructor
 
 ```
@@ -2973,6 +2981,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0761
 Cannot override final property hook {PROPERTY}::{METHOD} defined at {FILE}:{LINE}
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php84_files/expected/property_hooks_errors.php.expected#L6) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php84_files/src/property_hooks_errors.php#L44).
+
 ## PhanPropertyHookIncompatibleParamType
 
 ```
@@ -5409,7 +5419,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0951
 ## PhanPropertyHookWithDefaultValue
 
 ```
-Virtual property {PROPERTY} cannot have a default value - only properties with a set hook or backing storage can have defaults
+Virtual property {PROPERTY} cannot have a default value - none of its hooks uses its backing value
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php84_files/expected/property_hooks_errors.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php84_files/src/property_hooks_errors.php#L10).

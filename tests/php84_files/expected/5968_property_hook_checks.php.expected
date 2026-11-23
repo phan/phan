@@ -1,0 +1,13 @@
+%s:58 PhanClassContainsAbstractMethod non-abstract class \NS5968\Invalid contains abstract method \NS5968\Base::$ax::set declared at %s:14
+%s:58 PhanClassContainsAbstractMethod non-abstract class \NS5968\Invalid contains abstract method \NS5968\I::$irw::set declared at %s:10
+%s:58 PhanClassContainsAbstractMethod non-abstract class \NS5968\Invalid contains abstract method \NS5968\I::$ix::get declared at %s:9
+%s:68 PhanAccessOverridesFinalProperty Declaration of property \NS5968\Invalid->fp overrides final property \NS5968\Base->fp defined at %s:15
+%s:70 PhanPropertyHookFinalOverride Cannot override final property hook \NS5968\Base->hp::get defined at %s:17
+%s:74 PhanCommentOverrideOnNonOverrideMethod Saw an @override annotation for method \NS5968\Invalid::$virtual::set, but could not find an overridden method and it is not a magic method
+%s:79 PhanCommentOverrideOnNonOverrideMethod Saw an @override annotation for method \NS5968\Invalid::$new::get, but could not find an overridden method and it is not a magic method
+%s:105 PhanPropertyHookWithDefaultValue Virtual property \NS5968\Backing->e cannot have a default value - none of its hooks uses its backing value
+%s:112 PhanPropertyHookWithDefaultValue Virtual property \NS5968\Backing->f cannot have a default value - none of its hooks uses its backing value
+%s:119 PhanInvalidNode Non-abstract property hook \NS5968\Backing->g::get must have a body
+%s:135 PhanPropertyHookIncompatibleParamType Property hook \NS5968\SetParam->untyped::set parameter $v has type string which is incompatible with property type (no type)
+%s:140 PhanPropertyHookIncompatibleParamType Property hook \NS5968\SetParam->wide::set parameter $v has type string which is incompatible with property type array|string
+%s:145 PhanPropertyHookIncompatibleParamType Property hook \NS5968\SetParam->untyped_param::set parameter $v has type (no type) which is incompatible with property type string

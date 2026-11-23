@@ -605,6 +605,7 @@ class Issue
     public const AccessOverridesFinalMethodInternal     = 'PhanAccessOverridesFinalMethodInternal';
     public const AccessOverridesFinalMethodPHPDoc       = 'PhanAccessOverridesFinalMethodPHPDoc';
     public const AccessOverridesFinalConstant           = 'PhanAccessOverridesFinalConstant';
+    public const AccessOverridesFinalProperty    = 'PhanAccessOverridesFinalProperty';
     // TODO: Should probably also warn about the declaration
     public const AccessNonPublicAttribute               = 'PhanAccessNonPublicAttribute';
     public const AccessSetPropertyWrongContext          = 'PhanAccessSetPropertyWrongContext';
@@ -1090,7 +1091,7 @@ class Issue
                 self::PropertyHookWithDefaultValue,
                 self::CATEGORY_SYNTAX,
                 self::SEVERITY_NORMAL,
-                'Virtual property {PROPERTY} cannot have a default value - only properties with a set hook or backing storage can have defaults',
+                'Virtual property {PROPERTY} cannot have a default value - none of its hooks uses its backing value',
                 self::REMEDIATION_A,
                 17022
             ),
@@ -5262,6 +5263,14 @@ class Issue
                 "Declaration of class constant {CONST} overrides final constant {CONST} defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 1035
+            ),
+            new Issue(
+                self::AccessOverridesFinalProperty,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Declaration of property {PROPERTY} overrides final property {PROPERTY} defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                1039
             ),
             new Issue(
                 self::AccessSetPropertyWrongContext,

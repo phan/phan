@@ -18,6 +18,7 @@ use Phan\Analysis\DuplicateClassAnalyzer;
 use Phan\Analysis\LazyInheritedMethodsEligibility;
 use Phan\Analysis\ParentConstructorCalledAnalyzer;
 use Phan\Analysis\PostOrderAnalysisVisitor;
+use Phan\Analysis\PropertyHookAnalyzer;
 use Phan\Analysis\PropertyTypesAnalyzer;
 use Phan\AST\ASTReverter;
 use Phan\AST\ASTSimplifier;
@@ -4406,6 +4407,11 @@ class Clazz extends AddressableElement
         // Analyze this class to make sure that we don't have conflicting
         // types between similar inherited methods.
         CompositionAnalyzer::analyzeComposition(
+            $code_base,
+            $this
+        );
+
+        PropertyHookAnalyzer::analyzePropertyHooks(
             $code_base,
             $this
         );
