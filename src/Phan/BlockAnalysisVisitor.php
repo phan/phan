@@ -461,7 +461,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $plugin_set->postAnalyzeNode(
             $this->code_base,
             $context,
-            $node
+            $node,
+            $this->parent_node_list
         );
         return $context;
     }

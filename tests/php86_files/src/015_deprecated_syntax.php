@@ -42,6 +42,13 @@ function operators015(array $array, \ArrayAccess $object, ?array $nullable, int 
     var_dump($array[$key], [null => 1]);
     var_dump($array[''], $array[0], $array[] = 1);
     var_dump($object[null], $nullable[null]); // an ArrayAccess object, or not certain to be an array
+    [null => $from_array] = $array;      // 8.5: destructuring reads the offset null of the array
+    [null => $from_object] = $object;    // not deprecated for an ArrayAccess object
+    ['k' => [null => $nested]] = $array; // the type of the nested source is not checked
+    foreach ($array as [null => $element]) {
+        var_dump($element);
+    }
+    var_dump($from_array, $from_object, $nested);
 }
 var_dump(new let(), new is(), new _(), new Fine(), let(), fine(), is());
 
