@@ -1195,6 +1195,21 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
 
     /**
      * @override
+     */
+    public function withSelfResolvedInContext(Context $context): Type
+    {
+        if (!$context->isInClassScope()) {
+            return $this;
+        }
+        return $this->uniqueStaticResolutionResult(
+            $this->withMappedUnionTypes(static function (UnionType $union_type) use ($context): UnionType {
+                return $union_type->withSelfResolvedInContext($context);
+            })
+        );
+    }
+
+    /**
+     * @override
      * @suppress PhanAccessReadOnlyProperty the cache is not part of the value of the type
      */
     public function withStaticResolvedTo(Type $static_type): Type

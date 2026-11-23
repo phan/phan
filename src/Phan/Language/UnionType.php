@@ -50,7 +50,6 @@ use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ScalarRawType;
 use Phan\Language\Type\ScalarType;
-use Phan\Language\Type\SelfType;
 use Phan\Language\Type\StdClassShapeType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
@@ -1376,6 +1375,11 @@ class UnionType implements Serializable, Stringable
         }
         $context = $function->getContext();
         if ($function instanceof Method) {
+            // `self` is the class that declares the method: resolve it before `static`, which is the class after inheritance.
+            $self_resolved = $this->withSelfResolvedInContext($function->getSelfContext());
+            if ($self_resolved !== $this) {
+                return $self_resolved->withStaticResolvedInFunctionLike($function);
+            }
             // Gets the context of the method *after* inheritance
             $context = $context->withScope(new class ($function->getClassFQSEN()) extends Scope {
                 /** @var FullyQualifiedClassName the name being resolved */
@@ -1413,17 +1417,15 @@ class UnionType implements Serializable, Stringable
     public function withSelfResolvedInContext(
         Context $context
     ): UnionType {
-        // If the context isn't in a class scope, or if it doesn't have 'self',
+        // If the context isn't in a class scope, or if it has neither 'self' nor 'static' anywhere,
         // there's nothing we can do
-        if (!$context->isInClassScope() || !$this->hasSelfType()) {
+        if (!$context->isInClassScope() || $this->isStaticResolutionNoOp()) {
             return $this;
         }
 
+        // Also where 'self' is nested in a type, e.g. array<self> or Closure(self):static
         return $this->asMappedUnionType(static function (Type $type) use ($context): Type {
-            if ($type instanceof SelfType) {
-                return $type->withSelfResolvedInContext($context);
-            }
-            return $type;
+            return $type->withSelfResolvedInContext($context);
         });
     }
 

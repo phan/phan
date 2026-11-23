@@ -67,6 +67,43 @@ class GenericArrayTemplateKeyType extends GenericArrayType
         });
     }
 
+    /**
+     * Given a type such as array<TKey,self>, return array<TKey,SomeClass> (keeping the template of the key)
+     * @override
+     */
+    public function withSelfResolvedInContext(Context $context): Type
+    {
+        $resolved_element_type = $this->element_type->withSelfResolvedInContext($context);
+        if ($this->element_type === $resolved_element_type) {
+            return $this;
+        }
+        return self::fromTemplateAndElementType($resolved_element_type, $this->is_nullable, $this->template_key_type);
+    }
+
+    /**
+     * @override
+     */
+    public function withStaticResolvedInContext(Context $context): Type
+    {
+        $resolved_element_type = $this->element_type->withStaticResolvedInContext($context);
+        if ($this->element_type === $resolved_element_type) {
+            return $this;
+        }
+        return self::fromTemplateAndElementType($resolved_element_type, $this->is_nullable, $this->template_key_type);
+    }
+
+    /**
+     * @override
+     */
+    public function withStaticResolvedTo(Type $static_type): Type
+    {
+        $resolved_element_type = $this->element_type->withStaticResolvedTo($static_type);
+        if ($this->element_type === $resolved_element_type) {
+            return $this;
+        }
+        return self::fromTemplateAndElementType($resolved_element_type, $this->is_nullable, $this->template_key_type);
+    }
+
     public function __toString(): string
     {
         $string = 'array<' . $this->template_key_type->__toString() . ','

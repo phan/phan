@@ -140,6 +140,7 @@ final class StateVersionTest extends CodeBaseAwareTestBase
             'setDocComment' => static fn(Method $m) => $m->setDocComment('/** doc */'),
             // ClassElement
             'setDefiningFQSEN' => static fn(Method $m) => $m->setDefiningFQSEN($fqsen),
+            'setSelfClassFQSEN' => static fn(Method $m) => $m->setSelfClassFQSEN($fqsen->getFullyQualifiedClassName()),
             'setIsPHPDocAbstract' => static fn(Method $m) => $m->setIsPHPDocAbstract(true),
             'setIsOverrideIntended' => static fn(Method $m) => $m->setIsOverrideIntended(true),
             // HasAttributesTrait, ClosedScopeElement, Analyzable

@@ -2173,6 +2173,12 @@ class Clazz extends AddressableElement
             }
 
             $method->setFQSEN($method_fqsen);
+            // `self` in the signature of a method of a trait is the class that uses the trait (this class).
+            // A method inherited from a parent class keeps what `self` is there.
+            $original_class_fqsen = $original_method->getFQSEN()->getFullyQualifiedClassName();
+            if (!$this->isTrait() && $code_base->hasClassWithFQSEN($original_class_fqsen) && $code_base->getClassByFQSEN($original_class_fqsen)->isTrait()) {
+                $method->setSelfClassFQSEN($this->fqsen);
+            }
             // When we inherit it from the ancestor class, it may be an override in the ancestor class,
             // but that doesn't imply it's an override in *this* class.
             $method->setIsOverride($is_override);
@@ -3749,6 +3755,10 @@ class Clazz extends AddressableElement
             $method = $method->createUseAlias($this, $method->getName(), \ast\flags\MODIFIER_PROTECTED);
         } else {
             $method = $method->createUseAlias($this, $method->getName(), \ast\flags\MODIFIER_PUBLIC);
+        }
+        if ($this->isTrait()) {
+            // A trait that uses another trait: `self` is the class that uses this trait, which is not known yet.
+            return $method;
         }
         $context = $this->getContext()->withScope($this->internal_scope);
         $method->setUnionType(

@@ -3642,6 +3642,29 @@ class Type implements Stringable
     }
 
     /**
+     * @return Type
+     * Either this or 'self' (but not 'static') resolved in the given context, also where it is nested in this type,
+     * e.g. in `array<self>`, `array{v:self}`, `Closure(self):static` or `Box<self>`.
+     *
+     * `self` is the class that declares a method (or the class that uses the trait declaring it),
+     * while `static` is the class of the object: for an inherited method they are resolved in different contexts.
+     */
+    public function withSelfResolvedInContext(Context $context): Type
+    {
+        if (!$this->template_parameter_type_list) {
+            return $this;
+        }
+        $new_template_parameter_type_list = [];
+        foreach ($this->template_parameter_type_list as $t) {
+            $new_template_parameter_type_list[] = $t->withSelfResolvedInContext($context);
+        }
+        if ($new_template_parameter_type_list === $this->template_parameter_type_list) {
+            return $this;
+        }
+        return self::fromType($this, $new_template_parameter_type_list);
+    }
+
+    /**
      * @var array<string,bool> maps subclasses of Type to whether they inherit Type::withStaticResolvedInContext() unchanged
      */
     private static $inherits_static_resolution_in_context = [];

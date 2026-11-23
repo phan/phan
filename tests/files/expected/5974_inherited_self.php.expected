@@ -1,0 +1,25 @@
+%s:40 PhanTypeMismatchArgumentProbablyReal Argument 1 ($other) is $other of type \NS5974\Other but \NS5974\Child::take() takes \NS5974\Base (no real type) defined at %s:10 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:41 PhanTypeMismatchArgument Argument 1 ($others) is [$other] of type array{0:\NS5974\Other} but \NS5974\Child::takeAll() takes list<\NS5974\Base> defined at %s:12
+%s:42 PhanTypeMismatchArgumentProbablyReal Argument 1 ($other) is $other of type \NS5974\Other but \NS5974\PlainChild::equals() takes \NS5974\PlainBase (no real type) defined at %s:24 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:43 PhanTypeMismatchArgumentProbablyReal Argument 1 ($p0) is $other of type \NS5974\Other but Closure(\NS5974\Base):\NS5974\Child takes \NS5974\Base (no real type) defined at %s:16 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:46 PhanTypeMismatchArgumentSuperType Argument 1 ($other) is $plain_base of type \NS5974\PlainBase but \NS5974\PlainChild::sameClass() takes \NS5974\PlainChild defined at %s:26 (expected type to be the same or a subtype, but saw a supertype instead)
+%s:47 PhanUnusedVariable Unused definition of variable $me
+%s:48 PhanUnusedVariable Unused definition of variable $shape
+%s:49 PhanDebugAnnotation @phan-debug-var requested for variable $all - it has union type array<string,\NS5974\PlainBase>(real=array)
+%s:49 PhanDebugAnnotation @phan-debug-var requested for variable $closure - it has union type Closure(\NS5974\Base):\NS5974\Child(real=\Closure)
+%s:49 PhanDebugAnnotation @phan-debug-var requested for variable $me - it has union type \NS5974\Base
+%s:49 PhanDebugAnnotation @phan-debug-var requested for variable $shape - it has union type array{value:\NS5974\Base,same:\NS5974\Child}(real=array)
+%s:49 PhanUnusedVariable Unused definition of variable $all
+%s:68 PhanTypeInvalidArrayKey Saw array key $key with key type TKey but expected a value that could cast to int|string
+%s:75 PhanUnusedVariable Unused definition of variable $inner
+%s:76 PhanUnusedVariable Unused definition of variable $inner_shape
+%s:77 PhanUnusedVariable Unused definition of variable $optional
+%s:78 PhanDebugAnnotation @phan-debug-var requested for variable $inner - it has union type \NS5974\Composed
+%s:78 PhanDebugAnnotation @phan-debug-var requested for variable $inner_shape - it has union type array{value:\NS5974\Composed}(real=array)
+%s:78 PhanDebugAnnotation @phan-debug-var requested for variable $keyed - it has union type array<string,\NS5974\Composed>(real=array)
+%s:78 PhanDebugAnnotation @phan-debug-var requested for variable $optional - it has union type array{value?:\NS5974\Composed,same?:\NS5974\ComposedChild}(real=array)
+%s:78 PhanUnusedVariable Unused definition of variable $keyed
+%s:94 PhanUnusedVariable Unused definition of variable $public
+%s:95 PhanDebugAnnotation @phan-debug-var requested for variable $protected - it has union type array{value:\NS5974\GenericUser,same:\NS5974\GenericUserChild,data:int}
+%s:95 PhanDebugAnnotation @phan-debug-var requested for variable $public - it has union type array{value:\NS5974\GenericUser,data:int}
+%s:95 PhanUnusedVariable Unused definition of variable $protected
