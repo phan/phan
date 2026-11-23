@@ -1898,6 +1898,103 @@ class UnionTypeVisitor extends AnalysisVisitor
     private const FLAG_IGNORE_NULLABLE = 1 << 29;
 
     /**
+     * Checks a read of an offset whose type comes from the generic arrays of $union_type:
+     * warns if $union_type is nullable, or if the type of the offset is not a valid key of those arrays.
+     *
+     * @param Node $node a node of kind ast\AST_DIM
+     * @param UnionType $union_type the type of the expression that the offset is read from
+     * @param UnionType $dim_type the type of the offset
+     * @throws IssueException if the key is invalid, and this visitor does not catch issue exceptions
+     */
+    private function checkGenericArrayDimFetch(Node $node, UnionType $union_type, UnionType $dim_type): void
+    {
+        if (!($node->flags & self::FLAG_IGNORE_NULLABLE) && $union_type->containsNonMixedNullable()) {
+            $this->emitIssue(
+                Issue::TypeArraySuspiciousNullable,
+                $node->lineno,
+                ASTReverter::toShortString($node->children['expr']),
+                (string)$union_type
+            );
+        }
+
+        if (!$dim_type->isEmpty()) {
+            try {
+                $should_check = !$union_type->hasMixedOrNonEmptyMixedType() && !$union_type->hasArrayAccess($this->code_base);
+            } catch (RecursionDepthException) {
+                $should_check = false;
+            }
+            if ($should_check) {
+                if (Config::getValue('scalar_array_key_cast')) {
+                    $expected_key_type = UnionType::fromFullyQualifiedPHPDocString('int|string');
+                } else {
+                    $expected_key_type = GenericArrayType::unionTypeForKeyType(
+                        GenericArrayType::keyTypeFromUnionTypeKeys($union_type),
+                        GenericArrayType::CONVERT_KEY_MIXED_TO_INT_OR_STRING_UNION_TYPE
+                    );
+                }
+
+                if (!$dim_type->canCastToUnionType($expected_key_type, $this->code_base)) {
+                    $issue_type = Issue::TypeMismatchDimFetch;
+
+                    if ($dim_type->containsNullable() && $dim_type->nonNullableClone()->canCastToUnionType($expected_key_type, $this->code_base)) {
+                        $issue_type = Issue::TypeMismatchDimFetchNullable;
+                    }
+
+                    if ($this->should_catch_issue_exception) {
+                        $this->emitIssue(
+                            $issue_type,
+                            $node->lineno,
+                            (string)$union_type,
+                            (string)$dim_type,
+                            (string)$expected_key_type
+                        );
+                        return;
+                    }
+
+                    throw new IssueException(
+                        Issue::fromType($issue_type)(
+                            $this->context->getFile(),
+                            $node->lineno,
+                            [(string)$union_type, (string)$dim_type, (string)$expected_key_type]
+                        )
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * @return bool whether $union_type consists of array shapes, none of which has the key $dim_value, and of generic arrays.
+     * (resolveArrayShapeElementTypesForOffset() then gets the type of the element from the generic arrays of $union_type)
+     */
+    private static function isOffsetMissingFromArrayShapes(UnionType $union_type, mixed $dim_value): bool
+    {
+        if (!\is_scalar($dim_value)) {
+            return false;
+        }
+        if (\is_float($dim_value)) {
+            $dim_value = (int)$dim_value;
+        }
+        $has_array_shape = false;
+        $has_generic_array = false;
+        foreach ($union_type->getTypeSet() as $type) {
+            if ($type instanceof ArrayShapeType) {
+                if (isset($type->getFieldTypes()[$dim_value])) {
+                    return false;
+                }
+                $has_array_shape = true;
+            } elseif ($type instanceof ArrayType && $type instanceof GenericArrayInterface) {
+                $has_generic_array = true;
+            } elseif (!($type instanceof NullType)) {
+                // A string, mixed or an object: the offset is checked elsewhere, or cannot be checked.
+                // A plain array: any key is possible, and these reads were not checked before either.
+                return false;
+            }
+        }
+        return $has_array_shape && $has_generic_array;
+    }
+
+    /**
      * Visit a node with kind `\ast\AST_DIM`
      *
      * @param Node $node
@@ -1982,7 +2079,14 @@ class UnionTypeVisitor extends AnalysisVisitor
                     }
                     return $element_type->withNullableRealTypes()->withIsPossiblyUndefined(false);
                 }
-                // echo "Returning $element_type for {$union_type->getDebugRepresentation()}\n";
+                if (self::isOffsetMissingFromArrayShapes($union_type, $node->children['dim'])) {
+                    // The type is the type of the elements of the generic arrays: check the offset as for those
+                    $this->checkGenericArrayDimFetch(
+                        $node,
+                        $union_type,
+                        self::unionTypeFromNode($code_base, $context, $node->children['dim'], $this->should_catch_issue_exception)
+                    );
+                }
                 return $element_type;
             }
         }
@@ -2001,59 +2105,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // If we have generics, we're all set
         if (!$generic_types->isEmpty()) {
             $generic_types = $generic_types->asNormalizedTypes();
-            if (!($node->flags & self::FLAG_IGNORE_NULLABLE) && $union_type->containsNonMixedNullable()) {
-                $this->emitIssue(
-                    Issue::TypeArraySuspiciousNullable,
-                    $node->lineno,
-                    ASTReverter::toShortString($node->children['expr']),
-                    (string)$union_type
-                );
-            }
-
-            if (!$dim_type->isEmpty()) {
-                try {
-                    $should_check = !$union_type->hasMixedOrNonEmptyMixedType() && !$union_type->hasArrayAccess($code_base);
-                } catch (RecursionDepthException) {
-                    $should_check = false;
-                }
-                if ($should_check) {
-                    if (Config::getValue('scalar_array_key_cast')) {
-                        $expected_key_type = $int_or_string_union_type;
-                    } else {
-                        $expected_key_type = GenericArrayType::unionTypeForKeyType(
-                            GenericArrayType::keyTypeFromUnionTypeKeys($union_type),
-                            GenericArrayType::CONVERT_KEY_MIXED_TO_INT_OR_STRING_UNION_TYPE
-                        );
-                    }
-
-                    if (!$dim_type->canCastToUnionType($expected_key_type, $code_base)) {
-                        $issue_type = Issue::TypeMismatchDimFetch;
-
-                        if ($dim_type->containsNullable() && $dim_type->nonNullableClone()->canCastToUnionType($expected_key_type, $code_base)) {
-                            $issue_type = Issue::TypeMismatchDimFetchNullable;
-                        }
-
-                        if ($this->should_catch_issue_exception) {
-                            $this->emitIssue(
-                                $issue_type,
-                                $node->lineno,
-                                (string)$union_type,
-                                (string)$dim_type,
-                                (string)$expected_key_type
-                            );
-                            return $generic_types;
-                        }
-
-                        throw new IssueException(
-                            Issue::fromType($issue_type)(
-                                $context->getFile(),
-                                $node->lineno,
-                                [(string)$union_type, (string)$dim_type, (string)$expected_key_type]
-                            )
-                        );
-                    }
-                }
-            }
+            $this->checkGenericArrayDimFetch($node, $union_type, $dim_type);
             return $generic_types;
         }
 

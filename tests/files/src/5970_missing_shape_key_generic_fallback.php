@@ -47,3 +47,12 @@ function unknown5970($object, $mixed): void {
 function shape5970(array $shape): void {
     echo $shape['other'];
 }
+/**
+ * The offset is still checked against the generic arrays
+ * @param array{0:int}|array<int,string> $int_keys
+ * @param ?array{tax:int}|array<string,string> $nullable
+ */
+function checked5970(array $int_keys, ?array $nullable): void {
+    echo $int_keys['other'];
+    echo $nullable['other'];
+}
