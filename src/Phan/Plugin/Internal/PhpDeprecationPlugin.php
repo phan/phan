@@ -1153,9 +1153,6 @@ final class PhpDeprecationPlugin extends PluginV3 implements
         // [the function or method, the php version id of the deprecation, whether the number of arguments is deprecated, the description]
         $deprecated_argument_counts = [
             ['mb_check_encoding', 80100, static fn(int $count): bool => $count === 0, 'Calling mb_check_encoding() without arguments is deprecated as of PHP 8.1'],
-            ['imagepolygon', 80100, static fn(int $count): bool => $count === 4, 'Passing $num_points is deprecated as of PHP 8.1; it is the number of elements of $points divided by 2'],
-            ['imageopenpolygon', 80100, static fn(int $count): bool => $count === 4, 'Passing $num_points is deprecated as of PHP 8.1; it is the number of elements of $points divided by 2'],
-            ['imagefilledpolygon', 80100, static fn(int $count): bool => $count === 4, 'Passing $num_points is deprecated as of PHP 8.1; it is the number of elements of $points divided by 2'],
             ['get_class', 80300, static fn(int $count): bool => $count === 0, 'Calling get_class() without arguments is deprecated as of PHP 8.3; use self::class or static::class instead'],
             ['get_parent_class', 80300, static fn(int $count): bool => $count === 0, 'Calling get_parent_class() without arguments is deprecated as of PHP 8.3; use parent::class instead'],
             ['ReflectionMethod::__construct', 80400, static fn(int $count): bool => $count === 1, 'Calling ReflectionMethod::__construct() with 1 argument is deprecated as of PHP 8.4; use ReflectionMethod::createFromMethodName() instead'],
@@ -1212,6 +1209,26 @@ final class PhpDeprecationPlugin extends PluginV3 implements
                             return;
                         }
                     }
+                };
+        }
+
+        // PHP 8.1: the $num_points argument of the polygon functions. With null as the 4th argument, the 3rd is the color.
+        foreach (['imagepolygon', 'imageopenpolygon', 'imagefilledpolygon'] as $name) {
+            $closures["\\$name"] =
+                /** @param list<Node|int|float|string> $args */
+                static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args, ?Node $call_node): void {
+                    if (count($args) !== 4) {
+                        return;
+                    }
+                    $color = self::getPositionalArgument($args, 3);
+                    if ($color === null) {
+                        return;
+                    }
+                    $type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $color);
+                    if ($type->isEmpty() || $type->containsNullableOrMixed()) {
+                        return;
+                    }
+                    self::emitDeprecatedCallForm($code_base, $context, $function, $call_node, 'Passing $num_points is deprecated as of PHP 8.1; it is the number of elements of $points divided by 2');
                 };
         }
 
