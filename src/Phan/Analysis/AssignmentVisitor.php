@@ -2831,9 +2831,11 @@ class AssignmentVisitor extends AnalysisVisitor
         $has_untyped_fallback = false;
         $has_callable_array = false;
         $element_may_be_created = false;
+        $old_shapes = [];
         foreach ($old_container_types as $type) {
             if ($type instanceof ArrayShapeType) {
                 $element_may_be_created = true;
+                $old_shapes[] = $type;
                 continue;
             }
             if ($type instanceof CallableArrayType) {
@@ -2882,6 +2884,16 @@ class AssignmentVisitor extends AnalysisVisitor
                 return UnionType::of($merged_shapes, \array_merge($right_type->getRealTypeSet(), [ArrayType::instance(false)]));
             }
             \array_push($phpdoc_fallback_types, ...$merged_shapes);
+        }
+        // The array shapes of the old element (e.g. array{a:int,b:string} of array<array{a:int,b:string}|array<string,\stdClass>>)
+        // keep their other keys too. When they are mixed with other array types, the caller does not merge them with the write,
+        // so merge them here: $x[0]['a'] = 1 gives array{a:1,b:string}.
+        foreach ($old_shapes as $old_shape) {
+            foreach ($right_type->getTypeSet() as $type) {
+                if ($type instanceof ArrayShapeType) {
+                    $phpdoc_fallback_types[] = ArrayShapeType::fromFieldTypes(\array_replace($old_shape->getFieldTypes(), $type->getFieldTypes()), false);
+                }
+            }
         }
         // Only `array` is known at runtime, keep the real types of the result.
         return $right_type->withUnionType(UnionType::of($phpdoc_fallback_types, [ArrayType::instance(false)]));

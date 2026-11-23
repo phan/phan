@@ -129,3 +129,12 @@ writeGlobals([]);
 echo $initialized['missing'];  // true positive
 echo $settings['options']['other'];
 echo $unknown['other'];
+
+/**
+ * The array shapes of the element keep their other keys when they are mixed with generic arrays.
+ * @param array<array{a:int,b:string}|array<string,\stdClass>> $rows
+ */
+function writeShapeOrGenericElement(array $rows): void {
+    $rows[0]['a'] = 1;
+    echo strlen($rows[0]['b']);
+}
