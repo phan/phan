@@ -72,3 +72,11 @@ function callableArrayElements(array $values): void {
         echo array_sum($values['a'][1]);
     }
 }
+
+/** The types of the keys of $values['a']['b'] say nothing about the other keys of $values['a']. */
+function nestedSiblingKeys(array $values): void {
+    if (is_string($values['a']['b']['c'])) {
+        echo array_sum($values['a']['d']['c']);
+        echo array_sum($values['a']['d']);
+    }
+}

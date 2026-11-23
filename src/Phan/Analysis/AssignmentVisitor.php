@@ -2769,24 +2769,31 @@ class AssignmentVisitor extends AnalysisVisitor
             // The type of the array element is unknown.
             $old_container_type = MixedType::instance(false)->asPHPDocUnionType();
         }
-        $fallback_types = [];
+        $typed_fallback_types = [];
+        $has_untyped_fallback = false;
         foreach ($old_container_type->getTypeSet() as $type) {
             if ($type instanceof ArrayShapeType) {
                 continue;
             }
             if ($type instanceof GenericArrayInterface) {
                 // array<string,int>, list<string>, callable-array, etc.: the keys are unknown, but the types of the values are known.
-                $fallback_types[] = $type;
+                $typed_fallback_types[] = $type;
             } elseif ($type instanceof ArrayType || $type instanceof MixedType) {
-                // array, mixed, non-empty-mixed, etc.: the keys are unknown.
-                $fallback_types[] = GenericArrayType::fromElementType(MixedType::instance(false), false, GenericArrayType::KEY_MIXED);
+                // array, mixed, non-empty-mixed, etc.: neither the keys nor the types of the values are known.
+                $has_untyped_fallback = true;
             }
         }
-        if (!$fallback_types) {
-            return $right_type;
+        if ($typed_fallback_types) {
+            // The array element has the key that was checked, so it is not empty.
+            $right_type = $right_type->withUnionType(UnionType::of($typed_fallback_types)->nonFalseyClone());
         }
-        // The array element has the key that was checked, so it is not empty.
-        return $right_type->withUnionType(UnionType::of($fallback_types)->nonFalseyClone());
+        if ($has_untyped_fallback) {
+            // Use the plain array type, not non-empty-array<mixed,mixed>: reading a key that is in no array shape of
+            // array{b:...}|array is mixed, while for array{b:...}|non-empty-array<mixed,mixed>
+            // the types of the fields of the shape would be used (e.g. the type of $x['a']['d']['c'] after is_string($x['a']['b']['c'])).
+            $right_type = $right_type->withType(ArrayType::instance(false));
+        }
+        return $right_type;
     }
 
     private function computeTypeOfMultiDimensionalAssignment(UnionType $old_union_type, UnionType $right_type, bool $outer_may_be_absent = false): UnionType
