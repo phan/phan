@@ -39,6 +39,7 @@ use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\AssociativeArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FalseType;
+use Phan\Language\Type\GenericArrayInterface;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\ListType;
 use Phan\Language\Type\MixedType;
@@ -1018,6 +1019,11 @@ class AssignmentVisitor extends AnalysisVisitor
             $right_type = ArrayShapeType::fromFieldTypes([
                 $dim_value => $this->right_type,
             ], false)->asRealUnionType();
+            if ($this->is_conditional_check && $expr_node->kind === ast\AST_DIM) {
+                // A condition such as `if ($x['a']['b'])` proves only that $x['a'] has the key 'b'.
+                // If the other keys of $x['a'] are unknown, keep them possible, so that reading $x['a']['c'] is not an invalid offset.
+                $right_type = $this->withConditionalDimContainerFallback($expr_node, $right_type);
+            }
         } else {
             // Make the right type a generic (i.e. int -> int[])
             if ($dim_node !== null) {
@@ -2737,6 +2743,60 @@ class AssignmentVisitor extends AnalysisVisitor
         $this->context->addScopeVariable($variable);
 
         return $this->context;
+    }
+
+    /**
+     * A condition such as `if ($x['a']['b'])` narrows the type of $x['a'] to array{b:non-empty-mixed}.
+     * Where $x['a'] was not known to be an array shape (e.g. it was mixed, array or array<string,mixed>),
+     * its other keys are unknown and may exist, so add array types without a shape next to the new shape,
+     * as is done when narrowing a variable with `if ($x['b'])`:
+     * the typed arrays of $x['a'] (e.g. array<string,mixed>), or `array` if its values are unknown (array, mixed).
+     * Without this, reading $x['a']['c'] afterwards would emit PhanTypeInvalidDimOffset.
+     * As for a variable, this means that passing $x['a'] where e.g. array{b:string} is expected is not reported.
+     *
+     * Array shapes of the container are not kept here: they are merged with the new shape by the caller,
+     * so that invalid offsets of declared array shapes are still detected.
+     *
+     * @param Node $container_node the node of the array element being narrowed (a node of kind ast\AST_DIM)
+     * @param UnionType $right_type the narrowed type of that array element, an array shape
+     */
+    private function withConditionalDimContainerFallback(Node $container_node, UnionType $right_type): UnionType
+    {
+        try {
+            $old_container_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $container_node, false);
+        } catch (IssueException) {
+            return $right_type;
+        }
+        if ($old_container_type->isEmpty()) {
+            // The type of the array element is unknown.
+            $old_container_type = MixedType::instance(false)->asPHPDocUnionType();
+        }
+        $typed_fallback_types = [];
+        $has_untyped_fallback = false;
+        foreach ($old_container_type->getTypeSet() as $type) {
+            if ($type instanceof ArrayShapeType) {
+                continue;
+            }
+            if ($type instanceof GenericArrayInterface) {
+                // array<string,int>, list<string>, callable-array, etc.: the keys are unknown, but the types of the values are known.
+                $typed_fallback_types[] = $type;
+            } elseif ($type instanceof ArrayType || $type instanceof MixedType) {
+                // array, mixed, non-empty-mixed, etc.: neither the keys nor the types of the values are known.
+                $has_untyped_fallback = true;
+            }
+        }
+        if ($typed_fallback_types) {
+            // Not empty, like the shape they are added to, which has the key that was checked
+            // (also for conditions such as is_null($x['a']['b']), as for variables).
+            $right_type = $right_type->withUnionType(UnionType::of($typed_fallback_types)->nonFalseyClone());
+        }
+        if ($has_untyped_fallback) {
+            // Use the plain array type, not non-empty-array<mixed,mixed>: reading a key that is in no array shape of
+            // array{b:...}|array is mixed, while for array{b:...}|non-empty-array<mixed,mixed>
+            // the types of the fields of the shape would be used (e.g. the type of $x['a']['d']['c'] after is_string($x['a']['b']['c'])).
+            $right_type = $right_type->withType(ArrayType::instance(false));
+        }
+        return $right_type;
     }
 
     private function computeTypeOfMultiDimensionalAssignment(UnionType $old_union_type, UnionType $right_type, bool $outer_may_be_absent = false): UnionType
