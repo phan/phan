@@ -939,7 +939,7 @@ class ParseVisitor extends ScopeVisitor
                 $this->context,
                 $hook_node->children['attributes'] ?? null
             ));
-            if (!$body_node && !$is_abstract_property && !$property->checkHasSuppressIssueAndIncrementCount(Issue::InvalidNode)) {
+            if (!$body_node && !$is_abstract_property && (Config::getValue('disable_suppression') || !$property->checkHasSuppressIssueAndIncrementCount(Issue::InvalidNode))) {
                 $this->emitIssue(
                     Issue::InvalidNode,
                     $hook_node->lineno,

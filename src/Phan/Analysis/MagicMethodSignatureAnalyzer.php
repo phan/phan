@@ -218,7 +218,7 @@ class MagicMethodSignatureAnalyzer
 
     private static function emitIssue(CodeBase $code_base, Method $method, string $issue_type, string ...$args): void
     {
-        if ($method->checkHasSuppressIssueAndIncrementCount($issue_type)) {
+        if (!Config::getValue('disable_suppression') && $method->checkHasSuppressIssueAndIncrementCount($issue_type)) {
             return;
         }
         Issue::maybeEmit(
