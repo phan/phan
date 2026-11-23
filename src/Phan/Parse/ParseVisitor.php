@@ -2857,7 +2857,8 @@ class ParseVisitor extends ScopeVisitor
 
     /**
      * @param Node|string|float|int|bool|null $n
-     * @return bool whether PHP evaluates $n to a value at compile time: a literal, or operators applied to literals (e.g. `'str' . 'len'`).
+     * @return bool whether PHP evaluates $n to a value at compile time: a literal, or operators, arrays and offsets of literals
+     * (e.g. `'str' . 'len'`, `['stdClass'][0]`), or `Name::class`.
      * Constants such as PHP_VERSION are not evaluated there.
      */
     private static function isFoldedToLiteral(Node|bool|float|int|null|string $n): bool
@@ -2866,9 +2867,14 @@ class ParseVisitor extends ScopeVisitor
             return $n !== null;
         }
         switch ($n->kind) {
+            case ast\AST_CLASS_NAME:
+                return self::isNodeOfKind($n->children['class'], ast\AST_NAME) && self::isClassNameAllowedInConstExpr($n->children['class']);
             case ast\AST_BINARY_OP:
             case ast\AST_UNARY_OP:
             case ast\AST_CONDITIONAL:
+            case ast\AST_DIM:
+            case ast\AST_ARRAY:
+            case ast\AST_ARRAY_ELEM:
                 foreach ($n->children as $child_node) {
                     if ($child_node !== null && !self::isFoldedToLiteral($child_node)) {
                         return false;

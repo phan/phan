@@ -27,8 +27,8 @@ $closure = function (string $s = (string) 2): string {  // PHP 8.5+
     return $s;
 };
 // The class name of `new` and the name of a first-class callable can be operations on literals, which PHP evaluates at compile time.
-function folded(object $o = new ('std' . 'Class')): object {
-    return $o;
+function folded(object $o = new ('std' . 'Class'), object $p = new (A::class), object $q = new (['stdClass'][0])): array {
+    return [$o, $p, $q];
 }
 const FOLDED = ('strlen')(...);  // PHP 8.5+
 var_export([defaults(), $closure(), folded(), FOLDED]);

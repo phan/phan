@@ -4,3 +4,5 @@
 %s:34 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type ?1
 %s:34 PhanPossiblyUndeclaredVariable Variable $x is possibly undeclared
 %s:36 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type 42|string(real=42|string)
+%s:42 PhanPluginUnknownArrayFunctionReturnType Function \NS009\k() has a return type of array, but does not specify key or value types
+%s:44 PhanDebugAnnotation @phan-debug-var requested for variable $pair - it has union type array{0:1,1:1}

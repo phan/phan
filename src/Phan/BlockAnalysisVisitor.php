@@ -751,9 +751,17 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         if ($var_node instanceof Node) {
             $context = $this->analyzeAndGetUpdatedContext($context, $node, $var_node);
         }
+        // Infer the type of the static variable where the initializer ran (e.g. `static $a = [$b = 1, $b];`),
+        // then merge the other variables with the context where it was skipped.
         $context_after_initializer = $this->analyzeAndGetUpdatedContext($context->withClonedScope(), $node, $default);
+        $context_after_initializer = $this->postOrderAnalyze($context_after_initializer, $node);
         $context = (new ContextMergeVisitor($context, [$context, $context_after_initializer], $this->code_base))->combineChildContextList();
-        return $this->postOrderAnalyze($context, $node);
+        $var_name = $var_node instanceof Node ? $var_node->children['name'] : null;
+        if (\is_string($var_name) && $context_after_initializer->getScope()->hasVariableWithName($var_name)) {
+            // The static variable is defined in both cases.
+            $context->addScopeVariable($context_after_initializer->getScope()->getVariableByName($var_name));
+        }
+        return $context;
     }
 
     /**

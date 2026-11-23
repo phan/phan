@@ -38,3 +38,11 @@ function h(string $value, bool $cond): string {
     return "$value $s $cached";
 }
 echo h('a', true);
+
+function k(): array {
+    // $y is defined when it is read: both are evaluated in the same run of the initializer.
+    static $pair = [$y = 1, $y];
+    '@phan-debug-var $pair';
+    return $pair;
+}
+var_export(k());
