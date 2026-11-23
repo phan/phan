@@ -17,6 +17,7 @@ use Phan\AST\ContextNode;
 use Phan\AST\PhanAnnotationAdder;
 use Phan\AST\ScopeImpactCheckingVisitor;
 use Phan\AST\PartialApplication;
+use Phan\AST\ParentPropertyHookCall;
 use Phan\AST\UnionTypeVisitor;
 use Phan\BlockAnalysisVisitor;
 use Phan\CodeBase;
@@ -3193,6 +3194,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitStaticCall(Node $node): Context
     {
+        if (ParentPropertyHookCall::isParentHookCall($this->context, $node)) {
+            $this->analyzeParentPropertyHookCall($node);
+            return $this->context;
+        }
         // Get the name of the method being called
         $method_name = $node->children['method'];
 
@@ -5112,6 +5117,94 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 (string)$method->getFileRef()->getLineNumberStart()
             );
         }
+    }
+
+    /**
+     * @param Node $node `parent::$prop::get()` or `parent::$prop::set($value)` in the hook of the same name of `$prop`
+     */
+    private function analyzeParentPropertyHookCall(Node $node): void
+    {
+        // Check the arguments, e.g. for undeclared variables
+        $argument_types = [];
+        foreach ($node->children['args']->children ?? [] as $arg) {
+            $argument_types[] = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $arg);
+        }
+        $class = $this->context->getClassInScope($this->code_base);
+        if (!$class->hasParentType()) {
+            if (!$class->isTrait()) {
+                $this->emitIssue(
+                    Issue::ParentlessClass,
+                    $node->lineno,
+                    (string)$class->getFQSEN()
+                );
+            }
+            return;
+        }
+        $property = ParentPropertyHookCall::getParentProperty($this->code_base, $this->context, $node);
+        if (!$property) {
+            if ($this->code_base->hasClassWithFQSEN($class->getParentClassFQSEN())) {
+                $this->emitIssue(
+                    Issue::UndeclaredProperty,
+                    $node->lineno,
+                    $class->getParentClassFQSEN() . '->' . $node->children['class']->children['prop']
+                );
+            }
+            return;
+        }
+        if ($property->isPrivate()) {
+            $this->emitIssue(
+                Issue::AccessPropertyPrivate,
+                $node->lineno,
+                $property->asPropertyFQSENString(),
+                $property->getContext()->getFile(),
+                $property->getContext()->getLineNumberStart()
+            );
+            return;
+        }
+        $property->addReference($this->context);
+        if (\strcasecmp((string)$node->children['method'], 'get') === 0) {
+            $property->setHasReadReference();
+        } else {
+            $property->setHasWriteReference();
+            if (\count($argument_types) === 1) {
+                $this->checkParentSetHookArgument($node, $property, $argument_types[0]);
+            }
+        }
+    }
+
+    /**
+     * Check the argument of `parent::$prop::set($value)` against the type that the parent's property accepts.
+     *
+     * @param Node $node a node of kind ast\AST_STATIC_CALL for which ParentPropertyHookCall::isParentHookCall() is true
+     */
+    private function checkParentSetHookArgument(Node $node, Property $property, UnionType $argument_type): void
+    {
+        $argument_node = $node->children['args']->children[0];
+        if ($argument_node instanceof Node && \in_array($argument_node->kind, [ast\AST_UNPACK, ast\AST_NAMED_ARG], true)) {
+            return;
+        }
+        $expected_type = ParentPropertyHookCall::getSetParameterType($this->code_base, $this->context, $property);
+        if ($argument_type->isEmpty() || $expected_type->isEmpty()) {
+            return;
+        }
+        if ($argument_type->asExpandedTypes($this->code_base)->canCastToUnionType($expected_type, $this->code_base)) {
+            return;
+        }
+        $set_hook = $property->getSetHook();
+        $parameter = $set_hook ? ($set_hook->getParameterList()[0] ?? null) : null;
+        $declaration_context = $set_hook ? $set_hook->getContext() : $property->getContext();
+        $this->emitIssue(
+            Issue::TypeMismatchArgument,
+            $node->lineno,
+            1,
+            $parameter ? $parameter->getName() : 'value',
+            ASTReverter::toShortString($argument_node),
+            $argument_type->toErrorMessageString(),
+            $property->getRealDefiningFQSEN()->getFullyQualifiedClassName() . '::$' . $property->getName() . '::set()',
+            $expected_type->toErrorMessageString(),
+            $declaration_context->getFile(),
+            $declaration_context->getLineNumberStart()
+        );
     }
 
     /**

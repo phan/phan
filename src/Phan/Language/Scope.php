@@ -13,6 +13,7 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope\BranchScope;
+use Phan\Language\Scope\PropertyHookScope;
 use Phan\Language\Type\TemplateType;
 
 use function count;
@@ -234,6 +235,16 @@ abstract class Scope
     public function getPropertyFQSEN(): FullyQualifiedPropertyName
     {
         return $this->parent_scope->getPropertyFQSEN();
+    }
+
+    /**
+     * @return ?PropertyHookScope
+     * The scope of the body of the property hook we're in, or null when not directly in one
+     * (e.g. null in a closure declared in a hook)
+     */
+    public function getPropertyHookScopeOrNull(): ?PropertyHookScope
+    {
+        return null;
     }
 
     /**

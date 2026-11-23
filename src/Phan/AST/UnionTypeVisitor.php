@@ -472,6 +472,11 @@ class UnionTypeVisitor extends AnalysisVisitor
                     }
                     return self::literalStringUnionType($value);
                 }
+                $hook_scope = $this->context->getScope()->getPropertyHookScopeOrNull();
+                if ($hook_scope) {
+                    // In a property hook, e.g. '$prop::get'
+                    return self::literalStringUnionType('$' . $hook_scope->getHookPropertyFQSEN()->getName() . '::' . $hook_scope->getHookName());
+                }
                 $this->warnAboutUndeclaredMagicConstant($node, 'used outside of functionlike');
                 break;
             case ast\flags\MAGIC_METHOD:
@@ -487,6 +492,14 @@ class UnionTypeVisitor extends AnalysisVisitor
                         );
                     }
                     return self::literalStringUnionType($fqsen->isClosure() ? '{closure}' : \ltrim($fqsen->__toString(), '\\'));
+                }
+                $hook_scope = $this->context->getScope()->getPropertyHookScopeOrNull();
+                if ($hook_scope) {
+                    // In a property hook, e.g. 'NS\MyClass::$prop::get'
+                    $property_fqsen = $hook_scope->getHookPropertyFQSEN();
+                    return self::literalStringUnionType(
+                        \ltrim($property_fqsen->getFullyQualifiedClassName()->__toString(), '\\') . '::$' . $property_fqsen->getName() . '::' . $hook_scope->getHookName()
+                    );
                 }
                 $this->warnAboutUndeclaredMagicConstant($node, 'used outside of a functionlike');
                 break;
@@ -3616,6 +3629,9 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitStaticCall(Node $node): UnionType
     {
+        if (ParentPropertyHookCall::isParentHookCall($this->context, $node)) {
+            return ParentPropertyHookCall::getUnionType($this->code_base, $this->context, $node);
+        }
         return $this->visitMethodCall($node);
     }
 
