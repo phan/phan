@@ -6,6 +6,7 @@ namespace Phan\Analysis;
 
 use ast;
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Flags;
@@ -249,7 +250,7 @@ class PropertyHookAnalyzer
      */
     private static function emitIssue(CodeBase $code_base, Clazz $class, Property $property, string $issue_type, int $lineno, int|string ...$args): void
     {
-        if ($property->checkHasSuppressIssueAndIncrementCount($issue_type)) {
+        if (!Config::getValue('disable_suppression') && $property->checkHasSuppressIssueAndIncrementCount($issue_type)) {
             return;
         }
         if ($property->getRealDefiningFQSEN()->getFullyQualifiedClassName() !== $class->getFQSEN()) {

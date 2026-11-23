@@ -167,6 +167,8 @@ class Issue
     public const TypeInvalidThrowsIsTrait               = 'PhanTypeInvalidThrowsIsTrait';
     public const TypeInvalidThrowsIsInterface           = 'PhanTypeInvalidThrowsIsInterface';
     public const TypeMagicVoidWithReturn                = 'PhanTypeMagicVoidWithReturn';
+    public const InvalidMagicMethodSignature            = 'PhanInvalidMagicMethodSignature';
+    public const MagicMethodNonPublic                   = 'PhanMagicMethodNonPublic';
     public const TypeMismatchArgument                   = 'PhanTypeMismatchArgument';
     public const TypeMismatchArgumentProbablyReal       = 'PhanTypeMismatchArgumentProbablyReal';
     public const TypeMismatchArgumentReal               = 'PhanTypeMismatchArgumentReal';
@@ -359,6 +361,7 @@ class Issue
     public const DeprecatedPartiallySupportedCallableAlternateScope = 'PhanDeprecatedPartiallySupportedCallableAlternateScope';
     public const DeprecatedEncapsVar       = 'PhanDeprecatedEncapsVar';
     public const DeprecatedImplicitNullableParam = 'PhanDeprecatedImplicitNullableParam';
+    public const DeprecatedNullableDebugInfoReturnType = 'PhanDeprecatedNullableDebugInfoReturnType';
     public const DeprecatedReturnInFinally = 'PhanDeprecatedReturnInFinally';
     public const DeprecatedReservedName = 'PhanDeprecatedReservedName';
     public const DeprecatedConstructorObjectParamInternal = 'PhanDeprecatedConstructorObjectParamInternal';
@@ -2519,6 +2522,22 @@ class Issue
                 10213
             ),
             new Issue(
+                self::InvalidMagicMethodSignature,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_CRITICAL,
+                'Invalid signature of magic method {METHOD}: {DETAILS}',
+                self::REMEDIATION_B,
+                10214
+            ),
+            new Issue(
+                self::MagicMethodNonPublic,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'The magic method {METHOD} must have public visibility',
+                self::REMEDIATION_B,
+                10215
+            ),
+            new Issue(
                 self::TypeModifyImmutableObjectProperty,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_CRITICAL,
@@ -3471,6 +3490,14 @@ class Issue
                 'Using "{DETAILS}" as the name of {DETAILS} has been deprecated in PHP 8.6',
                 self::REMEDIATION_B,
                 5017
+            ),
+            new Issue(
+                self::DeprecatedNullableDebugInfoReturnType,
+                self::CATEGORY_DEPRECATED,
+                self::SEVERITY_NORMAL,
+                'Returning null from {METHOD} has been deprecated in PHP 8.6: make the return type non-nullable and return an empty array instead',
+                self::REMEDIATION_B,
+                5018
             ),
 
             // Issue::CATEGORY_PARAMETER

@@ -1,0 +1,65 @@
+%s:6 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\Arguments::__destruct(): it cannot take arguments
+%s:7 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\Arguments::__clone(): it cannot take arguments
+%s:8 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\Arguments::__get(): it must take exactly 1 argument
+%s:9 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\Arguments::__set(): it must take exactly 2 arguments
+%s:10 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\Arguments::__unset(): it must take exactly 1 argument
+%s:11 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\Arguments::__call(): it must take exactly 2 arguments
+%s:12 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\Arguments::__toString(): it cannot take arguments
+%s:13 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\Arguments::__sleep(): it cannot take arguments
+%s:16 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ByReference::__get(): it cannot take arguments by reference
+%s:17 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ByReference::__set(): it cannot take arguments by reference
+%s:18 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ByReference::__callStatic(): it cannot take arguments by reference
+%s:21 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\StaticRules::__construct(): it cannot be static
+%s:22 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\StaticRules::__get(): it cannot be static
+%s:23 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\StaticRules::__call(): it cannot be static
+%s:24 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\StaticRules::__callStatic(): it must be static
+%s:25 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\StaticRules::__set_state(): it must be static
+%s:26 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\StaticRules::__invoke(): it cannot be static
+%s:27 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\StaticRules::__toString(): it cannot be static
+%s:30 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ParameterTypes::__get(): parameter #1 ($name) must be of type string when declared
+%s:31 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ParameterTypes::__isset(): parameter #1 ($name) must be of type string when declared
+%s:32 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ParameterTypes::__call(): parameter #2 ($args) must be of type array when declared
+%s:33 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ParameterTypes::__callStatic(): parameter #1 ($name) must be of type string when declared
+%s:34 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ParameterTypes::__unserialize(): parameter #1 ($data) must be of type array when declared
+%s:35 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ParameterTypes::__set_state(): parameter #1 ($properties) must be of type array when declared
+%s:38 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ReturnTypes::__construct(): it cannot declare a return type
+%s:39 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ReturnTypes::__destruct(): it cannot declare a return type
+%s:40 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ReturnTypes::__clone(): the return type must be void when declared
+%s:40 PhanTypeMagicVoidWithReturn Found a return statement with a value in the implementation of the magic method \NS5969\ReturnTypes::__clone, expected void return type
+%s:41 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ReturnTypes::__set(): the return type must be void when declared
+%s:41 PhanTypeMagicVoidWithReturn Found a return statement with a value in the implementation of the magic method \NS5969\ReturnTypes::__set, expected void return type
+%s:42 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ReturnTypes::__unset(): the return type must be void when declared
+%s:42 PhanTypeMagicVoidWithReturn Found a return statement with a value in the implementation of the magic method \NS5969\ReturnTypes::__unset, expected void return type
+%s:43 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ReturnTypes::__isset(): the return type must be bool when declared
+%s:44 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ReturnTypes::__toString(): the return type must be string when declared
+%s:45 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ReturnTypes::__debugInfo(): the return type must be ?array when declared
+%s:46 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ReturnTypes::__serialize(): the return type must be array when declared
+%s:47 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ReturnTypes::__unserialize(): the return type must be void when declared
+%s:47 PhanTypeMagicVoidWithReturn Found a return statement with a value in the implementation of the magic method \NS5969\ReturnTypes::__unserialize, expected void return type
+%s:48 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ReturnTypes::__set_state(): the return type must be object when declared
+%s:49 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ReturnTypes::__sleep(): the return type must be array when declared
+%s:50 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ReturnTypes::__wakeup(): the return type must be void when declared
+%s:50 PhanTypeMagicVoidWithReturn Found a return statement with a value in the implementation of the magic method \NS5969\ReturnTypes::__wakeup, expected void return type
+%s:54 PhanMagicMethodNonPublic The magic method \NS5969\Visibility::__get() must have public visibility
+%s:54 PhanUnusedPrivateMethodParameter Parameter $name is never used
+%s:55 PhanMagicMethodNonPublic The magic method \NS5969\Visibility::__set() must have public visibility
+%s:55 PhanUnusedProtectedMethodParameter Parameter $name is never used
+%s:55 PhanUnusedProtectedMethodParameter Parameter $value is never used
+%s:56 PhanMagicMethodNonPublic The magic method \NS5969\Visibility::__call() must have public visibility
+%s:56 PhanUnusedPrivateMethodParameter Parameter $args is never used
+%s:56 PhanUnusedPrivateMethodParameter Parameter $name is never used
+%s:57 PhanMagicMethodNonPublic The magic method \NS5969\Visibility::__callStatic() must have public visibility
+%s:57 PhanUnusedProtectedMethodParameter Parameter $args is never used
+%s:57 PhanUnusedProtectedMethodParameter Parameter $name is never used
+%s:58 PhanMagicMethodNonPublic The magic method \NS5969\Visibility::__invoke() must have public visibility
+%s:59 PhanMagicMethodNonPublic The magic method \NS5969\Visibility::__wakeup() must have public visibility
+%s:65 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\InterfaceRules::__get(): it must take exactly 1 argument
+%s:66 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\InterfaceRules::__toString(): the return type must be string when declared
+%s:69 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\AbstractRules::__call(): it must take exactly 2 arguments
+%s:72 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\TraitRules::__isset(): the return type must be bool when declared
+%s:109 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ValidOtherTypes::__call(): parameter #2 ($args) must be of type array when declared
+%s:118 PhanUnusedPrivateMethodParameter Parameter $name is never used
+%s:118 PhanUnusedPrivateMethodParameter Parameter $value is never used
+%s:122 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ParentTypes::__get(): parameter #1 ($name) must be of type string when declared
+%s:123 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ParentTypes::__toString(): the return type must be string when declared
+%s:124 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ParentTypes::__destruct(): it cannot declare a return type
