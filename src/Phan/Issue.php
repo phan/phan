@@ -631,6 +631,9 @@ class Issue
     public const CompatibleClosureInConstExpression      = 'PhanCompatibleClosureInConstExpression';
     public const CompatibleReadonlyPropertyDefault       = 'PhanCompatibleReadonlyPropertyDefault';
     public const CompatiblePartialApplication            = 'PhanCompatiblePartialApplication';
+    public const CompatibleCastInConstExpression         = 'PhanCompatibleCastInConstExpression';
+    public const CompatibleFirstClassCallableInConstExpression = 'PhanCompatibleFirstClassCallableInConstExpression';
+    public const CompatibleStaticVariableInitializer     = 'PhanCompatibleStaticVariableInitializer';
     public const NonEnumPropertyInConstExpression        = 'PhanNonEnumPropertyInConstExpression';
 
     // Issue::CATEGORY_GENERIC
@@ -5349,6 +5352,30 @@ class Issue
                 'Partial function application (a call with the arguments {CODE}) is only supported in PHP 8.6+.',
                 self::REMEDIATION_B,
                 3060
+            ),
+            new Issue(
+                self::CompatibleCastInConstExpression,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                'Casts in constant expressions (e.g. {CODE}) are only supported in PHP 8.5+.',
+                self::REMEDIATION_B,
+                3061
+            ),
+            new Issue(
+                self::CompatibleFirstClassCallableInConstExpression,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                'First-class callables in constant expressions (e.g. {CODE}) are only supported in PHP 8.5+.',
+                self::REMEDIATION_B,
+                3062
+            ),
+            new Issue(
+                self::CompatibleStaticVariableInitializer,
+                self::CATEGORY_COMPATIBLE,
+                self::SEVERITY_CRITICAL,
+                'Static variable initializers that are not constant expressions (e.g. {CODE}) are only supported in PHP 8.3+.',
+                self::REMEDIATION_B,
+                3063
             ),
             new Issue(
                 self::CompatibleAutoload,

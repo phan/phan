@@ -12,6 +12,7 @@ use Phan\Analysis\ScopeVisitor;
 use Phan\AST\ASTHasher;
 use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
+use Phan\AST\PartialApplication;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
@@ -1657,7 +1658,20 @@ class ParseVisitor extends ScopeVisitor
     {
         $default = $node->children['default'];
         if ($default instanceof Node) {
-            $this->checkNodeIsConstExprOrWarn($default, self::CONSTANT_EXPRESSION_IN_STATIC_VARIABLE);
+            if (Config::get_closest_target_php_version_id() < 80300) {
+                $this->checkNodeIsConstExprOrWarn($default, self::CONSTANT_EXPRESSION_IN_STATIC_VARIABLE);
+            } elseif (!self::isConstExpr($default, self::CONSTANT_EXPRESSION_IN_STATIC_VARIABLE)) {
+                // PHP 8.3+ allows any expression as the initializer of a static variable.
+                if (Config::get_closest_minimum_target_php_version_id() < 80300) {
+                    $this->emitIssue(
+                        Issue::CompatibleStaticVariableInitializer,
+                        $default->lineno,
+                        ASTReverter::toShortString($default)
+                    );
+                }
+            } else {
+                $this->checkNodeIsConstExprOrWarn($default, self::CONSTANT_EXPRESSION_IN_STATIC_VARIABLE);
+            }
         }
         $context = $this->context;
         // Make sure we're actually returning from a method.
@@ -2493,30 +2507,24 @@ class ParseVisitor extends ScopeVisitor
         ast\AST_PROP => true,
         ast\AST_UNARY_OP => true,
         ast\AST_UNPACK => true,
+
+        // PHP 8.5+: casts (other than (object) in class constants and property defaults)
+        ast\AST_CAST => true,
+        // PHP 8.5+: first-class callables of functions and static methods (`strlen(...)`, `A::f(...)`),
+        // and PHP 8.6+: their partial application (`f(?, 1)`). checkIsAllowedInConstExpr() rejects other calls.
+        ast\AST_CALL => true,
+        ast\AST_STATIC_CALL => true,
+        ast\AST_CALLABLE_CONVERT => true,
+        ast\AST_PLACEHOLDER_ARG => true,
+        ast\AST_ARG_LIST => true,
+        ast\AST_NAMED_ARG => true,
     ];
 
     /**
      * @internal
      */
-    public const ALLOWED_CONST_EXPRESSION_KINDS_WITH_NEW = [
-        ast\AST_ARRAY_ELEM => true,
-        ast\AST_ARRAY => true,
-        ast\AST_BINARY_OP => true,
-        ast\AST_CLASS_CONST => true,
-        ast\AST_CLASS_NAME => true,
-        ast\AST_CONDITIONAL => true,
-        ast\AST_CONST => true,
-        ast\AST_DIM => true,
-        ast\AST_MAGIC_CONST => true,
-        ast\AST_NAME => true,
-        ast\AST_NULLSAFE_PROP => true,
-        ast\AST_PROP => true,
-        ast\AST_UNARY_OP => true,
-        ast\AST_UNPACK => true,
-
+    public const ALLOWED_CONST_EXPRESSION_KINDS_WITH_NEW = self::ALLOWED_CONST_EXPRESSION_KINDS + [
         ast\AST_NEW => true,
-        ast\AST_ARG_LIST => true,
-        ast\AST_NAMED_ARG => true,
     ];
 
     public const CONSTANT_EXPRESSION_IN_ATTRIBUTE = 1;
@@ -2644,8 +2652,8 @@ class ParseVisitor extends ScopeVisitor
     }
 
     /**
-     * Check for closures in constant expressions (PHP 8.5+ feature).
-     * Emits compatibility warning if targeting PHP < 8.5.
+     * Check for closures, casts and first-class callables in constant expressions (PHP 8.5+ features).
+     * Emits compatibility warnings if targeting PHP < 8.5.
      *
      * @param Node|string|float|int|bool|null $node
      */
@@ -2668,6 +2676,25 @@ class ParseVisitor extends ScopeVisitor
             }
             // Don't recurse into closures - they have their own scope
             return;
+        }
+        if (Config::get_closest_minimum_target_php_version_id() < 80500) {
+            if ($node->kind === ast\AST_CAST) {
+                $this->emitIssue(
+                    Issue::CompatibleCastInConstExpression,
+                    $node->lineno,
+                    ASTReverter::toShortString($node)
+                );
+            } elseif (($node->kind === ast\AST_CALL || $node->kind === ast\AST_STATIC_CALL)
+                && ($node->children['args'] ?? null) instanceof Node
+                && !PartialApplication::isPartialApplication($node->children['args'])
+            ) {
+                // Partial application (`f(?, 1)`) is PHP 8.6+ anywhere, which PhanCompatiblePartialApplication reports.
+                $this->emitIssue(
+                    Issue::CompatibleFirstClassCallableInConstExpression,
+                    $node->lineno,
+                    ASTReverter::toShortString($node)
+                );
+            }
         }
 
         foreach ($node->children as $child_node) {
@@ -2714,9 +2741,72 @@ class ParseVisitor extends ScopeVisitor
         ) {
             throw new InvalidArgumentException(ASTReverter::toShortString($n));
         }
+        if (!self::hasValidConstExprStructure($n, $const_expr_context)) {
+            throw new InvalidArgumentException(ASTReverter::toShortString($n));
+        }
         foreach ($n->children as $child_node) {
             self::checkIsAllowedInConstExpr($child_node, $const_expr_context);
         }
+    }
+
+    /**
+     * Checks the rules of zend_compile_const_expr() for node kinds that are only allowed in some forms.
+     *
+     * @param 1|2 $const_expr_context
+     */
+    private static function hasValidConstExprStructure(Node $n, int $const_expr_context): bool
+    {
+        switch ($n->kind) {
+            case ast\AST_CALL:
+                // Only `f(...)` and `f(?, 1)` with a function name, not regular calls or dynamic function names.
+                return self::isNodeOfKind($n->children['args'] ?? null, ast\AST_CALLABLE_CONVERT)
+                    && self::isNodeOfKind($n->children['expr'] ?? null, ast\AST_NAME);
+            case ast\AST_STATIC_CALL:
+                return self::isNodeOfKind($n->children['args'] ?? null, ast\AST_CALLABLE_CONVERT)
+                    && \is_string($n->children['method'] ?? null)
+                    && self::isClassNameAllowedInConstExpr($n->children['class'] ?? null);
+            case ast\AST_NEW:
+                return self::isClassNameAllowedInConstExpr($n->children['class'] ?? null)
+                    && !self::isNodeOfKind($n->children['args'] ?? null, ast\AST_CALLABLE_CONVERT);
+            case ast\AST_CLASS_CONST:
+            case ast\AST_CLASS_NAME:
+                // `static::X` and `static::class` are not allowed, and neither are dynamic class names.
+                return self::isClassNameAllowedInConstExpr($n->children['class'] ?? null);
+            case ast\AST_ARG_LIST:
+                // "Argument unpacking in constant expressions is not supported"
+                foreach ($n->children as $arg) {
+                    if ($arg instanceof Node && $arg->kind === ast\AST_UNPACK) {
+                        return false;
+                    }
+                }
+                return true;
+            case ast\AST_CAST:
+                // "Object casts are not supported in this context" (class constants and property defaults)
+                return $n->flags !== ast\flags\TYPE_OBJECT || $const_expr_context === self::CONSTANT_EXPRESSION_IN_STATIC_VARIABLE;
+            default:
+                return true;
+        }
+    }
+
+    /**
+     * @param Node|string|float|int|bool|null $n
+     */
+    private static function isNodeOfKind(Node|bool|float|int|null|string $n, int $kind): bool
+    {
+        return $n instanceof Node && $n->kind === $kind;
+    }
+
+    /**
+     * @param Node|string|float|int|bool|null $class_node
+     * @return bool whether $class_node is a class name that can be used in a constant expression (not `static` or an expression)
+     */
+    private static function isClassNameAllowedInConstExpr(Node|bool|float|int|null|string $class_node): bool
+    {
+        if (\is_string($class_node)) {
+            return \strcasecmp($class_node, 'static') !== 0;
+        }
+        return $class_node instanceof Node && $class_node->kind === ast\AST_NAME
+            && \is_string($class_node->children['name']) && \strcasecmp($class_node->children['name'], 'static') !== 0;
     }
 
     /**

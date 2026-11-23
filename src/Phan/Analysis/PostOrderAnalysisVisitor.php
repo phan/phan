@@ -984,8 +984,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         // NOTE: Phan can't be sure that the type the static type starts with is the same as what it has later. Avoid false positive PhanRedundantCondition.
-        // This should never be undefined with current limits on expressions found in static variables.
-        $variable->setUnionType($default_type->eraseRealTypeSetRecursively());
+        // The static variable is always defined, even if the initializer (any expression in PHP 8.3+) uses an undefined variable.
+        $variable->setUnionType($default_type->eraseRealTypeSetRecursively()->withIsPossiblyUndefined(false));
         // TODO: Probably not true in a loop?
         // TODO: Expand this to assigning to variables? (would need to make references invalidate that, and skip this in the global scope)
         $variable->enablePhanFlagBits(\Phan\Language\Element\Flags::IS_CONSTANT_DEFINITION);

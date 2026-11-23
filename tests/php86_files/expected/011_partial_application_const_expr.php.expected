@@ -1,0 +1,2 @@
+%s:19 PhanDebugAnnotation @phan-debug-var requested for variable $p - it has union type Closure(string $a):string(real=Closure(string $a):string)
+%s:21 PhanDebugAnnotation @phan-debug-var requested for variable $q - it has union type Closure(int $b):int(real=Closure(int $b):int)
