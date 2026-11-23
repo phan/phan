@@ -144,3 +144,24 @@ $child2 = new Child2();
 $child2->hooked = 1;
 $child2->backed = 2;
 var_dump((new NoParent())->p, $child2->priv, (new IntGeneric())->v);
+
+// The argument of parent::$prop::set() is checked against the type that the parent's property accepts
+class SetArgParent {
+    public int $plain = 0;
+    public int $widened { set(int|string $value) { $this->widened = (int)$value; } }
+    public $untyped = 1;
+    /** @var int */
+    public $documented = 1;
+    public ?SetArgParent $object = null;
+    public function __construct(public int $promoted = 3 { set { $this->promoted = $value; } }, public int $virtual = 4 { get => 1; }) {}
+}
+class SetArgChild extends SetArgParent {
+    public int $plain { set { parent::$plain::set([]); echo intdiv(parent::$plain::set($value), 2); } }
+    public int $widened { set(int|string $value) { parent::$widened::set('5'); parent::$widened::set([]); } }
+    // Without a declared type, the call returns the argument
+    public $untyped { set { echo strlen(parent::$untyped::set('hello')); echo intdiv(parent::$untyped::set('hello'), 2); } }
+    public $documented { set { parent::$documented::set('x'); } }
+    public ?SetArgParent $object { set { parent::$object::set(null); parent::$object::set(new SetArgChild()); parent::$object::set(new \stdClass()); } }
+    // The set hook of a promoted property returns nothing
+    public int $promoted { set { echo intdiv(parent::$promoted::set($value), 2); } }
+}

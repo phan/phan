@@ -76,8 +76,9 @@ final class ParentPropertyHookCall
 
     /**
      * @param Node $node a node for which isParentHookCall() is true
-     * @return UnionType the type of the call: the type of the parent's property for `get`,
-     * and for `set` when the parent's property has no set hook (the value that was assigned). A set hook returns nothing.
+     * @return UnionType the type of the call: the type of the parent's property for `get`.
+     * For `set`, a set hook of the parent returns nothing. Without one, the call is an assignment to the parent's property
+     * and returns the value that was assigned: the argument, coerced to the declared type of the property if it has one.
      */
     public static function getUnionType(CodeBase $code_base, Context $context, Node $node): UnionType
     {
@@ -85,15 +86,48 @@ final class ParentPropertyHookCall
         if (!$property || $property->isPrivate()) {
             return UnionType::empty();
         }
-        if (\strcasecmp((string)$node->children['method'], 'set') === 0 && $property->hasSetHook()) {
-            return NullType::instance(false)->asRealUnionType();
+        if (\strcasecmp((string)$node->children['method'], 'set') === 0) {
+            if ($property->hasSetHook()) {
+                return NullType::instance(false)->asRealUnionType();
+            }
+            if ($property->getRealUnionType()->isEmpty()) {
+                $arg_node = $node->children['args']->children[0] ?? null;
+                if ($arg_node === null || \count($node->children['args']->children) !== 1) {
+                    return UnionType::empty();
+                }
+                return UnionTypeVisitor::unionTypeFromNode($code_base, $context, $arg_node);
+            }
         }
-        $union_type = $property->getUnionType();
+        return self::withParentTemplateTypes($code_base, $context, $property->getUnionType());
+    }
+
+    /**
+     * @return UnionType the type of the values that `parent::$prop::set()` accepts for this property of the parent class:
+     * the type of the parameter of its set hook if that declares one, and the type of the property otherwise.
+     */
+    public static function getSetParameterType(CodeBase $code_base, Context $context, Property $property): UnionType
+    {
+        // Like an assignment, this uses the declared type, not a type inferred from the default value.
+        $union_type = $property->getPHPDocUnionType()->withStaticResolvedInContext($property->getContext());
+        $set_hook = $property->getSetHook();
+        if ($set_hook) {
+            $parameter = $set_hook->getParameterList()[0] ?? null;
+            if ($parameter && !$parameter->getNonVariadicUnionType()->isEmpty()) {
+                $union_type = $parameter->getNonVariadicUnionType();
+            }
+        }
+        return self::withParentTemplateTypes($code_base, $context, $union_type);
+    }
+
+    /**
+     * Resolve the template types of the parent class, e.g. with (at)extends ParentClass<int>
+     */
+    private static function withParentTemplateTypes(CodeBase $code_base, Context $context, UnionType $union_type): UnionType
+    {
         if ($union_type->hasTemplateTypeRecursive()) {
-            // Resolve the template types of the parent class, e.g. with (at)extends ParentClass<int>
             $parent_type_option = $context->getClassInScope($code_base)->getParentTypeOption();
             if ($parent_type_option->isDefined()) {
-                $union_type = $union_type->withTemplateParameterTypeMap($parent_type_option->get()->getTemplateParameterTypeMap($code_base));
+                return $union_type->withTemplateParameterTypeMap($parent_type_option->get()->getTemplateParameterTypeMap($code_base));
             }
         }
         return $union_type;

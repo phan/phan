@@ -17,8 +17,24 @@
 %s:93 PhanAccessPropertyPrivate Cannot access private property \NS5967\Base2->priv defined at %s:82
 %s:98 PhanDebugAnnotation @phan-debug-var requested for variable $r - it has union type null(real=null)
 %s:105 PhanDebugAnnotation @phan-debug-var requested for variable $r - it has union type int(real=int)
+%s:107 PhanTypeMismatchArgument Argument 1 ($value) is $undefined of type null but \NS5967\Base2::$backed::set() takes int defined at %s:88
 %s:107 PhanUndeclaredVariable Variable $undefined is undeclared
 %s:115 PhanReadOnlyPublicProperty Possibly zero write references to public property \NS5967\Generic->v
 %s:120 PhanPluginUnknownPropertyType Property \NS5967\IntGeneric->v has an initial type that cannot be inferred
 %s:122 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int
 %s:132 PhanReadOnlyPublicProperty Possibly zero write references to public property \NS5967\LocalClass5967->x
+%s:150 PhanWriteOnlyPublicProperty Possibly zero read references to public property \NS5967\SetArgParent->plain
+%s:151 PhanWriteOnlyPublicProperty Possibly zero read references to public property \NS5967\SetArgParent->widened
+%s:152 PhanWriteOnlyPublicProperty Possibly zero read references to public property \NS5967\SetArgParent->untyped
+%s:154 PhanWriteOnlyPublicProperty Possibly zero read references to public property \NS5967\SetArgParent->documented
+%s:155 PhanWriteOnlyPublicProperty Possibly zero read references to public property \NS5967\SetArgParent->object
+%s:156 PhanWriteOnlyPublicProperty Possibly zero read references to public property \NS5967\SetArgParent->promoted
+%s:156 PhanWriteOnlyPublicProperty Possibly zero read references to public property \NS5967\SetArgParent->virtual
+%s:159 PhanTypeMismatchArgument Argument 1 ($value) is [] of type array{} but \NS5967\SetArgParent::$plain::set() takes int defined at %s:150
+%s:160 PhanTypeMismatchArgument Argument 1 ($value) is [] of type array{} but \NS5967\SetArgParent::$widened::set() takes int|string defined at %s:151
+%s:162 PhanPluginUnknownPropertyType Property \NS5967\SetArgChild->untyped has an initial type that cannot be inferred
+%s:162 PhanTypeMismatchArgumentInternalReal Argument 1 ($num1) is parent::$untyped::set('hello') of type string but \intdiv() takes int
+%s:163 PhanPluginUnknownPropertyType Property \NS5967\SetArgChild->documented has an initial type that cannot be inferred
+%s:163 PhanTypeMismatchArgument Argument 1 ($value) is 'x' of type string but \NS5967\SetArgParent::$documented::set() takes int defined at %s:154
+%s:164 PhanTypeMismatchArgument Argument 1 ($value) is new \stdClass() of type \stdClass but \NS5967\SetArgParent::$object::set() takes ?\NS5967\SetArgParent defined at %s:155
+%s:166 PhanTypeMismatchArgumentInternalReal Argument 1 ($num1) is parent::$promoted::set($value) of type null but \intdiv() takes int

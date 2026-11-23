@@ -5125,10 +5125,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     private function analyzeParentPropertyHookCall(Node $node): void
     {
         // Check the arguments, e.g. for undeclared variables
+        $argument_types = [];
         foreach ($node->children['args']->children ?? [] as $arg) {
-            if ($arg instanceof Node) {
-                UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $arg);
-            }
+            $argument_types[] = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $arg);
         }
         $class = $this->context->getClassInScope($this->code_base);
         if (!$class->hasParentType()) {
@@ -5167,7 +5166,45 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $property->setHasReadReference();
         } else {
             $property->setHasWriteReference();
+            if (\count($argument_types) === 1) {
+                $this->checkParentSetHookArgument($node, $property, $argument_types[0]);
+            }
         }
+    }
+
+    /**
+     * Check the argument of `parent::$prop::set($value)` against the type that the parent's property accepts.
+     *
+     * @param Node $node a node of kind ast\AST_STATIC_CALL for which ParentPropertyHookCall::isParentHookCall() is true
+     */
+    private function checkParentSetHookArgument(Node $node, Property $property, UnionType $argument_type): void
+    {
+        $argument_node = $node->children['args']->children[0];
+        if ($argument_node instanceof Node && \in_array($argument_node->kind, [ast\AST_UNPACK, ast\AST_NAMED_ARG], true)) {
+            return;
+        }
+        $expected_type = ParentPropertyHookCall::getSetParameterType($this->code_base, $this->context, $property);
+        if ($argument_type->isEmpty() || $expected_type->isEmpty()) {
+            return;
+        }
+        if ($argument_type->asExpandedTypes($this->code_base)->canCastToUnionType($expected_type, $this->code_base)) {
+            return;
+        }
+        $set_hook = $property->getSetHook();
+        $parameter = $set_hook ? ($set_hook->getParameterList()[0] ?? null) : null;
+        $declaration_context = $set_hook ? $set_hook->getContext() : $property->getContext();
+        $this->emitIssue(
+            Issue::TypeMismatchArgument,
+            $node->lineno,
+            1,
+            $parameter ? $parameter->getName() : 'value',
+            ASTReverter::toShortString($argument_node),
+            $argument_type->toErrorMessageString(),
+            $property->getRealDefiningFQSEN()->getFullyQualifiedClassName() . '::$' . $property->getName() . '::set()',
+            $expected_type->toErrorMessageString(),
+            $declaration_context->getFile(),
+            $declaration_context->getLineNumberStart()
+        );
     }
 
     /**

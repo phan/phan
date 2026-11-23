@@ -668,6 +668,11 @@ class ParseVisitor extends ScopeVisitor
             ));
         }
         $this->handlePropertyCustomAnnotations($class, $property, $property_comment);
+        $hooks_node = $parameter_node->children['hooks'] ?? null;
+        if ($hooks_node instanceof Node) {
+            // The default is the default of the parameter, which is allowed for a property without a set hook.
+            $this->parsePropertyHooks($property, $hooks_node, null);
+        }
     }
 
     /**
