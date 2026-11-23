@@ -19,3 +19,7 @@
 %s:78 PhanDebugAnnotation @phan-debug-var requested for variable $keyed - it has union type array<string,\NS5974\Composed>(real=array)
 %s:78 PhanDebugAnnotation @phan-debug-var requested for variable $optional - it has union type array{value?:\NS5974\Composed,same?:\NS5974\ComposedChild}(real=array)
 %s:78 PhanUnusedVariable Unused definition of variable $keyed
+%s:94 PhanUnusedVariable Unused definition of variable $public
+%s:95 PhanDebugAnnotation @phan-debug-var requested for variable $protected - it has union type array{value:\NS5974\GenericUser,same:\NS5974\GenericUserChild,data:int}
+%s:95 PhanDebugAnnotation @phan-debug-var requested for variable $public - it has union type array{value:\NS5974\GenericUser,data:int}
+%s:95 PhanUnusedVariable Unused definition of variable $protected

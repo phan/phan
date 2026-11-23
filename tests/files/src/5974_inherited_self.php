@@ -78,3 +78,21 @@ function composed(Composed $composed, ComposedChild $child): void {
     $keyed = $child->keyed('a');
     '@phan-debug-var $inner, $inner_shape, $optional, $keyed';
 }
+
+// A generic trait: `self` is the class that uses the trait, also when the trait is specialized with (at)use
+/** @template T */
+trait GenericTrait {
+    /** @return array{value:self,data:T} */
+    public function generic(): array { throw new \Exception(); }
+    /** @return array{value:self,same:static,data:T} */
+    protected function genericProtected(): array { throw new \Exception(); }
+}
+/** @use GenericTrait<int> */
+class GenericUser { use GenericTrait; }
+class GenericUserChild extends GenericUser {
+    public function check(): void {
+        $public = $this->generic();
+        $protected = $this->genericProtected();
+        '@phan-debug-var $public, $protected';
+    }
+}
