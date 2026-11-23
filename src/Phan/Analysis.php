@@ -502,6 +502,7 @@ class Analysis
             case ast\AST_FUNC_DECL:
             case ast\AST_ARROW_FUNC:
             case ast\AST_CLOSURE:
+            case ast\AST_PROPERTY_HOOK:
                 // For closed context elements (that have an inner scope)
                 // return the outer context instead of their inner context
                 // after we finish parsing their children.

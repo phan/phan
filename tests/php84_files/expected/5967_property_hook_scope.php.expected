@@ -1,0 +1,11 @@
+%s:6 PhanUnreferencedPublicProperty Possibly zero references to public property \NS5967\P->other
+%s:14 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type '$prop::get'(real='$prop::get')
+%s:14 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type 'NS5967\\C::$prop::get'(real='NS5967\\C::$prop::get')
+%s:17 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type int(real=int)
+%s:22 PhanDebugAnnotation @phan-debug-var requested for variable $r - it has union type int(real=int)
+%s:24 PhanUndeclaredFunction Call to undeclared function \undefined_function_5967()
+%s:30 PhanAccessPropertyNonStaticAsStatic Accessing non static property \NS5967\P->prop as static
+%s:33 PhanReadOnlyPublicProperty Possibly zero write references to public property \NS5967\C->missing
+%s:34 PhanUndeclaredProperty Reference to undeclared property \NS5967\P->missing
+%s:38 PhanAccessPropertyNonStaticAsStatic Accessing non static property \NS5967\P->prop as static
+%s:49 PhanUndeclaredVariable Variable $other is undeclared

@@ -22,6 +22,7 @@ use Phan\AST\AnalysisVisitor;
 use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
 use Phan\AST\InferPureSnippetVisitor;
+use Phan\AST\ParentPropertyHookCall;
 use Phan\AST\ScopeImpactCheckingVisitor;
 use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\Element;
@@ -44,6 +45,7 @@ use Phan\Language\Scope\BranchScope;
 use Phan\Language\Scope\ClassConstantScope;
 use Phan\Language\Scope\ClosureScope;
 use Phan\Language\Scope\GlobalScope;
+use Phan\Language\Scope\PropertyHookScope;
 use Phan\Language\Scope\PropertyScope;
 use Phan\Language\Scope\TopLevelBranchScope;
 use Phan\Language\Type;
@@ -727,6 +729,26 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             }
         }
 
+        return $this->postOrderAnalyze($context, $node);
+    }
+
+    /**
+     * Visit a node with kind `\ast\AST_STATIC_CALL`.
+     *
+     * In `parent::$prop::get()` and `parent::$prop::set($value)` in a property hook,
+     * `parent::$prop` is not an access to a static property, so only the arguments are analyzed.
+     */
+    public function visitStaticCall(Node $node): Context
+    {
+        if (!ParentPropertyHookCall::isParentHookCall($this->context, $node)) {
+            return $this->visit($node);
+        }
+        $context = $this->context;
+        $context->setLineNumberStart($node->lineno);
+        $args_node = $node->children['args'];
+        if ($args_node instanceof Node) {
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $args_node);
+        }
         return $this->postOrderAnalyze($context, $node);
     }
 
@@ -4330,22 +4352,37 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $context = $this->context;
         $context->setLineNumberStart($node->lineno);
 
-        // Create a branch scope for the hook body. We use BranchScope rather than
-        // FunctionLikeScope because hooks don't have their own method FQSEN in the
-        // codebase, and using a synthetic one causes PostOrderAnalysisVisitor to fail.
-        $hook_context = $context->withScope(
-            new BranchScope($context->getScope())
-        );
+        $hook_name = (string)$node->children['name'];
+        $scope = $context->getScope();
+        $clazz = $context->isInClassScope() ? $context->getClassInScope($this->code_base) : null;
+        if ($clazz && !$scope->isInPropertyScope()) {
+            // A hook of a promoted constructor property. It is not part of the body of the constructor:
+            // the parameters of the constructor are not in scope, and `return` returns from the hook.
+            $param_node = $this->getPromotedPropertyParamNode();
+            if ($param_node) {
+                $scope = new PropertyScope(
+                    $clazz->getInternalScope(),
+                    FullyQualifiedPropertyName::make($clazz->getFQSEN(), (string)$param_node->children['name'])
+                );
+            }
+        }
+        if (!$scope->isInPropertyScope()) {
+            // Unexpected: analyze the body in the current scope.
+            $hook_context = $context->withScope(new BranchScope($scope));
+        } else {
+            // Create a branch scope for the hook body rather than a FunctionLikeScope,
+            // because hooks don't have their own method FQSEN in the codebase.
+            $hook_context = $context->withScope(
+                new PropertyHookScope($scope, $scope->getPropertyFQSEN(), $hook_name)
+            );
+        }
 
         // Add $this — hooks are always non-static, but the parent PropertyScope
         // is a ClosedScope that doesn't inherit $this from the class scope.
-        if ($context->isInClassScope()) {
-            $clazz = $context->getClassInScope($this->code_base);
-            if ($clazz->getInternalScope()->hasVariableWithName('this')) {
-                $hook_context->addScopeVariable(
-                    $clazz->getInternalScope()->getVariableByName('this')
-                );
-            }
+        if ($clazz && $clazz->getInternalScope()->hasVariableWithName('this')) {
+            $hook_context->addScopeVariable(
+                $clazz->getInternalScope()->getVariableByName('this')
+            );
         }
 
         // Add hook parameters to scope (set hooks have a parameter)
@@ -4356,10 +4393,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                     $parameter->cloneAsNonVariadic()
                 );
             }
-        } elseif ($node->children['name'] === 'set') {
+        } elseif ($hook_name === 'set') {
             // Set hooks without explicit params have an implicit $value variable
             // with the property's declared type (PHP 8.4 semantics)
-            $scope = $context->getScope();
             if ($scope->isInPropertyScope()) {
                 $property_fqsen = $scope->getPropertyFQSEN();
                 if ($this->code_base->hasPropertyWithFQSEN($property_fqsen)) {
@@ -4383,6 +4419,23 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         // Return the outer context — hook is a closed scope
         return $this->context;
+    }
+
+    /**
+     * @return ?Node the node of kind ast\AST_PARAM declaring the promoted constructor property that the hook being visited belongs to
+     */
+    private function getPromotedPropertyParamNode(): ?Node
+    {
+        for ($i = \count($this->parent_node_list) - 1; $i >= 0; $i--) {
+            $parent_node = $this->parent_node_list[$i];
+            if ($parent_node->kind === ast\AST_PARAM) {
+                return $parent_node;
+            }
+            if ($parent_node->kind !== ast\AST_STMT_LIST) {
+                break;
+            }
+        }
+        return null;
     }
 
     /**

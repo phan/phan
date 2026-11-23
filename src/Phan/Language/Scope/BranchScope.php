@@ -93,6 +93,14 @@ class BranchScope extends Scope
     }
 
     /**
+     * @override
+     */
+    public function getPropertyHookScopeOrNull(): ?PropertyHookScope
+    {
+        return $this->parent_scope->getPropertyHookScopeOrNull();
+    }
+
+    /**
      * @return FullyQualifiedMethodName|FullyQualifiedFunctionName
      * Get the FQSEN for the closure, method or function we're in
      */

@@ -46,6 +46,7 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\FutureUnionType;
+use Phan\Language\Scope\BranchScope;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
@@ -2367,7 +2368,6 @@ class ParseVisitor extends ScopeVisitor
         ast\AST_PROP => true,
         ast\AST_PROP_DECL => true,
         ast\AST_PROP_ELEM => true,
-        ast\AST_PROPERTY_HOOK => true,
         ast\AST_PROPERTY_HOOK_SHORT_BODY => true,
         ast\AST_STATIC_PROP => true,
         ast\AST_SWITCH => true,
@@ -2465,11 +2465,19 @@ class ParseVisitor extends ScopeVisitor
 
     /**
      * Visit a node with kind `\ast\AST_PROPERTY_HOOK`
-     * Property hooks are parsed in parsePropertyHooks(), so we don't need to do anything here
+     * Property hooks are parsed in parsePropertyHooks().
+     *
+     * The body of a hook of a promoted constructor property is not part of the constructor:
+     * e.g. a `return` in it must not be recorded as a return statement of the constructor.
+     * Analysis::parseNodeInContext() does not pass the context returned for a hook on to the nodes after it.
      */
     public function visitPropertyHook(Node $node): Context
     {
-        return $this->context;
+        $context = $this->context;
+        if ($context->isInFunctionLikeScope() && $context->isInClassScope()) {
+            return $context->withScope(new BranchScope($context->getClassInScope($this->code_base)->getInternalScope()));
+        }
+        return $context;
     }
 
     /**

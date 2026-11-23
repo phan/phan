@@ -1035,6 +1035,10 @@ class ContextNode
             throw new AssertionError('$node must be a node');
         }
 
+        if ($node->kind === ast\AST_STATIC_CALL && ParentPropertyHookCall::isParentHookCall($this->context, $node)) {
+            // `parent::$prop::get()` in a property hook does not call a method of a class named by a static property.
+            throw new NodeException($node, 'A call of the property hook of the parent class is not a method call');
+        }
         $class_node_context = new ContextNode(
             $this->code_base,
             $this->context,

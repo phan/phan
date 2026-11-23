@@ -17,6 +17,7 @@ use Phan\AST\ContextNode;
 use Phan\AST\PhanAnnotationAdder;
 use Phan\AST\ScopeImpactCheckingVisitor;
 use Phan\AST\PartialApplication;
+use Phan\AST\ParentPropertyHookCall;
 use Phan\AST\UnionTypeVisitor;
 use Phan\BlockAnalysisVisitor;
 use Phan\CodeBase;
@@ -3193,6 +3194,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitStaticCall(Node $node): Context
     {
+        if (ParentPropertyHookCall::isParentHookCall($this->context, $node)) {
+            $this->analyzeParentPropertyHookCall($node);
+            return $this->context;
+        }
         // Get the name of the method being called
         $method_name = $node->children['method'];
 
@@ -5111,6 +5116,31 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $method->getFileRef()->getFile(),
                 (string)$method->getFileRef()->getLineNumberStart()
             );
+        }
+    }
+
+    /**
+     * @param Node $node `parent::$prop::get()` or `parent::$prop::set($value)` in the hook of the same name of `$prop`
+     */
+    private function analyzeParentPropertyHookCall(Node $node): void
+    {
+        $property = ParentPropertyHookCall::getParentProperty($this->code_base, $this->context, $node);
+        if (!$property) {
+            $class = $this->context->getClassInScope($this->code_base);
+            if ($class->hasParentType() && $this->code_base->hasClassWithFQSEN($class->getParentClassFQSEN())) {
+                $this->emitIssue(
+                    Issue::UndeclaredProperty,
+                    $node->lineno,
+                    $class->getParentClassFQSEN() . '->' . $node->children['class']->children['prop']
+                );
+            }
+            return;
+        }
+        $property->addReference($this->context);
+        if (\strcasecmp((string)$node->children['method'], 'get') === 0) {
+            $property->setHasReadReference();
+        } else {
+            $property->setHasWriteReference();
         }
     }
 
