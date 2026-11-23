@@ -287,6 +287,11 @@ class FunctionFactory
                 if (($parameter_name[0] ?? '') === '&') {
                     $flags |= \ast\flags\PARAM_REF;
                     $parameter_name = \substr($parameter_name, 1);
+                    if (\strncmp($parameter_name, '...', 3) === 0) {
+                        // e.g. `&...w_vars`: remove the `...` first so that the `w_` prefix is recognized
+                        $flags |= \ast\flags\PARAM_VARIADIC;
+                        $parameter_name = \substr($parameter_name, 3);
+                    }
                     if (\strncmp($parameter_name, 'rw_', 3) === 0) {
                         $phan_flags |= Flags::IS_READ_REFERENCE | Flags::IS_WRITE_REFERENCE;
                         $parameter_name = \substr($parameter_name, 3);

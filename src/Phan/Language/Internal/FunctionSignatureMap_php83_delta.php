@@ -61,7 +61,7 @@ return [
     'dateobjecterror::getprevious' => ['?\Throwable'],
     'dateobjecterror::gettrace' => ['array'],
     'dateobjecterror::gettraceasstring' => ['string'],
-    'dateperiod::createfromiso8601string' => ['static', 'iso8601string'=>'string', 'options='=>'int'],
+    'dateperiod::createfromiso8601string' => ['static', 'specification'=>'string', 'options='=>'int'],
     'daterangeerror::__tostring' => ['string'],
     'daterangeerror::getfile' => ['string'],
     'daterangeerror::getline' => ['int'],
@@ -99,7 +99,7 @@ return [
     'domelement::insertadjacenttext' => ['void', 'where'=>'string', 'data'=>'string'],
     'domelement::isequalnode' => ['bool', 'othernode'=>'?\DOMNode'],
     'domelement::replacechildren' => ['void', '...nodes'=>'\DOMNode|string'],
-    'domelement::toggleattribute' => ['bool', 'qualifiedname'=>'string', 'force='=>'bool'],
+    'domelement::toggleattribute' => ['bool', 'qualifiedName'=>'string', 'force='=>'bool'],
     'domentity::contains' => ['bool', 'other'=>'DOMNode|DOMNameSpaceNode|null'],
     'domentity::getrootnode' => ['DOMNode', 'options='=>'?array'],
     'domentity::isequalnode' => ['bool', 'otherNode'=>'?DOMNode'],
@@ -108,7 +108,7 @@ return [
     'domentityreference::isequalnode' => ['bool', 'otherNode'=>'?DOMNode'],
     'domnode::contains' => ['bool', 'other'=>'\DOMNode|\DOMNameSpaceNode|null'],
     'domnode::getrootnode' => ['\DOMNode', 'options='=>'array'],
-    'domnode::isequalnode' => ['bool', 'othernode'=>'?\DOMNode'],
+    'domnode::isequalnode' => ['bool', 'otherNode'=>'?\DOMNode'],
     'domnotation::contains' => ['bool', 'other'=>'DOMNode|DOMNameSpaceNode|null'],
     'domnotation::getrootnode' => ['DOMNode', 'options='=>'?array'],
     'domnotation::isequalnode' => ['bool', 'otherNode'=>'?DOMNode'],
@@ -118,16 +118,16 @@ return [
     'domtext::contains' => ['bool', 'other'=>'DOMNode|DOMNameSpaceNode|null'],
     'domtext::getrootnode' => ['DOMNode', 'options='=>'?array'],
     'domtext::isequalnode' => ['bool', 'otherNode'=>'?DOMNode'],
-    'intlcalendar::setdate' => ['void', 'year'=>'int', 'month'=>'int', 'dayofmonth'=>'int'],
-    'intlcalendar::setdatetime' => ['void', 'year'=>'int', 'month'=>'int', 'dayofmonth'=>'int', 'hour'=>'int', 'minute'=>'int', 'second='=>'int'],
-    'intlgregoriancalendar::createfromdate' => ['static', 'year'=>'int', 'month'=>'int', 'dayofmonth'=>'int'],
-    'intlgregoriancalendar::createfromdatetime' => ['static', 'year'=>'int', 'month'=>'int', 'dayofmonth'=>'int', 'hour'=>'int', 'minute'=>'int', 'second='=>'int'],
+    'intlcalendar::setdate' => ['void', 'year'=>'int', 'month'=>'int', 'dayOfMonth'=>'int'],
+    'intlcalendar::setdatetime' => ['void', 'year'=>'int', 'month'=>'int', 'dayOfMonth'=>'int', 'hour'=>'int', 'minute'=>'int', 'second='=>'int'],
+    'intlgregoriancalendar::createfromdate' => ['static', 'year'=>'int', 'month'=>'int', 'dayOfMonth'=>'int'],
+    'intlgregoriancalendar::createfromdatetime' => ['static', 'year'=>'int', 'month'=>'int', 'dayOfMonth'=>'int', 'hour'=>'int', 'minute'=>'int', 'second='=>'int'],
     'intlgregoriancalendar::setdate' => ['void', 'year'=>'int', 'month'=>'int', 'dayOfMonth'=>'int'],
     'intlgregoriancalendar::setdatetime' => ['void', 'year'=>'int', 'month'=>'int', 'dayOfMonth'=>'int', 'hour'=>'int', 'minute'=>'int', 'second='=>'?int'],
     'json_validate' => ['bool', 'json'=>'string', 'depth='=>'int', 'flags='=>'int'],
     'mb_str_pad' => ['string', 'string'=>'string', 'length'=>'int', 'pad_string='=>'string', 'pad_type='=>'int', 'encoding='=>'string'],
     'pg_set_error_context_visibility' => ['int', 'connection'=>'PgSql\Connection', 'visibility'=>'int'],
-    'posix_eaccess' => ['bool', 'filename'=>'string', 'flags'=>'int'],
+    'posix_eaccess' => ['bool', 'filename'=>'string', 'flags='=>'int'],
     'posix_pathconf' => ['false|int', 'path'=>'string', 'name'=>'int'],
     'posix_sysconf' => ['int', 'conf_id'=>'int'],
     'random\intervalboundary::cases' => ['array'],
@@ -149,7 +149,90 @@ return [
     'ziparchive::setarchiveflag' => ['bool', 'flag'=>'int', 'value'=>'int'],
   ],
   'changed' => [
-    'posix_getrlimit' => ['old' => ['array'], 'new' => ['array', 'resource='=>'?int']],
+    'datefmt_set_timezone' => [
+      'old' => ['?bool', 'formatter'=>'IntlDateFormatter', 'timezone'=>'string'],
+      'new' => ['bool', 'formatter'=>'IntlDateFormatter', 'timezone'=>'string'],
+    ],
+    'deflate_init' => [
+      'old' => ['DeflateContext|false', 'encoding'=>'int', 'options='=>'array'],
+      'new' => ['DeflateContext|false', 'encoding'=>'int', 'options='=>'array|object'],
+    ],
+    'domdocument::load' => [
+      'old' => ['DOMDocument|bool', 'filename'=>'string', 'options='=>'int'],
+      'new' => ['bool', 'filename'=>'string', 'options='=>'int'],
+    ],
+    'domdocument::loadxml' => [
+      'old' => ['DOMDocument|bool', 'source'=>'string', 'options='=>'int'],
+      'new' => ['bool', 'source'=>'string', 'options='=>'int'],
+    ],
+    'imagerotate' => [
+      'old' => ['false|GdImage', 'image'=>'GdImage', 'angle'=>'float', 'background_color'=>'int', 'ignore_transparent='=>'bool'],
+      'new' => ['false|GdImage', 'image'=>'GdImage', 'angle'=>'float', 'background_color'=>'int'],
+    ],
+    'inflate_init' => [
+      'old' => ['InflateContext|false', 'encoding'=>'int', 'options='=>'array'],
+      'new' => ['InflateContext|false', 'encoding'=>'int', 'options='=>'array|object'],
+    ],
+    'intlchar::enumcharnames' => [
+      'old' => ['?bool', 'start'=>'mixed', 'end'=>'mixed', 'callback'=>'callable', 'type='=>'int'],
+      'new' => ['bool', 'start'=>'mixed', 'end'=>'mixed', 'callback'=>'callable', 'type='=>'int'],
+    ],
+    'ldap_bind' => [
+      'old' => ['bool', 'ldap'=>'ldap\connection', 'dn='=>'string', 'password='=>'?string', 'serverctls='=>'?array'],
+      'new' => ['bool', 'ldap'=>'ldap\connection', 'dn='=>'string', 'password='=>'?string'],
+    ],
+    'ldap_delete' => [
+      'old' => ['bool', 'ldap'=>'ldap\connection', 'dn'=>'string'],
+      'new' => ['bool', 'ldap'=>'ldap\connection', 'dn'=>'string', 'controls='=>'?array'],
+    ],
+    'ldap_list' => [
+      'old' => ['ldap\result|array|false', 'ldap'=>'ldap\connection|array', 'base'=>'string', 'filter'=>'string', 'attributes='=>'array', 'attributes_only='=>'int', 'sizelimit='=>'int', 'timelimit='=>'int', 'deref='=>'int'],
+      'new' => ['ldap\result|array|false', 'ldap'=>'ldap\connection|array', 'base'=>'string|array', 'filter'=>'string|array', 'attributes='=>'array', 'attributes_only='=>'int', 'sizelimit='=>'int', 'timelimit='=>'int', 'deref='=>'int', 'controls='=>'?array'],
+    ],
+    'ldap_mod_add' => [
+      'old' => ['bool', 'ldap'=>'ldap\connection', 'dn'=>'string', 'entry'=>'array'],
+      'new' => ['bool', 'ldap'=>'ldap\connection', 'dn'=>'string', 'entry'=>'array', 'controls='=>'?array'],
+    ],
+    'ldap_mod_del' => [
+      'old' => ['bool', 'ldap'=>'ldap\connection', 'dn'=>'string', 'entry'=>'array'],
+      'new' => ['bool', 'ldap'=>'ldap\connection', 'dn'=>'string', 'entry'=>'array', 'controls='=>'?array'],
+    ],
+    'ldap_mod_replace' => [
+      'old' => ['bool', 'ldap'=>'ldap\connection', 'dn'=>'string', 'entry'=>'array'],
+      'new' => ['bool', 'ldap'=>'ldap\connection', 'dn'=>'string', 'entry'=>'array', 'controls='=>'?array'],
+    ],
+    'ldap_modify' => [
+      'old' => ['bool', 'ldap'=>'ldap\connection', 'dn'=>'string', 'entry'=>'array'],
+      'new' => ['bool', 'ldap'=>'ldap\connection', 'dn'=>'string', 'entry'=>'array', 'controls='=>'?array'],
+    ],
+    'ldap_modify_batch' => [
+      'old' => ['bool', 'ldap'=>'ldap\connection', 'dn'=>'string', 'modifications_info'=>'array'],
+      'new' => ['bool', 'ldap'=>'ldap\connection', 'dn'=>'string', 'modifications_info'=>'array', 'controls='=>'?array'],
+    ],
+    'ldap_read' => [
+      'old' => ['ldap\result|array|false', 'ldap'=>'ldap\connection|array', 'base'=>'string', 'filter'=>'string', 'attributes='=>'array', 'attributes_only='=>'int', 'sizelimit='=>'int', 'timelimit='=>'int', 'deref='=>'int'],
+      'new' => ['ldap\result|array|false', 'ldap'=>'ldap\connection|array', 'base'=>'string|array', 'filter'=>'string|array', 'attributes='=>'array', 'attributes_only='=>'int', 'sizelimit='=>'int', 'timelimit='=>'int', 'deref='=>'int', 'controls='=>'?array'],
+    ],
+    'ldap_rename' => [
+      'old' => ['bool', 'ldap'=>'ldap\connection', 'dn'=>'string', 'new_rdn'=>'string', 'new_parent'=>'string', 'delete_old_rdn'=>'bool'],
+      'new' => ['bool', 'ldap'=>'ldap\connection', 'dn'=>'string', 'new_rdn'=>'string', 'new_parent'=>'string', 'delete_old_rdn'=>'bool', 'controls='=>'?array'],
+    ],
+    'ldap_search' => [
+      'old' => ['ldap\result|array|false', 'ldap'=>'ldap\connection|array', 'base'=>'string', 'filter'=>'string', 'attributes='=>'array', 'attributes_only='=>'int', 'sizelimit='=>'int', 'timelimit='=>'int', 'deref='=>'int', 'controls='=>'?array'],
+      'new' => ['ldap\result|array|false', 'ldap'=>'ldap\connection|array', 'base'=>'string|array', 'filter'=>'string|array', 'attributes='=>'array', 'attributes_only='=>'int', 'sizelimit='=>'int', 'timelimit='=>'int', 'deref='=>'int', 'controls='=>'?array'],
+    ],
+    'pg_trace' => [
+      'old' => ['bool', 'filename'=>'string', 'mode='=>'string', 'connection='=>'pgsql\connection'],
+      'new' => ['bool', 'filename'=>'string', 'mode='=>'string', 'connection='=>'pgsql\connection', 'trace_mode='=>'int'],
+    ],
+    'posix_getrlimit' => [
+      'old' => ['array'],
+      'new' => ['array', 'resource='=>'?int'],
+    ],
+    'strrchr' => [
+      'old' => ['string|false', 'haystack'=>'string', 'needle'=>'string'],
+      'new' => ['string|false', 'haystack'=>'string', 'needle'=>'string', 'before_needle='=>'bool'],
+    ],
   ],
   'removed' => [
   ],

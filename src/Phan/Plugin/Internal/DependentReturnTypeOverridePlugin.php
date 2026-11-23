@@ -262,6 +262,39 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             };
         };
         $third_argument_string_or_array_handler = $make_subject_string_or_array_handler(2);
+
+        $mb_convert_encoding_string_type = UnionType::fromFullyQualifiedPHPDocAndRealString('string|false', 'array|string|false');
+        $mb_convert_encoding_array_type = UnionType::fromFullyQualifiedPHPDocAndRealString('array|false', 'array|string|false');
+        $mb_convert_encoding_any_type = UnionType::fromFullyQualifiedPHPDocAndRealString('array|string|false', 'array|string|false');
+        /**
+         * Handler for mb_convert_encoding(), which converts the strings of an array (recursively) when $string is an array
+         * @param array<int,Node|int|float|string> $args
+         */
+        $mb_convert_encoding_handler = static function (
+            CodeBase $code_base,
+            Context $context,
+            Func $unused_function,
+            array $args
+        ) use (
+            $string_union_type,
+            $mb_convert_encoding_string_type,
+            $mb_convert_encoding_array_type,
+            $mb_convert_encoding_any_type
+        ): UnionType {
+            if (!array_key_exists(0, $args)) {
+                return $mb_convert_encoding_any_type;
+            }
+            $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+            if ($union_type->isEmpty() || $union_type->hasMixedOrNonEmptyMixedType()) {
+                // An unknown or mixed value may be an array
+                return $mb_convert_encoding_any_type;
+            }
+            $has_array = $union_type->hasArray();
+            if ($union_type->canCastToUnionType($string_union_type, $code_base)) {
+                return $has_array ? $mb_convert_encoding_any_type : $mb_convert_encoding_string_type;
+            }
+            return $has_array ? $mb_convert_encoding_array_type : $mb_convert_encoding_any_type;
+        };
         /**
          * @param array<int,Node|int|float|string> $args
          */
@@ -517,6 +550,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             'preg_replace_callback'       => $third_argument_string_or_array_handler,
             'preg_replace_callback_array' => $make_subject_string_or_array_handler(1),
             'substr_replace'              => $make_subject_string_or_array_handler(0),
+            'mb_convert_encoding'         => $mb_convert_encoding_handler,
             'microtime'                   => $make_dependent_type_method(0, $float_union_type, $string_union_type, $string_or_float_union_type),
             'hrtime'                      => $make_dependent_type_method(0, $int_union_type, $hrtime_array_union_type, $int_or_hrtime_array_union_type),
             // misc

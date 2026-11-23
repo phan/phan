@@ -724,6 +724,9 @@ abstract class SplHeap implements \Iterator, \Countable {
     protected abstract function compare(mixed $value1, mixed $value2) : int;
     public function isCorrupted() : bool {}
     public function __debugInfo() : array {}
+    // PHP 8.6+
+    public function __serialize() : array {}
+    public function __unserialize(array $data) : void {}
 }
 
 class SplMaxHeap extends \SplHeap {
@@ -850,6 +853,9 @@ class SplPriorityQueue implements \Iterator, \Countable {
     public function isCorrupted() : bool {}
     public function getExtractFlags() : int {}
     public function __debugInfo() : array {}
+    // PHP 8.6+
+    public function __serialize() : array {}
+    public function __unserialize(array $data) : void {}
 }
 
 class SplQueue extends \SplDoublyLinkedList {

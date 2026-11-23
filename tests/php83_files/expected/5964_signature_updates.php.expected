@@ -1,0 +1,1 @@
+%s:4 PhanParamTooManyInternal Call with 4 arg(s) to \strrchr(string $haystack, string $needle, bool $before_needle = false) which only takes 3 arg(s). This would throw an ArgumentCountError.

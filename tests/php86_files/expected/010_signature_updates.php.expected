@@ -1,0 +1,2 @@
+%s:3 PhanPluginUnknownArrayFunctionReturnType Function \serialize_heaps_010() has a return type of array, but does not specify key or value types
+%s:3 PhanUnreferencedFunction Possibly zero references to function \serialize_heaps_010()

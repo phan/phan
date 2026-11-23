@@ -14,7 +14,7 @@ return [
   'added' => [
       'clamp' => ['mixed', 'value'=>'mixed', 'min'=>'mixed', 'max'=>'mixed'],
       'gmp_powm_sec' => ['GMP', 'num'=>'GMP|int|string', 'exponent'=>'GMP|int|string', 'modulus'=>'GMP|int|string'],
-      'gmp_prevprime' => ['GMP', 'num'=>'GMP|int|string', 'definitely_prime='=>'bool'],
+      'gmp_prevprime' => ['GMP', 'num'=>'GMP|int|string', '&w_definitely_prime='=>'bool'],
       'grapheme_strrev' => ['string|false', 'string'=>'string'],
       'IntlDatePatternGenerator::getBaseSkeleton' => ['string|false', 'pattern'=>'string'],
       'IntlDatePatternGenerator::getSkeleton' => ['string|false', 'pattern'=>'string'],
@@ -69,11 +69,11 @@ return [
           'new' => ['string|false', 'data'=>'string', 'cipher_algo'=>'string', 'passphrase'=>'string', 'options='=>'int', 'iv='=>'string', '&w_tag='=>'string', 'aad='=>'?string', 'tag_length='=>'int'],
       ],
       'openssl_sign' => [
-          'old' => ['bool', 'data'=>'string', '&w_signature'=>'string', 'private_key'=>'OpenSSLAsymmetricKey|OpenSSLCertificate|array|string', 'algorithm='=>'int|string'],
+          'old' => ['bool', 'data'=>'string', '&w_signature'=>'string', 'private_key'=>'OpenSSLAsymmetricKey|OpenSSLCertificate|array|string', 'algorithm='=>'int|string', 'padding='=>'int'],
           'new' => ['bool', 'data'=>'string', '&w_signature'=>'string', 'private_key'=>'OpenSSLAsymmetricKey|OpenSSLCertificate|array|string', 'algorithm='=>'int|string', 'padding='=>'int', 'salt_length='=>'int'],
       ],
       'openssl_verify' => [
-          'old' => ['int', 'data'=>'string', 'signature'=>'string', 'public_key'=>'OpenSSLAsymmetricKey|OpenSSLCertificate|array|string', 'algorithm='=>'int|string'],
+          'old' => ['int', 'data'=>'string', 'signature'=>'string', 'public_key'=>'OpenSSLAsymmetricKey|OpenSSLCertificate|array|string', 'algorithm='=>'int|string', 'padding='=>'int'],
           'new' => ['int|false', 'data'=>'string', 'signature'=>'string', 'public_key'=>'OpenSSLAsymmetricKey|OpenSSLCertificate|array|string', 'algorithm='=>'int|string', 'padding='=>'int', 'salt_length='=>'int'],
       ],
       'pcntl_signal' => [
@@ -87,6 +87,10 @@ return [
       'register_tick_function' => [
           'old' => ['bool', 'callback'=>'callable():void', '...args='=>'mixed'],
           'new' => ['true', 'callback'=>'callable():void', '...args='=>'mixed'],
+      ],
+      'sessionhandler::validateid' => [
+          'old' => ['bool', 'session_id'=>'string'],
+          'new' => ['bool', 'id'=>'string'],
       ],
       'socket_addrinfo_lookup' => [
           'old' => ['AddressInfo[]', 'host'=>'string', 'service='=>'?string', 'hints='=>'array'],
