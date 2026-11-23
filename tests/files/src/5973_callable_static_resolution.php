@@ -46,3 +46,18 @@ function creators($named, Factory $factory): void {
     $other = $factory->creator();
     '@phan-debug-var $create, $other';
 }
+
+// `self` and `static` in the same callable type: each way of resolving them gives one type, without duplicates
+trait PairTrait {
+    /** @return \Closure(self):static */
+    public function pair(): \Closure {
+        return fn($x) => $this;
+    }
+}
+class PairBase { use PairTrait; }
+class PairChild extends PairBase {}
+function pairs(PairBase $base, PairChild $child): void {
+    $f = $base->pair();
+    $g = $child->pair();
+    '@phan-debug-var $f, $g';
+}

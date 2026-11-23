@@ -6,3 +6,7 @@
 %s:46 PhanDebugAnnotation @phan-debug-var requested for variable $create - it has union type Closure():\NS5973\Factory&\NS5973\Named(real=\Closure)
 %s:46 PhanDebugAnnotation @phan-debug-var requested for variable $other - it has union type Closure():\NS5973\Factory(real=\Closure)
 %s:46 PhanUnusedVariable Unused definition of variable $other
+%s:60 PhanUnusedVariable Unused definition of variable $f
+%s:61 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type Closure(\NS5973\PairBase):\NS5973\PairBase(real=\Closure)
+%s:61 PhanDebugAnnotation @phan-debug-var requested for variable $g - it has union type Closure(\NS5973\PairChild):\NS5973\PairChild(real=\Closure)
+%s:61 PhanUnusedVariable Unused definition of variable $g
