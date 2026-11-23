@@ -144,6 +144,7 @@ class TolerantASTConverter
         TokenKind::ObjectCastToken  => flags\TYPE_OBJECT,
         TokenKind::StringCastToken  => flags\TYPE_STRING,
         TokenKind::UnsetCastToken   => flags\TYPE_NULL,
+        TokenKind::VoidCastToken    => flags\TYPE_VOID,
 
         // From Parser->parseCastExpressionGranular()
         // This is a syntax error, but try to match what the intent was
@@ -961,7 +962,8 @@ class TolerantASTConverter
                 if ($callable_expression instanceof PhpParser\Node\Expression\MemberAccessExpression) {  // $a->f()
                     return static::astNodeMethodCall(
                         $callable_expression->arrowToken->kind === TokenKind::QuestionArrowToken ? ast\AST_NULLSAFE_METHOD_CALL : ast\AST_METHOD_CALL,
-                        static::phpParserNonValueNodeToAstNode($callable_expression->dereferencableExpression),
+                        // (A name here is a constant, as in `FOO->method()` or `false?->method()`)
+                        static::phpParserNodeToAstNode($callable_expression->dereferencableExpression),
                         static::phpParserNodeToAstNode($callable_expression->memberName),
                         $arg_list,
                         $start_line
@@ -2503,6 +2505,17 @@ class TolerantASTConverter
         );
     }
 
+    /**
+     * @return bool whether the argument is a placeholder: `...` without an expression, or `?`
+     */
+    private static function isPlaceholderArgument(PhpParser\Node\Expression\ArgumentExpression $arg): bool
+    {
+        if (($arg->questionToken ?? null) !== null) {
+            return true;
+        }
+        return $arg->dotDotDotToken !== null && $arg->expression === null;
+    }
+
     private static function phpParserArgListToAstArgList(?\Microsoft\PhpParser\Node\DelimitedList\ArgumentExpressionList $args, int $line): ast\Node
     {
         if ($args !== null) {
@@ -2513,31 +2526,51 @@ class TolerantASTConverter
                 }
                 $filtered_children[] = $arg;
             }
-            if (\count($filtered_children) === 1) {
-                $only_arg = $filtered_children[0];
-                if ($only_arg instanceof PhpParser\Node\Expression\ArgumentExpression
-                    && $only_arg->dotDotDotToken !== null
-                    && $only_arg->expression === null) {
-                    $callable_convert_line = self::getStartLine($only_arg);
-                    if (self::$ast_version_parsing < 130) {
-                        return new ast\Node(ast\AST_CALLABLE_CONVERT, 0, [], $callable_convert_line);
-                    }
-                    // In AST version 130+, the `...` of first-class callable syntax is a variadic placeholder in an argument list.
-                    // TODO: Convert the other forms of php 8.6 partial function application (`f(1, ?)`) when the parser supports them.
-                    return new ast\Node(
-                        ast\AST_CALLABLE_CONVERT,
-                        0,
-                        [
-                            'args' => new ast\Node(
-                                ast\AST_ARG_LIST,
-                                0,
-                                [new ast\Node(ast\AST_PLACEHOLDER_ARG, ast\flags\PLACEHOLDER_VARIADIC, [], $callable_convert_line)],
-                                $callable_convert_line
-                            ),
-                        ],
-                        $callable_convert_line
-                    );
+            // First-class callable syntax (`f(...)`) and php 8.6 partial function application (`f(1, ?)`, `f(1, ...)`, `f(a: ?)`):
+            // an argument list with placeholders.
+            $has_placeholder = false;
+            foreach ($filtered_children as $arg) {
+                if ($arg instanceof PhpParser\Node\Expression\ArgumentExpression && self::isPlaceholderArgument($arg)) {
+                    $has_placeholder = true;
+                    break;
                 }
+            }
+            if ($has_placeholder) {
+                $callable_convert_line = self::getStartLine($filtered_children[0]);
+                if (self::$ast_version_parsing < 130) {
+                    // Older AST versions have no children: partial function application cannot be told apart from `f(...)`.
+                    return new ast\Node(ast\AST_CALLABLE_CONVERT, 0, [], $callable_convert_line);
+                }
+                $ast_args = [];
+                foreach ($filtered_children as $arg) {
+                    if (!($arg instanceof PhpParser\Node\Expression\ArgumentExpression) || !self::isPlaceholderArgument($arg)) {
+                        $ast_args[] = static::phpParserNodeToAstNode($arg);
+                        continue;
+                    }
+                    $arg_line = self::getStartLine($arg);
+                    $placeholder = new ast\Node(
+                        ast\AST_PLACEHOLDER_ARG,
+                        $arg->dotDotDotToken !== null ? ast\flags\PLACEHOLDER_VARIADIC : 0,
+                        [],
+                        $arg_line
+                    );
+                    if ($arg->name instanceof Token) {
+                        // A named placeholder: `f(a: ?)`
+                        $placeholder = new ast\Node(
+                            ast\AST_NAMED_ARG,
+                            0,
+                            ['name' => static::tokenToString($arg->name), 'expr' => $placeholder],
+                            $arg_line
+                        );
+                    }
+                    $ast_args[] = $placeholder;
+                }
+                return new ast\Node(
+                    ast\AST_CALLABLE_CONVERT,
+                    0,
+                    ['args' => new ast\Node(ast\AST_ARG_LIST, 0, $ast_args, $callable_convert_line)],
+                    $callable_convert_line
+                );
             }
         }
         $ast_args = [];
@@ -3140,7 +3173,8 @@ class TolerantASTConverter
             // @phan-suppress-next-line PhanTypeMismatchArgumentSuperType casting to a more specific node
             $prop_elems[] = static::phpParserPropelemToAstPropelem($prop, $i === 0 ? $doc_comment : null);
         }
-        $flags = static::phpParserVisibilityToAstVisibility($n->modifiers, false);
+        // (The modifiers are null for `protected(set) string $x;`, which only has the modifier for writes)
+        $flags = static::phpParserVisibilityToAstVisibility($n->modifiers ?? [], false);
         $set_visibility_token = \property_exists($n, 'setVisibilityToken') ? $n->setVisibilityToken : null;
         if ($set_visibility_token instanceof Token) {
             try {
@@ -3798,7 +3832,9 @@ class TolerantASTConverter
                 \phpversion('ast'),
                 \ini_get('short_open_tag'),
                 \sha1((string)\file_get_contents(__DIR__ . '/ast_shim.php')),
-                class_exists(CLI::class) ? CLI::getDevelopmentVersionId() : 'unknown'
+                class_exists(CLI::class) ? CLI::getDevelopmentVersionId() : 'unknown',
+                // The parser itself: an AST from an older version of it may have errors that a newer one does not report.
+                \sha1_file((string)(new \ReflectionClass(PhpParser\Parser::class))->getFileName()),
             ], true));
         }
         return $details;
