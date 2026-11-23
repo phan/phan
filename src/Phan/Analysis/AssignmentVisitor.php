@@ -1019,10 +1019,15 @@ class AssignmentVisitor extends AnalysisVisitor
             $right_type = ArrayShapeType::fromFieldTypes([
                 $dim_value => $this->right_type,
             ], false)->asRealUnionType();
-            if ($this->is_conditional_check && $expr_node->kind === ast\AST_DIM) {
-                // A condition such as `if ($x['a']['b'])` proves only that $x['a'] has the key 'b'.
-                // If the other keys of $x['a'] are unknown, keep them possible, so that reading $x['a']['c'] is not an invalid offset.
-                $right_type = $this->withConditionalDimContainerFallback($expr_node, $right_type);
+            if ($expr_node->kind === ast\AST_DIM) {
+                if ($this->is_conditional_check) {
+                    // A condition such as `if ($x['a']['b'])` proves only that $x['a'] has the key 'b'.
+                    // If the other keys of $x['a'] are unknown, keep them possible, so that reading $x['a']['c'] is not an invalid offset.
+                    $right_type = $this->withConditionalDimContainerFallback($expr_node, $right_type);
+                } else {
+                    // A write such as `$x['a']['b'] = 1` does not remove the other keys of $x['a'].
+                    $right_type = $this->withWrittenDimContainerFallback($expr_node, $right_type);
+                }
             }
         } else {
             // Make the right type a generic (i.e. int -> int[])
@@ -2797,6 +2802,155 @@ class AssignmentVisitor extends AnalysisVisitor
             $right_type = $right_type->withType(ArrayType::instance(false));
         }
         return $right_type;
+    }
+
+    /**
+     * A write such as `$x['a']['b'] = 1` sets the type of $x['a'] to array{b:1}.
+     * Where $x['a'] already existed and was not known to be an array shape (e.g. it was mixed, array or array<string,mixed>),
+     * it keeps its other keys, so add its typed arrays, or `array` if its values are unknown, next to the new shape.
+     * Without this, reading $x['a']['c'] afterwards would emit PhanTypeInvalidDimOffset.
+     *
+     * The old type of $x['a'] is taken from the type of the variable $x and the keys of the path,
+     * not by analyzing the expression $x['a'], which could emit issues on the line of the write.
+     * Nothing is added if $x['a'] did not exist, or was null or false: the write then creates a new array.
+     * Array shapes of the old type are merged with the new shape by the caller,
+     * so that invalid offsets of declared array shapes are still detected.
+     *
+     * @param Node $container_node the node of the array element that is written to (a node of kind ast\AST_DIM)
+     * @param UnionType $right_type the type of that array element after the write, an array shape
+     */
+    private function withWrittenDimContainerFallback(Node $container_node, UnionType $right_type): UnionType
+    {
+        $old_container_types = $this->getOldTypeSetOfDimWithLiteralKeys($container_node);
+        if (!$old_container_types) {
+            return $right_type;
+        }
+        $phpdoc_fallback_types = [];
+        $has_untyped_fallback = false;
+        foreach ($old_container_types as $type) {
+            if ($type instanceof ArrayShapeType) {
+                continue;
+            }
+            if ($type instanceof GenericArrayInterface) {
+                // array<string,int>, list<string>, callable-array, etc.: the keys are unknown, but the types of the values are known.
+                $phpdoc_fallback_types[] = $type;
+            } elseif ($type instanceof ArrayType || $type instanceof MixedType) {
+                // array, mixed, non-empty-mixed, etc.: neither the keys nor the types of the values are known.
+                $has_untyped_fallback = true;
+            }
+        }
+        if (!$phpdoc_fallback_types && !$has_untyped_fallback) {
+            return $right_type;
+        }
+        if ($phpdoc_fallback_types) {
+            // After the write, the array element has the key that was written, so it is not empty.
+            // (Not for an empty list: an empty union type is unknown, and would become non-empty-mixed.)
+            $phpdoc_fallback_types = UnionType::of($phpdoc_fallback_types)->nonFalseyClone()->getTypeSet();
+        }
+        if ($has_untyped_fallback) {
+            // As for conditions, use the plain array type: reading a key that is in no array shape of array{b:...}|array is mixed.
+            $phpdoc_fallback_types[] = ArrayType::instance(false);
+        }
+        // Only `array` is known at runtime, keep the real types of the result.
+        return $right_type->withUnionType(UnionType::of($phpdoc_fallback_types, [ArrayType::instance(false)]));
+    }
+
+    /**
+     * Returns the PHPDoc types that the array element $node (e.g. $x['a']['b']) had before an assignment to one of its keys,
+     * taken from the type of the variable $x, or null if they are not known:
+     * the keys on the path are not all literals, or the root of the path is not a variable.
+     * Returns an empty list if the element did not exist or was null or false (the write then creates a new array).
+     *
+     * @param Node $node a node of kind ast\AST_DIM
+     * @return ?list<Type> the types of the element, with mixed for an element of unknown type
+     */
+    private function getOldTypeSetOfDimWithLiteralKeys(Node $node): ?array
+    {
+        $keys = [];
+        while ($node->kind === ast\AST_DIM) {
+            $dim = $node->children['dim'];
+            if (!\is_int($dim) && !\is_string($dim)) {
+                return null;
+            }
+            $keys[] = self::normalizeScalarArrayKey($dim);
+            $node = $node->children['expr'];
+            if (!$node instanceof Node) {
+                return null;
+            }
+        }
+        if ($node->kind !== ast\AST_VAR) {
+            return null;
+        }
+        $variable_name = $node->children['name'];
+        if (!\is_string($variable_name)) {
+            return null;
+        }
+        $scope = $this->context->getScope();
+        if ($scope->hasVariableWithName($variable_name)) {
+            $union_type = $scope->getVariableByName($variable_name)->getUnionType();
+        } else {
+            $union_type = Variable::getUnionTypeOfHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope());
+            if (!$union_type) {
+                // The variable is undefined, the write creates it.
+                return [];
+            }
+        }
+        $types = $union_type->isEmpty() ? [MixedType::instance(false)] : $union_type->getTypeSet();
+        foreach (\array_reverse($keys) as $key) {
+            $types = self::getTypeSetOfOldElement($types, $key);
+            if (!$types) {
+                return [];
+            }
+        }
+        return $types;
+    }
+
+    /**
+     * Returns the PHPDoc types of the element $key of an array of a type in $types, with mixed for an element of unknown type.
+     * The types that cannot contain an array with other keys (null, false, scalars and objects) contribute nothing.
+     *
+     * @param list<Type> $types
+     * @return list<Type>
+     */
+    private static function getTypeSetOfOldElement(array $types, int|string $key): array
+    {
+        // As when reading $x['a'] (UnionTypeVisitor::resolveArrayShapeElementTypesForOffset()), if an array shape has the key,
+        // the types of that field are used and the other array types are ignored:
+        // after `$x['a'] = []` on an `array $x`, $x is array{a:array{}}|non-empty-array<mixed,mixed>, and $x['a'] is array{}.
+        $result = [];
+        foreach ($types as $type) {
+            if ($type instanceof ArrayShapeType) {
+                $field_type = $type->getFieldTypes()[$key] ?? null;
+                if ($field_type !== null) {
+                    \array_push($result, ...($field_type->isEmpty() ? [MixedType::instance(false)] : $field_type->getTypeSet()));
+                }
+            }
+        }
+        if ($result) {
+            return $result;
+        }
+        // PHP converts a string key such as '5' to the integer 5, but not '05', '-0', '+5' or a number too large for an int.
+        $is_int_key = \is_int($key) || (string)(int)$key === $key;
+        foreach ($types as $type) {
+            if ($type instanceof ArrayShapeType) {
+                continue;
+            }
+            if ($type instanceof GenericArrayInterface) {
+                if ($type instanceof ListType) {
+                    if (!$is_int_key || (int)$key < 0) {
+                        continue;
+                    }
+                } elseif (($type->getKeyType() & ($is_int_key ? GenericArrayType::KEY_INT : GenericArrayType::KEY_STRING)) === 0) {
+                    // e.g. a string key of an array<int,T>.
+                    continue;
+                }
+                $element_type = $type->genericArrayElementUnionType();
+                \array_push($result, ...($element_type->isEmpty() ? [MixedType::instance(false)] : $element_type->getTypeSet()));
+            } elseif ($type instanceof ArrayType || $type instanceof MixedType) {
+                $result[] = MixedType::instance(false);
+            }
+        }
+        return $result;
     }
 
     private function computeTypeOfMultiDimensionalAssignment(UnionType $old_union_type, UnionType $right_type, bool $outer_may_be_absent = false): UnionType

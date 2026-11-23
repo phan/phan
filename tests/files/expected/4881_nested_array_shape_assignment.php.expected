@@ -15,8 +15,6 @@
 %s:163 PhanTypeMismatchReturn Returning $a[0]['b'] of type null but test_nullable_element_shape() is declared to return string
 %s:173 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type 'x'
 %s:185 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type 'x'
-%s:201 PhanTypeInvalidDimOffset Invalid offset "b" of $a[0] of array type array{a:1}
-%s:201 PhanTypeSuspiciousEcho Suspicious argument $a[0]['b'] of type null for an echo/print statement
 %s:203 PhanTypeInvalidDimOffset Invalid offset "b" of $b[0] of array type array{a:1}
 %s:203 PhanTypeSuspiciousEcho Suspicious argument $b[0]['b'] of type null for an echo/print statement
 %s:205 PhanTypeInvalidDimOffset Invalid offset 1 of $c[0] of array type array{0:'x'}
