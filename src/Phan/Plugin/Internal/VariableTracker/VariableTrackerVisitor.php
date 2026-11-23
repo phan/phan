@@ -754,8 +754,14 @@ final class VariableTrackerVisitor extends AnalysisVisitor
      */
     public function visitStatic(Node $node): VariableTrackingScope
     {
-        // PHP 8.3+ allows any expression as the initializer, including uses of variables.
-        $this->scope = $this->analyzeWhenValidNode($this->scope, $node->children['default'] ?? null);
+        $default = $node->children['default'] ?? null;
+        if ($default instanceof Node) {
+            // PHP 8.3+ allows any expression as the initializer, including uses of and assignments to variables.
+            // The initializer only runs on the first call, so analyze it as a branch that may not be taken.
+            $initializer_scope = $this->analyze(new VariableTrackingBranchScope($this->scope), $default);
+            '@phan-var VariableTrackingBranchScope $initializer_scope';
+            $this->scope = $this->scope->mergeBranchScopeList([$initializer_scope], true, []);
+        }
         $name = $node->children['var']->children['name'] ?? null;
         if (\is_string($name)) {
             self::$variable_graph->markAsStaticVariable($name);

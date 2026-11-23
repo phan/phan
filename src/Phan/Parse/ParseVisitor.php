@@ -1658,19 +1658,20 @@ class ParseVisitor extends ScopeVisitor
     {
         $default = $node->children['default'];
         if ($default instanceof Node) {
-            if (Config::get_closest_target_php_version_id() < 80300) {
-                $this->checkNodeIsConstExprOrWarn($default, self::CONSTANT_EXPRESSION_IN_STATIC_VARIABLE);
-            } elseif (!self::isConstExpr($default, self::CONSTANT_EXPRESSION_IN_STATIC_VARIABLE)) {
-                // PHP 8.3+ allows any expression as the initializer of a static variable.
-                if (Config::get_closest_minimum_target_php_version_id() < 80300) {
+            // PHP 8.3+ allows any expression as the initializer of a static variable.
+            // Older versions only allow the constant expressions of PHP 8.2, without the forms added in PHP 8.5.
+            $is_target_before_83 = Config::get_closest_target_php_version_id() < 80300;
+            if ($is_target_before_83 || Config::get_closest_minimum_target_php_version_id() < 80300) {
+                $is_const_expr = self::isConstExpr($default, self::CONSTANT_EXPRESSION_IN_STATIC_VARIABLE);
+                if ($is_const_expr ? !self::containsConstExprFormAddedInPhp85($default) : $is_target_before_83) {
+                    $this->checkNodeIsConstExprOrWarn($default, self::CONSTANT_EXPRESSION_IN_STATIC_VARIABLE);
+                } else {
                     $this->emitIssue(
                         Issue::CompatibleStaticVariableInitializer,
                         $default->lineno,
                         ASTReverter::toShortString($default)
                     );
                 }
-            } else {
-                $this->checkNodeIsConstExprOrWarn($default, self::CONSTANT_EXPRESSION_IN_STATIC_VARIABLE);
             }
         }
         $context = $this->context;
@@ -2786,6 +2787,30 @@ class ParseVisitor extends ScopeVisitor
             default:
                 return true;
         }
+    }
+
+    /**
+     * @param Node|string|float|int|bool|null $n a valid constant expression
+     * @return bool whether $n contains a cast, closure, first-class callable or partial application (allowed in constant expressions since PHP 8.5 or 8.6)
+     */
+    private static function containsConstExprFormAddedInPhp85(Node|bool|float|int|null|string $n): bool
+    {
+        if (!($n instanceof Node)) {
+            return false;
+        }
+        switch ($n->kind) {
+            case ast\AST_CAST:
+            case ast\AST_CLOSURE:
+            case ast\AST_CALL:
+            case ast\AST_STATIC_CALL:
+                return true;
+        }
+        foreach ($n->children as $child_node) {
+            if (self::containsConstExprFormAddedInPhp85($child_node)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

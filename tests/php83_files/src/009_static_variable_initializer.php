@@ -12,6 +12,16 @@ function f(int $x): string {
     static $c = new \ArrayObject([$x]);
     static $d = $undefined;
     static $e = compute(1);
-    return "$a $b $d $e " . count($c);
+    // Casts and first-class callables are allowed here since PHP 8.3, while constant expressions only allow them since PHP 8.5.
+    static $s = (string) 1;
+    static $cb = strlen(...);
+    return "$a $b $d $e $s " . count($c) . $cb('x');
 }
 echo f(1);
+
+function g(int $y): int {
+    // The initializer only runs on the first call: later calls use the $y passed in.
+    static $z = ($y = 2);
+    return $y + $z;
+}
+echo g(1);
