@@ -33,7 +33,7 @@ function test_callable_array($callables) {
     $specific = ['class' => new OtherClass];
     $arr = rand() % 2 ? $callables : $specific;
     $item = $arr[0];
-    // $item should be callable|OtherClass, not mixed
+    // $item should be callable, not mixed: the array shape has no key 0, so its unrelated field 'class' does not add OtherClass.
     // This verifies that CallableArrayType is not treated as "truly generic"
     $item();
 }

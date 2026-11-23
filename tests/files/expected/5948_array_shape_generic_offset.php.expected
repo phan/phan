@@ -7,7 +7,7 @@
 %s:26 PhanUnusedVariable Unused definition of variable $tax
 %s:31 PhanDebugAnnotation @phan-debug-var requested for variable $tax - it has union type int
 %s:31 PhanUnusedVariable Unused definition of variable $tax
-%s:33 PhanDebugAnnotation @phan-debug-var requested for variable $other - it has union type int|string
+%s:33 PhanDebugAnnotation @phan-debug-var requested for variable $other - it has union type string
 %s:33 PhanUnusedVariable Unused definition of variable $other
 %s:38 PhanDebugAnnotation @phan-debug-var requested for variable $tax - it has union type int
 %s:38 PhanUnusedVariable Unused definition of variable $tax
@@ -18,7 +18,7 @@
 %s:50 PhanTypeMismatchArgument Argument 1 ($m) is $x['tax'] of type int but \fmt5948() takes \Money5948 defined at %s:7
 %s:54 PhanDebugAnnotation @phan-debug-var requested for variable $tax - it has union type int
 %s:54 PhanUnusedVariable Unused definition of variable $tax
-%s:56 PhanDebugAnnotation @phan-debug-var requested for variable $first - it has union type int|string
+%s:56 PhanDebugAnnotation @phan-debug-var requested for variable $first - it has union type string
 %s:56 PhanUnusedVariable Unused definition of variable $first
 %s:64 PhanTemplateTypeNotUsedInFunctionReturn Template type T not used in return value of function/method shape_or_template5948()
 %s:65 PhanDebugAnnotation @phan-debug-var requested for variable $tax - it has union type int|null

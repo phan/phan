@@ -1,0 +1,16 @@
+%s:10 PhanTypeMismatchArgumentInternal Argument 1 ($array) is $x['m']['c'] of type string but \array_sum() takes array
+%s:17 PhanTypeMismatchArgumentInternal Argument 1 ($array) is $x['a']['b']['c'] of type string but \array_sum() takes array
+%s:27 PhanUnusedVariable Unused definition of variable $a
+%s:28 PhanUnusedVariable Unused definition of variable $b
+%s:29 PhanUnusedVariable Unused definition of variable $c
+%s:30 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type string
+%s:30 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type float
+%s:30 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type bool|string
+%s:30 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type int
+%s:30 PhanUnusedVariable Unused definition of variable $d
+%s:39 PhanUnusedVariable Unused definition of variable $a
+%s:40 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type int
+%s:40 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type int|mixed
+%s:40 PhanUnusedVariable Unused definition of variable $b
+%s:48 PhanTypeInvalidDimOffset Invalid offset "other" of $shape of array type array{tax:int}
+%s:48 PhanTypeSuspiciousEcho Suspicious argument $shape['other'] of type null for an echo/print statement

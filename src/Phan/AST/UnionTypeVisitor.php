@@ -2534,6 +2534,8 @@ class UnionTypeVisitor extends AnalysisVisitor
          */
         $has_generic_array = false;
         $has_truly_generic_array = false;  // Fix for #5281: Track plain untyped array (excludes types implementing GenericArrayInterface)
+        $has_non_array_access = false;  // mixed, or an object that may implement ArrayAccess: the type of the element is unknown
+        $has_array_shape = false;
         $has_valid_string_access = false;
         $resulting_element_type = null;
         foreach ($union_type->getTypeSet() as $type) {
@@ -2565,10 +2567,14 @@ class UnionTypeVisitor extends AnalysisVisitor
                     if ($type instanceof ArrayType && !($type instanceof GenericArrayInterface)) {
                         $has_truly_generic_array = true;
                     }
+                    if (!($type instanceof ArrayType)) {
+                        $has_non_array_access = true;
+                    }
                     continue;
                 }
                 continue;
             }
+            $has_array_shape = true;
             if (\is_float($dim_value)) {
                 $dim_value = (int)$dim_value;
             }
@@ -2594,8 +2600,11 @@ class UnionTypeVisitor extends AnalysisVisitor
             // and the key doesn't exist in any array shapes, return mixed to avoid falling
             // back to genericArrayElementTypes() which would incorrectly extract types from
             // unrelated array shape fields.
-            if ($has_truly_generic_array) {
-                $result = MixedType::instance(false)->asPHPDocUnionType();
+            // The same applies when the other types are all generic arrays, e.g. array{m:array{c:string}}|non-empty-array<mixed,mixed>
+            // after the condition `is_string($x['m']['c'])`: the type of $x['n'] is the type of the elements of the generic arrays.
+            // It is not array{c:string}, the type of the unrelated field 'm'.
+            if ($has_truly_generic_array || ($has_array_shape && !$has_non_array_access)) {
+                $result = $has_truly_generic_array ? MixedType::instance(false)->asPHPDocUnionType() : UnionType::empty();
                 // Also include element types from typed generic arrays
                 // (e.g., non-empty-array<string, T>) so that downstream
                 // method resolution can still find concrete types.
@@ -2604,7 +2613,10 @@ class UnionTypeVisitor extends AnalysisVisitor
                         $result = $result->withUnionType($type->genericArrayElementUnionType());
                     }
                 }
-                return $result;
+                if (!$result->isEmpty()) {
+                    // e.g. Node|?Node|null from array<int,Node>|array<string,?Node>|array<string,null> is ?Node
+                    return $has_truly_generic_array ? $result : $result->asNormalizedTypes();
+                }
             }
             return null;
         }
