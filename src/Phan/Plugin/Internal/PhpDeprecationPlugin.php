@@ -16,6 +16,7 @@ use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\Method;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCallCapability;
 use Phan\PluginV3\HandleLazyLoadInternalFunctionCapability;
@@ -245,6 +246,207 @@ final class PhpDeprecationPlugin extends PluginV3 implements
             'min_php_version' => 80600,
             'reason' => 'Deprecated in PHP 8.6. Use Collator::compare() instead.',
         ],
+        // The other deprecations of php-src (see internal/check_deprecations_against_php_src.php)
+        'enchant_broker_free' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, as EnchantBroker objects are freed automatically.',
+        ],
+        'enchant_broker_free_dict' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, as EnchantDictionary objects are freed automatically.',
+        ],
+        'enchant_broker_get_dict_path' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0.',
+        ],
+        'enchant_broker_set_dict_path' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0.',
+        ],
+        'enchant_dict_add_to_personal' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use enchant_dict_add() instead.',
+        ],
+        'enchant_dict_is_in_session' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use enchant_dict_is_added() instead.',
+        ],
+        'libxml_disable_entity_loader' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, as external entity loading is disabled by default.',
+        ],
+        'openssl_free_key' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, as OpenSSLAsymmetricKey objects are freed automatically.',
+        ],
+        'openssl_pkey_free' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, as OpenSSLAsymmetricKey objects are freed automatically.',
+        ],
+        'openssl_x509_free' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, as OpenSSLCertificate objects are freed automatically.',
+        ],
+        'pg_clientencoding' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use pg_client_encoding() instead.',
+        ],
+        'pg_cmdtuples' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use pg_affected_rows() instead.',
+        ],
+        'pg_errormessage' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use pg_last_error() instead.',
+        ],
+        'pg_fieldisnull' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use pg_field_is_null() instead.',
+        ],
+        'pg_fieldname' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use pg_field_name() instead.',
+        ],
+        'pg_fieldnum' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use pg_field_num() instead.',
+        ],
+        'pg_fieldprtlen' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use pg_field_prtlen() instead.',
+        ],
+        'pg_fieldsize' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use pg_field_size() instead.',
+        ],
+        'pg_fieldtype' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use pg_field_type() instead.',
+        ],
+        'pg_freeresult' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use pg_free_result() instead.',
+        ],
+        'pg_getlastoid' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use pg_last_oid() instead.',
+        ],
+        'pg_loclose' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use pg_lo_close() instead.',
+        ],
+        'pg_locreate' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use pg_lo_create() instead.',
+        ],
+        'pg_loexport' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use pg_lo_export() instead.',
+        ],
+        'pg_loimport' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use pg_lo_import() instead.',
+        ],
+        'pg_loopen' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use pg_lo_open() instead.',
+        ],
+        'pg_loread' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use pg_lo_read() instead.',
+        ],
+        'pg_loreadall' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use pg_lo_read_all() instead.',
+        ],
+        'pg_lounlink' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use pg_lo_unlink() instead.',
+        ],
+        'pg_lowrite' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use pg_lo_write() instead.',
+        ],
+        'pg_numfields' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use pg_num_fields() instead.',
+        ],
+        'pg_numrows' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use pg_num_rows() instead.',
+        ],
+        'pg_result' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use pg_fetch_result() instead.',
+        ],
+        'pg_setclientencoding' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use pg_set_client_encoding() instead.',
+        ],
+        'shmop_close' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, as Shmop objects are freed automatically.',
+        ],
+        'zip_close' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use ZipArchive::close() instead.',
+        ],
+        'zip_entry_close' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0.',
+        ],
+        'zip_entry_compressedsize' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use ZipArchive::statIndex() instead.',
+        ],
+        'zip_entry_compressionmethod' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use ZipArchive::statIndex() instead.',
+        ],
+        'zip_entry_filesize' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use ZipArchive::statIndex() instead.',
+        ],
+        'zip_entry_name' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use ZipArchive::statIndex() instead.',
+        ],
+        'zip_entry_open' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0.',
+        ],
+        'zip_entry_read' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use ZipArchive::getFromIndex() instead.',
+        ],
+        'zip_open' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use ZipArchive::open() instead.',
+        ],
+        'zip_read' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, use ZipArchive::statIndex() instead.',
+        ],
+        'odbc_result_all' => [
+            'min_php_version' => 80100,
+            'reason' => 'Deprecated in PHP 8.1.',
+        ],
+        'assert_options' => [
+            'min_php_version' => 80300,
+            'reason' => 'Deprecated in PHP 8.3.',
+        ],
+        'xml_set_object' => [
+            'min_php_version' => 80400,
+            'reason' => 'Deprecated in PHP 8.4, provide a proper method callable to xml_set_*_handler() functions.',
+        ],
+        'mysqli_get_charset' => [
+            'min_php_version' => 80600,
+            'reason' => 'Deprecated in PHP 8.6, did you mean mysqli_character_set_name()?.',
+        ],
+        'mysqli_stmt_init' => [
+            'min_php_version' => 80600,
+            'reason' => 'Deprecated in PHP 8.6, use mysqli_prepare() instead.',
+        ],
     ];
 
     /**
@@ -272,6 +474,59 @@ final class PhpDeprecationPlugin extends PluginV3 implements
             'getcsvcontrol' => 80600,
             'setcsvcontrol' => 80600,
         ],
+        // The other deprecations of php-src (see internal/check_deprecations_against_php_src.php)
+        'dateinterval' => [
+            '__wakeup' => 80500,
+        ],
+        'dateperiod' => [
+            '__wakeup' => 80500,
+        ],
+        'datetime' => [
+            '__wakeup' => 80500,
+        ],
+        'datetimeimmutable' => [
+            '__wakeup' => 80500,
+        ],
+        'datetimeinterface' => [
+            '__wakeup' => 80500,
+        ],
+        'datetimezone' => [
+            '__wakeup' => 80500,
+        ],
+        'mysqli' => [
+            'get_charset' => 80600,
+            'get_client_info' => 80100,
+            'init' => 80100,
+            'kill' => 80400,
+            'ping' => 80400,
+            'refresh' => 80400,
+            'stmt_init' => 80600,
+        ],
+        'reflectionfunction' => [
+            'isdisabled' => 80000,
+        ],
+        'reflectionmethod' => [
+            'setaccessible' => 80500,
+        ],
+        'reflectionparameter' => [
+            'getclass' => 80000,
+            'isarray' => 80000,
+            'iscallable' => 80000,
+        ],
+        'reflectionproperty' => [
+            'setaccessible' => 80500,
+        ],
+        'splfileinfo' => [
+            '_bad_state_ex' => 80200,
+        ],
+        'splfixedarray' => [
+            '__wakeup' => 80400,
+        ],
+        'splobjectstorage' => [
+            'attach' => 80500,
+            'contains' => 80500,
+            'detach' => 80500,
+        ],
     ];
 
     /** @var array<string,array{min_php_version:int,reason:string}> */
@@ -285,6 +540,219 @@ final class PhpDeprecationPlugin extends PluginV3 implements
         '\\DateTimeInterface::RFC7231' => [
             'min_php_version' => 80500,
             'reason' => 'Deprecated in PHP 8.5. Use DateTimeInterface::RFC7231_FORMAT instead.',
+        ],
+        // The other deprecations of php-src (see internal/check_deprecations_against_php_src.php)
+        '\\ZipArchive::FL_RECOMPRESS' => [
+            'min_php_version' => 80300,
+            'reason' => 'Deprecated in PHP 8.3.',
+        ],
+        '\\PDO::DBLIB_ATTR_CONNECTION_TIMEOUT' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Dblib::ATTR_CONNECTION_TIMEOUT instead.',
+        ],
+        '\\PDO::DBLIB_ATTR_DATETIME_CONVERT' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Dblib::ATTR_DATETIME_CONVERT instead.',
+        ],
+        '\\PDO::DBLIB_ATTR_QUERY_TIMEOUT' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Dblib::ATTR_QUERY_TIMEOUT instead.',
+        ],
+        '\\PDO::DBLIB_ATTR_SKIP_EMPTY_ROWSETS' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Dblib::ATTR_SKIP_EMPTY_ROWSETS instead.',
+        ],
+        '\\PDO::DBLIB_ATTR_STRINGIFY_UNIQUEIDENTIFIER' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Dblib::ATTR_STRINGIFY_UNIQUEIDENTIFIER instead.',
+        ],
+        '\\PDO::DBLIB_ATTR_TDS_VERSION' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Dblib::ATTR_TDS_VERSION instead.',
+        ],
+        '\\PDO::DBLIB_ATTR_VERSION' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Dblib::ATTR_VERSION instead.',
+        ],
+        '\\PDO::FB_ATTR_DATE_FORMAT' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Firebird::ATTR_DATE_FORMAT instead.',
+        ],
+        '\\PDO::FB_ATTR_TIMESTAMP_FORMAT' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Firebird::ATTR_TIMESTAMP_FORMAT instead.',
+        ],
+        '\\PDO::FB_ATTR_TIME_FORMAT' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Firebird::ATTR_TIME_FORMAT instead.',
+        ],
+        '\\PDO::MYSQL_ATTR_COMPRESS' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Mysql::ATTR_COMPRESS instead.',
+        ],
+        '\\PDO::MYSQL_ATTR_DIRECT_QUERY' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Mysql::ATTR_DIRECT_QUERY instead.',
+        ],
+        '\\PDO::MYSQL_ATTR_FOUND_ROWS' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Mysql::ATTR_FOUND_ROWS instead.',
+        ],
+        '\\PDO::MYSQL_ATTR_IGNORE_SPACE' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Mysql::ATTR_IGNORE_SPACE instead.',
+        ],
+        '\\PDO::MYSQL_ATTR_INIT_COMMAND' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Mysql::ATTR_INIT_COMMAND instead.',
+        ],
+        '\\PDO::MYSQL_ATTR_LOCAL_INFILE' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Mysql::ATTR_LOCAL_INFILE instead.',
+        ],
+        '\\PDO::MYSQL_ATTR_LOCAL_INFILE_DIRECTORY' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Mysql::ATTR_LOCAL_INFILE_DIRECTORY instead.',
+        ],
+        '\\PDO::MYSQL_ATTR_MAX_BUFFER_SIZE' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Mysql::ATTR_MAX_BUFFER_SIZE instead.',
+        ],
+        '\\PDO::MYSQL_ATTR_MULTI_STATEMENTS' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Mysql::ATTR_MULTI_STATEMENTS instead.',
+        ],
+        '\\PDO::MYSQL_ATTR_READ_DEFAULT_FILE' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Mysql::ATTR_READ_DEFAULT_FILE instead.',
+        ],
+        '\\PDO::MYSQL_ATTR_READ_DEFAULT_GROUP' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Mysql::ATTR_READ_DEFAULT_GROUP instead.',
+        ],
+        '\\PDO::MYSQL_ATTR_SERVER_PUBLIC_KEY' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Mysql::ATTR_SERVER_PUBLIC_KEY instead.',
+        ],
+        '\\PDO::MYSQL_ATTR_SSL_CA' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Mysql::ATTR_SSL_CA instead.',
+        ],
+        '\\PDO::MYSQL_ATTR_SSL_CAPATH' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Mysql::ATTR_SSL_CAPATH instead.',
+        ],
+        '\\PDO::MYSQL_ATTR_SSL_CERT' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Mysql::ATTR_SSL_CERT instead.',
+        ],
+        '\\PDO::MYSQL_ATTR_SSL_CIPHER' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Mysql::ATTR_SSL_CIPHER instead.',
+        ],
+        '\\PDO::MYSQL_ATTR_SSL_KEY' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Mysql::ATTR_SSL_KEY instead.',
+        ],
+        '\\PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Mysql::ATTR_SSL_VERIFY_SERVER_CERT instead.',
+        ],
+        '\\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Mysql::ATTR_USE_BUFFERED_QUERY instead.',
+        ],
+        '\\PDO::ODBC_ATTR_ASSUME_UTF8' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Odbc::ATTR_ASSUME_UTF8 instead.',
+        ],
+        '\\PDO::ODBC_ATTR_USE_CURSOR_LIBRARY' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Odbc::ATTR_USE_CURSOR_LIBRARY instead.',
+        ],
+        '\\PDO::ODBC_SQL_USE_DRIVER' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Odbc::SQL_USE_DRIVER instead.',
+        ],
+        '\\PDO::ODBC_SQL_USE_IF_NEEDED' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Odbc::SQL_USE_IF_NEEDED instead.',
+        ],
+        '\\PDO::ODBC_SQL_USE_ODBC' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Odbc::SQL_USE_ODBC instead.',
+        ],
+        '\\PDO::PGSQL_ATTR_DISABLE_PREPARES' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Pgsql::ATTR_DISABLE_PREPARES instead.',
+        ],
+        '\\PDO::PGSQL_TRANSACTION_ACTIVE' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5.',
+        ],
+        '\\PDO::PGSQL_TRANSACTION_IDLE' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5.',
+        ],
+        '\\PDO::PGSQL_TRANSACTION_INERROR' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5.',
+        ],
+        '\\PDO::PGSQL_TRANSACTION_INTRANS' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5.',
+        ],
+        '\\PDO::PGSQL_TRANSACTION_UNKNOWN' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5.',
+        ],
+        '\\PDO::SQLITE_ATTR_EXTENDED_RESULT_CODES' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Sqlite::ATTR_EXTENDED_RESULT_CODES instead.',
+        ],
+        '\\PDO::SQLITE_ATTR_OPEN_FLAGS' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Sqlite::ATTR_OPEN_FLAGS instead.',
+        ],
+        '\\PDO::SQLITE_ATTR_READONLY_STATEMENT' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Sqlite::ATTR_READONLY_STATEMENT instead.',
+        ],
+        '\\PDO::SQLITE_DETERMINISTIC' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Sqlite::DETERMINISTIC instead.',
+        ],
+        '\\PDO::SQLITE_OPEN_CREATE' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Sqlite::OPEN_CREATE instead.',
+        ],
+        '\\PDO::SQLITE_OPEN_READONLY' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Sqlite::OPEN_READONLY instead.',
+        ],
+        '\\PDO::SQLITE_OPEN_READWRITE' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, use Pdo\\Sqlite::OPEN_READWRITE instead.',
+        ],
+        '\\Pdo\\Pgsql::TRANSACTION_ACTIVE' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, as it has no effect.',
+        ],
+        '\\Pdo\\Pgsql::TRANSACTION_IDLE' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, as it has no effect.',
+        ],
+        '\\Pdo\\Pgsql::TRANSACTION_INERROR' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, as it has no effect.',
+        ],
+        '\\Pdo\\Pgsql::TRANSACTION_INTRANS' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, as it has no effect.',
+        ],
+        '\\Pdo\\Pgsql::TRANSACTION_UNKNOWN' => [
+            'min_php_version' => 80500,
+            'reason' => 'Deprecated in PHP 8.5, as it has no effect.',
         ],
     ];
 
@@ -351,7 +819,174 @@ final class PhpDeprecationPlugin extends PluginV3 implements
             'min_php_version' => 80600,
             'reason' => 'Deprecated in PHP 8.6. Use one of the Collator::*sort*() methods instead.',
         ],
+        // The other deprecations of php-src (see internal/check_deprecations_against_php_src.php)
+        'ENCHANT_ISPELL' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, as enchant_broker_get_dict_path() and enchant_broker_set_dict_path() are deprecated.',
+        ],
+        'ENCHANT_MYSPELL' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, as enchant_broker_get_dict_path() and enchant_broker_set_dict_path() are deprecated.',
+        ],
+        'PGSQL_LIBPQ_VERSION_STR' => [
+            'min_php_version' => 80000,
+            'reason' => 'Deprecated in PHP 8.0, as it is the same as PGSQL_LIBPQ_VERSION.',
+        ],
+        'FILTER_SANITIZE_STRIPPED' => [
+            'min_php_version' => 80100,
+            'reason' => 'Deprecated in PHP 8.1, use htmlspecialchars() instead.',
+        ],
+        'MYSQLI_DATA_TRUNCATED' => [
+            'min_php_version' => 80100,
+            'reason' => 'Deprecated in PHP 8.1, as it was unused.',
+        ],
+        'MYSQLI_NO_DATA' => [
+            'min_php_version' => 80100,
+            'reason' => 'Deprecated in PHP 8.1, as it was unused.',
+        ],
+        'MYSQLI_SERVER_PS_OUT_PARAMS' => [
+            'min_php_version' => 80100,
+            'reason' => 'Deprecated in PHP 8.1, as it was unused.',
+        ],
+        'MYSQLI_SERVER_QUERY_NO_GOOD_INDEX_USED' => [
+            'min_php_version' => 80100,
+            'reason' => 'Deprecated in PHP 8.1, as it was unused.',
+        ],
+        'MYSQLI_SERVER_QUERY_NO_INDEX_USED' => [
+            'min_php_version' => 80100,
+            'reason' => 'Deprecated in PHP 8.1, as it was unused.',
+        ],
+        'MYSQLI_SERVER_QUERY_WAS_SLOW' => [
+            'min_php_version' => 80100,
+            'reason' => 'Deprecated in PHP 8.1, as it was unused.',
+        ],
+        'MYSQLI_IS_MARIADB' => [
+            'min_php_version' => 80200,
+            'reason' => 'Deprecated in PHP 8.2, as it is always false.',
+        ],
+        'ASSERT_ACTIVE' => [
+            'min_php_version' => 80300,
+            'reason' => 'Deprecated in PHP 8.3, as assert_options() is deprecated.',
+        ],
+        'ASSERT_BAIL' => [
+            'min_php_version' => 80300,
+            'reason' => 'Deprecated in PHP 8.3, as assert_options() is deprecated.',
+        ],
+        'ASSERT_CALLBACK' => [
+            'min_php_version' => 80300,
+            'reason' => 'Deprecated in PHP 8.3, as assert_options() is deprecated.',
+        ],
+        'ASSERT_EXCEPTION' => [
+            'min_php_version' => 80300,
+            'reason' => 'Deprecated in PHP 8.3, as assert_options() is deprecated.',
+        ],
+        'ASSERT_WARNING' => [
+            'min_php_version' => 80300,
+            'reason' => 'Deprecated in PHP 8.3, as assert_options() is deprecated.',
+        ],
+        'U_MULTIPLE_DECIMAL_SEPERATORS' => [
+            'min_php_version' => 80300,
+            'reason' => 'Deprecated in PHP 8.3, use U_MULTIPLE_DECIMAL_SEPARATORS instead.',
+        ],
+        'DOM_PHP_ERR' => [
+            'min_php_version' => 80400,
+            'reason' => 'Deprecated in PHP 8.4, as it is no longer used.',
+        ],
+        'MYSQLI_REFRESH_BACKUP_LOG' => [
+            'min_php_version' => 80400,
+            'reason' => 'Deprecated in PHP 8.4, as mysqli_refresh() is deprecated.',
+        ],
+        'MYSQLI_REFRESH_GRANT' => [
+            'min_php_version' => 80400,
+            'reason' => 'Deprecated in PHP 8.4, as mysqli_refresh() is deprecated.',
+        ],
+        'MYSQLI_REFRESH_HOSTS' => [
+            'min_php_version' => 80400,
+            'reason' => 'Deprecated in PHP 8.4, as mysqli_refresh() is deprecated.',
+        ],
+        'MYSQLI_REFRESH_LOG' => [
+            'min_php_version' => 80400,
+            'reason' => 'Deprecated in PHP 8.4, as mysqli_refresh() is deprecated.',
+        ],
+        'MYSQLI_REFRESH_MASTER' => [
+            'min_php_version' => 80400,
+            'reason' => 'Deprecated in PHP 8.4, as mysqli_refresh() is deprecated.',
+        ],
+        'MYSQLI_REFRESH_REPLICA' => [
+            'min_php_version' => 80400,
+            'reason' => 'Deprecated in PHP 8.4, as mysqli_refresh() is deprecated.',
+        ],
+        'MYSQLI_REFRESH_SLAVE' => [
+            'min_php_version' => 80400,
+            'reason' => 'Deprecated in PHP 8.4, as mysqli_refresh() is deprecated.',
+        ],
+        'MYSQLI_REFRESH_STATUS' => [
+            'min_php_version' => 80400,
+            'reason' => 'Deprecated in PHP 8.4, as mysqli_refresh() is deprecated.',
+        ],
+        'MYSQLI_REFRESH_TABLES' => [
+            'min_php_version' => 80400,
+            'reason' => 'Deprecated in PHP 8.4, as mysqli_refresh() is deprecated.',
+        ],
+        'MYSQLI_REFRESH_THREADS' => [
+            'min_php_version' => 80400,
+            'reason' => 'Deprecated in PHP 8.4, as mysqli_refresh() is deprecated.',
+        ],
+        'MYSQLI_STORE_RESULT_COPY_DATA' => [
+            'min_php_version' => 80400,
+            'reason' => 'Deprecated in PHP 8.4, as the mysqli_store_result() parameter is unused since 8.1.',
+        ],
+        'SOAP_FUNCTIONS_ALL' => [
+            'min_php_version' => 80400,
+            'reason' => 'Deprecated in PHP 8.4, as enabling all functions is a possible security concern.',
+        ],
+        'SUNFUNCS_RET_DOUBLE' => [
+            'min_php_version' => 80400,
+            'reason' => 'Deprecated in PHP 8.4, as date_sunrise() and date_sunset() were deprecated in 8.1.',
+        ],
+        'SUNFUNCS_RET_STRING' => [
+            'min_php_version' => 80400,
+            'reason' => 'Deprecated in PHP 8.4, as date_sunrise() and date_sunset() were deprecated in 8.1.',
+        ],
+        'SUNFUNCS_RET_TIMESTAMP' => [
+            'min_php_version' => 80400,
+            'reason' => 'Deprecated in PHP 8.4, as date_sunrise() and date_sunset() were deprecated in 8.1.',
+        ],
     ];
+
+    /**
+     * The properties of internal classes that are deprecated, by the lowercase name of the class.
+     * (php-src only marks these with a doc comment; reading them emits a deprecation notice since PHP 8.4)
+     *
+     * @var array<string,array<string,int>> maps the class name to a map from the property name to the php version id of the deprecation
+     */
+    private const DEPRECATED_PROPERTIES = [
+        'domdocument' => [
+            'actualEncoding' => 80400,
+            'config' => 80400,
+        ],
+        'domentity' => [
+            'actualEncoding' => 80400,
+            'encoding' => 80400,
+            'version' => 80400,
+        ],
+    ];
+
+    /**
+     * Returns the tables of deprecated internal elements, for internal/check_deprecations_against_php_src.php.
+     *
+     * @return array{functions:array<string,array{min_php_version:int,reason:string}>,methods:array<string,array<string,int>>,class_constants:array<string,array{min_php_version:int,reason:string}>,global_constants:array<string,array{min_php_version:int,reason:string}>}
+     * @internal
+     */
+    public static function getDeprecationTables(): array
+    {
+        return [
+            'functions' => self::DEPRECATED_FUNCTIONS,
+            'methods' => self::DEPRECATED_METHODS,
+            'class_constants' => self::DEPRECATED_CLASS_CONSTANTS,
+            'global_constants' => self::DEPRECATED_GLOBAL_CONSTANTS,
+        ];
+    }
 
     /**
      * Returns true when the configured target PHP version is at least the given version.
@@ -478,7 +1113,7 @@ final class PhpDeprecationPlugin extends PluginV3 implements
                 if (!self::isTargetingPhpVersionOrNewer($min_php_version)) {
                     continue;
                 }
-                $closures["\\$class_name::$method_name"] =
+                $closure =
                     /** @param list<Node|int|float|string> $unused_args */
                     static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $unused_args, ?Node $call_node) use ($class_name): void {
                         if (!$function->isPHPInternal() || $function->isDeprecated()) {
@@ -498,10 +1133,41 @@ final class PhpDeprecationPlugin extends PluginV3 implements
                             ''
                         );
                     };
+                $closures["\\$class_name::$method_name"] = $closure;
+                // An internal subclass inherits the method, e.g. SplTempFileObject::setCsvControl() from SplFileObject.
+                foreach (self::getInternalSubclassNames($class_name) as $subclass_name) {
+                    $closures["\\$subclass_name::$method_name"] ??= $closure;
+                }
             }
         }
 
         return $closures;
+    }
+
+    /**
+     * @return list<string> the lowercase names of the internal classes of the running PHP that extend the internal class $class_name
+     */
+    private static function getInternalSubclassNames(string $class_name): array
+    {
+        static $internal_class_names = null;
+        if ($internal_class_names === null) {
+            $internal_class_names = [];
+            foreach (\get_declared_classes() as $name) {
+                if ((new \ReflectionClass($name))->isInternal()) {
+                    $internal_class_names[] = $name;
+                }
+            }
+        }
+        if (!\class_exists($class_name, false)) {
+            return [];
+        }
+        $result = [];
+        foreach ($internal_class_names as $name) {
+            if (\is_subclass_of($name, $class_name)) {
+                $result[] = strtolower($name);
+            }
+        }
+        return $result;
     }
 
     /** @unused-param $code_base */
@@ -554,6 +1220,25 @@ final class PhpDeprecationPlugin extends PluginV3 implements
             }
         }
 
+        return $result;
+    }
+
+    /**
+     * Returns the deprecated properties of internal classes for the current target PHP version.
+     *
+     * @return array<string,array<string,int>> maps the lowercase class name to a map from the property name to the php version id of the deprecation
+     */
+    public static function getDeprecatedProperties(): array
+    {
+        $target_version = Config::get_closest_target_php_version_id();
+        $result = [];
+        foreach (self::DEPRECATED_PROPERTIES as $class_name => $properties) {
+            foreach ($properties as $property_name => $min_php_version) {
+                if ($target_version >= $min_php_version) {
+                    $result[$class_name][$property_name] = $min_php_version;
+                }
+            }
+        }
         return $result;
     }
 
@@ -620,6 +1305,74 @@ final class PhpDeprecationVisitor extends PluginAwarePostAnalysisVisitor
         }
 
         $this->maybeWarnDeprecatedGlobalConstant($constant, $node, $deprecated_map);
+    }
+
+    /**
+     * @override
+     */
+    public function visitNullsafeProp(Node $node): void
+    {
+        // `$document?->actualEncoding` reads the property unless $document is null
+        $this->visitProp($node);
+    }
+
+    /**
+     * @override
+     */
+    public function visitProp(Node $node): void
+    {
+        $property_name = $node->children['prop'];
+        if (!\is_string($property_name)) {
+            return;
+        }
+        $deprecated = PhpDeprecationPlugin::getDeprecatedProperties();
+        $has_name = false;
+        foreach ($deprecated as $properties) {
+            if (isset($properties[$property_name])) {
+                $has_name = true;
+                break;
+            }
+        }
+        if (!$has_name) {
+            return;
+        }
+        try {
+            $union_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr']);
+        } catch (\Throwable) {
+            return;
+        }
+        foreach ($union_type->getTypeSet() as $type) {
+            if (!$type->isObjectWithKnownFQSEN()) {
+                continue;
+            }
+            $class_fqsen = FullyQualifiedClassName::fromType($type);
+            if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {
+                continue;
+            }
+            $class = $this->code_base->getClassByFQSEN($class_fqsen);
+            if (!$class->hasPropertyWithName($this->code_base, $property_name)) {
+                continue;
+            }
+            $property = $class->getPropertyByName($this->code_base, $property_name);
+            if (!$property->isPHPInternal() || $property->isDeprecated()) {
+                continue;
+            }
+            // The property may be inherited from the class that declares it
+            $declaring_class = strtolower(ltrim((string)$property->getRealDefiningFQSEN()->getFullyQualifiedClassName(), '\\'));
+            $min_php_version = $deprecated[$declaring_class][$property_name] ?? null;
+            if ($min_php_version === null) {
+                continue;
+            }
+            $this->emitIssue(
+                Issue::DeprecatedProperty,
+                $node->lineno,
+                $property->getRepresentationForIssue(),
+                $property->getFileRef()->getFile(),
+                $property->getFileRef()->getLineNumberStart(),
+                \sprintf(' (Deprecated because: Deprecated in PHP %d.%d.)', \intdiv($min_php_version, 10000), \intdiv($min_php_version % 10000, 100))
+            );
+            return;
+        }
     }
 
     /**

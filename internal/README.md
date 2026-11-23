@@ -10,6 +10,13 @@ Run it with each supported PHP version, e.g. `/usr/local/php83/bin/php internal/
 [`lib/SignatureReflectionCheckPlugin.php`](./lib/SignatureReflectionCheckPlugin.php) does the same for what Phan actually loads (the map, the bundled stubs and Reflection combined):
 `./phan -n --target-php-version 8.6 --plugin internal/lib/SignatureReflectionCheckPlugin.php any_file.php`
 
+# [`check_deprecations_against_php_src.php`](./check_deprecations_against_php_src.php)
+
+Lists the functions, methods, constants and class constants that php-src marks as deprecated (the `#[\Deprecated]` attributes of its `*.stub.php` files,
+and the driver constants of the `PDO` class) and that are missing from the tables of `Phan\Plugin\Internal\PhpDeprecationPlugin`.
+`--php` prints the missing entries as PHP code for those tables. Run it on the files of the newest php-src branch:
+`php internal/check_deprecations_against_php_src.php php-src-8.6`
+
 # [`update_signature_map_from_reflection.php`](./update_signature_map_from_reflection.php)
 
 Updates the signature map so that the parameters (names, order, optionality, by-reference and variadic flags) match Reflection for the running PHP version,

@@ -1161,7 +1161,7 @@ class CodeBase
             $this->undo_tracker->recordUndo(static function (CodeBase $inner) use ($original, $alias_record): void {
                 $fqsen_alias_map = $inner->fqsen_alias_map[$original] ?? null;
                 if ($fqsen_alias_map) {
-                    $fqsen_alias_map->detach($alias_record);
+                    $fqsen_alias_map->offsetUnset($alias_record);
                     if ($fqsen_alias_map->count() === 0) {
                         unset($inner->fqsen_alias_map[$original]);
                     }
