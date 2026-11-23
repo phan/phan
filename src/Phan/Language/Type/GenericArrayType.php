@@ -751,6 +751,23 @@ class GenericArrayType extends ArrayType implements GenericArrayInterface
     }
 
     /**
+     * Given a type such as array<int,self>, return array<int,SomeClass>
+     * @override
+     */
+    public function withSelfResolvedInContext(Context $context): Type
+    {
+        $resolved_element_type = $this->element_type->withSelfResolvedInContext($context);
+        if ($this->element_type === $resolved_element_type) {
+            return $this;
+        }
+        return static::fromElementType(
+            $resolved_element_type,
+            $this->is_nullable,
+            $this->key_type
+        );
+    }
+
+    /**
      * Given a type such as array<int,static>, return array<int,$static_type>
      */
     public function withStaticResolvedTo(Type $static_type): Type

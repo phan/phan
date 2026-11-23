@@ -657,6 +657,21 @@ final class IntersectionType extends Type
     }
 
     /**
+     * @override
+     */
+    public function withSelfResolvedInContext(Context $context): Type
+    {
+        $type_parts = $this->type_parts;
+        foreach ($type_parts as $i => $type) {
+            $type_parts[$i] = $type->withSelfResolvedInContext($context);
+        }
+        if ($type_parts === $this->type_parts) {
+            return $this;
+        }
+        return self::createFromTypes($type_parts, null, null);
+    }
+
+    /**
      * withStaticResolvedInContext() returns $this exactly when every part resolves to itself,
      * so this is a no-op iff resolving 'static' is a no-op for every part.
      */

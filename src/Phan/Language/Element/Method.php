@@ -60,6 +60,9 @@ class Method extends ClassElement implements FunctionInterface
      */
     private $defining_method_for_type_fetching;
 
+    /** @var ?FullyQualifiedClassName the class that `self` is in the signature of this method, if it is a method of a trait that a class uses */
+    private $self_class_fqsen;
+
     /**
      * @var Set<FullyQualifiedMethodName> FQSENs of methods potentially overriding this one.
      * (This Set is shared with clones, so adding to it does not change the state version.)
@@ -524,6 +527,7 @@ class Method extends ClassElement implements FunctionInterface
         if ($method->isPublic()) {
             $method->setDefiningFQSEN($defining_fqsen);
         }
+        $method->self_class_fqsen = $clazz->getFQSEN();
         // The original declaration, also for a trait used through another trait: for a protected or private method,
         // $defining_fqsen is the trait the method is imported from. Dead code detection merges the references
         // to the copies into the original declaration, and must not depend on the order of the class declarations.
@@ -1100,12 +1104,38 @@ class Method extends ClassElement implements FunctionInterface
             // withStaticResolvedInContext() would return $union_type, so skip creating the Context.
             return $union_type;
         }
+        // `self` is the class that the method was declared in (or that uses the trait declaring it),
+        // not the subclass that inherits the method. Resolve it first, also where it is nested in a type.
+        $union_type = $union_type->withSelfResolvedInContext($this->getSelfContext());
         $new_union_type = $union_type->withStaticResolvedInContext($this->getDeclaringClassContext());
         if ($new_union_type !== $union_type) {
             $union_type = $union_type->withUnionType($new_union_type);
         }
 
         return $union_type;
+    }
+
+    /**
+     * Records the class that uses the trait declaring this method: `self` in its signature is that class,
+     * also for the subclasses that inherit the method from it.
+     */
+    public function setSelfClassFQSEN(FullyQualifiedClassName $class_fqsen): void
+    {
+        $this->bumpStateVersion();
+        $this->self_class_fqsen = $class_fqsen;
+    }
+
+    /**
+     * A context whose scope is the class that `self` is in the signature of this method:
+     * the class that declares the method, or that uses the trait declaring it (not a subclass that inherits it).
+     */
+    public function getSelfContext(): Context
+    {
+        // (The defining FQSEN of a public method of a trait stays the trait, so the class using the trait is recorded separately)
+        $class_fqsen = $this->self_class_fqsen
+            ?? ($this->hasDefiningFQSEN() ? $this->getDefiningClassFQSEN() : $this->fqsen->getFullyQualifiedClassName());
+        $scope = new ClassScope(new GlobalScope(), $class_fqsen, 0);
+        return (clone $this->getContext())->withScope($scope);
     }
 
     /**
