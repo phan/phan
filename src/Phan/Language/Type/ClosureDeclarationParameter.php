@@ -110,8 +110,7 @@ final class ClosureDeclarationParameter
             // We should have already checked this
             return false;
         }
-        // TODO: stricter? (E.g. shouldn't allow int|string to cast to int)
-        return $this->type->canCastToUnionType($other->type, $code_base);
+        return $this->isCompatibleParameterType($other, $code_base);
     }
 
     /**
@@ -131,8 +130,23 @@ final class ClosureDeclarationParameter
             // We should have already checked this
             return false;
         }
-        // TODO: stricter? (E.g. shouldn't allow int|string to cast to int)
-        return $this->type->canCastToUnionType($other->type, $code_base);
+        return $this->isCompatibleParameterType($other, $code_base);
+    }
+
+    /**
+     * A callable that is used where a callable with the parameter $other is expected gets the values of the type of $other,
+     * so it is compatible if its parameter accepts them (contravariance): a `Closure(Base)` can be used as a `Closure(Child)`.
+     *
+     * A parameter with a narrower type (a `Closure(Child)` used as a `Closure(Base)`) is not safe, but is common
+     * (e.g. for the handlers of events) and was the only form that Phan accepted, so it is still accepted.
+     */
+    private function isCompatibleParameterType(ClosureDeclarationParameter $other, CodeBase $code_base): bool
+    {
+        if ($this->type->canCastToUnionType($other->type, $code_base)) {
+            return true;
+        }
+        // (Preserving the template parameters: `Box<int>` must not be expanded to `Box`, which would accept a `Box<string>`)
+        return $other->type->asExpandedTypesPreservingTemplate($code_base)->canCastToUnionType($this->type, $code_base);
     }
 
     /**
