@@ -1,0 +1,4 @@
+%s:31 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type array<string,1>(real=array)
+%s:33 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type array<string,int>(real=array)
+%s:35 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type array<int,'x'>|array<int,'y'>(real=array)
+%s:39 PhanTemplateTypeConstraintViolation Template type TKey of \first_int_key_5965() must be compatible with int, but 'x' was provided in call to \first_int_key_5965()
