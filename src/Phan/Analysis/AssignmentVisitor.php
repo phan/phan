@@ -1018,6 +1018,11 @@ class AssignmentVisitor extends AnalysisVisitor
             $right_type = ArrayShapeType::fromFieldTypes([
                 $dim_value => $this->right_type,
             ], false)->asRealUnionType();
+            if ($this->is_conditional_check && $expr_node->kind === ast\AST_DIM) {
+                // A condition such as `if ($x['a']['b'])` proves only that $x['a'] has the key 'b'.
+                // If the other keys of $x['a'] are unknown, keep them possible, so that reading $x['a']['c'] is not an invalid offset.
+                $right_type = $this->withConditionalDimContainerFallback($expr_node, $right_type);
+            }
         } else {
             // Make the right type a generic (i.e. int -> int[])
             if ($dim_node !== null) {
@@ -2737,6 +2742,49 @@ class AssignmentVisitor extends AnalysisVisitor
         $this->context->addScopeVariable($variable);
 
         return $this->context;
+    }
+
+    /**
+     * A condition such as `if ($x['a']['b'])` narrows the type of $x['a'] to array{b:non-empty-mixed}.
+     * Where $x['a'] was not known to be an array shape (e.g. it was mixed, array or array<string,mixed>),
+     * its other keys are unknown and may exist, so keep its generic array types next to the new shape,
+     * as is done when narrowing a variable with `if ($x['b'])`.
+     * Without this, reading $x['a']['c'] afterwards would emit PhanTypeInvalidDimOffset.
+     *
+     * Array shapes of the container are not kept here: they are merged with the new shape by the caller,
+     * so that invalid offsets of declared array shapes are still detected.
+     *
+     * @param Node $container_node the node of the array element being narrowed (a node of kind ast\AST_DIM)
+     * @param UnionType $right_type the narrowed type of that array element, an array shape
+     */
+    private function withConditionalDimContainerFallback(Node $container_node, UnionType $right_type): UnionType
+    {
+        try {
+            $old_container_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $container_node, false);
+        } catch (IssueException) {
+            return $right_type;
+        }
+        if ($old_container_type->isEmpty()) {
+            // The type of the array element is unknown.
+            $old_container_type = MixedType::instance(false)->asPHPDocUnionType();
+        }
+        $fallback_types = [];
+        foreach ($old_container_type->getTypeSet() as $type) {
+            if ($type instanceof ArrayShapeType) {
+                continue;
+            }
+            if ($type instanceof GenericArrayType) {
+                $fallback_types[] = $type;
+            } elseif ($type instanceof ArrayType || $type instanceof MixedType) {
+                // array, mixed, non-empty-mixed, etc.: the keys are unknown.
+                $fallback_types[] = GenericArrayType::fromElementType(MixedType::instance(false), false, GenericArrayType::KEY_MIXED);
+            }
+        }
+        if (!$fallback_types) {
+            return $right_type;
+        }
+        // The array element has the key that was checked, so it is not empty.
+        return $right_type->withUnionType(UnionType::of($fallback_types)->nonFalseyClone());
     }
 
     private function computeTypeOfMultiDimensionalAssignment(UnionType $old_union_type, UnionType $right_type, bool $outer_may_be_absent = false): UnionType

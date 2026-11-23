@@ -1,0 +1,6 @@
+%s:57 PhanTypeInvalidDimOffset Invalid offset "bad" of $shape[0] of array type array{key:non-zero-int,other:string}
+%s:57 PhanTypeSuspiciousEcho Suspicious argument $shape[0]['bad'] of type null for an echo/print statement
+%s:58 PhanTypeInvalidDimOffset Invalid offset 1 of $shape of array type array{0:array{key:non-zero-int,other:string}}
+%s:58 PhanTypeSuspiciousEcho Suspicious argument $shape[1] of type null for an echo/print statement
+%s:62 PhanTypeInvalidDimOffset Invalid offset "bad" of $list[0] of array type array{key:non-zero-int,other:string}
+%s:62 PhanTypeSuspiciousEcho Suspicious argument $list[0]['bad'] of type null for an echo/print statement
