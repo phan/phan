@@ -52,6 +52,21 @@ function values014(string $name, int $level, array $array, ?string $nullable_key
     var_dump(is_a($name, 'Item014', true), is_a($object, 'Item014'));
 }
 
+const CALLBACK014 = 'spl_autoload_call';
+function known_values014(?string $nullable_name): void {
+    $callback = 'spl_autoload_call';
+    spl_autoload_unregister($callback);                                     // 8.5: a variable with a known value
+    spl_autoload_unregister(CALLBACK014);                                   // 8.5: a constant
+    var_dump(is_a($nullable_name, 'Item014'));                              // not certain: may be null
+    var_dump(new DatePeriod($nullable_name));                               // not certain
+}
+
+// A function that the analyzed code declares instead of the internal one (a polyfill) is not deprecated
+if (!function_exists('imagepolygon')) {
+    function imagepolygon($image, array $points, $num_points_or_color, $color = null): bool { return [$image, $points, $num_points_or_color] === $color; }
+}
+var_dump(imagepolygon(null, [0, 0, 1, 1, 0, 1], 3, 0));
+
 }
 
 // A function of the same name in a namespace is not the internal function

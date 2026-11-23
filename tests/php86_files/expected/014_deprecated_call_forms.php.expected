@@ -38,3 +38,12 @@
 %s:48 PhanDeprecatedFunctionArgument Deprecated argument usage for function \ord(): Providing a string that is not one byte long is deprecated as of PHP 8.5; use ord($string[0]) instead
 %s:49 PhanDeprecatedFunctionArgument Deprecated argument usage for function \spl_autoload_unregister(): Using spl_autoload_call() as the callback is deprecated as of PHP 8.5; call spl_autoload_unregister() for each of spl_autoload_functions() instead
 %s:51 PhanDeprecatedFunctionArgument Deprecated argument usage for function \is_a(): Calling is_a() with a string when $allow_string is false is deprecated as of PHP 8.6; it always returns false
+%s:56 PhanUnreferencedFunction Possibly zero references to function \known_values014()
+%s:58 PhanDeprecatedFunctionArgument Deprecated argument usage for function \spl_autoload_unregister(): Using spl_autoload_call() as the callback is deprecated as of PHP 8.5; call spl_autoload_unregister() for each of spl_autoload_functions() instead
+%s:59 PhanDeprecatedFunctionArgument Deprecated argument usage for function \spl_autoload_unregister(): Using spl_autoload_call() as the callback is deprecated as of PHP 8.5; call spl_autoload_unregister() for each of spl_autoload_functions() instead
+%s:60 PhanTypeMismatchArgumentNullableInternal Argument 1 ($object_or_class) is $nullable_name of type ?string but \is_a() takes object|string (expected type to be non-nullable)
+%s:61 PhanTypeMismatchArgumentNullableInternal Argument 1 ($iso) is $nullable_name of type ?string but \DatePeriod::__construct() takes string (expected type to be non-nullable)
+%s:66 PhanPluginUnknownArrayFunctionParamType Function imagepolygon() has a parameter type of array for $points, but does not specify any key types or value types
+%s:66 PhanPluginUnknownFunctionParamType Function imagepolygon() has no declared or inferred parameter type for $image
+%s:66 PhanPluginUnknownFunctionParamType Function imagepolygon() has no declared or inferred parameter type for $num_points_or_color
+%s:66 PhanRedefineFunctionInternal Function imagepolygon defined at %s:66 was previously defined internally

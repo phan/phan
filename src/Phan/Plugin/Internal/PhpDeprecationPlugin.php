@@ -1083,18 +1083,8 @@ final class PhpDeprecationPlugin extends PluginV3 implements
                     if (!$function->isPHPInternal()) {
                         return;
                     }
-                    if ($function instanceof Func) {
-                        // The analyzed code declares a function with this name, e.g. a polyfill for an extension that is not enabled:
-                        // that is the function being called, and it is not deprecated.
-                        // (Phan knows the internal function from its signature map, and calls resolve to it)
-                        $alternate_id = 0;
-                        $fqsen = $function->getFQSEN()->getCanonicalFQSEN();
-                        while ($code_base->hasFunctionWithFQSEN($fqsen)) {
-                            if (!$code_base->getFunctionByFQSEN($fqsen)->isPHPInternal()) {
-                                return;
-                            }
-                            $fqsen = $fqsen->withAlternateId(++$alternate_id);
-                        }
+                    if (self::hasUserDefinedAlternate($code_base, $function)) {
+                        return;
                     }
                     if ($function->isDeprecated()) {
                         // Already reported as PhanDeprecatedFunctionInternal
@@ -1249,7 +1239,7 @@ final class PhpDeprecationPlugin extends PluginV3 implements
                         return;
                     }
                     $type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $start);
-                    if (!$type->isEmpty() && $type->isExclusivelyStringTypes()) {
+                    if (self::isDefinitelyString($type)) {
                         self::emitDeprecatedCallForm($code_base, $context, $function, $call_node, 'Calling DatePeriod::__construct() with an ISO 8601 string is deprecated as of PHP 8.4; use DatePeriod::createFromISO8601String() instead');
                     }
                 };
@@ -1295,6 +1285,11 @@ final class PhpDeprecationPlugin extends PluginV3 implements
                 /** @param list<Node|int|float|string> $args */
                 static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args, ?Node $call_node): void {
                     $callback = self::getPositionalArgument($args, 0);
+                    if ($callback === null) {
+                        return;
+                    }
+                    // A literal, or a variable or constant with a known value
+                    $callback = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $callback)->asSingleScalarValueOrNull();
                     if (\is_string($callback) && \strcasecmp(ltrim($callback, '\\'), 'spl_autoload_call') === 0) {
                         self::emitDeprecatedCallForm($code_base, $context, $function, $call_node, 'Using spl_autoload_call() as the callback is deprecated as of PHP 8.5; call spl_autoload_unregister() for each of spl_autoload_functions() instead');
                     }
@@ -1318,7 +1313,7 @@ final class PhpDeprecationPlugin extends PluginV3 implements
                         return;
                     }
                     $type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
-                    if (!$type->isEmpty() && $type->isExclusivelyStringTypes()) {
+                    if (self::isDefinitelyString($type)) {
                         self::emitDeprecatedCallForm($code_base, $context, $function, $args[0] instanceof Node ? $args[0] : $call_node, 'Calling is_a() with a string when $allow_string is false is deprecated as of PHP 8.6; it always returns false');
                     }
                 };
@@ -1344,6 +1339,14 @@ final class PhpDeprecationPlugin extends PluginV3 implements
     }
 
     /**
+     * @return bool whether a value of the type is always a string (not null, or an unknown value)
+     */
+    private static function isDefinitelyString(UnionType $type): bool
+    {
+        return !$type->isEmpty() && $type->isExclusivelyStringTypes() && !$type->containsNullable();
+    }
+
+    /**
      * @return bool whether a value of the type is always an object (not an array, null, or an unknown value)
      */
     private static function isDefinitelyObject(UnionType $type): bool
@@ -1359,9 +1362,30 @@ final class PhpDeprecationPlugin extends PluginV3 implements
         return true;
     }
 
+    /**
+     * @return bool whether the analyzed code declares a function with the name of the internal function $function,
+     * e.g. a polyfill for an extension that is not enabled: that is the function being called, and it is not deprecated.
+     * (Phan knows the internal function from its signature map, and calls resolve to it)
+     */
+    private static function hasUserDefinedAlternate(CodeBase $code_base, FunctionInterface $function): bool
+    {
+        if (!($function instanceof Func)) {
+            return false;
+        }
+        $alternate_id = 0;
+        $fqsen = $function->getFQSEN()->getCanonicalFQSEN();
+        while ($code_base->hasFunctionWithFQSEN($fqsen)) {
+            if (!$code_base->getFunctionByFQSEN($fqsen)->isPHPInternal()) {
+                return true;
+            }
+            $fqsen = $fqsen->withAlternateId(++$alternate_id);
+        }
+        return false;
+    }
+
     private static function emitDeprecatedCallForm(CodeBase $code_base, Context $context, FunctionInterface $function, ?Node $node, string $details): void
     {
-        if (!$function->isPHPInternal()) {
+        if (!$function->isPHPInternal() || self::hasUserDefinedAlternate($code_base, $function)) {
             return;
         }
         Issue::maybeEmit(
