@@ -11,6 +11,7 @@ declare(strict_types=1);
  * - arity: the number of required or optional parameters, or whether the last parameter is variadic
  * - name: parameter names (used for named arguments)
  * - by-ref: whether a parameter is passed by reference
+ * - optional: whether a parameter is optional or variadic
  * - missing: functions and methods that Reflection knows but the map does not
  *
  * Usage: php internal/check_signature_map_against_reflection.php [--json=out.json]
@@ -162,6 +163,13 @@ final class SignatureMapReflectionChecker
                 break;
             }
         }
+        // The same counts can hide swapped flags (e.g. `string, offset=, length` instead of `string, offset, length=`)
+        for ($i = 0; $i < $n; $i++) {
+            if ($map_params[$i]['optional'] !== $reflection_params[$i]['optional'] || $map_params[$i]['variadic'] !== $reflection_params[$i]['variadic']) {
+                $kinds[] = 'optional';
+                break;
+            }
+        }
         return $kinds;
     }
 
@@ -205,7 +213,7 @@ final class SignatureMapReflectionChecker
             'php_version' => PHP_VERSION,
             'differences' => [],
             'missing' => [],
-            'counts' => ['checked' => 0, 'arity' => 0, 'name' => 0, 'by-ref' => 0, 'missing' => 0, 'skipped_alternates' => 0],
+            'counts' => ['checked' => 0, 'arity' => 0, 'name' => 0, 'by-ref' => 0, 'optional' => 0, 'missing' => 0, 'skipped_alternates' => 0],
         ];
         foreach (self::collectReflection() as $key => $reflection) {
             $entry = $map[$key] ?? null;

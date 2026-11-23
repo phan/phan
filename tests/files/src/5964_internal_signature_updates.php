@@ -51,3 +51,22 @@ if ($reader) {
         echo $reader->name;
     }
 }
+
+// mb_convert_encoding() returns an array for an array
+function convert_5964(array $lines, string $line): void {
+    $converted = mb_convert_encoding($lines, 'UTF-8');
+    if ($converted !== false) {
+        echo count($converted);
+    }
+    echo strlen((string)mb_convert_encoding($line, 'UTF-8'));
+    echo intdiv(mb_convert_encoding($line, 'UTF-8'), 2); // still reported: string|false is not an int
+}
+
+// The failure value of these factory methods is null
+function factories_5964(): void {
+    $formatter = IntlDateFormatter::create('en_US');
+    if ($formatter === null) {
+        echo "failed\n";
+    }
+    var_export(new RecursiveIteratorIterator(new ArrayIterator([1]))); // still reported: throws InvalidArgumentException
+}

@@ -26,6 +26,7 @@ require_once __DIR__ . '/check_signature_map_against_reflection.php';
 
 use Phan\Language\Context;
 use Phan\Language\Type;
+use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 
 /**
@@ -34,6 +35,15 @@ use Phan\Language\UnionType;
 final class SignatureMapUpdater
 {
     private const INTERNAL_DIR = __DIR__ . '/../src/Phan/Language/Internal';
+
+    /**
+     * Parameter types that are narrower than Reflection's because the implementation checks more than the declared type.
+     * The updater keeps these types instead of widening them to Reflection's.
+     */
+    private const NARROWER_PARAMETER_TYPES = [
+        // Throws InvalidArgumentException for a Traversable that is neither a RecursiveIterator nor an IteratorAggregate
+        'recursiveiteratoriterator::__construct' => ['iterator' => 'RecursiveIterator|IteratorAggregate'],
+    ];
 
     /**
      * @param array<int|string,string> $old the entry of Phan's map
@@ -94,10 +104,10 @@ final class SignatureMapUpdater
             if ($parsed['variadic'] && $match !== null) {
                 // A variadic parameter may replace several old parameters (e.g. fetchAll($mode, $args, $ctor_args) became fetchAll($mode, ...$args)):
                 // accept the types of all of them.
-                $types = explode('|', $type);
+                $types = self::splitTopLevelUnion($type);
                 for ($j = $i + 1; $j < count($old_params); $j++) {
                     if (!in_array(strtolower($old_params[$j]['parsed']['name']), $reflection_names, true)) {
-                        $types = array_merge($types, explode('|', $old_params[$j]['type']));
+                        $types = array_merge($types, self::splitTopLevelUnion($old_params[$j]['type']));
                     }
                 }
                 $type = implode('|', array_unique($types));
@@ -109,6 +119,33 @@ final class SignatureMapUpdater
             $i++;
         }
         return $result;
+    }
+
+    /**
+     * Splits a union type at the `|` separators that are not nested in `<>`, `{}`, `()` or `[]`
+     * (e.g. `array<string,int|string>|false` => `array<string,int|string>`, `false`)
+     * @return list<string>
+     */
+    public static function splitTopLevelUnion(string $type): array
+    {
+        $parts = [];
+        $depth = 0;
+        $current = '';
+        foreach (str_split($type) as $c) {
+            if ($c === '|' && $depth === 0) {
+                $parts[] = $current;
+                $current = '';
+                continue;
+            }
+            if (in_array($c, ['<', '{', '(', '['], true)) {
+                $depth++;
+            } elseif (in_array($c, ['>', '}', ')', ']'], true)) {
+                $depth--;
+            }
+            $current .= $c;
+        }
+        $parts[] = $current;
+        return $parts;
     }
 
     /**
@@ -194,10 +231,46 @@ final class SignatureMapUpdater
         if ($map_union_type->isVoidType()) {
             return null;
         }
-        if (!$map_union_type->asNonLiteralType()->canCastToUnionTypeWithoutConfig($reflection_union_type, $code_base)) {
+        // Check each member: canCastToUnionType() accepts a union if any member overlaps (e.g. `IntlDateFormatter|false` and `?IntlDateFormatter`)
+        $reflection_non_null = $reflection_union_type->nonNullableClone();
+        $reflection_allows_null = $reflection_union_type->containsNullable();
+        $kept = [];
+        $rejected = false;
+        foreach ($map_union_type->asNonLiteralType()->getTypeSet() as $type) {
+            if ($type instanceof NullType || $type->isNullable()) {
+                if (!$reflection_allows_null) {
+                    // e.g. `?array|false` for a method that returns `array|false`
+                    $rejected = true;
+                }
+                if ($type instanceof NullType) {
+                    continue;
+                }
+                $type = $type->withIsNullable(false);
+            }
+            if ($type->asPHPDocUnionType()->canCastToUnionTypeWithoutConfig($reflection_non_null, $code_base)) {
+                $kept[] = $type;
+            } else {
+                $rejected = true;
+            }
+        }
+        if (!$rejected) {
+            return null;
+        }
+        if (!$kept) {
             return $reflection_string;
         }
-        return null;
+        // Keep the precise members that PHP can return, and add the types that PHP returns instead (e.g. null instead of false, or IntlIterator instead of Iterator)
+        $kept_union_type = UnionType::of($kept);
+        foreach ($reflection_non_null->getTypeSet() as $type) {
+            if (!$type->asPHPDocUnionType()->canCastToUnionTypeWithoutConfig($kept_union_type, $code_base)) {
+                $kept[] = $type;
+            }
+        }
+        $result = implode('|', array_map(static fn(Type $type): string => ltrim((string)$type, '\\'), $kept));
+        if ($reflection_allows_null) {
+            $result .= '|null';
+        }
+        return $result;
     }
 
     /**
@@ -244,6 +317,13 @@ final class SignatureMapUpdater
                         $new[$spec] = self::correctedParameterType($type, $reflection_types[$i], $code_base);
                     }
                     $i++;
+                }
+            }
+            foreach (self::NARROWER_PARAMETER_TYPES[$key] ?? [] as $name => $type) {
+                foreach ($new as $spec => $_) {
+                    if (is_string($spec) && SignatureMapReflectionChecker::parseParamSpec($spec)['name'] === $name) {
+                        $new[$spec] = $type;
+                    }
                 }
             }
             $corrected_return_type = self::correctedReturnType((string)($entry[0] ?? ''), $reflection, $code_base);

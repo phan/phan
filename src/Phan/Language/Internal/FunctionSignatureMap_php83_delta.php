@@ -157,6 +157,14 @@ return [
       'old' => ['DeflateContext|false', 'encoding'=>'int', 'options='=>'array'],
       'new' => ['DeflateContext|false', 'encoding'=>'int', 'options='=>'array|object'],
     ],
+    'domdocument::load' => [
+      'old' => ['DOMDocument|bool', 'filename'=>'string', 'options='=>'int'],
+      'new' => ['bool', 'filename'=>'string', 'options='=>'int'],
+    ],
+    'domdocument::loadxml' => [
+      'old' => ['DOMDocument|bool', 'source'=>'string', 'options='=>'int'],
+      'new' => ['bool', 'source'=>'string', 'options='=>'int'],
+    ],
     'imagerotate' => [
       'old' => ['false|GdImage', 'image'=>'GdImage', 'angle'=>'float', 'background_color'=>'int', 'ignore_transparent='=>'bool'],
       'new' => ['false|GdImage', 'image'=>'GdImage', 'angle'=>'float', 'background_color'=>'int'],
