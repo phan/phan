@@ -982,13 +982,15 @@ class ParseVisitor extends ScopeVisitor
             // A typed property needs a typed parameter, and the parameter for an untyped property cannot have a type (not even mixed).
             $is_compatible = false;
         } elseif (!$real_property_type->isEmpty()) {
-            $is_compatible = $real_property_type->canStrictCastToUnionType($this->code_base, $real_param_type);
+            // The parameter must accept every value of the type of the property, without coercion (contravariance).
+            $is_compatible = $real_property_type->isEqualTo($real_param_type) ||
+                $real_property_type->isStrictSubtypeOf($this->code_base, $real_param_type);
         } else {
             // Compare the phpdoc types: the parameter should accept the property's type
             $is_compatible = $property_type->isEmpty() || $set_param_type->isEmpty() ||
                 $property_type->canCastToUnionType($set_param_type, $this->code_base);
         }
-        if (!$is_compatible) {
+        if (!$is_compatible && !$property->checkHasSuppressIssueAndIncrementCount(Issue::PropertyHookIncompatibleParamType)) {
             $this->emitIssue(
                 Issue::PropertyHookIncompatibleParamType,
                 $hook_node->lineno,

@@ -160,3 +160,59 @@ $set->untyped_param = 'a';
 var_export([$valid->ix, $valid->irw, $valid->ax, $valid->hp, $valid->plain, $valid->backed, $valid->fp, $valid->virtual]);
 var_export([$invalid->irw, $invalid->ax, $invalid->fp, $invalid->hp, $invalid->virtual, $invalid->new]);
 var_export([$backing->a, $backing->b, $backing->c, $backing->d, $backing->e, $backing->f, $backing->g, $set]);
+
+// A hook that is not redeclared is inherited from the parent class
+interface InheritI { public int $p { get; set; } public int $q { get; } }
+class InheritA { public int $p { get => 1; set { } } public int $q = 0; }
+class InheritB extends InheritA implements InheritI { public int $p { get => 2; } }
+abstract class AbstractGetSet { abstract public int $p { get; set; } }
+abstract class ImplementsGet extends AbstractGetSet { public int $p { get => 1; } }
+class MissingSet extends ImplementsGet { public int $p { get => 2; } }
+class BackedImplementsBoth extends AbstractGetSet { public int $p { get => $this->p; } }
+
+// A final hook is found above a class that redeclares only the other hook
+class FinalGet { public int $p { final get => 1; } }
+class OnlySet extends FinalGet { public int $p { set { } } }
+class OverridesFinalGet extends OnlySet { public int $p { get => 2; } }
+
+// The properties of a trait are checked for the class that uses it
+trait HookTrait {
+    public int $p { #[\Override] get => 1; }
+}
+trait FinalTrait { public int $fp = 1; public int $hp { get => 2; } }
+class TraitParent { public int $p = 0; }
+class UsesTraitValid extends TraitParent { use HookTrait; }
+class UsesTraitInvalid { use HookTrait; }
+abstract class UsesFinalTrait extends Base { use FinalTrait; }
+
+// A property that is private(set) is implicitly final
+class PrivateSet { public private(set) int $x = 0; }
+class OverridesPrivateSet extends PrivateSet { public int $x = 1; }
+
+// #[\Override] needs the hook itself in an abstract property
+abstract class AbstractGet { abstract public int $p { get; } }
+class OverrideSet extends AbstractGet { public int $p { #[\Override] get => 1; #[\Override] set { } } }
+
+// The issues can be suppressed on the property
+abstract class Suppressed extends Base {
+    /** @suppress PhanPropertyHookFinalOverride */
+    public int $hp { get => 2; }
+    /** @suppress PhanCommentOverrideOnNonOverrideMethod */
+    public int $unknown { #[\Override] get => 2; }
+    /** @suppress PhanPropertyHookIncompatibleParamType */
+    public int $s { set(string $v) { $this->s = 1; } }
+    /** @suppress PhanAccessOverridesFinalProperty */
+    public int $fp = 3;
+}
+
+// The parameter of a set hook must accept the type of the property without coercion
+class SetParamVariance {
+    public mixed $m { set(string $v) { $this->m = $v; } }
+    public int $i { set(float $v) { $this->i = (int)$v; } }
+    public ?int $n { set(int $v) { $this->n = $v; } }
+    public int $ok1 { set(int|string $v) { $this->ok1 = (int)$v; } }
+    public float $ok2 { set(int|float $v) { $this->ok2 = $v; } }
+    public ?SetParamVariance $ok3 { set(mixed $v) { $this->ok3 = null; } }
+    public array $ok4 { set(iterable $v) { $this->ok4 = []; } }
+    public string $ok5 { set(string|\Stringable $v) { $this->ok5 = (string)$v; } }
+}

@@ -10,7 +10,6 @@ use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Flags;
 use Phan\Language\Element\Property;
-use Phan\Language\Element\PropertyHook;
 
 /**
  * Checks the properties of a class against the properties of the same name of its ancestors, for the rules of
@@ -30,130 +29,254 @@ class PropertyHookAnalyzer
      */
     public static function analyzePropertyHooks(CodeBase $code_base, Clazz $class): void
     {
-        if ($class->isPHPInternal()) {
+        if ($class->isPHPInternal() || $class->isTrait()) {
+            // The properties of a trait are checked for the classes that use it.
             return;
         }
         $class->hydrate($code_base);
-        $inherited_class_list = $class->getAncestorClassList($code_base);
-        $must_implement_hooks = !$class->isAbstract() && !$class->isTrait() && !$class->isInterface();
-
-        foreach ($class->getPropertyMap($code_base) as $property) {
-            if ($property->isDynamicOrFromPHPDoc() || $property->getPhanFlags() & (Flags::IS_ENUM_PROPERTY | Flags::IS_FROM_REQUIRE_ANNOTATION)) {
-                continue;
+        $parent_class_list = self::getParentClassList($code_base, $class);
+        $interface_list = [];
+        foreach ($class->getAncestorClassListRecursive($code_base) as $ancestor) {
+            if ($ancestor->isInterface()) {
+                $interface_list[] = $ancestor;
             }
-            $is_declared_by_class = $property->getRealDefiningFQSEN() === $property->getFQSEN();
+        }
+        $must_implement_hooks = !$class->isAbstract() && !$class->isInterface();
 
-            // The abstract hooks that are not implemented, by hook name
-            $abstract_hooks = [];
-            if (self::isAbstractDeclaration($code_base, $property)) {
-                foreach ([$property->getGetHook(), $property->getSetHook()] as $hook) {
-                    if ($hook && !$hook->hasBody()) {
-                        $abstract_hooks[$hook->getName()] = $property;
-                    }
-                }
-            }
-            // The hooks with #[\Override] of the property, by hook name, until the overridden hook is found.
-            $override_hooks = [];
-            if ($is_declared_by_class) {
-                foreach ([$property->getGetHook(), $property->getSetHook()] as $hook) {
-                    if ($hook && $hook->hasOverrideAttribute()) {
-                        $override_hooks[$hook->getName()] = $hook;
-                    }
-                }
-            }
-
-            foreach ($inherited_class_list as $inherited_class) {
-                $inherited_class->hydrate($code_base);
-                $inherited_property = $inherited_class->getPropertyMap($code_base)[$property->getName()] ?? null;
-                if (!$inherited_property
-                    || $inherited_property->isPrivate()
-                    || $inherited_property->isDynamicOrFromPHPDoc()
-                    || $inherited_property->getPhanFlagsHasState(Flags::IS_FROM_REQUIRE_ANNOTATION)
-                ) {
+        foreach ($class->getPropertyMap($code_base) as $name => $_) {
+            $name = (string)$name;
+            $property = self::getDeclaration($code_base, $class, $name);
+            // The declarations of the parent classes that $class inherits or overrides, starting with the closest one.
+            $parent_property_list = [];
+            foreach ($parent_class_list as $parent_class) {
+                $parent_property = self::getDeclaration($code_base, $parent_class, $name);
+                if (!$parent_property) {
                     continue;
                 }
-                foreach (['get' => $inherited_property->getGetHook(), 'set' => $inherited_property->getSetHook()] as $hook_name => $inherited_hook) {
-                    // A backed property can be read and written without a hook, so a hook of either kind overrides something.
-                    if ($inherited_hook || !$inherited_property->isVirtual()) {
-                        unset($override_hooks[$hook_name]);
-                    }
+                if ($parent_property->isPrivate()) {
+                    // Not inherited, and it hides the properties of the classes above it.
+                    break;
                 }
-                if ($inherited_property->getRealDefiningFQSEN() === $property->getRealDefiningFQSEN()) {
-                    continue;
-                }
-                if (!$is_declared_by_class || $inherited_class->isTrait()) {
-                    // Checked for the class that declares the property.
-                    // (The properties of a used trait are part of the class itself)
-                    continue;
-                }
-                self::checkFinal($code_base, $property, $inherited_property);
-                if (self::isAbstractDeclaration($code_base, $inherited_property)) {
-                    foreach ([$inherited_property->getGetHook(), $inherited_property->getSetHook()] as $inherited_hook) {
-                        if ($inherited_hook && !$inherited_hook->hasBody() && !self::implementsHook($property, $inherited_hook->getName())) {
-                            $abstract_hooks[$inherited_hook->getName()] ??= $inherited_property;
-                        }
-                    }
+                $parent_property_list[] = $parent_property;
+            }
+            $interface_property_list = [];
+            foreach ($interface_list as $interface) {
+                $interface_property = self::getDeclaration($code_base, $interface, $name);
+                if ($interface_property) {
+                    $interface_property_list[] = $interface_property;
                 }
             }
-
+            if ($property) {
+                if ($parent_property_list) {
+                    self::checkFinal($code_base, $class, $property, $parent_property_list);
+                }
+                self::checkOverrideAttributes($code_base, $class, $property, $parent_property_list, $interface_property_list);
+            }
             if ($must_implement_hooks) {
-                foreach ($abstract_hooks as $hook_name => $abstract_property) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $class->getContext(),
-                        Issue::ClassContainsAbstractMethod,
-                        $class->getFileRef()->getLineNumberStart(),
-                        (string)$class->getFQSEN(),
-                        self::hookName($abstract_property, $hook_name),
-                        $abstract_property->getFileRef()->getFile(),
-                        $abstract_property->getFileRef()->getLineNumberStart()
-                    );
-                }
-            }
-            foreach ($override_hooks as $hook) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $hook->getContext(),
-                    Issue::CommentOverrideOnNonOverrideMethod,
-                    $hook->getContext()->getLineNumberStart(),
-                    self::hookName($property, $hook->getName())
-                );
+                $declaration_list = $property ? [$property, ...$parent_property_list] : $parent_property_list;
+                self::checkAbstractHooks($code_base, $class, $declaration_list, $interface_property_list);
             }
         }
     }
 
     /**
-     * Emits issues if $property overrides the final property $inherited_property, or one of its final hooks.
+     * @return list<Clazz> the parent class, its parent class, etc.
      */
-    private static function checkFinal(CodeBase $code_base, Property $property, Property $inherited_property): void
+    private static function getParentClassList(CodeBase $code_base, Clazz $class): array
     {
-        if ($inherited_property->getFlags() & ast\flags\MODIFIER_FINAL) {
-            Issue::maybeEmit(
-                $code_base,
-                $property->getContext(),
-                Issue::AccessOverridesFinalProperty,
-                $property->getFileRef()->getLineNumberStart(),
-                $property->asPropertyFQSENString(),
-                self::realDeclaration($code_base, $inherited_property)->asPropertyFQSENString(),
-                $inherited_property->getFileRef()->getFile(),
-                $inherited_property->getFileRef()->getLineNumberStart()
-            );
+        $result = [];
+        $seen = [$class->getFQSEN()->__toString() => true];
+        while ($class->hasParentType()) {
+            $parent_fqsen = $class->getParentClassFQSEN();
+            if (isset($seen[$parent_fqsen->__toString()]) || !$code_base->hasClassWithFQSEN($parent_fqsen)) {
+                break;
+            }
+            $seen[$parent_fqsen->__toString()] = true;
+            $class = $code_base->getClassByFQSEN($parent_fqsen);
+            $result[] = $class;
+        }
+        return $result;
+    }
+
+    /**
+     * The entry of the property map of a class is not used for this:
+     * for an inherited property, it is the declaration of only one of the ancestors.
+     *
+     * @param int $depth guards against traits that use each other
+     * @return ?Property the property $name that $class declares itself, or that one of the traits that it uses declares.
+     */
+    private static function getDeclaration(CodeBase $code_base, Clazz $class, string $name, int $depth = 0): ?Property
+    {
+        $property = $class->getPropertyMap($code_base)[$name] ?? null;
+        if ($property && $property->getRealDefiningFQSEN()->getFullyQualifiedClassName() === $class->getFQSEN()) {
+            if ($property->isDynamicOrFromPHPDoc() || $property->getPhanFlags() & (Flags::IS_ENUM_PROPERTY | Flags::IS_FROM_REQUIRE_ANNOTATION)) {
+                return null;
+            }
+            return $property;
+        }
+        if ($depth > 10) {
+            return null;
+        }
+        foreach ($class->getTraitFQSENList() as $trait_fqsen) {
+            if ($code_base->hasClassWithFQSEN($trait_fqsen)) {
+                $property = self::getDeclaration($code_base, $code_base->getClassByFQSEN($trait_fqsen), $name, $depth + 1);
+                if ($property) {
+                    return $property;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Emits an issue for the declaration $property of $class (which may be from a trait),
+     * unless the issue type is suppressed on the property.
+     *
+     * @param int $lineno the line to use if $class itself declares the property. An issue for the property of a trait is reported for the class that uses it.
+     * @param int|string ...$args
+     */
+    private static function emitIssue(CodeBase $code_base, Clazz $class, Property $property, string $issue_type, int $lineno, int|string ...$args): void
+    {
+        if ($property->checkHasSuppressIssueAndIncrementCount($issue_type)) {
             return;
         }
-        foreach (['get' => $property->getGetHook(), 'set' => $property->getSetHook()] as $hook_name => $hook) {
-            $inherited_hook = $hook_name === 'get' ? $inherited_property->getGetHook() : $inherited_property->getSetHook();
-            if ($hook instanceof PropertyHook && $inherited_hook && $inherited_hook->isFinal()) {
-                Issue::maybeEmit(
+        if ($property->getRealDefiningFQSEN()->getFullyQualifiedClassName() !== $class->getFQSEN()) {
+            $lineno = $class->getFileRef()->getLineNumberStart();
+        }
+        Issue::maybeEmit($code_base, $class->getInternalContext(), $issue_type, $lineno, ...$args);
+    }
+
+    /**
+     * Emits issues if $property overrides a final property, or a final hook.
+     *
+     * @param non-empty-list<Property> $parent_property_list the declarations of the parent classes, starting with the closest one
+     */
+    private static function checkFinal(CodeBase $code_base, Clazz $class, Property $property, array $parent_property_list): void
+    {
+        $hooks = \array_filter(['get' => $property->getGetHook(), 'set' => $property->getSetHook()]);
+        foreach ($parent_property_list as $parent_property) {
+            // A property that is private(set) is implicitly final.
+            if ($parent_property->getFlags() & (ast\flags\MODIFIER_FINAL | ast\flags\MODIFIER_PRIVATE_SET)) {
+                self::emitIssue(
                     $code_base,
-                    $hook->getContext(),
-                    Issue::PropertyHookFinalOverride,
-                    $hook->getContext()->getLineNumberStart(),
-                    self::realDeclaration($code_base, $inherited_property)->asPropertyFQSENString(),
-                    $hook_name,
-                    $inherited_hook->getContext()->getFile(),
-                    $inherited_hook->getContext()->getLineNumberStart()
+                    $class,
+                    $property,
+                    Issue::AccessOverridesFinalProperty,
+                    $property->getFileRef()->getLineNumberStart(),
+                    $class->getFQSEN() . '->' . $property->getName(),
+                    $parent_property->getRealDefiningFQSEN()->getFullyQualifiedClassName() . '->' . $parent_property->getName(),
+                    $parent_property->getFileRef()->getFile(),
+                    $parent_property->getFileRef()->getLineNumberStart()
                 );
+                return;
             }
+            // A hook overrides the hook of the closest parent class that declares it.
+            foreach ($hooks as $hook_name => $hook) {
+                $parent_hook = $hook_name === 'get' ? $parent_property->getGetHook() : $parent_property->getSetHook();
+                if (!$parent_hook) {
+                    continue;
+                }
+                unset($hooks[$hook_name]);
+                if ($parent_hook->isFinal()) {
+                    self::emitIssue(
+                        $code_base,
+                        $class,
+                        $property,
+                        Issue::PropertyHookFinalOverride,
+                        $hook->getContext()->getLineNumberStart(),
+                        $parent_property->getRealDefiningFQSEN()->getFullyQualifiedClassName() . '->' . $parent_property->getName(),
+                        $hook_name,
+                        $parent_hook->getContext()->getFile(),
+                        $parent_hook->getContext()->getLineNumberStart()
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * Emits issues for the hooks of $property with #[\Override] that do not override anything.
+     *
+     * @param list<Property> $parent_property_list
+     * @param list<Property> $interface_property_list
+     */
+    private static function checkOverrideAttributes(CodeBase $code_base, Clazz $class, Property $property, array $parent_property_list, array $interface_property_list): void
+    {
+        foreach ([$property->getGetHook(), $property->getSetHook()] as $hook) {
+            if (!$hook || !$hook->hasOverrideAttribute()) {
+                continue;
+            }
+            foreach ([...$parent_property_list, ...$interface_property_list] as $inherited_property) {
+                $inherited_hook = $hook->getName() === 'get' ? $inherited_property->getGetHook() : $inherited_property->getSetHook();
+                // A backed property can be read and written without a hook, so a hook of either kind overrides something.
+                if ($inherited_hook || (!$inherited_property->isVirtual() && !self::isAbstractDeclaration($code_base, $inherited_property))) {
+                    continue 2;
+                }
+            }
+            self::emitIssue(
+                $code_base,
+                $class,
+                $property,
+                Issue::CommentOverrideOnNonOverrideMethod,
+                $hook->getContext()->getLineNumberStart(),
+                self::hookName($class, $property, $hook->getName())
+            );
+        }
+    }
+
+    /**
+     * Emits issues for the abstract hooks that the non-abstract $class does not implement.
+     *
+     * @param list<Property> $declaration_list the declarations of $class and its parent classes, starting with $class
+     * @param list<Property> $interface_property_list
+     */
+    private static function checkAbstractHooks(CodeBase $code_base, Clazz $class, array $declaration_list, array $interface_property_list): void
+    {
+        foreach (['get', 'set'] as $hook_name) {
+            // Find the closest declaration that decides whether the hook is implemented.
+            $abstract_property = null;
+            $is_implemented = false;
+            foreach ($declaration_list as $property) {
+                $hook = $hook_name === 'get' ? $property->getGetHook() : $property->getSetHook();
+                if ($hook) {
+                    // A hook without a body in a property that is not abstract is reported when the property is parsed.
+                    if ($hook->hasBody() || !self::isAbstractDeclaration($code_base, $property)) {
+                        $is_implemented = true;
+                    } else {
+                        $abstract_property = $property;
+                    }
+                    break;
+                }
+                if (!$property->isVirtual() && !self::isAbstractDeclaration($code_base, $property)) {
+                    // A backed property can be read and written without the hook.
+                    $is_implemented = true;
+                    break;
+                }
+            }
+            if ($is_implemented) {
+                continue;
+            }
+            if (!$abstract_property) {
+                foreach ($interface_property_list as $interface_property) {
+                    if ($hook_name === 'get' ? $interface_property->getGetHook() : $interface_property->getSetHook()) {
+                        $abstract_property = $interface_property;
+                        break;
+                    }
+                }
+                if (!$abstract_property) {
+                    continue;
+                }
+            }
+            Issue::maybeEmit(
+                $code_base,
+                $class->getContext(),
+                Issue::ClassContainsAbstractMethod,
+                $class->getFileRef()->getLineNumberStart(),
+                (string)$class->getFQSEN(),
+                self::hookName(null, $abstract_property, $hook_name),
+                $abstract_property->getFileRef()->getFile(),
+                $abstract_property->getFileRef()->getLineNumberStart()
+            );
         }
     }
 
@@ -170,30 +293,12 @@ class PropertyHookAnalyzer
     }
 
     /**
-     * @return bool whether the non-abstract $property provides the hook $hook_name:
-     * it declares the hook, or it is backed, so that it can be read and written without the hook.
-     */
-    private static function implementsHook(Property $property, string $hook_name): bool
-    {
-        $hook = $hook_name === 'get' ? $property->getGetHook() : $property->getSetHook();
-        if ($hook) {
-            return $hook->hasBody();
-        }
-        return !$property->isVirtual();
-    }
-
-    private static function realDeclaration(CodeBase $code_base, Property $property): Property
-    {
-        $fqsen = $property->getRealDefiningFQSEN();
-        return $code_base->hasPropertyWithFQSEN($fqsen) ? $code_base->getPropertyByFQSEN($fqsen) : $property;
-    }
-
-    /**
+     * @param ?Clazz $class the class that uses the property, if the property might be from a trait
      * @return string e.g. `\NS\MyClass::$prop::get`
      */
-    private static function hookName(Property $property, string $hook_name): string
+    private static function hookName(?Clazz $class, Property $property, string $hook_name): string
     {
-        $fqsen = $property->getRealDefiningFQSEN();
-        return $fqsen->getFullyQualifiedClassName() . '::$' . $fqsen->getName() . '::' . $hook_name;
+        $class_fqsen = $class ? $class->getFQSEN() : $property->getRealDefiningFQSEN()->getFullyQualifiedClassName();
+        return $class_fqsen . '::$' . $property->getName() . '::' . $hook_name;
     }
 }
