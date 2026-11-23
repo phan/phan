@@ -670,8 +670,7 @@ class ParseVisitor extends ScopeVisitor
         $this->handlePropertyCustomAnnotations($class, $property, $property_comment);
         $hooks_node = $parameter_node->children['hooks'] ?? null;
         if ($hooks_node instanceof Node) {
-            // The default is the default of the parameter, which is allowed for a property without a set hook.
-            $this->parsePropertyHooks($property, $hooks_node, null);
+            $this->parsePropertyHooks($property, $hooks_node);
         }
     }
 
@@ -769,7 +768,7 @@ class ParseVisitor extends ScopeVisitor
             }
             // Parse property hooks (PHP 8.4+)
             if ($hooks_node instanceof Node) {
-                $this->parsePropertyHooks($property, $hooks_node, $default_node);
+                $this->parsePropertyHooks($property, $hooks_node);
             }
             // A comment shared by several properties (`public $a, $b;`) is handled for each of them.
             $this->handlePropertyCustomAnnotations($class, $property, $comment);
@@ -861,9 +860,8 @@ class ParseVisitor extends ScopeVisitor
      *
      * @param Property $property The property to attach hooks to
      * @param Node $hooks_node The AST_STMT_LIST containing property hooks
-     * @param Node|string|float|int|null $default_node The default value node if present
      */
-    private function parsePropertyHooks(Property $property, Node $hooks_node, Node|float|int|null|string $default_node): void
+    private function parsePropertyHooks(Property $property, Node $hooks_node): void
     {
         if ($hooks_node->kind !== \ast\AST_STMT_LIST) {
             return;
@@ -879,13 +877,7 @@ class ParseVisitor extends ScopeVisitor
             }
         }
         $property->setIsVirtual(!$is_backed);
-        if ($default_node !== null && !$is_backed) {
-            $this->emitIssue(
-                Issue::PropertyHookWithDefaultValue,
-                $property->getContext()->getLineNumberStart(),
-                $property->asPropertyFQSENString()
-            );
-        }
+        // PropertyHookAnalyzer checks if a virtual property has a default: that is allowed if a parent class has a backed property.
         $class = $this->context->getClassInScope($this->code_base);
         $is_abstract_property = ($property->getFlags() & \ast\flags\MODIFIER_ABSTRACT) !== 0 || $class->isInterface();
 

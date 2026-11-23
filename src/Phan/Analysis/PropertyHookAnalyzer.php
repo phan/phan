@@ -35,10 +35,23 @@ class PropertyHookAnalyzer
             return;
         }
         foreach ($class->getPropertyMap($code_base) as $property) {
+            if ($property->getRealDefiningFQSEN()->getFullyQualifiedClassName() !== $class->getFQSEN()) {
+                continue;
+            }
             $set_hook = $property->getSetHook();
             $set_param = $set_hook ? ($set_hook->getParameterList()[0] ?? null) : null;
-            if ($set_hook && $set_param && $property->getRealDefiningFQSEN()->getFullyQualifiedClassName() === $class->getFQSEN()) {
+            if ($set_hook && $set_param) {
                 self::checkSetHookParameterType($code_base, $class, $property, $set_hook, $set_param);
+            }
+            if ($property->isVirtual() && $property->hasDefaultValue() && !self::inheritsBackingValue($code_base, $class, $property->getName())) {
+                self::emitIssue(
+                    $code_base,
+                    $class,
+                    $property,
+                    Issue::PropertyHookWithDefaultValue,
+                    $property->getFileRef()->getLineNumberStart(),
+                    $property->asPropertyFQSENString()
+                );
             }
         }
         if ($class->isTrait()) {
@@ -144,6 +157,34 @@ class PropertyHookAnalyzer
     }
 
     /**
+     * A property that overrides a backed property of a parent class keeps the backing value,
+     * even if none of its own hooks uses it.
+     *
+     * @return bool whether a parent class of $class has a backed property $name, or might have one (a parent class is unknown)
+     */
+    private static function inheritsBackingValue(CodeBase $code_base, Clazz $class, string $name): bool
+    {
+        foreach (self::getParentClassList($code_base, $class) as $parent_class) {
+            $class = $parent_class;
+            if (self::isObscuredByPHPDoc($code_base, $parent_class, $name)) {
+                return true;
+            }
+            $parent_property = self::getDeclaration($code_base, $parent_class, $name);
+            if (!$parent_property) {
+                continue;
+            }
+            if ($parent_property->isPrivate()) {
+                return false;
+            }
+            if (!$parent_property->isVirtual() && !self::isAbstractDeclaration($code_base, $parent_property)) {
+                return true;
+            }
+        }
+        // The last class has a parent class that is not known
+        return $class->hasParentType();
+    }
+
+    /**
      * @return bool whether $class declares $name with (at)property, which hides a declaration of the property in the class
      */
     private static function isObscuredByPHPDoc(CodeBase $code_base, Clazz $class, string $name): bool
@@ -169,6 +210,9 @@ class PropertyHookAnalyzer
 
         if ($real_property_type->isEmpty() !== $real_param_type->isEmpty()) {
             // A typed property needs a typed parameter, and the parameter for an untyped property cannot have a type (not even mixed).
+            $is_compatible = false;
+        } elseif ($real_property_type->containsNullable() && !$real_param_type->containsNullableOrMixed()) {
+            // Checked separately: some types are subtypes of their non-nullable form for isStrictSubtypeOf() (e.g. ?iterable of iterable)
             $is_compatible = false;
         } elseif (!$real_property_type->isEmpty()) {
             // The parameter must accept every value of the type of the property, without coercion (contravariance).

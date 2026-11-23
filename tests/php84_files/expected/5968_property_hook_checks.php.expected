@@ -39,3 +39,14 @@
 %s:233 PhanUnreferencedClass Possibly zero references to class \NS5968\WithPHPDocProperty
 %s:236 PhanIncompatibleCompositionProp \NS5968\DefaultChild and \NS5968\DefaultParent define the same property (d) in the composition of \NS5968\DefaultChild, as the types 'string' and 42 respectively. However, the definition differs and is considered incompatible. Class was composed in %s on line 238
 %s:238 PhanUnreferencedClass Possibly zero references to class \NS5968\DefaultChild
+%s:242 PhanUnreferencedClass Possibly zero references to class \NS5968\VirtualOverBacked
+%s:243 PhanPropertyHookWithDefaultValue Virtual property \NS5968\VirtualOverVirtual->v cannot have a default value - none of its hooks uses its backing value
+%s:243 PhanUnreferencedClass Possibly zero references to class \NS5968\VirtualOverVirtual
+%s:244 PhanUndeclaredExtendedClass Class extends undeclared class \NS5968\UnknownParent5968
+%s:244 PhanUnreferencedClass Possibly zero references to class \NS5968\VirtualOverUnknown
+%s:245 PhanPropertyHookWithDefaultValue Virtual property \NS5968\VirtualOverAbstract->p cannot have a default value - none of its hooks uses its backing value
+%s:245 PhanUnreferencedClass Possibly zero references to class \NS5968\VirtualOverAbstract
+%s:246 PhanPropertyHookWithDefaultValue Virtual property \NS5968\VirtualTrait->p cannot have a default value - none of its hooks uses its backing value
+%s:246 PhanUnreferencedClass Possibly zero references to trait \NS5968\VirtualTrait
+%s:249 PhanPropertyHookIncompatibleParamType Property hook \NS5968\NullableIterable->p::set parameter $v has type iterable which is incompatible with property type ?iterable
+%s:249 PhanUnreferencedClass Possibly zero references to class \NS5968\NullableIterable

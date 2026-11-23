@@ -236,3 +236,14 @@ class WithPHPDocProperty implements InheritI { public int $p = 0; public int $q 
 trait DefaultTrait { public int|string $d = 'string' { get => $this->d; } }
 class DefaultParent { public int|string $d = 42; }
 class DefaultChild extends DefaultParent { use DefaultTrait; }
+
+// A property that overrides a backed property of a parent class keeps the backing value, and can have a default
+class BackedParent { public int $p = 1; public int $v { get => 1; } }
+class VirtualOverBacked extends BackedParent { public int $p = 2 { get => 3; set { } } }
+class VirtualOverVirtual extends BackedParent { public int $v = 2 { get => 3; } }
+class VirtualOverUnknown extends UnknownParent5968 { public int $p = 2 { get => 3; } }
+class VirtualOverAbstract extends AbstractGet { public int $p = 2 { get => 3; } }
+trait VirtualTrait { public int $p = 2 { get => 3; } }
+
+// A nullable property needs a nullable parameter
+class NullableIterable { public ?iterable $p { set(iterable $v) { } } public ?iterable $ok { set(?iterable $v) { } } }
