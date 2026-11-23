@@ -9,6 +9,8 @@ use Foo015\let as Fine;                 // only the alias matters
 use function Foo015\f as let;
 use function Foo015\g as fine;
 use function Foo015\{h as is};
+use const PHP_INT_MAX as is;            // 8.6: also for the alias of a constant
+use const Foo015\{C as let, D as _, E as fine};
 
 interface _I {}                         // not deprecated
 enum Suit015 {
@@ -56,3 +58,5 @@ namespace NS015b;
 
 class _ {}                              // 8.4: "_" as the name of a class
 trait let {}                            // 8.6
+const is = 1;                           // 8.6: a constant
+const other = 2;

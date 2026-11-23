@@ -1704,6 +1704,7 @@ class ParseVisitor extends ScopeVisitor
                 continue;
             }
 
+            $this->warnAboutNameReservedInFutureVersion((string)$child_node->children['name'], ['let', 'is', '_'], 'a constant', $child_node->lineno);
             $value_node = $child_node->children['value'];
             if ($value_node instanceof Node && !$this->checkNodeIsConstExprOrWarn($value_node, self::CONSTANT_EXPRESSION_IN_CONSTANT)) {
                 // Note: Global constants with invalid value expressions aren't declared.

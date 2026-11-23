@@ -204,13 +204,15 @@ abstract class ScopeVisitor extends AnalysisVisitor
     }
 
     /**
-     * Emit PhanDeprecatedReservedName for the alias of a use statement (`use Foo as let;`, `use function f as is;`, `use Foo\let;`).
+     * Emit PhanDeprecatedReservedName for the alias of a use statement (`use Foo as let;`, `use function f as is;`, `use const C as _;`, `use Foo\let;`).
      */
     private function warnAboutReservedUseAlias(string $alias, int $flags, int $lineno): void
     {
         if ($flags === ast\flags\USE_FUNCTION) {
             $this->warnAboutNameReservedInFutureVersion($alias, ['let', 'is'], 'a function alias', $lineno);
-        } elseif ($flags !== ast\flags\USE_CONST) {
+        } elseif ($flags === ast\flags\USE_CONST) {
+            $this->warnAboutNameReservedInFutureVersion($alias, ['let', 'is', '_'], 'a constant alias', $lineno);
+        } else {
             $this->warnAboutNameReservedInFutureVersion($alias, ['let', 'is', '_'], 'a class alias', $lineno);
         }
     }

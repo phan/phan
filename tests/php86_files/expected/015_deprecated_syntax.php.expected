@@ -3,41 +3,51 @@
 %s:7 PhanDeprecatedReservedName Using "_" as the name of a class alias has been deprecated in PHP 8.6
 %s:9 PhanDeprecatedReservedName Using "let" as the name of a function alias has been deprecated in PHP 8.6
 %s:11 PhanDeprecatedReservedName Using "is" as the name of a function alias has been deprecated in PHP 8.6
-%s:13 PhanUnreferencedClass Possibly zero references to interface \NS015\_I
-%s:14 PhanUnreferencedClass Possibly zero references to enum \NS015\Suit015
-%s:15 PhanDeprecatedReservedName Using "namespace" as the name of an enum case has been deprecated in PHP 8.6
-%s:15 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \NS015\Suit015::namespace
-%s:16 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \NS015\Suit015::Hearts
-%s:19 PhanPluginUnknownArrayFunctionParamType Function operators015() has a parameter type of array for $array, but does not specify any key types or value types
-%s:19 PhanPluginUnknownArrayFunctionParamType Function operators015() has a parameter type of array for $nullable, but does not specify any key types or value types
-%s:19 PhanUnreferencedFunction Possibly zero references to function \NS015\operators015()
-%s:20 PhanDeprecatedBacktickOperator The backtick operator has been deprecated in PHP 8.5: use shell_exec() instead of `echo hi`
-%s:24 PhanDeprecatedStringIncrement The operation $s++ on the non-numeric string "abc" has been deprecated in PHP 8.5
-%s:26 PhanDeprecatedStringIncrement The operation $t-- on the non-numeric string "abc" has been deprecated in PHP 8.3
-%s:28 PhanDeprecatedStringIncrement The operation $e++ on the non-numeric string "" has been deprecated in PHP 8.3
-%s:30 PhanDeprecatedStringIncrement The operation ++$bang on the non-numeric string "a-b" has been deprecated in PHP 8.3
-%s:38 PhanDeprecatedNullArrayOffset Using null as an array offset in $array[null] has been deprecated in PHP 8.5: use an empty string instead
-%s:38 PhanTypeMismatchDimFetchNullable When fetching an array index from a value of type array, found an array index of type null, but expected the index to be of the non-nullable type int|string
-%s:39 PhanDeprecatedNullArrayOffset Using null as an array offset in $array[null] has been deprecated in PHP 8.5: use an empty string instead
+%s:12 PhanDeprecatedReservedName Using "is" as the name of a constant alias has been deprecated in PHP 8.6
+%s:12 PhanUnreferencedUseConstant Possibly zero references to use statement for constant is (\PHP_INT_MAX)
+%s:13 PhanDeprecatedReservedName Using "_" as the name of a constant alias has been deprecated in PHP 8.6
+%s:13 PhanDeprecatedReservedName Using "let" as the name of a constant alias has been deprecated in PHP 8.6
+%s:13 PhanUnreferencedUseConstant Possibly zero references to use statement for constant _ (\Foo015\D)
+%s:13 PhanUnreferencedUseConstant Possibly zero references to use statement for constant fine (\Foo015\E)
+%s:13 PhanUnreferencedUseConstant Possibly zero references to use statement for constant let (\Foo015\C)
+%s:15 PhanUnreferencedClass Possibly zero references to interface \NS015\_I
+%s:16 PhanUnreferencedClass Possibly zero references to enum \NS015\Suit015
+%s:17 PhanDeprecatedReservedName Using "namespace" as the name of an enum case has been deprecated in PHP 8.6
+%s:17 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \NS015\Suit015::namespace
+%s:18 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \NS015\Suit015::Hearts
+%s:21 PhanPluginUnknownArrayFunctionParamType Function operators015() has a parameter type of array for $array, but does not specify any key types or value types
+%s:21 PhanPluginUnknownArrayFunctionParamType Function operators015() has a parameter type of array for $nullable, but does not specify any key types or value types
+%s:21 PhanUnreferencedFunction Possibly zero references to function \NS015\operators015()
+%s:22 PhanDeprecatedBacktickOperator The backtick operator has been deprecated in PHP 8.5: use shell_exec() instead of `echo hi`
+%s:26 PhanDeprecatedStringIncrement The operation $s++ on the non-numeric string "abc" has been deprecated in PHP 8.5
+%s:28 PhanDeprecatedStringIncrement The operation $t-- on the non-numeric string "abc" has been deprecated in PHP 8.3
+%s:30 PhanDeprecatedStringIncrement The operation $e++ on the non-numeric string "" has been deprecated in PHP 8.3
+%s:32 PhanDeprecatedStringIncrement The operation ++$bang on the non-numeric string "a-b" has been deprecated in PHP 8.3
 %s:40 PhanDeprecatedNullArrayOffset Using null as an array offset in $array[null] has been deprecated in PHP 8.5: use an empty string instead
-%s:42 PhanDeprecatedNullArrayOffset Using null as an array offset in $array[$key] has been deprecated in PHP 8.5: use an empty string instead
-%s:42 PhanDeprecatedNullArrayOffset Using null as an array offset in null=>1 has been deprecated in PHP 8.5: use an empty string instead
-%s:42 PhanTypeInvalidArrayKeyLiteral Saw array key null with key value null but expected a value that could cast to int|string
-%s:44 PhanTypeArraySuspiciousNullable Suspicious array access to $nullable of nullable type ?array
-%s:44 PhanTypeMismatchDimFetchNullable When fetching an array index from a value of type ?array, found an array index of type null, but expected the index to be of the non-nullable type int|string
-%s:45 PhanDeprecatedNullArrayOffset Using null as an array offset in null=>$from_array has been deprecated in PHP 8.5: use an empty string instead
-%s:45 PhanTypeInvalidArrayKeyLiteral Saw array key null with key value null but expected a value that could cast to int|string
-%s:46 PhanTypeInvalidArrayKeyLiteral Saw array key null with key value null but expected a value that could cast to int|string
+%s:40 PhanTypeMismatchDimFetchNullable When fetching an array index from a value of type array, found an array index of type null, but expected the index to be of the non-nullable type int|string
+%s:41 PhanDeprecatedNullArrayOffset Using null as an array offset in $array[null] has been deprecated in PHP 8.5: use an empty string instead
+%s:42 PhanDeprecatedNullArrayOffset Using null as an array offset in $array[null] has been deprecated in PHP 8.5: use an empty string instead
+%s:44 PhanDeprecatedNullArrayOffset Using null as an array offset in $array[$key] has been deprecated in PHP 8.5: use an empty string instead
+%s:44 PhanDeprecatedNullArrayOffset Using null as an array offset in null=>1 has been deprecated in PHP 8.5: use an empty string instead
+%s:44 PhanTypeInvalidArrayKeyLiteral Saw array key null with key value null but expected a value that could cast to int|string
+%s:46 PhanTypeArraySuspiciousNullable Suspicious array access to $nullable of nullable type ?array
+%s:46 PhanTypeMismatchDimFetchNullable When fetching an array index from a value of type ?array, found an array index of type null, but expected the index to be of the non-nullable type int|string
+%s:47 PhanDeprecatedNullArrayOffset Using null as an array offset in null=>$from_array has been deprecated in PHP 8.5: use an empty string instead
 %s:47 PhanTypeInvalidArrayKeyLiteral Saw array key null with key value null but expected a value that could cast to int|string
 %s:48 PhanTypeInvalidArrayKeyLiteral Saw array key null with key value null but expected a value that could cast to int|string
-%s:53 PhanUndeclaredClassMethod Call to method __construct from undeclared class \Foo015\Bar
-%s:53 PhanUndeclaredClassMethod Call to method __construct from undeclared class \Foo015\Baz
-%s:53 PhanUndeclaredClassMethod Call to method __construct from undeclared class \Foo015\Qux
-%s:53 PhanUndeclaredClassMethod Call to method __construct from undeclared class \Foo015\let
-%s:53 PhanUndeclaredFunction Call to undeclared function \Foo015\f()
-%s:53 PhanUndeclaredFunction Call to undeclared function \Foo015\g()
-%s:53 PhanUndeclaredFunction Call to undeclared function \Foo015\h()
-%s:57 PhanDeprecatedReservedName Using "_" as the name of a class has been deprecated in PHP 8.4
-%s:57 PhanUnreferencedClass Possibly zero references to class \NS015b\_
-%s:58 PhanDeprecatedReservedName Using "let" as the name of a trait has been deprecated in PHP 8.6
-%s:58 PhanUnreferencedClass Possibly zero references to trait \NS015b\let
+%s:49 PhanTypeInvalidArrayKeyLiteral Saw array key null with key value null but expected a value that could cast to int|string
+%s:50 PhanTypeInvalidArrayKeyLiteral Saw array key null with key value null but expected a value that could cast to int|string
+%s:55 PhanUndeclaredClassMethod Call to method __construct from undeclared class \Foo015\Bar
+%s:55 PhanUndeclaredClassMethod Call to method __construct from undeclared class \Foo015\Baz
+%s:55 PhanUndeclaredClassMethod Call to method __construct from undeclared class \Foo015\Qux
+%s:55 PhanUndeclaredClassMethod Call to method __construct from undeclared class \Foo015\let
+%s:55 PhanUndeclaredFunction Call to undeclared function \Foo015\f()
+%s:55 PhanUndeclaredFunction Call to undeclared function \Foo015\g()
+%s:55 PhanUndeclaredFunction Call to undeclared function \Foo015\h()
+%s:59 PhanDeprecatedReservedName Using "_" as the name of a class has been deprecated in PHP 8.4
+%s:59 PhanUnreferencedClass Possibly zero references to class \NS015b\_
+%s:60 PhanDeprecatedReservedName Using "let" as the name of a trait has been deprecated in PHP 8.6
+%s:60 PhanUnreferencedClass Possibly zero references to trait \NS015b\let
+%s:61 PhanDeprecatedReservedName Using "is" as the name of a constant has been deprecated in PHP 8.6
+%s:61 PhanUnreferencedConstant Possibly zero references to global constant \NS015b\is
+%s:62 PhanUnreferencedConstant Possibly zero references to global constant \NS015b\other
