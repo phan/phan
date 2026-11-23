@@ -163,9 +163,33 @@ final class SignatureMapUpdater
      * Returns the type for a parameter that Phan's map types as $map_type and Reflection as $reflection_type:
      * the map's type, unless PHP accepts values that it rejects. Then the types that PHP accepts are added,
      * or Reflection's type is used if the two have nothing in common (e.g. `string` for an `int` parameter).
-     * Nullability is not changed: whether internal functions accept null is handled separately.
+     * If Reflection's type is nullable (`?int`, `string|array|null`), the result is made nullable as well.
      */
     public static function correctedParameterType(string $map_type, string $reflection_type, \Phan\CodeBase $code_base): string
+    {
+        $type = self::correctedNonNullParameterType($map_type, $reflection_type, $code_base);
+        if (SignatureMapReflectionChecker::isNullableReflectionType($reflection_type)) {
+            return self::makeNullable($type);
+        }
+        return $type;
+    }
+
+    /**
+     * @param string $type a type of Phan's signature map
+     * @return string the type, accepting null: `?T` for a single type and `A|B|null` for a union type, as in the rest of the signature map
+     */
+    public static function makeNullable(string $type): string
+    {
+        if (SignatureMapReflectionChecker::isNullableMapType($type)) {
+            return $type;
+        }
+        return count(self::splitTopLevelUnion($type)) > 1 ? $type . '|null' : '?' . $type;
+    }
+
+    /**
+     * The part of correctedParameterType() that does not change the nullability
+     */
+    private static function correctedNonNullParameterType(string $map_type, string $reflection_type, \Phan\CodeBase $code_base): string
     {
         if ($reflection_type === 'mixed' || $map_type === 'mixed' || $map_type === '') {
             return $map_type;
@@ -463,6 +487,10 @@ final class SignatureMapUpdater
     }
 }
 
+if (realpath((string)($_SERVER['SCRIPT_FILENAME'] ?? '')) !== __FILE__) {
+    // Included as a library (e.g. by update_signature_map_nullability_from_stubs.php)
+    return;
+}
 $dry_run = in_array('--dry-run', $argv, true);
 $updates = SignatureMapUpdater::computeUpdates();
 foreach ($updates as $key => ['old' => $old, 'new' => $new]) {

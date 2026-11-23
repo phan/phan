@@ -4,7 +4,7 @@ This directory contains scripts that may be useful to people developing phan its
 
 Compares Phan's function signature map for the running PHP version (the base map with the deltas up to that version applied)
 with Reflection, for the functions and methods of the extensions bundled with php-src.
-Reports differences in the number of parameters, parameter names and by-reference parameters, and the functions and methods missing from the map.
+Reports differences in the number of parameters, parameter names and by-reference parameters, parameters that are nullable for Reflection and not in the map, and the functions and methods missing from the map.
 Run it with each supported PHP version, e.g. `/usr/local/php83/bin/php internal/check_signature_map_against_reflection.php`.
 
 [`lib/SignatureReflectionCheckPlugin.php`](./lib/SignatureReflectionCheckPlugin.php) does the same for what Phan actually loads (the map, the bundled stubs and Reflection combined):
@@ -13,9 +13,17 @@ Run it with each supported PHP version, e.g. `/usr/local/php83/bin/php internal/
 # [`update_signature_map_from_reflection.php`](./update_signature_map_from_reflection.php)
 
 Updates the signature map so that the parameters (names, order, optionality, by-reference and variadic flags) match Reflection for the running PHP version,
-and replaces return types that contradict Reflection's declared or tentative return type. Phan's more precise phpdoc types are kept.
+and replaces return types that contradict Reflection's declared or tentative return type. Phan's more precise phpdoc types are kept; a parameter that is nullable for Reflection is made nullable.
 PHP 8.1 updates `FunctionSignatureMap.php`, newer versions update their `FunctionSignatureMap_phpXY_delta.php`.
 Run it with each PHP version in order (8.1, 8.2, ..., 8.6), then check the result with `check_signature_map_against_reflection.php`.
+
+
+# [`update_signature_map_nullability_from_stubs.php`](./update_signature_map_nullability_from_stubs.php)
+
+Makes parameters of the signature map nullable where the `*.stub.php` files of php-src declare them as nullable (`?int $length = null`).
+`update_signature_map_from_reflection.php` does this too, but Reflection only knows the extensions that the PHP binary was built with; the stubs cover every bundled extension.
+Run it with each PHP version in order, with the stubs of that version's php-src branch (they can be exported with `git archive` without checking the branch out, see the comment in the script):
+`/usr/local/php81/bin/php internal/update_signature_map_nullability_from_stubs.php stubs81`
 
 # [`internalsignatures.php`](./internalsignatures.php)
 
