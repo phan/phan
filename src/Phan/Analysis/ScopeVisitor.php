@@ -132,6 +132,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
             $node->flags ?? 0
         );
         foreach ($alias_target_map as $alias => [$flags, $target, $lineno]) {
+            $this->warnAboutReservedUseAlias($alias, $flags, $lineno);
             $context = $context->withNamespaceMap(
                 $flags,
                 $alias,
@@ -164,6 +165,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
             if (\strcasecmp($target->getNamespace(), $context->getNamespace()) === 0) {
                 $this->maybeWarnSameNamespaceUse($alias, $target, $flags, $lineno);
             }
+            $this->warnAboutReservedUseAlias($alias, $flags, $lineno);
             $context = $context->withNamespaceMap(
                 $flags,
                 $alias,
@@ -174,6 +176,43 @@ abstract class ScopeVisitor extends AnalysisVisitor
         }
 
         return $context;
+    }
+
+    /**
+     * Emit PhanDeprecatedReservedName for the declaration of a function, class, class constant or alias
+     * with a name that PHP deprecates, to reserve it for future syntax.
+     *
+     * @param list<string> $deprecated_names the deprecated names for this kind of element, in lowercase
+     * @param string $kind a description of the kind of element, e.g. 'a function'
+     * @param int $min_php_version the php version id of the deprecation
+     */
+    protected function warnAboutNameReservedInFutureVersion(string $name, array $deprecated_names, string $kind, int $lineno, int $min_php_version = 80600): void
+    {
+        if (Config::get_closest_target_php_version_id() < $min_php_version) {
+            return;
+        }
+        if (!\in_array(\strtolower($name), $deprecated_names, true)) {
+            return;
+        }
+        $this->emitIssue(
+            Issue::DeprecatedReservedName,
+            $lineno,
+            $name,
+            $kind,
+            \intdiv($min_php_version, 10000) . '.' . \intdiv($min_php_version % 10000, 100)
+        );
+    }
+
+    /**
+     * Emit PhanDeprecatedReservedName for the alias of a use statement (`use Foo as let;`, `use function f as is;`, `use Foo\let;`).
+     */
+    private function warnAboutReservedUseAlias(string $alias, int $flags, int $lineno): void
+    {
+        if ($flags === ast\flags\USE_FUNCTION) {
+            $this->warnAboutNameReservedInFutureVersion($alias, ['let', 'is'], 'a function alias', $lineno);
+        } elseif ($flags !== ast\flags\USE_CONST) {
+            $this->warnAboutNameReservedInFutureVersion($alias, ['let', 'is', '_'], 'a class alias', $lineno);
+        }
     }
 
     private function maybeWarnSameNamespaceUse(string $alias, FullyQualifiedGlobalStructuralElement $target, int $flags, int $lineno): void

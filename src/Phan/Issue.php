@@ -364,6 +364,9 @@ class Issue
     public const DeprecatedNullableDebugInfoReturnType = 'PhanDeprecatedNullableDebugInfoReturnType';
     public const DeprecatedReturnInFinally = 'PhanDeprecatedReturnInFinally';
     public const DeprecatedReservedName = 'PhanDeprecatedReservedName';
+    public const DeprecatedBacktickOperator = 'PhanDeprecatedBacktickOperator';
+    public const DeprecatedStringIncrement = 'PhanDeprecatedStringIncrement';
+    public const DeprecatedNullArrayOffset = 'PhanDeprecatedNullArrayOffset';
     public const DeprecatedConstructorObjectParamInternal = 'PhanDeprecatedConstructorObjectParamInternal';
 
     // Issue::CATEGORY_PARAMETER
@@ -3487,9 +3490,33 @@ class Issue
                 self::DeprecatedReservedName,
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
-                'Using "{DETAILS}" as the name of {DETAILS} has been deprecated in PHP 8.6',
+                'Using "{DETAILS}" as the name of {DETAILS} has been deprecated in PHP {DETAILS}',
                 self::REMEDIATION_B,
                 5017
+            ),
+            new Issue(
+                self::DeprecatedBacktickOperator,
+                self::CATEGORY_DEPRECATED,
+                self::SEVERITY_NORMAL,
+                'The backtick operator has been deprecated in PHP 8.5: use shell_exec() instead of {CODE}',
+                self::REMEDIATION_B,
+                5019
+            ),
+            new Issue(
+                self::DeprecatedStringIncrement,
+                self::CATEGORY_DEPRECATED,
+                self::SEVERITY_NORMAL,
+                'The operation {CODE} on the non-numeric string {STRING_LITERAL} has been deprecated in PHP {DETAILS}',
+                self::REMEDIATION_B,
+                5020
+            ),
+            new Issue(
+                self::DeprecatedNullArrayOffset,
+                self::CATEGORY_DEPRECATED,
+                self::SEVERITY_NORMAL,
+                'Using null as an array offset in {CODE} has been deprecated in PHP 8.5: use an empty string instead',
+                self::REMEDIATION_B,
+                5021
             ),
             new Issue(
                 self::DeprecatedNullableDebugInfoReturnType,

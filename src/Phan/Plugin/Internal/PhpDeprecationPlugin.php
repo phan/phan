@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan\Plugin\Internal;
 
 use ast\Node;
+use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -17,6 +18,7 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\Type\ArrayType;
 use Phan\Language\UnionType;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCallCapability;
@@ -1576,6 +1578,81 @@ final class PhpDeprecationVisitor extends PluginAwarePostAnalysisVisitor
         }
 
         $this->maybeWarnDeprecatedGlobalConstant($constant, $node, $deprecated_map);
+    }
+
+    /**
+     * @override
+     */
+    public function visitShellExec(Node $node): void
+    {
+        if (Config::get_closest_target_php_version_id() < 80500) {
+            return;
+        }
+        $this->emitIssue(
+            Issue::DeprecatedBacktickOperator,
+            $node->lineno,
+            ASTReverter::toShortString($node)
+        );
+    }
+
+    /**
+     * @override
+     */
+    public function visitDim(Node $node): void
+    {
+        if (Config::get_closest_target_php_version_id() < 80500 || !self::isNullOffset($this->code_base, $this->context, $node->children['dim'])) {
+            return;
+        }
+        try {
+            $container_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr']);
+        } catch (\Throwable) {
+            return;
+        }
+        // Only when the value is certain to be an array: null is not deprecated as the offset of an ArrayAccess object.
+        if ($container_type->isEmpty()) {
+            return;
+        }
+        foreach ($container_type->getTypeSet() as $type) {
+            if (!($type instanceof ArrayType) || $type->isNullable()) {
+                return;
+            }
+        }
+        $this->emitIssue(
+            Issue::DeprecatedNullArrayOffset,
+            $node->lineno,
+            ASTReverter::toShortString($node)
+        );
+    }
+
+    /**
+     * @override
+     */
+    public function visitArrayElem(Node $node): void
+    {
+        if (Config::get_closest_target_php_version_id() < 80500 || !self::isNullOffset($this->code_base, $this->context, $node->children['key'])) {
+            return;
+        }
+        $this->emitIssue(
+            Issue::DeprecatedNullArrayOffset,
+            $node->lineno,
+            ASTReverter::toShortString($node)
+        );
+    }
+
+    /**
+     * @return bool whether the offset is certain to be null: the literal null, or an expression of the type null.
+     * (An absent offset, as in `$a[] = 1`, is not a node)
+     */
+    private static function isNullOffset(CodeBase $code_base, Context $context, mixed $offset): bool
+    {
+        if (!($offset instanceof Node)) {
+            return false;
+        }
+        try {
+            return UnionTypeVisitor::unionTypeFromNode($code_base, $context, $offset)->isNull();
+        } catch (\Throwable) {
+            return false;
+        }
     }
 
     /**
