@@ -23,3 +23,4 @@
 %s:93 PhanTypeSuspiciousEcho Suspicious argument $out['meta']['missing'] of type null for an echo/print statement
 %s:97 PhanTypeInvalidDimOffset Invalid offset "y" of $intKeyed['foo'] of array type array{x:1}
 %s:97 PhanTypeSuspiciousEcho Suspicious argument $intKeyed['foo']['y'] of type null for an echo/print statement
+%s:114 PhanTypeMismatchArgument Argument 1 ($callback) is $callbacks[1] of type array{0:object|string,1:string,2:'metadata'} but \takesCallable() takes callable defined at %s:100

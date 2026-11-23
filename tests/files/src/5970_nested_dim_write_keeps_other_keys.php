@@ -96,3 +96,20 @@ function writeAfterAssignment(array $config, $untyped, array $generic, array $in
     $intKeyed['foo']['x'] = 1;
     echo $intKeyed['foo']['y'];
 }
+
+function takesCallable(callable $callback): void {
+}
+
+/**
+ * A callable-array has exactly the keys 0 and 1: a write keeps them, and a write to another key makes it not callable.
+ * @param array<callable-array> $callbacks
+ */
+function writeCallableArray(array $callbacks): void {
+    $callbacks[0][1] = 'otherMethod';
+    takesCallable($callbacks[0]);
+    echo strlen($callbacks[0][0] instanceof Closure ? '' : 'x');
+
+    $callbacks[1][2] = 'metadata';
+    echo strlen($callbacks[1][1]);
+    takesCallable($callbacks[1]);  // true positive: an array with 3 elements is not callable
+}

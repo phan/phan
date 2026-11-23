@@ -38,6 +38,7 @@ use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\AssociativeArrayType;
 use Phan\Language\Type\BoolType;
+use Phan\Language\Type\CallableArrayType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayInterface;
 use Phan\Language\Type\GenericArrayType;
@@ -46,6 +47,7 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NonEmptyAssociativeArrayType;
 use Phan\Language\Type\NonEmptyGenericArrayType;
 use Phan\Language\Type\NullType;
+use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\StdClassShapeType;
 use Phan\Language\UnionType;
@@ -2827,21 +2829,31 @@ class AssignmentVisitor extends AnalysisVisitor
         }
         $phpdoc_fallback_types = [];
         $has_untyped_fallback = false;
+        $has_callable_array = false;
+        $element_may_be_created = false;
         foreach ($old_container_types as $type) {
             if ($type instanceof ArrayShapeType) {
+                $element_may_be_created = true;
                 continue;
             }
-            if ($type instanceof GenericArrayInterface) {
-                // array<string,int>, list<string>, callable-array, etc.: the keys are unknown, but the types of the values are known.
+            if ($type instanceof CallableArrayType) {
+                // A callable-array has exactly the keys 0 and 1, so it is merged with the write below.
+                $has_callable_array = true;
+                if ($type->isNullable()) {
+                    $element_may_be_created = true;
+                }
+            } elseif ($type instanceof GenericArrayInterface) {
+                // array<string,int>, list<string>, etc.: the keys are unknown, but the types of the values are known.
                 $phpdoc_fallback_types[] = $type;
             } elseif ($type instanceof ArrayType || $type instanceof MixedType) {
                 // array, mixed, non-empty-mixed, etc.: neither the keys nor the types of the values are known.
                 $has_untyped_fallback = true;
             }
         }
-        if (!$phpdoc_fallback_types && !$has_untyped_fallback) {
+        if (!$phpdoc_fallback_types && !$has_untyped_fallback && !$has_callable_array) {
             return $right_type;
         }
+        $has_other_fallback = $phpdoc_fallback_types || $has_untyped_fallback;
         if ($phpdoc_fallback_types) {
             // After the write, the array element has the key that was written, so it is not empty.
             // (Not for an empty list: an empty union type is unknown, and would become non-empty-mixed.)
@@ -2850,6 +2862,26 @@ class AssignmentVisitor extends AnalysisVisitor
         if ($has_untyped_fallback) {
             // As for conditions, use the plain array type: reading a key that is in no array shape of array{b:...}|array is mixed.
             $phpdoc_fallback_types[] = ArrayType::instance(false);
+        }
+        if ($has_callable_array) {
+            // Writing to a callable-array (an object or class name and a method name) gives an array shape with those two keys,
+            // which is no longer callable if a key other than 0 and 1 was written.
+            $callable_array_fields = [
+                0 => UnionType::of([ObjectType::instance(false), StringType::instance(false)]),
+                1 => StringType::instance(false)->asPHPDocUnionType(),
+            ];
+            $merged_shapes = [];
+            foreach ($right_type->getTypeSet() as $type) {
+                if ($type instanceof ArrayShapeType) {
+                    $merged_shapes[] = ArrayShapeType::fromFieldTypes(\array_replace($callable_array_fields, $type->getFieldTypes()), false);
+                }
+            }
+            if ($merged_shapes && !$element_may_be_created && !$has_other_fallback) {
+                // The element was a non-null callable-array, so it keeps the keys 0 and 1:
+                // the shape with only the written key is not possible.
+                return UnionType::of($merged_shapes, \array_merge($right_type->getRealTypeSet(), [ArrayType::instance(false)]));
+            }
+            \array_push($phpdoc_fallback_types, ...$merged_shapes);
         }
         // Only `array` is known at runtime, keep the real types of the result.
         return $right_type->withUnionType(UnionType::of($phpdoc_fallback_types, [ArrayType::instance(false)]));
