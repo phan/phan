@@ -62,3 +62,13 @@ function declaredShapes(array $shape, array $list): void {
         echo $list[0]['bad'];
     }
 }
+
+/**
+ * True positive: the elements of a callable-array are known to be strings or objects, not arrays.
+ * @param array{a:callable-array} $values
+ */
+function callableArrayElements(array $values): void {
+    if ($values['a'][0]) {
+        echo array_sum($values['a'][1]);
+    }
+}

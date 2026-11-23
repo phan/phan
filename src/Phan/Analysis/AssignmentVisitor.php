@@ -39,6 +39,7 @@ use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\AssociativeArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FalseType;
+use Phan\Language\Type\GenericArrayInterface;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\ListType;
 use Phan\Language\Type\MixedType;
@@ -2773,7 +2774,8 @@ class AssignmentVisitor extends AnalysisVisitor
             if ($type instanceof ArrayShapeType) {
                 continue;
             }
-            if ($type instanceof GenericArrayType) {
+            if ($type instanceof GenericArrayInterface) {
+                // array<string,int>, list<string>, callable-array, etc.: the keys are unknown, but the types of the values are known.
                 $fallback_types[] = $type;
             } elseif ($type instanceof ArrayType || $type instanceof MixedType) {
                 // array, mixed, non-empty-mixed, etc.: the keys are unknown.
