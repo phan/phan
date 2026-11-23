@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan\Plugin\Internal;
 
 use ast\Node;
+use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
@@ -17,6 +18,7 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\Type\ArrayType;
 use Phan\Language\UnionType;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCallCapability;
@@ -1539,6 +1541,12 @@ final class PhpDeprecationPlugin extends PluginV3 implements
 final class PhpDeprecationVisitor extends PluginAwarePostAnalysisVisitor
 {
     /**
+     * @var list<Node> the parents of the node being visited, set by Phan. The last element is the closest parent.
+     * @suppress PhanReadOnlyProtectedProperty
+     */
+    protected $parent_node_list = [];
+
+    /**
      * @override
      */
     public function visitClassConst(Node $node): void
@@ -1576,6 +1584,128 @@ final class PhpDeprecationVisitor extends PluginAwarePostAnalysisVisitor
         }
 
         $this->maybeWarnDeprecatedGlobalConstant($constant, $node, $deprecated_map);
+    }
+
+    /**
+     * @override
+     */
+    public function visitShellExec(Node $node): void
+    {
+        if (Config::get_closest_target_php_version_id() < 80500) {
+            return;
+        }
+        $this->emitIssue(
+            Issue::DeprecatedBacktickOperator,
+            $node->lineno,
+            ASTReverter::toShortString($node)
+        );
+    }
+
+    /**
+     * @override
+     */
+    public function visitDim(Node $node): void
+    {
+        if (Config::get_closest_target_php_version_id() < 80500 || !self::isNullOffset($this->code_base, $this->context, $node->children['dim'])) {
+            return;
+        }
+        // Only when the value is certain to be an array: null is not deprecated as the offset of an ArrayAccess object.
+        if (!$this->isDefinitelyArray($node->children['expr'])) {
+            return;
+        }
+        $this->emitIssue(
+            Issue::DeprecatedNullArrayOffset,
+            $node->lineno,
+            ASTReverter::toShortString($node)
+        );
+    }
+
+    /**
+     * @override
+     */
+    public function visitArrayElem(Node $node): void
+    {
+        if (Config::get_closest_target_php_version_id() < 80500 || !self::isNullOffset($this->code_base, $this->context, $node->children['key'])) {
+            return;
+        }
+        // `[null => $x] = $source` reads the offset null of $source, which is not deprecated for an ArrayAccess object.
+        $array_node = \end($this->parent_node_list);
+        $array_parent = $this->parent_node_list[\count($this->parent_node_list) - 2] ?? null;
+        if ($array_node instanceof Node && $array_parent instanceof Node) {
+            $is_assignment_target = \in_array($array_parent->kind, [\ast\AST_ASSIGN, \ast\AST_ASSIGN_REF], true) && $array_parent->children['var'] === $array_node;
+            if ($is_assignment_target) {
+                if (!$this->isDefinitelyArray($array_parent->children['expr'])) {
+                    return;
+                }
+            } elseif (($array_parent->kind === \ast\AST_FOREACH && $array_parent->children['value'] === $array_node)
+                || ($array_parent->kind === \ast\AST_ARRAY_ELEM && self::isDestructuring($this->parent_node_list))
+            ) {
+                // Destructuring in foreach, or nested destructuring: the type of the source is not checked
+                return;
+            }
+        }
+        $this->emitIssue(
+            Issue::DeprecatedNullArrayOffset,
+            $node->lineno,
+            ASTReverter::toShortString($node)
+        );
+    }
+
+    /**
+     * @param list<Node> $parent_node_list the parents of an array element, ending with its array
+     * @return bool whether the outermost array that the element is nested in is the target of an assignment or of a foreach loop
+     */
+    private static function isDestructuring(array $parent_node_list): bool
+    {
+        for ($i = \count($parent_node_list) - 1; $i >= 1; $i--) {
+            $node = $parent_node_list[$i];
+            $parent = $parent_node_list[$i - 1];
+            if ($node->kind === \ast\AST_ARRAY && $parent->kind !== \ast\AST_ARRAY_ELEM) {
+                return (\in_array($parent->kind, [\ast\AST_ASSIGN, \ast\AST_ASSIGN_REF], true) && $parent->children['var'] === $node)
+                    || ($parent->kind === \ast\AST_FOREACH && $parent->children['value'] === $node);
+            }
+            if ($node->kind !== \ast\AST_ARRAY && $node->kind !== \ast\AST_ARRAY_ELEM) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return bool whether the expression is certain to be an array (not null, an ArrayAccess object, or unknown)
+     */
+    private function isDefinitelyArray(mixed $expression): bool
+    {
+        try {
+            $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $expression);
+        } catch (\Throwable) {
+            return false;
+        }
+        if ($type->isEmpty()) {
+            return false;
+        }
+        foreach ($type->getTypeSet() as $inner_type) {
+            if (!($inner_type instanceof ArrayType) || $inner_type->isNullable()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * @return bool whether the offset is certain to be null: the literal null, or an expression of the type null.
+     * (An absent offset, as in `$a[] = 1`, is not a node)
+     */
+    private static function isNullOffset(CodeBase $code_base, Context $context, mixed $offset): bool
+    {
+        if (!($offset instanceof Node)) {
+            return false;
+        }
+        try {
+            return UnionTypeVisitor::unionTypeFromNode($code_base, $context, $offset)->isNull();
+        } catch (\Throwable) {
+            return false;
+        }
     }
 
     /**

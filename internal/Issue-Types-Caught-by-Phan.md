@@ -697,6 +697,12 @@ This category of issue comes up when you're accessing deprecated elements (as ma
 
 **Note!** Only classes, traits, interfaces, methods, functions, properties, and traits may be marked as deprecated. You can't deprecate a variable or any other expression.
 
+## PhanDeprecatedBacktickOperator
+
+```
+The backtick operator has been deprecated in PHP 8.5: use shell_exec() instead of {CODE}
+```
+
 ## PhanDeprecatedCaseInsensitiveDefine
 
 ```
@@ -793,6 +799,12 @@ Using a deprecated interface {INTERFACE} defined at {FILE}:{LINE}{DETAILS}
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0269_deprecated_interface.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0269_deprecated_interface.php#L5).
 
+## PhanDeprecatedNullArrayOffset
+
+```
+Using null as an array offset in {CODE} has been deprecated in PHP 8.5: use an empty string instead
+```
+
 ## PhanDeprecatedNullableDebugInfoReturnType
 
 ```
@@ -826,7 +838,7 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0171
 ## PhanDeprecatedReservedName
 
 ```
-Using "{DETAILS}" as the name of {DETAILS} has been deprecated in PHP 8.6
+Using "{DETAILS}" as the name of {DETAILS} has been deprecated in PHP {DETAILS}
 ```
 
 ## PhanDeprecatedReturnInFinally
@@ -834,6 +846,14 @@ Using "{DETAILS}" as the name of {DETAILS} has been deprecated in PHP 8.6
 ```
 Returning from a finally block has been deprecated in PHP 8.6: it discards the exception being thrown or the value being returned by the try block or a catch block
 ```
+
+## PhanDeprecatedStringIncrement
+
+```
+The operation {CODE} on the non-numeric string {STRING_LITERAL} has been deprecated in PHP {DETAILS}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php83_files/expected/003_increment_non_alphanumeric.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php83_files/src/003_increment_non_alphanumeric.php#L7).
 
 ## PhanDeprecatedTrait
 

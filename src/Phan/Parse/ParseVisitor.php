@@ -125,12 +125,10 @@ class ParseVisitor extends ScopeVisitor
             return $this->context;
         }
         if (!($node->flags & \ast\flags\CLASS_ANONYMOUS)) {
-            $this->warnAboutNameReservedInFutureVersion(
-                $class_name,
-                ['let', 'is'],
-                ($node->flags & \ast\flags\CLASS_INTERFACE) ? 'an interface' : (($node->flags & \ast\flags\CLASS_TRAIT) ? 'a trait' : (($node->flags & \ast\flags\CLASS_ENUM) ? 'an enum' : 'a class')),
-                $node->lineno
-            );
+            $class_kind = ($node->flags & \ast\flags\CLASS_INTERFACE) ? 'an interface' : (($node->flags & \ast\flags\CLASS_TRAIT) ? 'a trait' : (($node->flags & \ast\flags\CLASS_ENUM) ? 'an enum' : 'a class'));
+            $this->warnAboutNameReservedInFutureVersion($class_name, ['let', 'is'], $class_kind, $node->lineno);
+            // "_" is deprecated as the name of a class since PHP 8.4
+            $this->warnAboutNameReservedInFutureVersion($class_name, ['_'], $class_kind, $node->lineno, 80400);
         }
 
         $class_fqsen = FullyQualifiedClassName::fromStringInContext(
@@ -1539,6 +1537,7 @@ class ParseVisitor extends ScopeVisitor
         }
         $fqsen = FullyQualifiedClassConstantName::make($class->getFQSEN(), $name);
         $lineno = $node->lineno;
+        $this->warnAboutNameReservedInFutureVersion($name, ['namespace'], 'an enum case', $lineno);
 
         if (!$class->isEnum()) {
             $this->emitIssue(Issue::InvalidNode, $lineno, 'Cannot declare an enum case statement in a non-enum');
@@ -1614,29 +1613,6 @@ class ParseVisitor extends ScopeVisitor
         }
 
         return $this->context;
-    }
-
-    /**
-     * Emit PhanDeprecatedReservedName for the declaration of a function, class or class constant
-     * with a name that PHP 8.6 deprecates, to reserve it for future syntax.
-     *
-     * @param list<string> $deprecated_names the deprecated names for this kind of element, in lowercase
-     * @param string $kind a description of the kind of element, e.g. 'a function'
-     */
-    private function warnAboutNameReservedInFutureVersion(string $name, array $deprecated_names, string $kind, int $lineno): void
-    {
-        if (Config::get_closest_target_php_version_id() < 80600) {
-            return;
-        }
-        if (!\in_array(\strtolower($name), $deprecated_names, true)) {
-            return;
-        }
-        $this->emitIssue(
-            Issue::DeprecatedReservedName,
-            $lineno,
-            $name,
-            $kind
-        );
     }
 
     private function handleClassConstantComment(ClassConstant $constant, Comment $comment): void
@@ -1728,6 +1704,7 @@ class ParseVisitor extends ScopeVisitor
                 continue;
             }
 
+            $this->warnAboutNameReservedInFutureVersion((string)$child_node->children['name'], ['let', 'is', '_'], 'a constant', $child_node->lineno);
             $value_node = $child_node->children['value'];
             if ($value_node instanceof Node && !$this->checkNodeIsConstExprOrWarn($value_node, self::CONSTANT_EXPRESSION_IN_CONSTANT)) {
                 // Note: Global constants with invalid value expressions aren't declared.

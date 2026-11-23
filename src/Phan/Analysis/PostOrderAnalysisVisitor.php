@@ -59,6 +59,7 @@ use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
+use Phan\Library\StringUtil;
 use WeakMap;
 
 use function implode;
@@ -1564,6 +1565,47 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         ast\AST_POST_DEC => '(expr)--',
     ];
 
+    /**
+     * Emit PhanDeprecatedStringIncrement for `++` or `--` on a value that is known to be a non-numeric string.
+     *
+     * - `--` on a non-numeric string has no effect, and is deprecated since PHP 8.3.
+     * - `++` on an empty string or a string that is not alphanumeric is deprecated since PHP 8.3.
+     * - `++` on any other non-numeric string ('a' to 'b', 'Az' to 'Ba') is deprecated since PHP 8.5, in favor of str_increment().
+     *
+     * @param Node $node a node of kind ast\AST_PRE_INC, ast\AST_POST_INC, ast\AST_PRE_DEC or ast\AST_POST_DEC
+     */
+    private function checkDeprecatedStringIncOrDec(Node $node, UnionType $old_type): void
+    {
+        $target_php_version = Config::get_closest_target_php_version_id();
+        if ($target_php_version < 80300 || $old_type->isEmpty()) {
+            return;
+        }
+        $is_decrement = $node->kind === ast\AST_POST_DEC || $node->kind === ast\AST_PRE_DEC;
+        // The newest version of the deprecations of the possible values: all of them must be deprecated
+        $min_php_version = 0;
+        $value = '';
+        foreach ($old_type->getTypeSet() as $type) {
+            if (!($type instanceof LiteralStringType) || $type->isNullable()) {
+                return;
+            }
+            $value = $type->getValue();
+            if (\is_numeric($value)) {
+                return;
+            }
+            $min_php_version = \max($min_php_version, $is_decrement || $value === '' || !\ctype_alnum($value) ? 80300 : 80500);
+        }
+        if ($target_php_version < $min_php_version) {
+            return;
+        }
+        $this->emitIssue(
+            Issue::DeprecatedStringIncrement,
+            $node->lineno,
+            ASTReverter::toShortString($node),
+            StringUtil::jsonEncode($value),
+            \intdiv($min_php_version, 10000) . '.' . \intdiv($min_php_version % 10000, 100)
+        );
+    }
+
     private function analyzeIncOrDec(Node $node): Context
     {
         $var = $node->children['var'];
@@ -1579,6 +1621,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $old_type
             );
         }
+        $this->checkDeprecatedStringIncOrDec($node, $old_type);
         // The left can be a non-Node for an invalid AST
         $kind = $var->kind ?? null;
         if ($kind === \ast\AST_VAR) {

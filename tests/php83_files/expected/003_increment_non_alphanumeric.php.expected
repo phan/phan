@@ -1,0 +1,1 @@
+%s:7 PhanDeprecatedStringIncrement The operation $var++ on the non-numeric string "" has been deprecated in PHP 8.3
