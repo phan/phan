@@ -18,3 +18,5 @@
 %s:78 PhanUnusedVariable Unused definition of variable $shape
 %s:98 PhanDebugAnnotation @phan-debug-var requested for variable $result - it has union type array{v:\NS5973\Dependent&\NS5973\Named}|array{v:\NS5973\Dependent}
 %s:98 PhanUnusedVariable Unused definition of variable $result
+%s:113 PhanParamTooFew Call with 0 arg(s) to Closure(\NS5973\Locations):void which requires 1 arg(s) defined at %s:108
+%s:114 PhanParamTooFew Call with 0 arg(s) to Closure(\NS5973\Locations):void which requires 1 arg(s) defined at %s:105

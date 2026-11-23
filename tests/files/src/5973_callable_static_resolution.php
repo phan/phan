@@ -98,3 +98,18 @@ function dependent($named, array $plain): void {
     $result = $named->either($plain);
     '@phan-debug-var $result';
 }
+
+// Two declarations of the same callable type are reported with their own location
+class Locations {
+    /** @return \Closure(static):void */
+    public function first(): \Closure { return function ($x): void { var_dump($x); }; }
+
+    /** @return \Closure(static):void */
+    public function second(): \Closure { return function ($x): void { var_dump($x); }; }
+}
+function locations(Locations $locations): void {
+    $first = $locations->first();
+    $second = $locations->second();
+    $second();
+    $first();
+}

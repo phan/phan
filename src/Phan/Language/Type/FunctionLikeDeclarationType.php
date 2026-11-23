@@ -1216,6 +1216,33 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
     }
 
     /**
+     * @return string a key that is the same for two callable types only if they can be used as the same instance.
+     * The string of a callable type lacks where it is declared (used in the issues about calls of it),
+     * whether it returns a reference, and the real types of its union types, also for the callable types nested in it.
+     */
+    private function getStructuralKey(): string
+    {
+        $key = static::class . ($this->is_nullable ? '?' : '') . ($this->returns_reference ? '&' : '')
+            . '@' . $this->file_ref->getFile() . ':' . $this->file_ref->getLineNumberStart() . '(';
+        foreach ($this->params as $param) {
+            $key .= $param->__toString() . '=' . self::getStructuralKeyOfUnionType($param->getNonVariadicUnionType()) . ',';
+        }
+        return $key . '):' . self::getStructuralKeyOfUnionType($this->return_type);
+    }
+
+    private static function getStructuralKeyOfUnionType(UnionType $union_type): string
+    {
+        $key = '';
+        foreach ([$union_type->getTypeSet(), $union_type->getRealTypeSet()] as $type_set) {
+            foreach ($type_set as $type) {
+                $key .= ($type instanceof FunctionLikeDeclarationType ? $type->getStructuralKey() : \get_class($type) . ' ' . $type->__toString()) . '|';
+            }
+            $key .= ';';
+        }
+        return $key;
+    }
+
+    /**
      * @return Type the instance that was already returned for a type that is the same as $result, or $result
      */
     private function uniqueStaticResolutionResult(Type $result): Type
@@ -1227,12 +1254,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         if (!($result instanceof FunctionLikeDeclarationType)) {
             return $result;
         }
-        // The string of the type has neither whether it returns a reference nor the real types of its union types.
-        $key = \get_class($result) . ($result->returns_reference ? ' & ' : ' ') . $result->__toString()
-            . ' ' . $result->return_type->getRealUnionType()->__toString();
-        foreach ($result->params as $param) {
-            $key .= ',' . $param->getNonVariadicUnionType()->getRealUnionType()->__toString();
-        }
+        $key = $result->getStructuralKey();
         return self::$static_resolution_results[$key] ??= $result;
     }
 
