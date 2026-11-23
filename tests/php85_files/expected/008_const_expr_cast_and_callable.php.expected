@@ -1,0 +1,16 @@
+%s:7 PhanWriteOnlyPublicProperty Possibly zero read references to public property \NS008\Attr->value
+%s:15 PhanReadOnlyPublicProperty Possibly zero write references to public property \NS008\A->p
+%s:31 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type Closure(string):string(real=Closure(string):string)
+%s:33 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type Closure(int):int(real=Closure(int):int)
+%s:35 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type string(real=string)
+%s:37 PhanDebugAnnotation @phan-debug-var requested for variable $arr - it has union type array(real=array)
+%s:46 PhanInvalidConstantExpression Constant expression contains invalid operations ((object)([]))
+%s:47 PhanInvalidConstantExpression Constant expression contains invalid operations (strlen('a'))
+%s:48 PhanInvalidConstantExpression Constant expression contains invalid operations (static::class)
+%s:49 PhanInvalidConstantExpression Constant expression contains invalid operations (static::OBJECT_CAST)
+%s:50 PhanInvalidConstantExpression Constant expression contains invalid operations (static::f(...))
+%s:56 PhanInvalidConstantExpression Constant expression contains invalid operations ((...([1])))
+%s:56 PhanInvalidConstantExpression Constant expression contains invalid operations (new A(...))
+%s:56 PhanInvalidConstantExpression Constant expression contains invalid operations (new CLASS_NAME())
+%s:56 PhanInvalidNode Cannot create Closure for new expression
+%s:56 PhanParamTooMany Call with 1 arg(s) to \NS008\A::__construct() which only takes 0 arg(s) defined at %s:10

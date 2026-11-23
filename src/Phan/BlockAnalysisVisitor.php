@@ -731,6 +731,40 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * Visit a node with kind `\ast\AST_STATIC` (`static $var = initializer;`).
+     *
+     * The initializer only runs on the first call. In PHP 8.3+ it can be any expression,
+     * so the changes it makes to other variables (e.g. `static $a = ($b = 1);`) are merged with the context where it was skipped.
+     */
+    public function visitStatic(Node $node): Context
+    {
+        $default = $node->children['default'];
+        if (!($default instanceof Node) || ParseVisitor::isConstExpr($default, ParseVisitor::CONSTANT_EXPRESSION_IN_STATIC_VARIABLE)) {
+            return $this->visit($node);
+        }
+        $context = $this->context;
+        $context->setLineNumberStart($node->lineno);
+        $context = (new PreOrderAnalysisVisitor($this->code_base, $context))->visitStatic($node);
+        ConfigPluginSet::instance()->preAnalyzeNode($this->code_base, $context, $node);
+
+        $var_node = $node->children['var'];
+        if ($var_node instanceof Node) {
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $var_node);
+        }
+        // Infer the type of the static variable where the initializer ran (e.g. `static $a = [$b = 1, $b];`),
+        // then merge the other variables with the context where it was skipped.
+        $context_after_initializer = $this->analyzeAndGetUpdatedContext($context->withClonedScope(), $node, $default);
+        $context_after_initializer = $this->postOrderAnalyze($context_after_initializer, $node);
+        $context = (new ContextMergeVisitor($context, [$context, $context_after_initializer], $this->code_base))->combineChildContextList();
+        $var_name = $var_node instanceof Node ? $var_node->children['name'] : null;
+        if (\is_string($var_name) && $context_after_initializer->getScope()->hasVariableWithName($var_name)) {
+            // The static variable is defined in both cases.
+            $context->addScopeVariable($context_after_initializer->getScope()->getVariableByName($var_name));
+        }
+        return $context;
+    }
+
+    /**
      * This is an abstraction for getting a new, updated context for a child node.
      *
      * Effectively the same as (new BlockAnalysisVisitor(..., $context, $node, ...)child_node))

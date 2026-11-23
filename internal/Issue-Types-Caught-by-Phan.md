@@ -475,6 +475,14 @@ Declaring an autoloader with function __autoload() is a fatal error. Use spl_aut
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/plugin_test/expected/000_plugins.php.expected#L21) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/plugin_test/src/000_plugins.php#L64).
 
+## PhanCompatibleCastInConstExpression
+
+```
+Casts in constant expressions (e.g. {CODE}) are only supported in PHP 8.5+.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/5966_const_expr_newer_forms.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/5966_const_expr_newer_forms.php#L8).
+
 ## PhanCompatibleClosureInConstExpression
 
 ```
@@ -504,6 +512,14 @@ Fetching properties of enums in constant expressions (e.g. {CODE}) is only suppo
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/4707_enum_property_const_expr.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/4707_enum_property_const_expr.php#L11).
+
+## PhanCompatibleFirstClassCallableInConstExpression
+
+```
+First-class callables in constant expressions (e.g. {CODE}) are only supported in PHP 8.5+.
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/5966_const_expr_newer_forms.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/5966_const_expr_newer_forms.php#L6).
 
 ## PhanCompatibleImplodeOrder
 
@@ -559,6 +575,12 @@ Cannot use {TYPE} as a standalone type before php 8.2.
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/1020_union_type_errors.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/1020_union_type_errors.php#L18)
+
+## PhanCompatibleStaticVariableInitializer
+
+```
+Static variable initializers that are not constant expressions (e.g. {CODE}) are only supported in PHP 8.3+.
+```
 
 ## PhanCompatibleSyntaxNotice
 
