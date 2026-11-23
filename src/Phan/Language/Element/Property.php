@@ -731,12 +731,25 @@ class Property extends ClassElement
     }
 
     /**
-     * Check if this is a virtual property (has hooks but no backing storage)
-     * Virtual properties have hooks but no default value.
+     * @var bool whether this is a hooked property without backing storage: no hook reads or writes `$this->name`
+     */
+    private $is_virtual = false;
+
+    /**
+     * Records whether this hooked property has no backing storage
+     */
+    public function setIsVirtual(bool $is_virtual): void
+    {
+        $this->is_virtual = $is_virtual;
+    }
+
+    /**
+     * Check if this is a virtual property: it has hooks, and none of them uses the backing storage (`$this->name`).
+     * Virtual properties cannot have a default value.
      */
     public function isVirtual(): bool
     {
-        return $this->hasHooks() && $this->default_type === null;
+        return $this->is_virtual && $this->hasHooks();
     }
 
     /**

@@ -1,0 +1,52 @@
+%s:58 PhanClassContainsAbstractMethod non-abstract class \NS5968\Invalid contains abstract method \NS5968\Base::$ax::set declared at %s:14
+%s:58 PhanClassContainsAbstractMethod non-abstract class \NS5968\Invalid contains abstract method \NS5968\I::$irw::set declared at %s:10
+%s:58 PhanClassContainsAbstractMethod non-abstract class \NS5968\Invalid contains abstract method \NS5968\I::$ix::get declared at %s:9
+%s:68 PhanAccessOverridesFinalProperty Declaration of property \NS5968\Invalid->fp overrides final property \NS5968\Base->fp defined at %s:15
+%s:70 PhanPropertyHookFinalOverride Cannot override final property hook \NS5968\Base->hp::get defined at %s:17
+%s:74 PhanCommentOverrideOnNonOverrideMethod Saw an @override annotation for method \NS5968\Invalid::$virtual::set, but could not find an overridden method and it is not a magic method
+%s:79 PhanCommentOverrideOnNonOverrideMethod Saw an @override annotation for method \NS5968\Invalid::$new::get, but could not find an overridden method and it is not a magic method
+%s:105 PhanPropertyHookWithDefaultValue Virtual property \NS5968\Backing->e cannot have a default value - none of its hooks uses its backing value
+%s:112 PhanPropertyHookWithDefaultValue Virtual property \NS5968\Backing->f cannot have a default value - none of its hooks uses its backing value
+%s:119 PhanInvalidNode Non-abstract property hook \NS5968\Backing->g::get must have a body
+%s:135 PhanPropertyHookIncompatibleParamType Property hook \NS5968\SetParam->untyped::set parameter $v has type string which is incompatible with property type (no type)
+%s:140 PhanPropertyHookIncompatibleParamType Property hook \NS5968\SetParam->wide::set parameter $v has type string which is incompatible with property type array|string
+%s:145 PhanPropertyHookIncompatibleParamType Property hook \NS5968\SetParam->untyped_param::set parameter $v has type (no type) which is incompatible with property type string
+%s:167 PhanUnreferencedClass Possibly zero references to class \NS5968\InheritB
+%s:170 PhanClassContainsAbstractMethod non-abstract class \NS5968\MissingSet contains abstract method \NS5968\AbstractGetSet::$p::set declared at %s:168
+%s:170 PhanUnreferencedClass Possibly zero references to class \NS5968\MissingSet
+%s:171 PhanUnreferencedClass Possibly zero references to class \NS5968\BackedImplementsBoth
+%s:176 PhanPropertyHookFinalOverride Cannot override final property hook \NS5968\FinalGet->p::get defined at %s:174
+%s:176 PhanUnreferencedClass Possibly zero references to class \NS5968\OverridesFinalGet
+%s:184 PhanUnreferencedClass Possibly zero references to class \NS5968\UsesTraitValid
+%s:185 PhanCommentOverrideOnNonOverrideMethod Saw an @override annotation for method \NS5968\UsesTraitInvalid::$p::get, but could not find an overridden method and it is not a magic method
+%s:185 PhanUnreferencedClass Possibly zero references to class \NS5968\UsesTraitInvalid
+%s:186 PhanAccessOverridesFinalProperty Declaration of property \NS5968\UsesFinalTrait->fp overrides final property \NS5968\Base->fp defined at %s:15
+%s:186 PhanPropertyHookFinalOverride Cannot override final property hook \NS5968\Base->hp::get defined at %s:17
+%s:186 PhanUnreferencedClass Possibly zero references to class \NS5968\UsesFinalTrait
+%s:190 PhanAccessOverridesFinalProperty Declaration of property \NS5968\OverridesPrivateSet->x overrides final property \NS5968\PrivateSet->x defined at %s:189
+%s:190 PhanUnreferencedClass Possibly zero references to class \NS5968\OverridesPrivateSet
+%s:194 PhanCommentOverrideOnNonOverrideMethod Saw an @override annotation for method \NS5968\OverrideSet::$p::set, but could not find an overridden method and it is not a magic method
+%s:194 PhanUnreferencedClass Possibly zero references to class \NS5968\OverrideSet
+%s:197 PhanUnreferencedClass Possibly zero references to class \NS5968\Suppressed
+%s:209 PhanUnreferencedClass Possibly zero references to class \NS5968\SetParamVariance
+%s:210 PhanPropertyHookIncompatibleParamType Property hook \NS5968\SetParamVariance->m::set parameter $v has type string which is incompatible with property type mixed
+%s:211 PhanPropertyHookIncompatibleParamType Property hook \NS5968\SetParamVariance->i::set parameter $v has type float which is incompatible with property type int
+%s:212 PhanPropertyHookIncompatibleParamType Property hook \NS5968\SetParamVariance->n::set parameter $v has type int which is incompatible with property type ?int
+%s:216 PhanPluginUnknownArrayPropertyType Property \NS5968\SetParamVariance->ok4 has an array type, but does not specify any key types or value types
+%s:221 PhanUnreferencedClass Possibly zero references to class \NS5968\LaterTypes
+%s:224 PhanPropertyHookIncompatibleParamType Property hook \NS5968\LaterTypes->bad::set parameter $v has type \NS5968\LaterChild which is incompatible with property type \NS5968\LaterBase
+%s:229 PhanUnreferencedClass Possibly zero references to class \NS5968\LaterChild
+%s:233 PhanUnreferencedClass Possibly zero references to class \NS5968\WithPHPDocProperty
+%s:236 PhanIncompatibleCompositionProp \NS5968\DefaultChild and \NS5968\DefaultParent define the same property (d) in the composition of \NS5968\DefaultChild, as the types 'string' and 42 respectively. However, the definition differs and is considered incompatible. Class was composed in %s on line 238
+%s:238 PhanUnreferencedClass Possibly zero references to class \NS5968\DefaultChild
+%s:242 PhanUnreferencedClass Possibly zero references to class \NS5968\VirtualOverBacked
+%s:243 PhanPropertyHookWithDefaultValue Virtual property \NS5968\VirtualOverVirtual->v cannot have a default value - none of its hooks uses its backing value
+%s:243 PhanUnreferencedClass Possibly zero references to class \NS5968\VirtualOverVirtual
+%s:244 PhanUndeclaredExtendedClass Class extends undeclared class \NS5968\UnknownParent5968
+%s:244 PhanUnreferencedClass Possibly zero references to class \NS5968\VirtualOverUnknown
+%s:245 PhanPropertyHookWithDefaultValue Virtual property \NS5968\VirtualOverAbstract->p cannot have a default value - none of its hooks uses its backing value
+%s:245 PhanUnreferencedClass Possibly zero references to class \NS5968\VirtualOverAbstract
+%s:246 PhanPropertyHookWithDefaultValue Virtual property \NS5968\VirtualTrait->p cannot have a default value - none of its hooks uses its backing value
+%s:246 PhanUnreferencedClass Possibly zero references to trait \NS5968\VirtualTrait
+%s:249 PhanPropertyHookIncompatibleParamType Property hook \NS5968\NullableIterable->p::set parameter $v has type iterable which is incompatible with property type ?iterable
+%s:249 PhanUnreferencedClass Possibly zero references to class \NS5968\NullableIterable

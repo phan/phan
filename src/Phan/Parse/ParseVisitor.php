@@ -634,7 +634,7 @@ class ParseVisitor extends ScopeVisitor
             $parameter->getUnionType()->getRealUnionType(),
             $variable_comment,
             $lineno,
-            $parameter_node->flags & Parameter::PARAM_MODIFIER_FLAGS,
+            $parameter_node->flags & (Parameter::PARAM_MODIFIER_FLAGS | ast\flags\MODIFIER_FINAL),
             $doc_comment,
             $property_comment,
             $attributes,
@@ -670,8 +670,7 @@ class ParseVisitor extends ScopeVisitor
         $this->handlePropertyCustomAnnotations($class, $property, $property_comment);
         $hooks_node = $parameter_node->children['hooks'] ?? null;
         if ($hooks_node instanceof Node) {
-            // The default is the default of the parameter, which is allowed for a property without a set hook.
-            $this->parsePropertyHooks($property, $hooks_node, null);
+            $this->parsePropertyHooks($property, $hooks_node);
         }
     }
 
@@ -769,7 +768,7 @@ class ParseVisitor extends ScopeVisitor
             }
             // Parse property hooks (PHP 8.4+)
             if ($hooks_node instanceof Node) {
-                $this->parsePropertyHooks($property, $hooks_node, $default_node);
+                $this->parsePropertyHooks($property, $hooks_node);
             }
             // A comment shared by several properties (`public $a, $b;`) is handled for each of them.
             $this->handlePropertyCustomAnnotations($class, $property, $comment);
@@ -861,37 +860,26 @@ class ParseVisitor extends ScopeVisitor
      *
      * @param Property $property The property to attach hooks to
      * @param Node $hooks_node The AST_STMT_LIST containing property hooks
-     * @param Node|string|float|int|null $default_node The default value node if present
      */
-    private function parsePropertyHooks(Property $property, Node $hooks_node, Node|float|int|null|string $default_node): void
+    private function parsePropertyHooks(Property $property, Node $hooks_node): void
     {
         if ($hooks_node->kind !== \ast\AST_STMT_LIST) {
             return;
         }
 
-        // A property with a set hook always has backing storage and can have a default.
-        // Get-only virtual properties (no $field reference) cannot have defaults, but
-        // detecting $field usage requires body traversal, so we approximate by checking
-        // for the presence of a set hook.
-        if ($default_node !== null) {
-            $has_set_hook = false;
-            foreach ($hooks_node->children as $hook_node) {
-                if ($hook_node instanceof Node
-                    && $hook_node->kind === \ast\AST_PROPERTY_HOOK
-                    && $hook_node->children['name'] === 'set'
-                ) {
-                    $has_set_hook = true;
-                    break;
-                }
-            }
-            if (!$has_set_hook) {
-                $this->emitIssue(
-                    Issue::PropertyHookWithDefaultValue,
-                    $property->getContext()->getLineNumberStart(),
-                    $property->asPropertyFQSENString()
-                );
+        // A property is backed if a hook uses `$this->name`, or is declared without a body or as `set => expr`.
+        // Otherwise it is virtual, and cannot have a default value.
+        $is_backed = false;
+        foreach ($hooks_node->children as $hook_node) {
+            if ($hook_node instanceof Node && $hook_node->kind === \ast\AST_PROPERTY_HOOK && self::isHookUsingBackingValue($hook_node, $property->getName())) {
+                $is_backed = true;
+                break;
             }
         }
+        $property->setIsVirtual(!$is_backed);
+        // PropertyHookAnalyzer checks if a virtual property has a default: that is allowed if a parent class has a backed property.
+        $class = $this->context->getClassInScope($this->code_base);
+        $is_abstract_property = ($property->getFlags() & \ast\flags\MODIFIER_ABSTRACT) !== 0 || $class->isInterface();
 
         // Check for readonly property with set hook
         if ($property->isReadOnly()) {
@@ -944,44 +932,68 @@ class ParseVisitor extends ScopeVisitor
                 (clone $this->context)->withLineNumberStart($hook_node->lineno)
             );
 
-            // Extract and set hook attributes
-            // TODO: Implement attribute support for property hooks
-            // $hook_attributes = Attribute::fromNodeForAttributeList(
-            //     $this->code_base,
-            //     $this->context,
-            //     $hook_node->children['attributes'] ?? null
-            // );
+            $hook->setAttributeList(Attribute::fromNodeForAttributeList(
+                $this->code_base,
+                $this->context,
+                $hook_node->children['attributes'] ?? null
+            ));
+            if (!$body_node && !$is_abstract_property && !$property->checkHasSuppressIssueAndIncrementCount(Issue::InvalidNode)) {
+                $this->emitIssue(
+                    Issue::InvalidNode,
+                    $hook_node->lineno,
+                    "Non-abstract property hook {$property->asPropertyFQSENString()}::$hook_name must have a body"
+                );
+            }
 
             // Attach hook to property
             if ($hook_name === 'get') {
                 $property->setGetHook($hook);
             } else {
+                // The type of its parameter is checked in PropertyHookAnalyzer, when all classes are known.
                 $property->setSetHook($hook);
-
-                // Validate set hook parameter type compatibility
-                if (!empty($parameter_list)) {
-                    $set_param = $parameter_list[0];
-                    $set_param_type = $set_param->getNonVariadicUnionType();
-                    $property_type = $property->getUnionType();
-
-                    // Check if set parameter type is compatible with property type
-                    // The parameter should accept the property's type (property type can cast to param type)
-                    if (!$property_type->isEmpty() && !$set_param_type->isEmpty()) {
-                        if (!$property_type->canCastToUnionType($set_param_type, $this->code_base)) {
-                            $this->emitIssue(
-                                Issue::PropertyHookIncompatibleParamType,
-                                $hook_node->lineno,
-                                $property->getFQSEN()->getFullyQualifiedClassName(),
-                                'set',
-                                '$' . $set_param->getName(),
-                                $set_param_type,
-                                $property_type
-                            );
-                        }
-                    }
-                }
             }
         }
+    }
+
+    /**
+     * @param Node $hook_node a node of kind ast\AST_PROPERTY_HOOK
+     * @return bool whether the hook makes the property $name a backed property:
+     * it has no body, is of the form `set => expr`, or uses `$this->name` outside of closures.
+     */
+    private static function isHookUsingBackingValue(Node $hook_node, string $name): bool
+    {
+        $stmts_node = $hook_node->children['stmts'];
+        if (!($stmts_node instanceof Node)) {
+            return true;
+        }
+        if ($stmts_node->kind === \ast\AST_PROPERTY_HOOK_SHORT_BODY && $hook_node->children['name'] === 'set') {
+            return true;
+        }
+        return self::containsThisProperty($stmts_node, $name);
+    }
+
+    private static function containsThisProperty(Node $node, string $name): bool
+    {
+        switch ($node->kind) {
+            case \ast\AST_PROP:
+            case \ast\AST_NULLSAFE_PROP:
+                $expr = $node->children['expr'];
+                if ($node->children['prop'] === $name && $expr instanceof Node && $expr->kind === \ast\AST_VAR && $expr->children['name'] === 'this') {
+                    return true;
+                }
+                break;
+            case \ast\AST_CLOSURE:
+            case \ast\AST_ARROW_FUNC:
+            case \ast\AST_CLASS:
+            case \ast\AST_FUNC_DECL:
+                return false;
+        }
+        foreach ($node->children as $child_node) {
+            if ($child_node instanceof Node && self::containsThisProperty($child_node, $name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

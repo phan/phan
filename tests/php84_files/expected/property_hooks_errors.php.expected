@@ -1,7 +1,7 @@
-%s:10 PhanPropertyHookWithDefaultValue Virtual property \PropertyHookErrors->withDefault cannot have a default value - only properties with a set hook or backing storage can have defaults
 %s:10 PhanReadOnlyPublicProperty Possibly zero write references to public property \PropertyHookErrors->withDefault
 %s:16 PhanReadonlyPropertyHasSetHook Readonly property \PropertyHookErrors->readonlyWithSet cannot have a set hook
 %s:27 PhanWriteOnlyPublicProperty Possibly zero read references to public property \PropertyHookErrors->paramMismatch
-%s:28 PhanPropertyHookIncompatibleParamType Property hook \PropertyHookErrors::set parameter $value has type int which is incompatible with property type string
+%s:28 PhanPropertyHookIncompatibleParamType Property hook \PropertyHookErrors->paramMismatch::set parameter $value has type int which is incompatible with property type string
 %s:36 PhanReadOnlyPublicProperty Possibly zero write references to public property \ParentWithFinalHook->name
+%s:44 PhanPropertyHookFinalOverride Cannot override final property hook \ParentWithFinalHook->name::get defined at %s:37
 %s:50 PhanReadOnlyPublicProperty Possibly zero write references to public property \TypeCompatibility->flexible
