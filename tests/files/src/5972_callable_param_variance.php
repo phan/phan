@@ -1,0 +1,54 @@
+<?php
+namespace NS5972;
+
+class Base {}
+class Child extends Base {}
+class Other {}
+
+/** @param \Closure(Child):Base $closure */
+function takes_child_closure(\Closure $closure): void { var_dump($closure); }
+/** @param callable(Child):void $callable */
+function takes_child_callable(callable $callable): void { var_dump($callable); }
+/** @param callable(Base):void $callable */
+function takes_base_callable(callable $callable): void { var_dump($callable); }
+/** @param callable(int):void $callable */
+function takes_int_callable(callable $callable): void { var_dump($callable); }
+
+// A callable with a wider parameter type accepts everything that it will be called with
+takes_child_closure(function (Base $b): Base { return $b; });
+takes_child_closure(function (object $o): Child { return new Child(); });
+takes_child_callable(function (Base $b): void { var_dump($b); });
+takes_child_callable(function (?Child $c): void { var_dump($c); });
+takes_int_callable(function (int|string $x): void { var_dump($x); });
+// A narrower parameter type is not safe, but was accepted before and still is
+takes_base_callable(function (Child $c): void { var_dump($c); });
+// An unrelated parameter type is not compatible
+takes_child_closure(function (Other $o): Base { return new Base(); });
+takes_child_callable(function (Other $o): void { var_dump($o); });
+takes_int_callable(function (array $a): void { var_dump($a); });
+// The return type is still covariant
+takes_child_closure(function (Base $b): Other { return new Other(); });
+
+class Emitter {
+    /** @param callable(static):void $listener */
+    public function listen(callable $listener): void {
+        // $this is an instance of static
+        $listener($this);
+    }
+    /** @return \Closure(static):static */
+    public function identity(): \Closure {
+        return static function ($x) { return $x; };
+    }
+}
+final class FinalEmitter extends Emitter {}
+
+function listeners(Emitter $emitter, FinalEmitter $final): void {
+    // `static` in the type of the callable is the class of the object that the method is called on
+    $final->listen(function (FinalEmitter $e): void { var_dump($e); });
+    $final->listen(function (Emitter $e): void { var_dump($e); });
+    $emitter->listen(function (Emitter $e): void { var_dump($e); });
+    $final->listen(function (Other $o): void { var_dump($o); });
+    $emitter->listen(function (Other $o): void { var_dump($o); });
+    $f = $final->identity();
+    '@phan-debug-var $f';
+}

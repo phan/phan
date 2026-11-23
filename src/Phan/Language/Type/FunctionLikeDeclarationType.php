@@ -1162,6 +1162,73 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return (new static($this->file_ref, $new_params, $new_return_type, $this->returns_reference, $this->is_nullable))->asPHPDocUnionType();
     }
 
+    /** @var array<string,Type> this type with `static` resolved, by the class of the context or the type that it was resolved to */
+    private $static_resolution_cache = [];
+
+    /**
+     * Resolves `static` in the types of the parameters and in the return type, e.g. for `callable(static):void`.
+     * @override
+     * @suppress PhanAccessReadOnlyProperty the cache is not part of the value of the type
+     */
+    public function withStaticResolvedInContext(Context $context): Type
+    {
+        if (!$context->isInClassScope()) {
+            return $this;
+        }
+        // The types with `static` resolved are not unique instances like other types, so reuse the result for a class:
+        // a union type only removes duplicates of the same instance.
+        $key = 'context ' . $context->getClassFQSEN()->__toString();
+        return $this->static_resolution_cache[$key] ??= $this->withMappedUnionTypes(static function (UnionType $union_type) use ($context): UnionType {
+            return $union_type->withStaticResolvedInContext($context);
+        });
+    }
+
+    /**
+     * @override
+     * @suppress PhanAccessReadOnlyProperty the cache is not part of the value of the type
+     */
+    public function withStaticResolvedTo(Type $static_type): Type
+    {
+        $key = 'type ' . $static_type->__toString();
+        return $this->static_resolution_cache[$key] ??= $this->withMappedUnionTypes(static function (UnionType $union_type) use ($static_type): UnionType {
+            return $union_type->withStaticResolvedTo($static_type);
+        });
+    }
+
+    /**
+     * @override
+     */
+    public function isStaticResolutionNoOp(): bool
+    {
+        if (!$this->return_type->isStaticResolutionNoOp()) {
+            return false;
+        }
+        foreach ($this->params as $param) {
+            if (!$param->getNonVariadicUnionType()->isStaticResolutionNoOp()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * @param Closure(UnionType):UnionType $mapper applied to the types of the parameters and to the return type
+     * @return Type this type, or a type of the same class with the mapped types if any of them changed
+     */
+    private function withMappedUnionTypes(Closure $mapper): Type
+    {
+        $new_params = [];
+        foreach ($this->params as $param) {
+            $new_params[] = $param->withNonVariadicUnionType($mapper($param->getNonVariadicUnionType()));
+        }
+        $new_return_type = $mapper($this->return_type);
+        if ($new_params === $this->params && $new_return_type === $this->return_type) {
+            return $this;
+        }
+        // Create ClosureDeclarationType or CallableDeclarationType
+        return new static($this->file_ref, $new_params, $new_return_type, $this->returns_reference, $this->is_nullable);
+    }
+
     public function getCommentParamAssertionClosure(CodeBase $code_base): ?Closure
     {
         return null;
