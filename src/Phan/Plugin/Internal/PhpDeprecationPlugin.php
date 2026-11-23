@@ -17,6 +17,7 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\UnionType;
 use Phan\PluginV3;
 use Phan\PluginV3\AnalyzeFunctionCallCapability;
 use Phan\PluginV3\HandleLazyLoadInternalFunctionCapability;
@@ -1065,6 +1066,10 @@ final class PhpDeprecationPlugin extends PluginV3 implements
                 };
         }
 
+        foreach (self::getDeprecatedCallFormClosures() as $name => $closure) {
+            $closures[$name] = $closure;
+        }
+
         // The deprecated functions that Phan's stubs declare (e.g. spl_object_hash() in the SPL stub).
         // A function from a stub replaces the one from Reflection and is not passed to handleLazyLoadInternalFunction(),
         // so it is not marked as deprecated.
@@ -1078,18 +1083,8 @@ final class PhpDeprecationPlugin extends PluginV3 implements
                     if (!$function->isPHPInternal()) {
                         return;
                     }
-                    if ($function instanceof Func) {
-                        // The analyzed code declares a function with this name, e.g. a polyfill for an extension that is not enabled:
-                        // that is the function being called, and it is not deprecated.
-                        // (Phan knows the internal function from its signature map, and calls resolve to it)
-                        $alternate_id = 0;
-                        $fqsen = $function->getFQSEN()->getCanonicalFQSEN();
-                        while ($code_base->hasFunctionWithFQSEN($fqsen)) {
-                            if (!$code_base->getFunctionByFQSEN($fqsen)->isPHPInternal()) {
-                                return;
-                            }
-                            $fqsen = $fqsen->withAlternateId(++$alternate_id);
-                        }
+                    if (self::hasUserDefinedAlternate($code_base, $function)) {
+                        return;
                     }
                     if ($function->isDeprecated()) {
                         // Already reported as PhanDeprecatedFunctionInternal
@@ -1142,6 +1137,282 @@ final class PhpDeprecationPlugin extends PluginV3 implements
         }
 
         return $closures;
+    }
+
+    /**
+     * The ways of calling an internal function or method that are deprecated, while other calls of it are not:
+     * a number of arguments, or an argument of a certain type or value.
+     * Only the calls that are certain to be deprecated are reported.
+     *
+     * @return array<string,\Closure(CodeBase,Context,FunctionInterface,list<Node|int|float|string>,?Node):void>
+     */
+    private static function getDeprecatedCallFormClosures(): array
+    {
+        $closures = [];
+        // The calls with a deprecated number of arguments:
+        // [the function or method, the php version id of the deprecation, whether the number of arguments is deprecated, the description]
+        $deprecated_argument_counts = [
+            ['mb_check_encoding', 80100, static fn(int $count): bool => $count === 0, 'Calling mb_check_encoding() without arguments is deprecated as of PHP 8.1'],
+            ['get_class', 80300, static fn(int $count): bool => $count === 0, 'Calling get_class() without arguments is deprecated as of PHP 8.3; use self::class or static::class instead'],
+            ['get_parent_class', 80300, static fn(int $count): bool => $count === 0, 'Calling get_parent_class() without arguments is deprecated as of PHP 8.3; use parent::class instead'],
+            ['ReflectionMethod::__construct', 80400, static fn(int $count): bool => $count === 1, 'Calling ReflectionMethod::__construct() with 1 argument is deprecated as of PHP 8.4; use ReflectionMethod::createFromMethodName() instead'],
+            ['IntlGregorianCalendar::__construct', 80400, static fn(int $count): bool => $count > 2, 'Calling IntlGregorianCalendar::__construct() with more than 2 arguments is deprecated as of PHP 8.4; use IntlGregorianCalendar::createFromDate() or createFromDateTime() instead'],
+            ['stream_context_set_option', 80400, static fn(int $count): bool => $count === 2, 'Calling stream_context_set_option() with 2 arguments is deprecated as of PHP 8.4; use stream_context_set_options() instead'],
+            ['session_set_save_handler', 80400, static fn(int $count): bool => $count > 2, 'Providing individual callbacks is deprecated as of PHP 8.4; pass an object implementing SessionHandlerInterface instead'],
+            ['openssl_pkey_derive', 80500, static fn(int $count): bool => $count > 2, 'Passing $key_length is deprecated as of PHP 8.5; it is either ignored or truncates the key'],
+        ];
+        foreach ($deprecated_argument_counts as [$name, $min_php_version, $is_deprecated_count, $details]) {
+            if (!self::isTargetingPhpVersionOrNewer($min_php_version)) {
+                continue;
+            }
+            $closures["\\$name"] =
+                /** @param list<Node|int|float|string> $args */
+                static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args, ?Node $call_node) use ($is_deprecated_count, $details): void {
+                    foreach ($args as $arg) {
+                        if ($arg instanceof Node && $arg->kind === \ast\AST_UNPACK) {
+                            // The number of arguments is unknown
+                            return;
+                        }
+                    }
+                    if ($is_deprecated_count(count($args))) {
+                        self::emitDeprecatedCallForm($code_base, $context, $function, $call_node, $details);
+                    }
+                };
+        }
+
+        // The functions for an array that are deprecated for an object:
+        // [the function, the php version id of the deprecation, the index of the first argument that is checked, whether the arguments after it are checked, the description]
+        $deprecated_object_arguments = [];
+        foreach (['reset', 'end', 'key', 'current', 'next', 'prev'] as $name) {
+            $deprecated_object_arguments[] = [$name, 80100, 0, false, "Calling $name() on an object is deprecated as of PHP 8.1; use get_object_vars() or ArrayIterator instead"];
+        }
+        foreach (['array_walk', 'array_walk_recursive', 'http_build_query'] as $name) {
+            $deprecated_object_arguments[] = [$name, 80600, 0, false, "Passing an object to $name() is deprecated as of PHP 8.6; call get_object_vars() first instead"];
+        }
+        $deprecated_object_arguments[] = ['mb_convert_variables', 80600, 2, true, 'Passing an object to mb_convert_variables() is deprecated as of PHP 8.6; call get_object_vars() first instead'];
+        foreach ($deprecated_object_arguments as [$name, $min_php_version, $first_index, $is_variadic, $details]) {
+            if (!self::isTargetingPhpVersionOrNewer($min_php_version)) {
+                continue;
+            }
+            $closures["\\$name"] =
+                /** @param list<Node|int|float|string> $args */
+                static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args, ?Node $call_node) use ($first_index, $is_variadic, $details): void {
+                    foreach ($args as $i => $arg) {
+                        if ($arg instanceof Node && ($arg->kind === \ast\AST_UNPACK || $arg->kind === \ast\AST_NAMED_ARG)) {
+                            return;
+                        }
+                        if ($i < $first_index || ($i > $first_index && !$is_variadic)) {
+                            continue;
+                        }
+                        if (self::isDefinitelyObject(UnionTypeVisitor::unionTypeFromNode($code_base, $context, $arg))) {
+                            self::emitDeprecatedCallForm($code_base, $context, $function, $arg instanceof Node ? $arg : $call_node, $details);
+                            return;
+                        }
+                    }
+                };
+        }
+
+        // PHP 8.1: the $num_points argument of the polygon functions. With null as the 4th argument, the 3rd is the color.
+        foreach (['imagepolygon', 'imageopenpolygon', 'imagefilledpolygon'] as $name) {
+            $closures["\\$name"] =
+                /** @param list<Node|int|float|string> $args */
+                static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args, ?Node $call_node): void {
+                    if (count($args) !== 4) {
+                        return;
+                    }
+                    $color = self::getPositionalArgument($args, 3);
+                    if ($color === null) {
+                        return;
+                    }
+                    $type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $color);
+                    if ($type->isEmpty() || $type->containsNullableOrMixed()) {
+                        return;
+                    }
+                    self::emitDeprecatedCallForm($code_base, $context, $function, $call_node, 'Passing $num_points is deprecated as of PHP 8.1; it is the number of elements of $points divided by 2');
+                };
+        }
+
+        if (self::isTargetingPhpVersionOrNewer(80400)) {
+            // PHP 8.4: trigger_error() and its alias user_error() with E_USER_ERROR
+            foreach (['trigger_error', 'user_error'] as $name) {
+                $closures["\\$name"] =
+                    /** @param list<Node|int|float|string> $args */
+                    static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args, ?Node $call_node): void {
+                        $level = self::getPositionalArgument($args, 1);
+                        if ($level === null) {
+                            return;
+                        }
+                        if (UnionTypeVisitor::unionTypeFromNode($code_base, $context, $level)->asSingleScalarValueOrNull() === \E_USER_ERROR) {
+                            self::emitDeprecatedCallForm($code_base, $context, $function, $level instanceof Node ? $level : $call_node, 'Passing E_USER_ERROR is deprecated as of PHP 8.4; throw an exception or call exit() with a message instead');
+                        }
+                    };
+            }
+            // PHP 8.4: new DatePeriod(string $isostr, int $options = 0)
+            $closures['\\DatePeriod::__construct'] =
+                /** @param list<Node|int|float|string> $args */
+                static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args, ?Node $call_node): void {
+                    $start = self::getPositionalArgument($args, 0);
+                    if ($start === null) {
+                        return;
+                    }
+                    $type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $start);
+                    if (self::isDefinitelyString($type)) {
+                        self::emitDeprecatedCallForm($code_base, $context, $function, $call_node, 'Calling DatePeriod::__construct() with an ISO 8601 string is deprecated as of PHP 8.4; use DatePeriod::createFromISO8601String() instead');
+                    }
+                };
+        }
+        if (self::isTargetingPhpVersionOrNewer(80500)) {
+            // PHP 8.5: array_key_exists(null, $array)
+            $closures['\\array_key_exists'] =
+                /** @param list<Node|int|float|string> $args */
+                static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args, ?Node $unused_call_node): void {
+                    $key = self::getPositionalArgument($args, 0);
+                    if ($key instanceof Node && UnionTypeVisitor::unionTypeFromNode($code_base, $context, $key)->isNull()) {
+                        self::emitDeprecatedCallForm($code_base, $context, $function, $key, 'Using null as the key is deprecated as of PHP 8.5; use an empty string instead');
+                    }
+                };
+            // PHP 8.5: chr() with an integer that is not a byte
+            $closures['\\chr'] =
+                /** @param list<Node|int|float|string> $args */
+                static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args, ?Node $call_node): void {
+                    $codepoint = self::getPositionalArgument($args, 0);
+                    if ($codepoint === null) {
+                        return;
+                    }
+                    $value = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $codepoint)->asSingleScalarValueOrNull();
+                    if (is_int($value) && ($value < 0 || $value > 255)) {
+                        self::emitDeprecatedCallForm($code_base, $context, $function, $codepoint instanceof Node ? $codepoint : $call_node, 'Providing a value that is not between 0 and 255 is deprecated as of PHP 8.5');
+                    }
+                };
+            // PHP 8.5: ord() with a string that is not one byte long
+            $closures['\\ord'] =
+                /** @param list<Node|int|float|string> $args */
+                static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args, ?Node $call_node): void {
+                    $character = self::getPositionalArgument($args, 0);
+                    if ($character === null) {
+                        return;
+                    }
+                    $value = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $character)->asSingleScalarValueOrNull();
+                    if (\is_string($value) && \strlen($value) !== 1) {
+                        self::emitDeprecatedCallForm($code_base, $context, $function, $character instanceof Node ? $character : $call_node, 'Providing a string that is not one byte long is deprecated as of PHP 8.5; use ord($string[0]) instead');
+                    }
+                };
+            // PHP 8.5: spl_autoload_unregister('spl_autoload_call')
+            $closures['\\spl_autoload_unregister'] =
+                /** @param list<Node|int|float|string> $args */
+                static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args, ?Node $call_node): void {
+                    $callback = self::getPositionalArgument($args, 0);
+                    if ($callback === null) {
+                        return;
+                    }
+                    // A literal, or a variable or constant with a known value
+                    $callback = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $callback)->asSingleScalarValueOrNull();
+                    if (\is_string($callback) && \strcasecmp(ltrim($callback, '\\'), 'spl_autoload_call') === 0) {
+                        self::emitDeprecatedCallForm($code_base, $context, $function, $call_node, 'Using spl_autoload_call() as the callback is deprecated as of PHP 8.5; call spl_autoload_unregister() for each of spl_autoload_functions() instead');
+                    }
+                };
+        }
+        if (self::isTargetingPhpVersionOrNewer(80600)) {
+            // PHP 8.6: is_a() with a string and without $allow_string
+            $closures['\\is_a'] =
+                /** @param list<Node|int|float|string> $args */
+                static function (CodeBase $code_base, Context $context, FunctionInterface $function, array $args, ?Node $call_node): void {
+                    foreach ($args as $arg) {
+                        if ($arg instanceof Node && ($arg->kind === \ast\AST_UNPACK || $arg->kind === \ast\AST_NAMED_ARG)) {
+                            return;
+                        }
+                    }
+                    if (!isset($args[0])) {
+                        return;
+                    }
+                    if (isset($args[2]) && UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[2])->asSingleScalarValueOrNull() !== false) {
+                        // $allow_string is true, or unknown
+                        return;
+                    }
+                    $type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+                    if (self::isDefinitelyString($type)) {
+                        self::emitDeprecatedCallForm($code_base, $context, $function, $args[0] instanceof Node ? $args[0] : $call_node, 'Calling is_a() with a string when $allow_string is false is deprecated as of PHP 8.6; it always returns false');
+                    }
+                };
+        }
+        return $closures;
+    }
+
+    /**
+     * @param list<Node|int|float|string> $args
+     * @return Node|int|float|string|null the argument at $index, or null if there is none or the arguments are not all positional
+     */
+    private static function getPositionalArgument(array $args, int $index): Node|int|float|string|null
+    {
+        foreach ($args as $i => $arg) {
+            if ($i > $index) {
+                break;
+            }
+            if ($arg instanceof Node && ($arg->kind === \ast\AST_UNPACK || $arg->kind === \ast\AST_NAMED_ARG)) {
+                return null;
+            }
+        }
+        return $args[$index] ?? null;
+    }
+
+    /**
+     * @return bool whether a value of the type is always a string (not null, or an unknown value)
+     */
+    private static function isDefinitelyString(UnionType $type): bool
+    {
+        return !$type->isEmpty() && $type->isExclusivelyStringTypes() && !$type->containsNullable();
+    }
+
+    /**
+     * @return bool whether a value of the type is always an object (not an array, null, or an unknown value)
+     */
+    private static function isDefinitelyObject(UnionType $type): bool
+    {
+        if ($type->isEmpty()) {
+            return false;
+        }
+        foreach ($type->getTypeSet() as $inner_type) {
+            if (!$inner_type->isObject() || $inner_type->isNullable() || $inner_type instanceof \Phan\Language\Type\TemplateType) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * @return bool whether the analyzed code declares a function with the name of the internal function $function,
+     * e.g. a polyfill for an extension that is not enabled: that is the function being called, and it is not deprecated.
+     * (Phan knows the internal function from its signature map, and calls resolve to it)
+     */
+    private static function hasUserDefinedAlternate(CodeBase $code_base, FunctionInterface $function): bool
+    {
+        if (!($function instanceof Func)) {
+            return false;
+        }
+        $alternate_id = 0;
+        $fqsen = $function->getFQSEN()->getCanonicalFQSEN();
+        while ($code_base->hasFunctionWithFQSEN($fqsen)) {
+            if (!$code_base->getFunctionByFQSEN($fqsen)->isPHPInternal()) {
+                return true;
+            }
+            $fqsen = $fqsen->withAlternateId(++$alternate_id);
+        }
+        return false;
+    }
+
+    private static function emitDeprecatedCallForm(CodeBase $code_base, Context $context, FunctionInterface $function, ?Node $node, string $details): void
+    {
+        if (!$function->isPHPInternal() || self::hasUserDefinedAlternate($code_base, $function)) {
+            return;
+        }
+        Issue::maybeEmit(
+            $code_base,
+            $context,
+            Issue::DeprecatedFunctionArgument,
+            $node->lineno ?? $context->getLineNumberStart(),
+            $function->getRepresentationForIssue(),
+            $details
+        );
     }
 
     /**
