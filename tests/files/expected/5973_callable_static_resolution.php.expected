@@ -10,3 +10,9 @@
 %s:61 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type Closure(\NS5973\PairBase):\NS5973\PairBase(real=\Closure)
 %s:61 PhanDebugAnnotation @phan-debug-var requested for variable $g - it has union type Closure(\NS5973\PairChild):\NS5973\PairChild(real=\Closure)
 %s:61 PhanUnusedVariable Unused definition of variable $g
+%s:76 PhanUnusedVariable Unused definition of variable $closure
+%s:77 PhanUnusedVariable Unused definition of variable $declared_shape
+%s:78 PhanDebugAnnotation @phan-debug-var requested for variable $closure - it has union type Closure():\NS5973\Alternatives|Closure():\NS5973\Alternatives&\NS5973\Named(real=\Closure)
+%s:78 PhanDebugAnnotation @phan-debug-var requested for variable $declared_shape - it has union type array{value:\NS5973\Alternatives&\NS5973\Named}|array{value:\NS5973\Alternatives}(real=array)
+%s:78 PhanDebugAnnotation @phan-debug-var requested for variable $shape - it has union type array{value:\NS5973\Alternatives&\NS5973\Named}(real=array)
+%s:78 PhanUnusedVariable Unused definition of variable $shape

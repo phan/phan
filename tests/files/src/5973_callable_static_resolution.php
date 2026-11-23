@@ -61,3 +61,20 @@ function pairs(PairBase $base, PairChild $child): void {
     $g = $child->pair();
     '@phan-debug-var $f, $g';
 }
+
+// An alternative that the method declares itself is kept next to the type of the object
+class Alternatives {
+    /** @return \Closure():static|\Closure():\NS5973\Alternatives */
+    public function declared(): \Closure { return fn() => $this; }
+    /** @return array{value:static}|array{value:\NS5973\Alternatives} */
+    public function declaredShape(): array { return ['value' => $this]; }
+    /** @return array{value:static} */
+    public function shape(): array { return ['value' => $this]; }
+}
+/** @param Alternatives&Named $named */
+function alternatives($named): void {
+    $closure = $named->declared();
+    $declared_shape = $named->declaredShape();
+    $shape = $named->shape();
+    '@phan-debug-var $closure, $declared_shape, $shape';
+}
