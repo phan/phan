@@ -1310,6 +1310,15 @@ final class PhpDeprecationVisitor extends PluginAwarePostAnalysisVisitor
     /**
      * @override
      */
+    public function visitNullsafeProp(Node $node): void
+    {
+        // `$document?->actualEncoding` reads the property unless $document is null
+        $this->visitProp($node);
+    }
+
+    /**
+     * @override
+     */
     public function visitProp(Node $node): void
     {
         $property_name = $node->children['prop'];

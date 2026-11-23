@@ -26,6 +26,8 @@
 %s:40 PhanDeprecatedProperty Reference to deprecated property \DOMEntity->actualEncoding defined at internal:0 (Deprecated because: Deprecated in PHP 8.4.)
 %s:40 PhanDeprecatedProperty Reference to deprecated property \DOMEntity->encoding defined at internal:0 (Deprecated because: Deprecated in PHP 8.4.)
 %s:40 PhanDeprecatedProperty Reference to deprecated property \DOMEntity->version defined at internal:0 (Deprecated because: Deprecated in PHP 8.4.)
-%s:47 PhanReadOnlyPublicProperty Possibly zero write references to public property \Document013->mine
-%s:52 PhanUnreferencedFunction Possibly zero references to function \user_elements013()
-%s:53 PhanDeprecatedProperty Reference to deprecated property \Document013->config defined at internal:0 (Deprecated because: Deprecated in PHP 8.4.)
+%s:43 PhanUnreferencedFunction Possibly zero references to function \nullsafe_properties013()
+%s:44 PhanDeprecatedProperty Reference to deprecated property \DOMDocument->actualEncoding defined at internal:0 (Deprecated because: Deprecated in PHP 8.4.)
+%s:50 PhanReadOnlyPublicProperty Possibly zero write references to public property \Document013->mine
+%s:55 PhanUnreferencedFunction Possibly zero references to function \user_elements013()
+%s:56 PhanDeprecatedProperty Reference to deprecated property \Document013->config defined at internal:0 (Deprecated because: Deprecated in PHP 8.4.)

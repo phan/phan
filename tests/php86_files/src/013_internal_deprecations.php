@@ -40,6 +40,9 @@ function deprecated_properties013(DOMDocument $document, DOMEntity $entity): voi
     var_dump($entity->actualEncoding, $entity->encoding, $entity->version);
     var_dump($document->encoding, $entity->publicId);                  // not deprecated
 }
+function nullsafe_properties013(?DOMDocument $document): void {
+    var_dump($document?->actualEncoding, $document?->encoding);       // the first is deprecated
+}
 
 // A class that declares its own property or method of the same name is not affected
 class Document013 extends DOMDocument {
