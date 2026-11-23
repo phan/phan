@@ -1162,6 +1162,155 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return (new static($this->file_ref, $new_params, $new_return_type, $this->returns_reference, $this->is_nullable))->asPHPDocUnionType();
     }
 
+    /** @var array<string,Type> this type with `static` resolved in a context, by the class of the context */
+    private $static_resolution_context_cache = [];
+
+    /** @var list<array{0:Type,1:Type}> the types that `static` was resolved to, and this type with `static` resolved to them */
+    private $static_resolution_type_cache = [];
+
+    /**
+     * @var array<string,Type> the results of resolving `static` in callable types, by their class and string representation.
+     * These types are not unique instances like other types, and a union type only removes duplicates of the same instance,
+     * so resolving `static` must return the same instance whenever it gives the same type.
+     */
+    private static $static_resolution_results = [];
+
+    /**
+     * Resolves `static` in the types of the parameters and in the return type, e.g. for `callable(static):void`.
+     * @override
+     * @suppress PhanAccessReadOnlyProperty the cache is not part of the value of the type
+     */
+    public function withStaticResolvedInContext(Context $context): Type
+    {
+        if (!$context->isInClassScope()) {
+            return $this;
+        }
+        $key = $context->getClassFQSEN()->__toString();
+        return $this->static_resolution_context_cache[$key] ??= $this->uniqueStaticResolutionResult(
+            $this->withMappedUnionTypes(static function (UnionType $union_type) use ($context): UnionType {
+                return $union_type->withStaticResolvedInContext($context);
+            })
+        );
+    }
+
+    /**
+     * @override
+     * @suppress PhanAccessReadOnlyProperty the cache is not part of the value of the type
+     */
+    public function withStaticResolvedTo(Type $static_type): Type
+    {
+        // Not by the string of the type: two template types of the same name may have different bounds.
+        foreach ($this->static_resolution_type_cache as [$cached_static_type, $result]) {
+            if ($cached_static_type === $static_type) {
+                return $result;
+            }
+        }
+        // (This does not resolve `self`, unlike withStaticResolvedInContext(): the two are cached separately)
+        $result = $this->uniqueStaticResolutionResult(
+            $this->withMappedUnionTypes(static function (UnionType $union_type) use ($static_type): UnionType {
+                return $union_type->withStaticResolvedTo($static_type);
+            })
+        );
+        $this->static_resolution_type_cache[] = [$static_type, $result];
+        return $result;
+    }
+
+    /**
+     * @return string a key that is the same for two callable types only if they can be used as the same instance.
+     * The string of a callable type lacks where it is declared (used in the issues about calls of it),
+     * whether it returns a reference, and the real types of its union types, also for the callable types nested in it.
+     */
+    private function getStructuralKey(): string
+    {
+        $key = static::class . ($this->is_nullable ? '?' : '') . ($this->returns_reference ? '&' : '')
+            . '@' . $this->file_ref->getFile() . ':' . $this->file_ref->getLineNumberStart() . '(';
+        foreach ($this->params as $param) {
+            $key .= $param->__toString() . '=' . self::getStructuralKeyOfUnionType($param->getNonVariadicUnionType()) . ',';
+        }
+        return $key . '):' . self::getStructuralKeyOfUnionType($this->return_type);
+    }
+
+    private static function getStructuralKeyOfUnionType(UnionType $union_type): string
+    {
+        $key = '';
+        foreach ([$union_type->getTypeSet(), $union_type->getRealTypeSet()] as $type_set) {
+            foreach ($type_set as $type) {
+                $key .= ($type instanceof FunctionLikeDeclarationType ? $type->getStructuralKey() : \get_class($type) . ' ' . $type->__toString()) . '|';
+            }
+            $key .= ';';
+        }
+        return $key;
+    }
+
+    /**
+     * @return Type the instance that was already returned for a type that is the same as $result, or $result
+     */
+    private function uniqueStaticResolutionResult(Type $result): Type
+    {
+        if ($result === $this || $result->hasTemplateTypeRecursive()) {
+            // (Two template types of the same name may have different bounds)
+            return $result;
+        }
+        if (!($result instanceof FunctionLikeDeclarationType)) {
+            return $result;
+        }
+        $key = $result->getStructuralKey();
+        return self::$static_resolution_results[$key] ??= $result;
+    }
+
+    /**
+     * @override
+     */
+    public function hasStaticOrSelfTypesRecursive(CodeBase $code_base): bool
+    {
+        $union_types = [$this->return_type];
+        foreach ($this->params as $param) {
+            $union_types[] = $param->getNonVariadicUnionType();
+        }
+        foreach ($union_types as $union_type) {
+            foreach ($union_type->getTypeSet() as $type) {
+                if ($type->hasStaticOrSelfTypesRecursive($code_base)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @override
+     */
+    public function isStaticResolutionNoOp(): bool
+    {
+        if (!$this->return_type->isStaticResolutionNoOp()) {
+            return false;
+        }
+        foreach ($this->params as $param) {
+            if (!$param->getNonVariadicUnionType()->isStaticResolutionNoOp()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * @param Closure(UnionType):UnionType $mapper applied to the types of the parameters and to the return type
+     * @return Type this type, or a type of the same class with the mapped types if any of them changed
+     */
+    private function withMappedUnionTypes(Closure $mapper): Type
+    {
+        $new_params = [];
+        foreach ($this->params as $param) {
+            $new_params[] = $param->withNonVariadicUnionType($mapper($param->getNonVariadicUnionType()));
+        }
+        $new_return_type = $mapper($this->return_type);
+        if ($new_params === $this->params && $new_return_type === $this->return_type) {
+            return $this;
+        }
+        // Create ClosureDeclarationType or CallableDeclarationType
+        return new static($this->file_ref, $new_params, $new_return_type, $this->returns_reference, $this->is_nullable);
+    }
+
     public function getCommentParamAssertionClosure(CodeBase $code_base): ?Closure
     {
         return null;

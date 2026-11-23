@@ -110,7 +110,7 @@ final class ClosureType extends Type
             if ($type instanceof FunctionLikeDeclarationType) {
                 // Check if the function declaration is known and available. It's not available for the generic \Closure.
                 if ($this->func) {
-                    return $this->func->asFunctionLikeDeclarationType()->canCastToNonNullableFunctionLikeDeclarationType($type, $code_base);
+                    return self::canCastFunctionToDeclarationType($this->func, $type, $code_base);
                 }
             }
             return true;
@@ -128,7 +128,7 @@ final class ClosureType extends Type
             if ($type instanceof FunctionLikeDeclarationType) {
                 // Check if the function declaration is known and available. It's not available for the generic \Closure.
                 if ($this->func) {
-                    return $this->func->asFunctionLikeDeclarationType()->canCastToNonNullableFunctionLikeDeclarationType($type, $code_base);
+                    return self::canCastFunctionToDeclarationType($this->func, $type, $code_base);
                 }
             }
             return true;
@@ -151,13 +151,34 @@ final class ClosureType extends Type
             if ($type instanceof FunctionLikeDeclarationType) {
                 // Check if the function declaration is known and available. It's not available for the generic \Closure.
                 if ($this->func) {
-                    return $this->func->asFunctionLikeDeclarationType()->canCastToNonNullableFunctionLikeDeclarationType($type, $code_base);
+                    return self::canCastFunctionToDeclarationType($this->func, $type, $code_base);
                 }
             }
             return true;
         }
 
         return parent::canCastToNonNullableTypeHandlingTemplates($type, $code_base);
+    }
+
+    /**
+     * Checks if the closure $func can be used as the callable type $type.
+     *
+     * `static` in the signature of the closure is also tried as the class that the closure is declared in:
+     * `static` in $type may have been resolved to that class already (e.g. for the declared return type `Closure():static` of a method).
+     */
+    private static function canCastFunctionToDeclarationType(FunctionInterface $func, FunctionLikeDeclarationType $type, CodeBase $code_base): bool
+    {
+        $declaration_type = $func->asFunctionLikeDeclarationType();
+        if ($declaration_type->canCastToNonNullableFunctionLikeDeclarationType($type, $code_base)) {
+            return true;
+        }
+        if ($declaration_type->isStaticResolutionNoOp()) {
+            return false;
+        }
+        $resolved_type = $declaration_type->withStaticResolvedInContext($func->getContext());
+        return $resolved_type !== $declaration_type
+            && $resolved_type instanceof FunctionLikeDeclarationType
+            && $resolved_type->canCastToNonNullableFunctionLikeDeclarationType($type, $code_base);
     }
 
     /**

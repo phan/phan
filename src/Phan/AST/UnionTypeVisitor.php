@@ -3950,8 +3950,42 @@ class UnionTypeVisitor extends AnalysisVisitor
                             );
                             if ($static_type_for_this_call) {
                                 // Remove the base class type if present (Method::getUnionType() may add it)
-                                $union_type = $union_type->withoutType($class_fqsen->asType())
-                                    ->withStaticResolvedTo($static_type_for_this_call);
+                                $class_type = $class_fqsen->asType();
+                                $union_type = $union_type->withoutType($class_type);
+                                // The same for a type that has `static` nested in it, e.g. Closure():\A next to Closure():static,
+                                // unless the method declares that type itself (`(at)return array{v:static}|array{v:\A}`).
+                                // Types are compared as strings: callable types are not unique instances.
+                                $declared_union_type = $method->getUnionTypeWithUnmodifiedStatic();
+                                $declared_types_for_class = [];
+                                // Not for a return type that depends on the arguments (`(at)return array{v:static}|T`):
+                                // an argument may give the same type, which cannot be told apart from the added one.
+                                $is_dependent = $method->hasDependentReturnType() || $declared_union_type->hasTemplateTypeRecursive();
+                                foreach ($is_dependent ? [] : $union_type->getTypeSet() as $type) {
+                                    if (!$type->hasStaticOrSelfTypesRecursive($this->code_base)) {
+                                        continue;
+                                    }
+                                    $type_for_class = $type->withStaticResolvedTo($class_type);
+                                    if ($type_for_class === $type) {
+                                        continue;
+                                    }
+                                    $type_for_class_string = $type_for_class->__toString();
+                                    $has_same_string = static function (Type $other_type) use ($type_for_class_string): bool {
+                                        return $other_type->__toString() === $type_for_class_string;
+                                    };
+                                    if ($declared_union_type->hasTypeMatchingCallback($has_same_string)) {
+                                        $declared_types_for_class[] = $type_for_class;
+                                    }
+                                    foreach ($union_type->getTypeSet() as $other_type) {
+                                        if ($has_same_string($other_type)) {
+                                            $union_type = $union_type->withoutType($other_type);
+                                        }
+                                    }
+                                }
+                                $union_type = $union_type->withStaticResolvedTo($static_type_for_this_call);
+                                if ($declared_types_for_class) {
+                                    // (Keeping the real types)
+                                    $union_type = UnionType::of(\array_merge($union_type->getTypeSet(), $declared_types_for_class), $union_type->getRealTypeSet());
+                                }
                             }
                         }
 
