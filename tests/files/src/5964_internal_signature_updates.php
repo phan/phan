@@ -74,11 +74,7 @@ function convert_mixed_5964($value, $untyped): void {
     var_export($other);
 }
 
-// The failure value of these factory methods is null
-function factories_5964(): void {
-    $formatter = IntlDateFormatter::create('en_US');
-    if ($formatter === null) {
-        echo "failed\n";
-    }
+// RecursiveIteratorIterator throws for a Traversable that is neither a RecursiveIterator nor an IteratorAggregate
+function recursive_iterator_5964(): void {
     var_export(new RecursiveIteratorIterator(new ArrayIterator([1]))); // still reported: throws InvalidArgumentException
 }
