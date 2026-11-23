@@ -1,0 +1,40 @@
+%s:5 PhanUnreferencedClass Possibly zero references to class \Item014
+%s:6 PhanPluginUnknownArrayMethodReturnType Method \Item014::names() has a return type of array, but does not specify any key types or value types
+%s:6 PhanUnreferencedPublicMethod Possibly zero references to public method \Item014::names()
+%s:7 PhanDeprecatedFunctionArgument Deprecated argument usage for function \get_class(): Calling get_class() without arguments is deprecated as of PHP 8.3; use self::class or static::class instead
+%s:7 PhanDeprecatedFunctionArgument Deprecated argument usage for function \get_parent_class(): Calling get_parent_class() without arguments is deprecated as of PHP 8.3; use parent::class instead
+%s:11 PhanUnreferencedFunction Possibly zero references to function \argument_counts014()
+%s:12 PhanDeprecatedFunctionArgument Deprecated argument usage for function \mb_check_encoding(): Calling mb_check_encoding() without arguments is deprecated as of PHP 8.1
+%s:13 PhanDeprecatedFunctionArgument Deprecated argument usage for function \ReflectionMethod::__construct(): Calling ReflectionMethod::__construct() with 1 argument is deprecated as of PHP 8.4; use ReflectionMethod::createFromMethodName() instead
+%s:15 PhanDeprecatedFunctionArgument Deprecated argument usage for function \stream_context_set_option(): Calling stream_context_set_option() with 2 arguments is deprecated as of PHP 8.4; use stream_context_set_options() instead
+%s:17 PhanDeprecatedFunctionArgument Deprecated argument usage for function \session_set_save_handler(): Providing individual callbacks is deprecated as of PHP 8.4; pass an object implementing SessionHandlerInterface instead
+%s:19 PhanDeprecatedFunctionArgument Deprecated argument usage for function \openssl_pkey_derive(): Passing $key_length is deprecated as of PHP 8.5; it is either ignored or truncates the key
+%s:24 PhanPluginUnknownArrayFunctionParamType Function objects014() has a parameter type of array for $array, but does not specify any key types or value types
+%s:24 PhanPluginUnknownFunctionParamType Function objects014() has no declared or inferred parameter type for $unknown
+%s:24 PhanUnreferencedFunction Possibly zero references to function \objects014()
+%s:25 PhanDeprecatedFunctionArgument Deprecated argument usage for function \current(): Calling current() on an object is deprecated as of PHP 8.1; use get_object_vars() or ArrayIterator instead
+%s:25 PhanDeprecatedFunctionArgument Deprecated argument usage for function \end(): Calling end() on an object is deprecated as of PHP 8.1; use get_object_vars() or ArrayIterator instead
+%s:25 PhanDeprecatedFunctionArgument Deprecated argument usage for function \key(): Calling key() on an object is deprecated as of PHP 8.1; use get_object_vars() or ArrayIterator instead
+%s:25 PhanDeprecatedFunctionArgument Deprecated argument usage for function \next(): Calling next() on an object is deprecated as of PHP 8.1; use get_object_vars() or ArrayIterator instead
+%s:25 PhanDeprecatedFunctionArgument Deprecated argument usage for function \prev(): Calling prev() on an object is deprecated as of PHP 8.1; use get_object_vars() or ArrayIterator instead
+%s:25 PhanDeprecatedFunctionArgument Deprecated argument usage for function \reset(): Calling reset() on an object is deprecated as of PHP 8.1; use get_object_vars() or ArrayIterator instead
+%s:27 PhanTypeMismatchArgumentNullableInternal Argument 1 ($array) is $nullable of type ?\stdClass but \reset() takes array|object (expected type to be non-nullable)
+%s:28 PhanDeprecatedFunctionArgument Deprecated argument usage for function \array_walk(): Passing an object to array_walk() is deprecated as of PHP 8.6; call get_object_vars() first instead
+%s:29 PhanDeprecatedFunctionArgument Deprecated argument usage for function \array_walk_recursive(): Passing an object to array_walk_recursive() is deprecated as of PHP 8.6; call get_object_vars() first instead
+%s:31 PhanDeprecatedFunctionArgument Deprecated argument usage for function \http_build_query(): Passing an object to http_build_query() is deprecated as of PHP 8.6; call get_object_vars() first instead
+%s:33 PhanDeprecatedFunctionArgument Deprecated argument usage for function \mb_convert_variables(): Passing an object to mb_convert_variables() is deprecated as of PHP 8.6; call get_object_vars() first instead
+%s:37 PhanPluginUnknownArrayFunctionParamType Function values014() has a parameter type of array for $array, but does not specify any key types or value types
+%s:37 PhanUnreferencedFunction Possibly zero references to function \values014()
+%s:38 PhanDeprecatedFunctionArgument Deprecated argument usage for function \trigger_error(): Passing E_USER_ERROR is deprecated as of PHP 8.4; throw an exception or call exit() with a message instead
+%s:39 PhanDeprecatedFunctionArgument Deprecated argument usage for function \user_error(): Passing E_USER_ERROR is deprecated as of PHP 8.4; throw an exception or call exit() with a message instead
+%s:39 PhanPluginUnreachableCode Unreachable statement detected
+%s:42 PhanDeprecatedFunctionArgument Deprecated argument usage for function \DatePeriod::__construct(): Calling DatePeriod::__construct() with an ISO 8601 string is deprecated as of PHP 8.4; use DatePeriod::createFromISO8601String() instead
+%s:43 PhanDeprecatedFunctionArgument Deprecated argument usage for function \DatePeriod::__construct(): Calling DatePeriod::__construct() with an ISO 8601 string is deprecated as of PHP 8.4; use DatePeriod::createFromISO8601String() instead
+%s:45 PhanDeprecatedFunctionArgument Deprecated argument usage for function \array_key_exists(): Using null as the key is deprecated as of PHP 8.5; use an empty string instead
+%s:45 PhanImpossibleTypeComparison Impossible attempt to check if null of type null is identical to keys of $array of type int|string
+%s:45 PhanTypeMismatchArgumentInternalProbablyReal Argument 1 ($key) is null of type null but \array_key_exists() takes int|string
+%s:46 PhanTypeMismatchArgumentNullableInternal Argument 1 ($key) is $nullable_key of type ?string but \array_key_exists() takes int|string (expected type to be non-nullable)
+%s:47 PhanDeprecatedFunctionArgument Deprecated argument usage for function \chr(): Providing a value that is not between 0 and 255 is deprecated as of PHP 8.5
+%s:48 PhanDeprecatedFunctionArgument Deprecated argument usage for function \ord(): Providing a string that is not one byte long is deprecated as of PHP 8.5; use ord($string[0]) instead
+%s:49 PhanDeprecatedFunctionArgument Deprecated argument usage for function \spl_autoload_unregister(): Using spl_autoload_call() as the callback is deprecated as of PHP 8.5; call spl_autoload_unregister() for each of spl_autoload_functions() instead
+%s:51 PhanDeprecatedFunctionArgument Deprecated argument usage for function \is_a(): Calling is_a() with a string when $allow_string is false is deprecated as of PHP 8.6; it always returns false
