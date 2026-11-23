@@ -10,3 +10,12 @@
 %s:49 PhanDebugAnnotation @phan-debug-var requested for variable $me - it has union type \NS5974\Base
 %s:49 PhanDebugAnnotation @phan-debug-var requested for variable $shape - it has union type array{value:\NS5974\Base,same:\NS5974\Child}(real=array)
 %s:49 PhanUnusedVariable Unused definition of variable $all
+%s:68 PhanTypeInvalidArrayKey Saw array key $key with key type TKey but expected a value that could cast to int|string
+%s:75 PhanUnusedVariable Unused definition of variable $inner
+%s:76 PhanUnusedVariable Unused definition of variable $inner_shape
+%s:77 PhanUnusedVariable Unused definition of variable $optional
+%s:78 PhanDebugAnnotation @phan-debug-var requested for variable $inner - it has union type \NS5974\Composed
+%s:78 PhanDebugAnnotation @phan-debug-var requested for variable $inner_shape - it has union type array{value:\NS5974\Composed}(real=array)
+%s:78 PhanDebugAnnotation @phan-debug-var requested for variable $keyed - it has union type array<string,\NS5974\Composed>(real=array)
+%s:78 PhanDebugAnnotation @phan-debug-var requested for variable $optional - it has union type array{value?:\NS5974\Composed,same?:\NS5974\ComposedChild}(real=array)
+%s:78 PhanUnusedVariable Unused definition of variable $keyed

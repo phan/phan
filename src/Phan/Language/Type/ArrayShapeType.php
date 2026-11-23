@@ -1131,6 +1131,10 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             foreach ($new_field_types as $i => $field_type) {
                 $new_field_type = $field_type->withStaticResolvedInContext($context);
                 if ($new_field_type !== $field_type) {
+                    // An optional field stays optional
+                    if ($field_type->isPossiblyUndefined()) {
+                        $new_field_type = $new_field_type->withIsPossiblyUndefined(true);
+                    }
                     $did_change = true;
                     $new_field_types[$i] = $new_field_type;
                 }
@@ -1161,6 +1165,10 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
             foreach ($new_field_types as $i => $field_type) {
                 $new_field_type = $field_type->withSelfResolvedInContext($context);
                 if ($new_field_type !== $field_type) {
+                    // An optional field stays optional
+                    if ($field_type->isPossiblyUndefined()) {
+                        $new_field_type = $new_field_type->withIsPossiblyUndefined(true);
+                    }
                     $did_change = true;
                     $new_field_types[$i] = $new_field_type;
                 }
@@ -1181,6 +1189,10 @@ final class ArrayShapeType extends ArrayType implements GenericArrayInterface
         foreach ($new_field_types as $i => $field_type) {
             $new_field_type = $field_type->withStaticResolvedTo($static_type);
             if ($new_field_type !== $field_type) {
+                // An optional field stays optional
+                if ($field_type->isPossiblyUndefined()) {
+                    $new_field_type = $new_field_type->withIsPossiblyUndefined(true);
+                }
                 $did_change = true;
                 $new_field_types[$i] = $new_field_type;
             }

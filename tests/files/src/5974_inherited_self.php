@@ -49,3 +49,32 @@ function inherited(Base $base, Child $child, Other $other, PlainBase $plain_base
     $all = $plain_child->all();
     '@phan-debug-var $me, $shape, $closure, $all';
 }
+
+// A trait that uses another trait: `self` is the class that uses the outer trait, not the outer trait
+trait InnerTrait {
+    /** @return self */
+    public function inner() { return $this; }
+    /** @return array{value:self} */
+    public function innerShape(): array { return ['value' => $this]; }
+    // An optional field stays optional
+    /** @return array{value?:self,same?:static} */
+    public function optional(): array { return []; }
+    /**
+     * The template of the key is kept
+     * @template TKey
+     * @param TKey $key
+     * @return array<TKey,self>
+     */
+    public function keyed($key): array { return [$key => $this]; }
+}
+trait OuterTrait { use InnerTrait; }
+class Composed { use OuterTrait; }
+class ComposedChild extends Composed {}
+
+function composed(Composed $composed, ComposedChild $child): void {
+    $inner = $composed->inner();
+    $inner_shape = $composed->innerShape();
+    $optional = $child->optional();
+    $keyed = $child->keyed('a');
+    '@phan-debug-var $inner, $inner_shape, $optional, $keyed';
+}

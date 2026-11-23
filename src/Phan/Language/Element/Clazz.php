@@ -3756,6 +3756,10 @@ class Clazz extends AddressableElement
         } else {
             $method = $method->createUseAlias($this, $method->getName(), \ast\flags\MODIFIER_PUBLIC);
         }
+        if ($this->isTrait()) {
+            // A trait that uses another trait: `self` is the class that uses this trait, which is not known yet.
+            return $method;
+        }
         $context = $this->getContext()->withScope($this->internal_scope);
         $method->setUnionType(
             $method->getUnionTypeWithUnmodifiedStatic()->withSelfResolvedInContext($context)
