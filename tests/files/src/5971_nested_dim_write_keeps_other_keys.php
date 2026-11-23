@@ -154,3 +154,16 @@ function callableArrayMayBeCreated(?array $nullable_outer, array $null_element, 
     $plain[0][1] = 'method';
     '@phan-debug-var $nullable_outer, $null_element, $false_element, $plain';
 }
+
+/**
+ * The same applies if an array on the path may be absent from an array shape: an optional field, or a field of only some of the shapes.
+ * @param array{callbacks?:array<callable-array>} $optional
+ * @param array{a:int}|array{callbacks:array<callable-array>} $alternative
+ * @param array{callbacks:array<callable-array>} $required
+ */
+function callableArrayInOptionalField(array $optional, array $alternative, array $required): void {
+    $optional['callbacks'][0][1] = 'method';
+    $alternative['callbacks'][0][1] = 'method';
+    $required['callbacks'][0][1] = 'method';
+    '@phan-debug-var $optional, $alternative, $required';
+}

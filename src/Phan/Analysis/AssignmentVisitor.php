@@ -2949,11 +2949,12 @@ class AssignmentVisitor extends AnalysisVisitor
         $types = $union_type->isEmpty() ? [MixedType::instance(false)] : $union_type->getTypeSet();
         $may_be_created = $union_type->isPossiblyUndefined() || self::hasTypeReplacedByWrite($types);
         foreach ($keys as $key) {
-            $types = self::getTypeSetOfOldElement($types, $key);
+            $may_be_absent = false;
+            $types = self::getTypeSetOfOldElement($types, $key, $may_be_absent);
             if (!$types) {
                 return [];
             }
-            $may_be_created = $may_be_created || self::hasTypeReplacedByWrite($types);
+            $may_be_created = $may_be_created || $may_be_absent || self::hasTypeReplacedByWrite($types);
         }
         return $types;
     }
@@ -2982,23 +2983,35 @@ class AssignmentVisitor extends AnalysisVisitor
      * The types that cannot contain an array with other keys (null, false, scalars and objects) contribute nothing.
      *
      * @param list<Type> $types
+     * @param bool $may_be_absent set to true if the element may be absent from an array shape that is used: the field is optional, or only some of the array shapes have it
      * @return list<Type>
      */
-    private static function getTypeSetOfOldElement(array $types, int|string $key): array
+    private static function getTypeSetOfOldElement(array $types, int|string $key, bool &$may_be_absent = false): array
     {
         // As when reading $x['a'] (UnionTypeVisitor::resolveArrayShapeElementTypesForOffset()), if an array shape has the key,
         // the types of that field are used and the other array types are ignored:
         // after `$x['a'] = []` on an `array $x`, $x is array{a:array{}}|non-empty-array<mixed,mixed>, and $x['a'] is array{}.
         $result = [];
+        $has_shape_without_key = false;
         foreach ($types as $type) {
             if ($type instanceof ArrayShapeType) {
                 $field_type = $type->getFieldTypes()[$key] ?? null;
                 if ($field_type !== null) {
+                    if ($field_type->isPossiblyUndefined()) {
+                        // An optional field, e.g. array{callbacks?:array<callable-array>}
+                        $may_be_absent = true;
+                    }
                     \array_push($result, ...($field_type->isEmpty() ? [MixedType::instance(false)] : $field_type->getTypeSet()));
+                } else {
+                    $has_shape_without_key = true;
                 }
             }
         }
         if ($result) {
+            if ($has_shape_without_key) {
+                // e.g. array{a:int}|array{callbacks:array<callable-array>}
+                $may_be_absent = true;
+            }
             return $result;
         }
         // PHP converts a string key such as '5' to the integer 5, but not '05', '-0', '+5' or a number too large for an int.
