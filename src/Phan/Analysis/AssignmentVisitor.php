@@ -2748,9 +2748,11 @@ class AssignmentVisitor extends AnalysisVisitor
     /**
      * A condition such as `if ($x['a']['b'])` narrows the type of $x['a'] to array{b:non-empty-mixed}.
      * Where $x['a'] was not known to be an array shape (e.g. it was mixed, array or array<string,mixed>),
-     * its other keys are unknown and may exist, so keep its generic array types next to the new shape,
-     * as is done when narrowing a variable with `if ($x['b'])`.
+     * its other keys are unknown and may exist, so add array types without a shape next to the new shape,
+     * as is done when narrowing a variable with `if ($x['b'])`:
+     * the typed arrays of $x['a'] (e.g. array<string,mixed>), or `array` if its values are unknown (array, mixed).
      * Without this, reading $x['a']['c'] afterwards would emit PhanTypeInvalidDimOffset.
+     * As for a variable, this means that passing $x['a'] where e.g. array{b:string} is expected is not reported.
      *
      * Array shapes of the container are not kept here: they are merged with the new shape by the caller,
      * so that invalid offsets of declared array shapes are still detected.
@@ -2784,7 +2786,8 @@ class AssignmentVisitor extends AnalysisVisitor
             }
         }
         if ($typed_fallback_types) {
-            // The array element has the key that was checked, so it is not empty.
+            // Not empty, like the shape they are added to, which has the key that was checked
+            // (also for conditions such as is_null($x['a']['b']), as for variables).
             $right_type = $right_type->withUnionType(UnionType::of($typed_fallback_types)->nonFalseyClone());
         }
         if ($has_untyped_fallback) {
