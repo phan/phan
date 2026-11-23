@@ -117,3 +117,18 @@ class Suppressed {
     /** @suppress PhanMagicMethodNonPublic */
     private function __set($name, $value) {}
 }
+// `parent` in a trait is a declared type, although the class is not known
+trait ParentTypes {
+    public function __get(parent $name) {}
+    public function __toString(): parent { throw new \Exception(); }
+    public function __destruct(): parent {}
+    // Valid
+    public static function __set_state(array $properties): parent { throw new \Exception(); }
+}
+// PHP does not check the methods that a trait alias creates
+trait AliasTrait {
+    public function notMagic() {}
+}
+class UsesAlias {
+    use AliasTrait { notMagic as __get; }
+}

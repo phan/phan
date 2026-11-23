@@ -60,3 +60,6 @@
 %s:109 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ValidOtherTypes::__call(): parameter #2 ($args) must be of type array when declared
 %s:118 PhanUnusedPrivateMethodParameter Parameter $name is never used
 %s:118 PhanUnusedPrivateMethodParameter Parameter $value is never used
+%s:122 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ParentTypes::__get(): parameter #1 ($name) must be of type string when declared
+%s:123 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ParentTypes::__toString(): the return type must be string when declared
+%s:124 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS5969\ParentTypes::__destruct(): it cannot declare a return type

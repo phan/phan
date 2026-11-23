@@ -534,7 +534,7 @@ class ParseVisitor extends ScopeVisitor
         } else {
             $class->addMethod($code_base, $method, None::instance());
             $this->handleCustomAnnotations($method, $method->getComment());
-            MagicMethodSignatureAnalyzer::analyzeMagicMethodSignature($code_base, $method);
+            MagicMethodSignatureAnalyzer::analyzeMagicMethodSignature($code_base, $method, $node);
         }
 
         $this->emitOverrideAttributeCompatibility(

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phan\Analysis;
 
+use ast\Node;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
@@ -65,8 +66,9 @@ class MagicMethodSignatureAnalyzer
      * Emits issues if $method is a magic method with a signature that PHP rejects, warns about or deprecates.
      *
      * @param Method $method a method that was declared in the code being parsed (not from phpdoc or a stub)
+     * @param Node $node the node of kind ast\AST_METHOD that declares it
      */
-    public static function analyzeMagicMethodSignature(CodeBase $code_base, Method $method): void
+    public static function analyzeMagicMethodSignature(CodeBase $code_base, Method $method, Node $node): void
     {
         // Names are normalized in FullyQualifiedMethodName::make(), e.g. __CALLSTATIC to __callStatic
         $rule = self::RULES[$method->getName()] ?? null;
@@ -76,10 +78,14 @@ class MagicMethodSignatureAnalyzer
         [$parameter_count, $must_be_static, $must_be_public, $parameter_types, $return_type] = $rule;
 
         $parameter_list = [];
-        foreach ($method->getRealParameterList() as $parameter) {
+        // Whether the parameter declares a type. The real type is empty for a type that could not be resolved: `parent` in a trait.
+        $parameter_has_type = [];
+        foreach ($method->getRealParameterList() as $i => $parameter) {
             // PHP does not count a variadic parameter
             if (!$parameter->isVariadic()) {
                 $parameter_list[] = $parameter;
+                $parameter_node = $node->children['params']->children[$i] ?? null;
+                $parameter_has_type[] = $parameter_node instanceof Node && $parameter_node->children['type'] !== null;
             }
         }
         if ($parameter_count !== null) {
@@ -101,7 +107,7 @@ class MagicMethodSignatureAnalyzer
                 foreach ($parameter_types as $i => $expected_type) {
                     $parameter = $parameter_list[$i];
                     $real_type = $parameter->getNonVariadicUnionType()->getRealUnionType();
-                    if (!$real_type->isEmpty() && !self::allowsType($real_type, $expected_type)) {
+                    if ($parameter_has_type[$i] && !self::allowsType($real_type, $expected_type)) {
                         self::emitSignatureIssue(
                             $code_base,
                             $method,
@@ -119,12 +125,17 @@ class MagicMethodSignatureAnalyzer
         }
 
         $real_return_type = $method->getRealReturnType();
+        $has_return_type = $node->children['returnType'] !== null;
         if ($return_type === self::NO_RETURN_TYPE) {
-            if (!$real_return_type->isEmpty()) {
+            if ($has_return_type) {
                 self::emitSignatureIssue($code_base, $method, 'it cannot declare a return type');
             }
-        } elseif ($return_type !== null && !$real_return_type->isEmpty() && !self::isReturnType($real_return_type, $return_type)) {
-            self::emitSignatureIssue($code_base, $method, "the return type must be $return_type when declared");
+        } elseif ($return_type !== null && $has_return_type) {
+            // A declared type that could not be resolved is `parent` in a trait: the type of an object.
+            $is_valid = $real_return_type->isEmpty() ? $return_type === 'object' : self::isReturnType($real_return_type, $return_type);
+            if (!$is_valid) {
+                self::emitSignatureIssue($code_base, $method, "the return type must be $return_type when declared");
+            }
         }
         if (($return_type === self::NO_RETURN_TYPE || $return_type === 'void')
             && $method->hasNoDiscardAttribute()
