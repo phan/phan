@@ -1162,8 +1162,11 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         return (new static($this->file_ref, $new_params, $new_return_type, $this->returns_reference, $this->is_nullable))->asPHPDocUnionType();
     }
 
-    /** @var array<string,Type> this type with `static` resolved, by the class of the context or the type that it was resolved to */
+    /** @var array<string,Type> this type with `static` resolved in a context, by the class of the context */
     private $static_resolution_cache = [];
+
+    /** @var list<array{0:Type,1:Type}> the types that `static` was resolved to, and this type with `static` resolved to them */
+    private $static_resolution_type_cache = [];
 
     /**
      * Resolves `static` in the types of the parameters and in the return type, e.g. for `callable(static):void`.
@@ -1177,7 +1180,7 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
         }
         // The types with `static` resolved are not unique instances like other types, so reuse the result for a class:
         // a union type only removes duplicates of the same instance.
-        $key = 'context ' . $context->getClassFQSEN()->__toString();
+        $key = $context->getClassFQSEN()->__toString();
         return $this->static_resolution_cache[$key] ??= $this->withMappedUnionTypes(static function (UnionType $union_type) use ($context): UnionType {
             return $union_type->withStaticResolvedInContext($context);
         });
@@ -1189,10 +1192,43 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
      */
     public function withStaticResolvedTo(Type $static_type): Type
     {
-        $key = 'type ' . $static_type->__toString();
-        return $this->static_resolution_cache[$key] ??= $this->withMappedUnionTypes(static function (UnionType $union_type) use ($static_type): UnionType {
+        if (!$static_type->hasTemplateTypeRecursive() && !$static_type->isNullable() && $static_type->isObjectWithKnownFQSEN() && !$static_type->hasTemplateParameterTypes()) {
+            // A class: the same result as resolving `static` in the context of that class, so that the two are the same instance.
+            $key = $static_type->__toString();
+            return $this->static_resolution_cache[$key] ??= $this->withMappedUnionTypes(static function (UnionType $union_type) use ($static_type): UnionType {
+                return $union_type->withStaticResolvedTo($static_type);
+            });
+        }
+        // Not by the string of the type: two template types of the same name may have different bounds.
+        foreach ($this->static_resolution_type_cache as [$cached_static_type, $result]) {
+            if ($cached_static_type === $static_type) {
+                return $result;
+            }
+        }
+        $result = $this->withMappedUnionTypes(static function (UnionType $union_type) use ($static_type): UnionType {
             return $union_type->withStaticResolvedTo($static_type);
         });
+        $this->static_resolution_type_cache[] = [$static_type, $result];
+        return $result;
+    }
+
+    /**
+     * @override
+     */
+    public function hasStaticOrSelfTypesRecursive(CodeBase $code_base): bool
+    {
+        $union_types = [$this->return_type];
+        foreach ($this->params as $param) {
+            $union_types[] = $param->getNonVariadicUnionType();
+        }
+        foreach ($union_types as $union_type) {
+            foreach ($union_type->getTypeSet() as $type) {
+                if ($type->hasStaticOrSelfTypesRecursive($code_base)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**

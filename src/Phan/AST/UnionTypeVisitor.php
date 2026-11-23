@@ -3950,8 +3950,18 @@ class UnionTypeVisitor extends AnalysisVisitor
                             );
                             if ($static_type_for_this_call) {
                                 // Remove the base class type if present (Method::getUnionType() may add it)
-                                $union_type = $union_type->withoutType($class_fqsen->asType())
-                                    ->withStaticResolvedTo($static_type_for_this_call);
+                                $class_type = $class_fqsen->asType();
+                                $union_type = $union_type->withoutType($class_type);
+                                // The same for a type that has `static` nested in it, e.g. Closure():\A next to Closure():static
+                                foreach ($union_type->getTypeSet() as $type) {
+                                    if ($type->hasStaticOrSelfTypesRecursive($this->code_base)) {
+                                        $type_for_class = $type->withStaticResolvedTo($class_type);
+                                        if ($type_for_class !== $type) {
+                                            $union_type = $union_type->withoutType($type_for_class);
+                                        }
+                                    }
+                                }
+                                $union_type = $union_type->withStaticResolvedTo($static_type_for_this_call);
                             }
                         }
 

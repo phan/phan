@@ -6,3 +6,7 @@
 %s:51 PhanTypeMismatchArgumentSuperType Argument 1 ($listener) is (function) of type Closure(\NS5972\Other):void but \NS5972\Emitter::listen() takes callable(\NS5972\Emitter):void defined at %s:34 (expected type to be the same or a subtype, but saw a supertype instead)
 %s:52 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type Closure(\NS5972\FinalEmitter):\NS5972\FinalEmitter(real=\Closure)
 %s:52 PhanUnusedVariable Unused definition of variable $f
+%s:66 PhanTypeMismatchArgumentSuperType Argument 1 ($callable) is (function) of type Closure(\NS5972\Box<string>):void but \NS5972\takes_int_box_callable() takes callable(\NS5972\Box<int>):void defined at %s:65 (expected type to be the same or a subtype, but saw a supertype instead)
+%s:82 PhanDebugAnnotation @phan-debug-var requested for variable $create - it has union type Closure():\NS5972\Factory&\NS5972\Named(real=\Closure)
+%s:82 PhanDebugAnnotation @phan-debug-var requested for variable $other - it has union type Closure():\NS5972\Factory(real=\Closure)
+%s:82 PhanUnusedVariable Unused definition of variable $other

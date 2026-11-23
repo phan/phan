@@ -145,7 +145,8 @@ final class ClosureDeclarationParameter
         if ($this->type->canCastToUnionType($other->type, $code_base)) {
             return true;
         }
-        return $other->type->asExpandedTypes($code_base)->canCastToUnionType($this->type, $code_base);
+        // (Preserving the template parameters: `Box<int>` must not be expanded to `Box`, which would accept a `Box<string>`)
+        return $other->type->asExpandedTypesPreservingTemplate($code_base)->canCastToUnionType($this->type, $code_base);
     }
 
     /**

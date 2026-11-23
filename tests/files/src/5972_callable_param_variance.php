@@ -52,3 +52,33 @@ function listeners(Emitter $emitter, FinalEmitter $final): void {
     $f = $final->identity();
     '@phan-debug-var $f';
 }
+
+// The template parameters of a class are compared: a Box<string> is not a Box<int>
+/** @template T */
+class Box {
+    /** @var T */
+    public $value;
+    /** @param T $value */
+    public function __construct($value) { $this->value = $value; }
+}
+/** @param callable(Box<int>):void $callable */
+function takes_int_box_callable(callable $callable): void { var_dump($callable); }
+takes_int_box_callable(/** @param Box<string> $box */ function (Box $box): void { var_dump($box); });
+takes_int_box_callable(/** @param Box<int> $box */ function (Box $box): void { var_dump($box); });
+takes_int_box_callable(function (Box $box): void { var_dump($box); });
+
+// `static` in a callable type is resolved to the type of the object, keeping an intersection type
+interface Named { public function name(): string; }
+class Factory {
+    /** @return \Closure():static */
+    public function creator(): \Closure {
+        return fn() => $this;
+    }
+}
+/** @param Factory&Named $named */
+function creators($named, Factory $factory): void {
+    $create = $named->creator();
+    echo $create()->name();
+    $other = $factory->creator();
+    '@phan-debug-var $create, $other';
+}
