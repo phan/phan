@@ -8,6 +8,7 @@ use AssertionError;
 use ast;
 use ast\Node;
 use InvalidArgumentException;
+use Phan\Analysis\MagicMethodSignatureAnalyzer;
 use Phan\Analysis\ScopeVisitor;
 use Phan\AST\ASTHasher;
 use Phan\AST\ASTReverter;
@@ -533,6 +534,7 @@ class ParseVisitor extends ScopeVisitor
         } else {
             $class->addMethod($code_base, $method, None::instance());
             $this->handleCustomAnnotations($method, $method->getComment());
+            MagicMethodSignatureAnalyzer::analyzeMagicMethodSignature($code_base, $method);
         }
 
         $this->emitOverrideAttributeCompatibility(

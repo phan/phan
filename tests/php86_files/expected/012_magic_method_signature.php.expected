@@ -1,0 +1,25 @@
+%s:4 PhanUnreferencedClass Possibly zero references to class \NS012\NullableDebugInfo
+%s:6 PhanDeprecatedNullableDebugInfoReturnType Returning null from \NS012\NullableDebugInfo::__debugInfo() has been deprecated in PHP 8.6: make the return type non-nullable and return an empty array instead
+%s:6 PhanPluginUnknownArrayMethodReturnType Method \NS012\NullableDebugInfo::__debugInfo() has a return type of array, but does not specify any key types or value types
+%s:8 PhanUnreferencedClass Possibly zero references to class \NS012\UnionDebugInfo
+%s:9 PhanDeprecatedNullableDebugInfoReturnType Returning null from \NS012\UnionDebugInfo::__debugInfo() has been deprecated in PHP 8.6: make the return type non-nullable and return an empty array instead
+%s:9 PhanPluginUnknownArrayMethodReturnType Method \NS012\UnionDebugInfo::__debugInfo() has a return type of array, but does not specify any key types or value types
+%s:11 PhanUnreferencedClass Possibly zero references to class \NS012\ValidDebugInfo
+%s:12 PhanPluginUnknownArrayMethodReturnType Method \NS012\ValidDebugInfo::__debugInfo() has a return type of array, but does not specify any key types or value types
+%s:15 PhanUnreferencedClass Possibly zero references to class \NS012\NoDiscardRules
+%s:16 PhanEmptyPublicMethod Empty public method \NS012\NoDiscardRules::__construct()
+%s:16 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS012\NoDiscardRules::__construct(): it cannot be #[\NoDiscard]
+%s:17 PhanEmptyPublicMethod Empty public method \NS012\NoDiscardRules::__clone()
+%s:17 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS012\NoDiscardRules::__clone(): it cannot be #[\NoDiscard]
+%s:18 PhanEmptyPublicMethod Empty public method \NS012\NoDiscardRules::__set()
+%s:18 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS012\NoDiscardRules::__set(): it cannot be #[\NoDiscard]
+%s:18 PhanPluginUnknownMethodParamType Method \NS012\NoDiscardRules::__set has no declared or inferred parameter type for $name
+%s:18 PhanPluginUnknownMethodParamType Method \NS012\NoDiscardRules::__set has no declared or inferred parameter type for $value
+%s:18 PhanUnusedPublicNoOverrideMethodParameter Parameter $name is never used
+%s:18 PhanUnusedPublicNoOverrideMethodParameter Parameter $value is never used
+%s:19 PhanEmptyPublicMethod Empty public method \NS012\NoDiscardRules::__wakeup()
+%s:19 PhanInvalidMagicMethodSignature Invalid signature of magic method \NS012\NoDiscardRules::__wakeup(): it cannot be #[\NoDiscard]
+%s:21 PhanPluginUnknownMethodParamType Method \NS012\NoDiscardRules::__get has no declared or inferred parameter type for $name
+%s:21 PhanPluginUnknownMethodReturnType Method \NS012\NoDiscardRules::__get() has no declared or inferred return type (Types inferred after analysis: int)
+%s:21 PhanUnusedPublicNoOverrideMethodParameter Parameter $name is never used
+%s:25 PhanUnreferencedClass Possibly zero references to class \NS012\IterableArguments

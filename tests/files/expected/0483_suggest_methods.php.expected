@@ -1,3 +1,4 @@
+%s:17 PhanInvalidMagicMethodSignature Invalid signature of magic method \BaseClass483::__callStatic(): it must be static
 %s:34 PhanUndeclaredMethod Call to undeclared method \SubClass483::_baseMethod
 %s:35 PhanUndeclaredMethod Call to undeclared method \SubClass483::_methodNotResemblingOtherMethods
 %s:36 PhanUndeclaredStaticMethod Static call to undeclared method \SubClass483::_staticMethodNotResemblingOtherMethods

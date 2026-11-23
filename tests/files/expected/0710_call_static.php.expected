@@ -1,0 +1,1 @@
+%s:9 PhanInvalidMagicMethodSignature Invalid signature of magic method \Foo::__callStatic(): it must be static

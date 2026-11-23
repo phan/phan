@@ -793,6 +793,12 @@ Using a deprecated interface {INTERFACE} defined at {FILE}:{LINE}{DETAILS}
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0269_deprecated_interface.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0269_deprecated_interface.php#L5).
 
+## PhanDeprecatedNullableDebugInfoReturnType
+
+```
+Returning null from {METHOD} has been deprecated in PHP 8.6: make the return type non-nullable and return an empty array instead
+```
+
 ## PhanDeprecatedPartiallySupportedCallable
 
 ```
@@ -2772,6 +2778,14 @@ Saw enum {ENUM} that declares no enum cases but contains instance method {METHOD
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/1137_enum_error_cases.php.expected#L5) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/1137_enum_error_cases.php#L17).
 
+## PhanInvalidMagicMethodSignature
+
+```
+Invalid signature of magic method {METHOD}: {DETAILS}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0710_call_static.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0710_call_static.php#L9).
+
 ## PhanInvalidMixin
 
 ```
@@ -2779,6 +2793,14 @@ Attempting to use a mixin of invalid or missing type {TYPE}
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0806_mixin.php.expected#L2) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0806_mixin.php#L39).
+
+## PhanMagicMethodNonPublic
+
+```
+The magic method {METHOD} must have public visibility
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/5969_magic_method_signature.php.expected#L43) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/5969_magic_method_signature.php#L54).
 
 ## PhanMismatchVariadicComment
 
