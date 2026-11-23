@@ -2079,7 +2079,16 @@ class UnionTypeVisitor extends AnalysisVisitor
                     }
                     return $element_type->withNullableRealTypes()->withIsPossiblyUndefined(false);
                 }
-                if (self::isOffsetMissingFromArrayShapes($union_type, $node->children['dim'])) {
+                $dim_value = $node->children['dim'];
+                if ($dim_value instanceof Node) {
+                    // A constant or a variable with a known value, as in resolveArrayShapeElementTypes()
+                    try {
+                        $dim_value = (new ContextNode($code_base, $context, $dim_value))->getEquivalentPHPScalarValue(false);
+                    } catch (IssueException) {
+                        $dim_value = null;
+                    }
+                }
+                if (self::isOffsetMissingFromArrayShapes($union_type, $dim_value)) {
                     // The type is the type of the elements of the generic arrays: check the offset as for those
                     $this->checkGenericArrayDimFetch(
                         $node,

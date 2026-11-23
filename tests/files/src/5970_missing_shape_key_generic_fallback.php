@@ -56,3 +56,16 @@ function checked5970(array $int_keys, ?array $nullable): void {
     echo $int_keys['other'];
     echo $nullable['other'];
 }
+const KEY5970 = 'other';
+/**
+ * Also when the offset is a constant or a variable with a known value
+ * @param array{0:int}|array<int,string> $int_keys
+ * @param ?array{tax:int}|array<string,string> $nullable
+ */
+function checkedResolved5970(array $int_keys, ?array $nullable): void {
+    $key = 'other';
+    echo $int_keys[$key];
+    echo $int_keys[KEY5970];
+    echo $nullable[$key];
+    echo $nullable[KEY5970];
+}
