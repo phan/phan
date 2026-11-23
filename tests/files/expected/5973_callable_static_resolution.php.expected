@@ -16,3 +16,5 @@
 %s:78 PhanDebugAnnotation @phan-debug-var requested for variable $declared_shape - it has union type array{value:\NS5973\Alternatives&\NS5973\Named}|array{value:\NS5973\Alternatives}(real=array)
 %s:78 PhanDebugAnnotation @phan-debug-var requested for variable $shape - it has union type array{value:\NS5973\Alternatives&\NS5973\Named}(real=array)
 %s:78 PhanUnusedVariable Unused definition of variable $shape
+%s:98 PhanDebugAnnotation @phan-debug-var requested for variable $result - it has union type array{v:\NS5973\Dependent&\NS5973\Named}|array{v:\NS5973\Dependent}
+%s:98 PhanUnusedVariable Unused definition of variable $result

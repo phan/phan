@@ -3957,7 +3957,10 @@ class UnionTypeVisitor extends AnalysisVisitor
                                 // Types are compared as strings: callable types are not unique instances.
                                 $declared_union_type = $method->getUnionTypeWithUnmodifiedStatic();
                                 $declared_types_for_class = [];
-                                foreach ($union_type->getTypeSet() as $type) {
+                                // Not for a return type that depends on the arguments (`(at)return array{v:static}|T`):
+                                // an argument may give the same type, which cannot be told apart from the added one.
+                                $is_dependent = $method->hasDependentReturnType() || $declared_union_type->hasTemplateTypeRecursive();
+                                foreach ($is_dependent ? [] : $union_type->getTypeSet() as $type) {
                                     if (!$type->hasStaticOrSelfTypesRecursive($this->code_base)) {
                                         continue;
                                     }

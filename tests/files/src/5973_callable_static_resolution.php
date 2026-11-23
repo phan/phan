@@ -78,3 +78,23 @@ function alternatives($named): void {
     $shape = $named->shape();
     '@phan-debug-var $closure, $declared_shape, $shape';
 }
+
+// A return type that depends on an argument keeps what the argument gives
+class Dependent {
+    /**
+     * @template T
+     * @param T $extra
+     * @return array{v:static}|T
+     */
+    public function either($extra) {
+        return rand(0, 1) ? ['v' => $this] : $extra;
+    }
+}
+/**
+ * @param Dependent&Named $named
+ * @param array{v:Dependent} $plain
+ */
+function dependent($named, array $plain): void {
+    $result = $named->either($plain);
+    '@phan-debug-var $result';
+}

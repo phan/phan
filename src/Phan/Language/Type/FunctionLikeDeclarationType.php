@@ -1224,7 +1224,16 @@ abstract class FunctionLikeDeclarationType extends Type implements FunctionInter
             // (Two template types of the same name may have different bounds)
             return $result;
         }
-        return self::$static_resolution_results[\get_class($result) . ' ' . $result->__toString()] ??= $result;
+        if (!($result instanceof FunctionLikeDeclarationType)) {
+            return $result;
+        }
+        // The string of the type has neither whether it returns a reference nor the real types of its union types.
+        $key = \get_class($result) . ($result->returns_reference ? ' & ' : ' ') . $result->__toString()
+            . ' ' . $result->return_type->getRealUnionType()->__toString();
+        foreach ($result->params as $param) {
+            $key .= ',' . $param->getNonVariadicUnionType()->getRealUnionType()->__toString();
+        }
+        return self::$static_resolution_results[$key] ??= $result;
     }
 
     /**
