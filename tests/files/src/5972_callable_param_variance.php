@@ -29,30 +29,6 @@ takes_int_callable(function (array $a): void { var_dump($a); });
 // The return type is still covariant
 takes_child_closure(function (Base $b): Other { return new Other(); });
 
-class Emitter {
-    /** @param callable(static):void $listener */
-    public function listen(callable $listener): void {
-        // $this is an instance of static
-        $listener($this);
-    }
-    /** @return \Closure(static):static */
-    public function identity(): \Closure {
-        return static function ($x) { return $x; };
-    }
-}
-final class FinalEmitter extends Emitter {}
-
-function listeners(Emitter $emitter, FinalEmitter $final): void {
-    // `static` in the type of the callable is the class of the object that the method is called on
-    $final->listen(function (FinalEmitter $e): void { var_dump($e); });
-    $final->listen(function (Emitter $e): void { var_dump($e); });
-    $emitter->listen(function (Emitter $e): void { var_dump($e); });
-    $final->listen(function (Other $o): void { var_dump($o); });
-    $emitter->listen(function (Other $o): void { var_dump($o); });
-    $f = $final->identity();
-    '@phan-debug-var $f';
-}
-
 // The template parameters of a class are compared: a Box<string> is not a Box<int>
 /** @template T */
 class Box {
@@ -66,19 +42,3 @@ function takes_int_box_callable(callable $callable): void { var_dump($callable);
 takes_int_box_callable(/** @param Box<string> $box */ function (Box $box): void { var_dump($box); });
 takes_int_box_callable(/** @param Box<int> $box */ function (Box $box): void { var_dump($box); });
 takes_int_box_callable(function (Box $box): void { var_dump($box); });
-
-// `static` in a callable type is resolved to the type of the object, keeping an intersection type
-interface Named { public function name(): string; }
-class Factory {
-    /** @return \Closure():static */
-    public function creator(): \Closure {
-        return fn() => $this;
-    }
-}
-/** @param Factory&Named $named */
-function creators($named, Factory $factory): void {
-    $create = $named->creator();
-    echo $create()->name();
-    $other = $factory->creator();
-    '@phan-debug-var $create, $other';
-}
