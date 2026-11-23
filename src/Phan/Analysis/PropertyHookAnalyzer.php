@@ -9,7 +9,9 @@ use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Flags;
+use Phan\Language\Element\Parameter;
 use Phan\Language\Element\Property;
+use Phan\Language\Element\PropertyHook;
 
 /**
  * Checks the properties of a class against the properties of the same name of its ancestors, for the rules of
@@ -29,8 +31,18 @@ class PropertyHookAnalyzer
      */
     public static function analyzePropertyHooks(CodeBase $code_base, Clazz $class): void
     {
-        if ($class->isPHPInternal() || $class->isTrait()) {
-            // The properties of a trait are checked for the classes that use it.
+        if ($class->isPHPInternal()) {
+            return;
+        }
+        foreach ($class->getPropertyMap($code_base) as $property) {
+            $set_hook = $property->getSetHook();
+            $set_param = $set_hook ? ($set_hook->getParameterList()[0] ?? null) : null;
+            if ($set_hook && $set_param && $property->getRealDefiningFQSEN()->getFullyQualifiedClassName() === $class->getFQSEN()) {
+                self::checkSetHookParameterType($code_base, $class, $property, $set_hook, $set_param);
+            }
+        }
+        if ($class->isTrait()) {
+            // The other rules are checked for the classes that use the trait.
             return;
         }
         $class->hydrate($code_base);
@@ -46,9 +58,12 @@ class PropertyHookAnalyzer
         foreach ($class->getPropertyMap($code_base) as $name => $_) {
             $name = (string)$name;
             $property = self::getDeclaration($code_base, $class, $name);
+            // If a class has both an (at)property and a declaration of the property, only the former is known: the hooks cannot be resolved.
+            $is_obscured = self::isObscuredByPHPDoc($code_base, $class, $name);
             // The declarations of the parent classes that $class inherits or overrides, starting with the closest one.
             $parent_property_list = [];
             foreach ($parent_class_list as $parent_class) {
+                $is_obscured = $is_obscured || self::isObscuredByPHPDoc($code_base, $parent_class, $name);
                 $parent_property = self::getDeclaration($code_base, $parent_class, $name);
                 if (!$parent_property) {
                     continue;
@@ -72,7 +87,7 @@ class PropertyHookAnalyzer
                 }
                 self::checkOverrideAttributes($code_base, $class, $property, $parent_property_list, $interface_property_list);
             }
-            if ($must_implement_hooks) {
+            if ($must_implement_hooks && !$is_obscured) {
                 $declaration_list = $property ? [$property, ...$parent_property_list] : $parent_property_list;
                 self::checkAbstractHooks($code_base, $class, $declaration_list, $interface_property_list);
             }
@@ -126,6 +141,59 @@ class PropertyHookAnalyzer
             }
         }
         return null;
+    }
+
+    /**
+     * @return bool whether $class declares $name with (at)property, which hides a declaration of the property in the class
+     */
+    private static function isObscuredByPHPDoc(CodeBase $code_base, Clazz $class, string $name): bool
+    {
+        $property = $class->getPropertyMap($code_base)[$name] ?? null;
+        return $property
+            && $property->isDynamicOrFromPHPDoc()
+            && $property->getRealDefiningFQSEN()->getFullyQualifiedClassName() === $class->getFQSEN();
+    }
+
+    /**
+     * The type of the parameter of a set hook must accept every value of the type of the property.
+     * (Fatal error: Type of parameter $v of hook C::$p::set must be compatible with property type)
+     *
+     * This is checked when all classes are known: the types may refer to classes that are declared later.
+     */
+    private static function checkSetHookParameterType(CodeBase $code_base, Clazz $class, Property $property, PropertyHook $set_hook, Parameter $set_param): void
+    {
+        $set_param_type = $set_param->getNonVariadicUnionType();
+        $property_type = $property->getUnionType();
+        $real_param_type = $set_param_type->getRealUnionType()->asNormalizedTypes();
+        $real_property_type = $property->getRealUnionType()->asNormalizedTypes();
+
+        if ($real_property_type->isEmpty() !== $real_param_type->isEmpty()) {
+            // A typed property needs a typed parameter, and the parameter for an untyped property cannot have a type (not even mixed).
+            $is_compatible = false;
+        } elseif (!$real_property_type->isEmpty()) {
+            // The parameter must accept every value of the type of the property, without coercion (contravariance).
+            $is_compatible = $real_property_type->isEqualTo($real_param_type) ||
+                $real_property_type->isStrictSubtypeOf($code_base, $real_param_type);
+        } else {
+            // Compare the phpdoc types: the parameter should accept the property's type
+            $is_compatible = $property_type->isEmpty() || $set_param_type->isEmpty() ||
+                $property_type->canCastToUnionType($set_param_type, $code_base);
+        }
+        if ($is_compatible) {
+            return;
+        }
+        self::emitIssue(
+            $code_base,
+            $class,
+            $property,
+            Issue::PropertyHookIncompatibleParamType,
+            $set_hook->getContext()->getLineNumberStart(),
+            $property->asPropertyFQSENString(),
+            'set',
+            '$' . $set_param->getName(),
+            $real_param_type->isEmpty() && !$real_property_type->isEmpty() ? '(no type)' : (string)$set_param_type,
+            $real_property_type->isEmpty() && !$real_param_type->isEmpty() ? '(no type)' : (string)$property_type
+        );
     }
 
     /**

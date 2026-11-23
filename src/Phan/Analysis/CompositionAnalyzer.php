@@ -116,10 +116,12 @@ class CompositionAnalyzer
                     // No need to warn about incompatible composition of trait with another ancestor if the property's default was overridden
                     continue;
                 }
-                if ($property->getGetHook() || $property->getSetHook() || $inherited_property->getGetHook() || $inherited_property->getSetHook()) {
-                    // The check below compares the types of the default values.
-                    // A hooked property is often declared without one (always for an abstract property or a property of an interface), which is not a default of null.
-                    continue;
+                foreach ([$property, $inherited_property] as $hooked_property) {
+                    if (($hooked_property->getGetHook() || $hooked_property->getSetHook()) && !$hooked_property->hasDefaultValue()) {
+                        // The check below compares the types of the default values.
+                        // A hooked property is often declared without one (always for an abstract property or a property of an interface), which is not a default of null.
+                        continue 2;
+                    }
                 }
                 // TODO: Why expand?
                 $can_cast =

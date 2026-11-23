@@ -216,3 +216,23 @@ class SetParamVariance {
     public array $ok4 { set(iterable $v) { $this->ok4 = []; } }
     public string $ok5 { set(string|\Stringable $v) { $this->ok5 = (string)$v; } }
 }
+
+// The types of a set hook may refer to classes that are declared later, and null is part of the union
+class LaterTypes {
+    public LaterChild|int $p { set(LaterBase|int $v) { $this->p = 1; } }
+    public ?LaterChild $n { set(object|null $v) { $this->n = null; } }
+    public LaterBase $bad { set(LaterChild $v) { $this->bad = $v; } }
+    /** @suppress PhanInvalidNode */
+    public int $suppressed { get; }
+}
+class LaterBase {}
+class LaterChild extends LaterBase {}
+
+// A class with both (at)property and a declaration of the property
+/** @property int $q */
+class WithPHPDocProperty implements InheritI { public int $p = 0; public int $q = 0; }
+
+// The defaults of hooked properties are still compared
+trait DefaultTrait { public int|string $d = 'string' { get => $this->d; } }
+class DefaultParent { public int|string $d = 42; }
+class DefaultChild extends DefaultParent { use DefaultTrait; }

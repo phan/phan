@@ -33,3 +33,9 @@
 %s:211 PhanPropertyHookIncompatibleParamType Property hook \NS5968\SetParamVariance->i::set parameter $v has type float which is incompatible with property type int
 %s:212 PhanPropertyHookIncompatibleParamType Property hook \NS5968\SetParamVariance->n::set parameter $v has type int which is incompatible with property type ?int
 %s:216 PhanPluginUnknownArrayPropertyType Property \NS5968\SetParamVariance->ok4 has an array type, but does not specify any key types or value types
+%s:221 PhanUnreferencedClass Possibly zero references to class \NS5968\LaterTypes
+%s:224 PhanPropertyHookIncompatibleParamType Property hook \NS5968\LaterTypes->bad::set parameter $v has type \NS5968\LaterChild which is incompatible with property type \NS5968\LaterBase
+%s:229 PhanUnreferencedClass Possibly zero references to class \NS5968\LaterChild
+%s:233 PhanUnreferencedClass Possibly zero references to class \NS5968\WithPHPDocProperty
+%s:236 PhanIncompatibleCompositionProp \NS5968\DefaultChild and \NS5968\DefaultParent define the same property (d) in the composition of \NS5968\DefaultChild, as the types 'string' and 42 respectively. However, the definition differs and is considered incompatible. Class was composed in %s on line 238
+%s:238 PhanUnreferencedClass Possibly zero references to class \NS5968\DefaultChild

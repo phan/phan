@@ -945,7 +945,7 @@ class ParseVisitor extends ScopeVisitor
                 $this->context,
                 $hook_node->children['attributes'] ?? null
             ));
-            if (!$body_node && !$is_abstract_property) {
+            if (!$body_node && !$is_abstract_property && !$property->checkHasSuppressIssueAndIncrementCount(Issue::InvalidNode)) {
                 $this->emitIssue(
                     Issue::InvalidNode,
                     $hook_node->lineno,
@@ -957,49 +957,9 @@ class ParseVisitor extends ScopeVisitor
             if ($hook_name === 'get') {
                 $property->setGetHook($hook);
             } else {
+                // The type of its parameter is checked in PropertyHookAnalyzer, when all classes are known.
                 $property->setSetHook($hook);
-
-                // Validate set hook parameter type compatibility
-                if (!empty($parameter_list)) {
-                    $this->checkSetHookParameterType($property, $parameter_list[0], $hook_node);
-                }
             }
-        }
-    }
-
-    /**
-     * The type of the parameter of a set hook must accept every value of the type of the property.
-     * (Fatal error: Type of parameter $v of hook C::$p::set must be compatible with property type)
-     */
-    private function checkSetHookParameterType(Property $property, Parameter $set_param, Node $hook_node): void
-    {
-        $set_param_type = $set_param->getNonVariadicUnionType();
-        $property_type = $property->getUnionType();
-        $real_param_type = $set_param_type->getRealUnionType();
-        $real_property_type = $property->getRealUnionType();
-
-        if ($real_property_type->isEmpty() !== $real_param_type->isEmpty()) {
-            // A typed property needs a typed parameter, and the parameter for an untyped property cannot have a type (not even mixed).
-            $is_compatible = false;
-        } elseif (!$real_property_type->isEmpty()) {
-            // The parameter must accept every value of the type of the property, without coercion (contravariance).
-            $is_compatible = $real_property_type->isEqualTo($real_param_type) ||
-                $real_property_type->isStrictSubtypeOf($this->code_base, $real_param_type);
-        } else {
-            // Compare the phpdoc types: the parameter should accept the property's type
-            $is_compatible = $property_type->isEmpty() || $set_param_type->isEmpty() ||
-                $property_type->canCastToUnionType($set_param_type, $this->code_base);
-        }
-        if (!$is_compatible && !$property->checkHasSuppressIssueAndIncrementCount(Issue::PropertyHookIncompatibleParamType)) {
-            $this->emitIssue(
-                Issue::PropertyHookIncompatibleParamType,
-                $hook_node->lineno,
-                $property->asPropertyFQSENString(),
-                'set',
-                '$' . $set_param->getName(),
-                $real_param_type->isEmpty() && !$real_property_type->isEmpty() ? '(no type)' : $set_param_type,
-                $real_property_type->isEmpty() && !$real_param_type->isEmpty() ? '(no type)' : $property_type
-            );
         }
     }
 
