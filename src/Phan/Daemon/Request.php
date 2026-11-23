@@ -569,7 +569,6 @@ class Request
                 if (\is_null($error_message)) {
                     $file_mapping_contents = $request[self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS] ?? [];
                     if (is_array($file_mapping_contents)) {
-                        // @phan-suppress-next-line PhanPartialTypeMismatchArgument false positive due to bad inference after unset field of array shape.
                         $new_file_mapping_contents = self::normalizeFileMappingContents($file_mapping_contents, $error_message);
                         $request[self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS] = $new_file_mapping_contents;
                     } else {
