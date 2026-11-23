@@ -2823,14 +2823,15 @@ class AssignmentVisitor extends AnalysisVisitor
      */
     private function withWrittenDimContainerFallback(Node $container_node, UnionType $right_type): UnionType
     {
-        $old_container_types = $this->getOldTypeSetOfDimWithLiteralKeys($container_node);
+        // Whether the write may create the element: the element or an array on the path to it may be null, false or undefined.
+        $element_may_be_created = false;
+        $old_container_types = $this->getOldTypeSetOfDimWithLiteralKeys($container_node, $element_may_be_created);
         if (!$old_container_types) {
             return $right_type;
         }
         $phpdoc_fallback_types = [];
         $has_untyped_fallback = false;
         $has_callable_array = false;
-        $element_may_be_created = false;
         $old_shapes = [];
         foreach ($old_container_types as $type) {
             if ($type instanceof ArrayShapeType) {
@@ -2841,9 +2842,6 @@ class AssignmentVisitor extends AnalysisVisitor
             if ($type instanceof CallableArrayType) {
                 // A callable-array has exactly the keys 0 and 1, so it is merged with the write below.
                 $has_callable_array = true;
-                if ($type->isNullable()) {
-                    $element_may_be_created = true;
-                }
             } elseif ($type instanceof GenericArrayInterface) {
                 // array<string,int>, list<string>, etc.: the keys are unknown, but the types of the values are known.
                 $phpdoc_fallback_types[] = $type;
@@ -2906,9 +2904,11 @@ class AssignmentVisitor extends AnalysisVisitor
      * Returns an empty list if the element did not exist or was null or false (the write then creates a new array).
      *
      * @param Node $node a node of kind ast\AST_DIM
+     * @param bool $may_be_created set to whether the variable, an array on the path or the element may be undefined, null or false:
+     * the write then creates the element (and not only when the returned list is empty)
      * @return ?list<Type> the types of the element, with mixed for an element of unknown type
      */
-    private function getOldTypeSetOfDimWithLiteralKeys(Node $node): ?array
+    private function getOldTypeSetOfDimWithLiteralKeys(Node $node, bool &$may_be_created = false): ?array
     {
         $keys = [];
         while ($node->kind === ast\AST_DIM) {
@@ -2947,13 +2947,34 @@ class AssignmentVisitor extends AnalysisVisitor
             }
         }
         $types = $union_type->isEmpty() ? [MixedType::instance(false)] : $union_type->getTypeSet();
+        $may_be_created = $union_type->isPossiblyUndefined() || self::hasTypeReplacedByWrite($types);
         foreach ($keys as $key) {
             $types = self::getTypeSetOfOldElement($types, $key);
             if (!$types) {
                 return [];
             }
+            $may_be_created = $may_be_created || self::hasTypeReplacedByWrite($types);
         }
         return $types;
+    }
+
+    /**
+     * @param list<Type> $types
+     * @return bool whether a value of one of the types is replaced by a new array when one of its keys is written: null or false.
+     * (`$x[0][1] = 'm'` on a null $x gives array{0:array{1:'m'}}, without the other keys that an element of a non-null $x has)
+     */
+    private static function hasTypeReplacedByWrite(array $types): bool
+    {
+        foreach ($types as $type) {
+            if ($type instanceof NullType || $type instanceof FalseType || $type instanceof BoolType) {
+                return true;
+            }
+            // (mixed is not counted: its keys are unknown anyway)
+            if ($type->isNullable() && !($type instanceof MixedType)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
