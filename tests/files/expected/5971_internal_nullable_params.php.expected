@@ -1,0 +1,4 @@
+%s:15 PhanTypeMismatchArgumentNullableInternal Argument 1 ($hour) is $i of type ?int but \mktime() takes int (expected type to be non-nullable)
+%s:15 PhanTypeMismatchArgumentNullableInternal Argument 1 ($string) is $s of type ?string but \strlen() takes string (expected type to be non-nullable)
+%s:15 PhanTypeMismatchArgumentNullableInternal Argument 2 ($offset) is $i of type ?int but \substr() takes int (expected type to be non-nullable)
+%s:15 PhanTypeMismatchArgumentNullableInternal Argument 2 ($times) is $i of type ?int but \str_repeat() takes int (expected type to be non-nullable)

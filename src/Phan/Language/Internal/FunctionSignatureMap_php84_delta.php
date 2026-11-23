@@ -11,7 +11,7 @@ return [
       'array_find' => ['mixed', 'array'=>'array', 'callback'=>'callable'],
       'array_find_key' => ['mixed', 'array'=>'array', 'callback'=>'callable'],
       'bcceil' => ['string', 'num'=>'string'],
-      'bcdivmod' => ['array{0:string,1:string}', 'num1'=>'string', 'num2'=>'string', 'scale='=>'int'],
+      'bcdivmod' => ['array{0:string,1:string}', 'num1'=>'string', 'num2'=>'string', 'scale='=>'?int'],
       'bcfloor' => ['string', 'num'=>'string'],
       'bcround' => ['string', 'num'=>'string', 'precision='=>'int', 'mode='=>'\\RoundingMode'],
       'DateTime::createFromTimestamp' => ['static', 'timestamp'=>'int|float'],
@@ -65,20 +65,48 @@ return [
   ],
   'changed' => [
       'bind_textdomain_codeset' => [
-          'old' => ['string', 'domain'=>'string', 'codeset'=>'string'],
-          'new' => ['string', 'domain'=>'string', 'codeset='=>'string'],
+          'old' => ['string', 'domain'=>'string', 'codeset'=>'?string'],
+          'new' => ['string', 'domain'=>'string', 'codeset='=>'?string'],
       ],
       'bindtextdomain' => [
-          'old' => ['string', 'domain'=>'string', 'directory'=>'string'],
-          'new' => ['string', 'domain'=>'string', 'directory='=>'string'],
+          'old' => ['string', 'domain'=>'string', 'directory'=>'?string'],
+          'new' => ['string', 'domain'=>'string', 'directory='=>'?string'],
       ],
       'exit' => [
           'old' => ['', 'status='=>'string|int'],
           'new' => ['never', 'status='=>'string|int'],
       ],
+      'odbc_connect' => [
+          'old' => ['resource|false', 'dsn'=>'string', 'user'=>'string', 'password'=>'string', 'cursor_option='=>'int'],
+          'new' => ['resource|false', 'dsn'=>'string', 'user'=>'?string', 'password'=>'?string', 'cursor_option='=>'int'],
+      ],
+      'odbc_error' => [
+          'old' => ['string', 'odbc='=>'resource'],
+          'new' => ['string', 'odbc='=>'?resource'],
+      ],
+      'odbc_errormsg' => [
+          'old' => ['string', 'odbc='=>'resource'],
+          'new' => ['string', 'odbc='=>'?resource'],
+      ],
+      'odbc_fetch_array' => [
+          'old' => ['array|false', 'statement'=>'resource', 'row='=>'int'],
+          'new' => ['array|false', 'statement'=>'resource', 'row='=>'?int'],
+      ],
+      'odbc_fetch_into' => [
+          'old' => ['int', 'statement'=>'resource', '&w_array'=>'array', 'row='=>'int'],
+          'new' => ['int', 'statement'=>'resource', '&w_array'=>'array', 'row='=>'?int'],
+      ],
+      'odbc_fetch_object' => [
+          'old' => ['stdClass|false', 'statement'=>'resource', 'row='=>'int'],
+          'new' => ['stdClass|false', 'statement'=>'resource', 'row='=>'?int'],
+      ],
+      'odbc_pconnect' => [
+          'old' => ['resource|false', 'dsn'=>'string', 'user'=>'string', 'password'=>'string', 'cursor_option='=>'int'],
+          'new' => ['resource|false', 'dsn'=>'string', 'user'=>'?string', 'password'=>'?string', 'cursor_option='=>'int'],
+      ],
       'openssl_csr_sign' => [
-          'old' => ['OpenSSLCertificate|false', 'csr'=>'string|OpenSSLCertificateSigningRequest', 'ca_certificate'=>'string|OpenSSLCertificate|null', 'private_key'=>'string|OpenSSLAsymmetricKey|OpenSSLCertificate|array', 'days'=>'int', 'options='=>'array', 'serial='=>'int'],
-          'new' => ['OpenSSLCertificate|false', 'csr'=>'string|OpenSSLCertificateSigningRequest', 'ca_certificate'=>'string|OpenSSLCertificate|null', 'private_key'=>'string|OpenSSLAsymmetricKey|OpenSSLCertificate|array', 'days'=>'int', 'options='=>'array', 'serial='=>'int', 'serial_hex='=>'?string'],
+          'old' => ['OpenSSLCertificate|false', 'csr'=>'string|OpenSSLCertificateSigningRequest', 'ca_certificate'=>'string|OpenSSLCertificate|null', 'private_key'=>'string|OpenSSLAsymmetricKey|OpenSSLCertificate|array', 'days'=>'int', 'options='=>'?array', 'serial='=>'int'],
+          'new' => ['OpenSSLCertificate|false', 'csr'=>'string|OpenSSLCertificateSigningRequest', 'ca_certificate'=>'string|OpenSSLCertificate|null', 'private_key'=>'string|OpenSSLAsymmetricKey|OpenSSLCertificate|array', 'days'=>'int', 'options='=>'?array', 'serial='=>'int', 'serial_hex='=>'?string'],
       ],
       'pg_select' => [
           'old' => ['string|bool', 'connection'=>'pgsql\connection', 'table_name'=>'string', 'conditions'=>'array', 'flags='=>'int', 'mode='=>'int'],
@@ -89,8 +117,44 @@ return [
           'new' => ['float', 'num'=>'float', 'precision='=>'int', 'mode='=>'int|\RoundingMode'],
       ],
       'textdomain' => [
-          'old' => ['string', 'domain'=>'string'],
-          'new' => ['string', 'domain='=>'string'],
+          'old' => ['string', 'domain'=>'?string'],
+          'new' => ['string', 'domain='=>'?string'],
+      ],
+      'xml_set_character_data_handler' => [
+          'old' => ['bool', 'parser'=>'XMLParser', 'handler'=>'callable'],
+          'new' => ['bool', 'parser'=>'XMLParser', 'handler'=>'?callable'],
+      ],
+      'xml_set_default_handler' => [
+          'old' => ['bool', 'parser'=>'XMLParser', 'handler'=>'callable'],
+          'new' => ['bool', 'parser'=>'XMLParser', 'handler'=>'?callable'],
+      ],
+      'xml_set_element_handler' => [
+          'old' => ['bool', 'parser'=>'XMLParser', 'start_handler'=>'callable', 'end_handler'=>'callable'],
+          'new' => ['bool', 'parser'=>'XMLParser', 'start_handler'=>'?callable', 'end_handler'=>'?callable'],
+      ],
+      'xml_set_end_namespace_decl_handler' => [
+          'old' => ['bool', 'parser'=>'XMLParser', 'handler'=>'callable'],
+          'new' => ['bool', 'parser'=>'XMLParser', 'handler'=>'?callable'],
+      ],
+      'xml_set_external_entity_ref_handler' => [
+          'old' => ['bool', 'parser'=>'XMLParser', 'handler'=>'callable'],
+          'new' => ['bool', 'parser'=>'XMLParser', 'handler'=>'?callable'],
+      ],
+      'xml_set_notation_decl_handler' => [
+          'old' => ['bool', 'parser'=>'XMLParser', 'handler'=>'callable'],
+          'new' => ['bool', 'parser'=>'XMLParser', 'handler'=>'?callable'],
+      ],
+      'xml_set_processing_instruction_handler' => [
+          'old' => ['bool', 'parser'=>'XMLParser', 'handler'=>'callable'],
+          'new' => ['bool', 'parser'=>'XMLParser', 'handler'=>'?callable'],
+      ],
+      'xml_set_start_namespace_decl_handler' => [
+          'old' => ['bool', 'parser'=>'XMLParser', 'handler'=>'callable'],
+          'new' => ['bool', 'parser'=>'XMLParser', 'handler'=>'?callable'],
+      ],
+      'xml_set_unparsed_entity_decl_handler' => [
+          'old' => ['bool', 'parser'=>'XMLParser', 'handler'=>'callable'],
+          'new' => ['bool', 'parser'=>'XMLParser', 'handler'=>'?callable'],
       ],
   ],
   'removed' => [

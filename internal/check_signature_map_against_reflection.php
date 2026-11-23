@@ -12,6 +12,7 @@ declare(strict_types=1);
  * - name: parameter names (used for named arguments)
  * - by-ref: whether a parameter is passed by reference
  * - optional: whether a parameter is optional or variadic
+ * - nullable: parameters that are nullable for Reflection (`?int`) and not in the map, so that Phan rejects a null that PHP accepts
  * - missing: functions and methods that Reflection knows but the map does not
  *
  * Usage: php internal/check_signature_map_against_reflection.php [--json=out.json]
@@ -213,7 +214,7 @@ final class SignatureMapReflectionChecker
             'php_version' => PHP_VERSION,
             'differences' => [],
             'missing' => [],
-            'counts' => ['checked' => 0, 'arity' => 0, 'name' => 0, 'by-ref' => 0, 'optional' => 0, 'missing' => 0, 'skipped_alternates' => 0],
+            'counts' => ['checked' => 0, 'arity' => 0, 'name' => 0, 'by-ref' => 0, 'optional' => 0, 'nullable' => 0, 'missing' => 0, 'skipped_alternates' => 0],
         ];
         foreach (self::collectReflection() as $key => $reflection) {
             $entry = $map[$key] ?? null;
@@ -230,6 +231,9 @@ final class SignatureMapReflectionChecker
             $report['counts']['checked']++;
             $reflection_params = array_map([self::class, 'describeReflectionParameter'], $reflection->getParameters());
             $kinds = self::compare(self::paramsOfEntry($entry), $reflection_params);
+            if (self::hasNullabilityDifference($entry, $reflection)) {
+                $kinds[] = 'nullable';
+            }
             if (!$kinds) {
                 continue;
             }
@@ -243,6 +247,47 @@ final class SignatureMapReflectionChecker
             ];
         }
         return $report;
+    }
+
+    /**
+     * @param string $type a type from typeToString()
+     * @return bool whether Reflection's type is explicitly nullable. `mixed` is not: the map may deliberately be narrower.
+     */
+    public static function isNullableReflectionType(string $type): bool
+    {
+        return str_starts_with($type, '?') || preg_match('/(^|\|)null(\||$)/D', $type) === 1;
+    }
+
+    /**
+     * @param string $type a type of Phan's signature map
+     * @return bool whether the type accepts null (an empty type and `mixed` accept anything)
+     */
+    public static function isNullableMapType(string $type): bool
+    {
+        return $type === '' || str_starts_with($type, '?') || preg_match('/(^|\|)(null|mixed|\?[^|]*)(\||$)/D', $type) === 1;
+    }
+
+    /**
+     * @param array<int|string,string> $entry the entry of Phan's signature map
+     * @return bool whether a parameter is nullable for Reflection and not in the map (compared by position)
+     */
+    public static function hasNullabilityDifference(array $entry, ReflectionFunctionAbstract $reflection): bool
+    {
+        $reflection_params = $reflection->getParameters();
+        $i = 0;
+        foreach ($entry as $spec => $type) {
+            if (!is_string($spec)) {
+                continue;
+            }
+            $reflection_param = $reflection_params[$i++] ?? null;
+            if (!$reflection_param) {
+                break;
+            }
+            if (self::isNullableReflectionType(self::typeToString($reflection_param->getType())) && !self::isNullableMapType($type)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

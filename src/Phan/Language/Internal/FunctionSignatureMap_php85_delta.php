@@ -33,7 +33,7 @@ return [
   'changed' => [
       'datefmt_set_timezone' => [
           'old' => ['bool', 'formatter'=>'IntlDateFormatter', 'timezone'=>'string'],
-          'new' => ['bool', 'formatter'=>'IntlDateFormatter', 'timezone'=>'string|IntlTimeZone|DateTimeZone'],
+          'new' => ['bool', 'formatter'=>'IntlDateFormatter', 'timezone'=>'string|IntlTimeZone|DateTimeZone|null'],
       ],
       'grapheme_stripos' => [
           'old' => ['int|false', 'haystack'=>'string', 'needle'=>'string', 'offset='=>'int'],
@@ -60,8 +60,8 @@ return [
           'new' => ['string|false', 'haystack'=>'string', 'needle'=>'string', 'beforeNeedle='=>'bool', 'locale='=>'?string'],
       ],
       'grapheme_substr' => [
-          'old' => ['string|false', 'string'=>'string', 'offset'=>'int', 'length='=>'int'],
-          'new' => ['string|false', 'string'=>'string', 'offset'=>'int', 'length='=>'int', 'locale='=>'string'],
+          'old' => ['string|false', 'string'=>'string', 'offset'=>'int', 'length='=>'?int'],
+          'new' => ['string|false', 'string'=>'string', 'offset'=>'int', 'length='=>'?int', 'locale='=>'string'],
       ],
       'gzfile' => [
           'old' => ['list<string>', 'filename'=>'string', 'use_include_path='=>'int'],
@@ -70,6 +70,10 @@ return [
       'gzopen' => [
           'old' => ['resource|false', 'filename'=>'string', 'mode'=>'string', 'use_include_path='=>'int'],
           'new' => ['resource|false', 'filename'=>'string', 'mode'=>'string', 'use_include_path='=>'bool'],
+      ],
+      'ldap_get_option' => [
+          'old' => ['bool', 'ldap'=>'ldap\connection', 'option'=>'int', '&w_value='=>'array|int|string'],
+          'new' => ['bool', 'ldap'=>'?ldap\connection', 'option'=>'int', '&w_value='=>'array|int|string'],
       ],
       'openssl_cms_encrypt' => [
           'old' => ['bool', 'input_filename'=>'string', 'output_filename'=>'string', 'certificate'=>'mixed', 'headers'=>'?array', 'flags='=>'int', 'encoding='=>'int', 'cipher_algo='=>'int'],
@@ -108,12 +112,16 @@ return [
           'new' => ['string', 'request'=>'string', 'location'=>'string', 'action'=>'string', 'version'=>'int', 'oneWay='=>'bool', 'uriParserClass='=>'?string'],
       ],
       'soapfault::__construct' => [
-          'old' => ['void', 'code'=>'?string|?array{0:string,1:string}', 'string'=>'string', 'actor='=>'string', 'details='=>'mixed', 'name='=>'string', 'headerFault='=>'string'],
-          'new' => ['void', 'code'=>'?string|?array{0:string,1:string}', 'string'=>'string', 'actor='=>'string', 'details='=>'mixed', 'name='=>'string', 'headerFault='=>'string', 'lang='=>'string'],
+          'old' => ['void', 'code'=>'?string|?array{0:string,1:string}', 'string'=>'string', 'actor='=>'?string', 'details='=>'mixed', 'name='=>'?string', 'headerFault='=>'string'],
+          'new' => ['void', 'code'=>'?string|?array{0:string,1:string}', 'string'=>'string', 'actor='=>'?string', 'details='=>'mixed', 'name='=>'?string', 'headerFault='=>'string', 'lang='=>'string'],
       ],
       'soapserver::fault' => [
           'old' => ['void', 'code'=>'string', 'string'=>'string', 'actor='=>'string', 'details='=>'string', 'name='=>'string'],
           'new' => ['void', 'code'=>'string', 'string'=>'string', 'actor='=>'string', 'details='=>'string', 'name='=>'string', 'lang='=>'string'],
+      ],
+      'splfileobject::fwrite' => [
+          'old' => ['int', 'data'=>'string', 'length='=>'int'],
+          'new' => ['int', 'data'=>'string', 'length='=>'?int'],
       ],
   ],
   'removed' => [

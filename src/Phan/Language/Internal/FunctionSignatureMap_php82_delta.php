@@ -99,8 +99,8 @@ return [
       'new' => ['bool', 'key'=>'string|array', 'value'=>'string', 'dba'=>'resource'],
     ],
     'dba_key_split' => [
-      'old' => ['array|false', 'key'=>'string'],
-      'new' => ['array|false', 'key'=>'string|false'],
+      'old' => ['array|false', 'key'=>'?string'],
+      'new' => ['array|false', 'key'=>'string|false|null'],
     ],
     'dba_open' => [
       'old' => ['resource|false', 'path'=>'string', 'mode'=>'string', 'handler='=>'?string', '...handler_params='=>'string'],
@@ -108,7 +108,7 @@ return [
     ],
     'dba_popen' => [
       'old' => ['resource', 'path'=>'string', 'mode'=>'string', 'handler='=>'string', '...handler_params='=>'string'],
-      'new' => ['resource', 'path'=>'string', 'mode'=>'string', 'handler='=>'string', 'permission='=>'int', 'map_size='=>'int', 'flags='=>'?int'],
+      'new' => ['resource', 'path'=>'string', 'mode'=>'string', 'handler='=>'?string', 'permission='=>'int', 'map_size='=>'int', 'flags='=>'?int'],
     ],
     'dba_replace' => [
       'old' => ['bool', 'key'=>'string', 'value'=>'string', 'dba'=>'resource'],
@@ -119,8 +119,8 @@ return [
       'new' => ['void', 'num='=>'string|int', 'base='=>'int'],
     ],
     'iterator_apply' => [
-      'old' => ['int', 'iterator'=>'Traversable', 'callback'=>'callable(mixed):bool', 'args='=>'array'],
-      'new' => ['int', 'iterator'=>'Traversable|array|iterable', 'callback'=>'callable(mixed):bool', 'args='=>'array'],
+      'old' => ['int', 'iterator'=>'Traversable', 'callback'=>'callable(mixed):bool', 'args='=>'?array'],
+      'new' => ['int', 'iterator'=>'Traversable|array|iterable', 'callback'=>'callable(mixed):bool', 'args='=>'?array'],
     ],
     'iterator_count' => [
       'old' => ['int', 'iterator'=>'Traversable'],

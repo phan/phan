@@ -61,7 +61,7 @@ return [
           'new' => ['true', 'result'=>'ldap\result'],
       ],
       'openssl_decrypt' => [
-          'old' => ['string|false', 'data'=>'string', 'cipher_algo'=>'string', 'passphrase'=>'string', 'options='=>'int', 'iv='=>'string', 'tag='=>'string', 'aad='=>'string'],
+          'old' => ['string|false', 'data'=>'string', 'cipher_algo'=>'string', 'passphrase'=>'string', 'options='=>'int', 'iv='=>'string', 'tag='=>'?string', 'aad='=>'string'],
           'new' => ['string|false', 'data'=>'string', 'cipher_algo'=>'string', 'passphrase'=>'string', 'options='=>'int', 'iv='=>'string', 'tag='=>'?string', 'aad='=>'?string'],
       ],
       'openssl_encrypt' => [
@@ -105,8 +105,8 @@ return [
           'new' => ['bool', 'stream'=>'resource|string', 'context='=>'?resource'],
       ],
       'stream_select' => [
-          'old' => ['int|false', '&rw_read'=>'resource[]', '&rw_write'=>'?resource[]', '&rw_except'=>'?resource[]', 'seconds'=>'?int', 'microseconds='=>'int'],
-          'new' => ['int|false', '&rw_read'=>'resource[]', '&rw_write'=>'?resource[]', '&rw_except'=>'?resource[]', 'seconds'=>'?int', 'microseconds='=>'int', 'context='=>'?resource'],
+          'old' => ['int|false', '&rw_read'=>'?resource[]', '&rw_write'=>'?resource[]', '&rw_except'=>'?resource[]', 'seconds'=>'?int', 'microseconds='=>'?int'],
+          'new' => ['int|false', '&rw_read'=>'?resource[]', '&rw_write'=>'?resource[]', '&rw_except'=>'?resource[]', 'seconds'=>'?int', 'microseconds='=>'?int', 'context='=>'?resource'],
       ],
       'stream_socket_pair' => [
           'old' => ['array{0:resource,1:resource}|false', 'domain'=>'int', 'type'=>'int', 'protocol'=>'int'],
