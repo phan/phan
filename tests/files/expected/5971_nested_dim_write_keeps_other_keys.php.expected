@@ -1,0 +1,28 @@
+%s:46 PhanTypeInvalidDimOffset Invalid offset "c" of $new['a'] of array type array{b:1}
+%s:46 PhanTypeSuspiciousEcho Suspicious argument $new['a']['c'] of type null for an echo/print statement
+%s:48 PhanUndeclaredVariableDim Variable $undefined was undeclared, but array fields are being added to it.
+%s:49 PhanTypeInvalidDimOffset Invalid offset "c" of $undefined['a'] of array type array{b:1}
+%s:49 PhanTypeSuspiciousEcho Suspicious argument $undefined['a']['c'] of type null for an echo/print statement
+%s:53 PhanTypeInvalidDimOffset Invalid offset "c" of $nullElement['a'] of array type array{b:1}
+%s:53 PhanTypeSuspiciousEcho Suspicious argument $nullElement['a']['c'] of type null for an echo/print statement
+%s:56 PhanTypeInvalidDimOffset Invalid offset "c" of $shape['a'] of array type array{b:2}
+%s:56 PhanTypeSuspiciousEcho Suspicious argument $shape['a']['c'] of type null for an echo/print statement
+%s:68 PhanTypeInvalidDimOffset Invalid offset "y" of $config['empty'] of array type array{x:1}
+%s:68 PhanTypeSuspiciousEcho Suspicious argument $config['empty']['y'] of type null for an echo/print statement
+%s:72 PhanTypeInvalidDimOffset Invalid offset "y" of $config['null'] of array type array{x:1}
+%s:72 PhanTypeSuspiciousEcho Suspicious argument $config['null']['y'] of type null for an echo/print statement
+%s:76 PhanTypeInvalidDimOffset Invalid offset "y" of $config['false'] of array type array{x:1}
+%s:76 PhanTypeSuspiciousEcho Suspicious argument $config['false']['y'] of type null for an echo/print statement
+%s:80 PhanTypeInvalidDimOffset Invalid offset "y" of $untyped['opts'] of array type array{x:1}
+%s:80 PhanTypeSuspiciousEcho Suspicious argument $untyped['opts']['y'] of type null for an echo/print statement
+%s:84 PhanTypeInvalidDimOffset Invalid offset "y" of $generic['opts'] of array type array{a:1,x:1}
+%s:84 PhanTypeSuspiciousEcho Suspicious argument $generic['opts']['y'] of type null for an echo/print statement
+%s:88 PhanTypeInvalidDimOffset Invalid offset "d" of $deep['a']['b'] of array type array{c:1}
+%s:88 PhanTypeSuspiciousEcho Suspicious argument $deep['a']['b']['d'] of type null for an echo/print statement
+%s:93 PhanTypeInvalidDimOffset Invalid offset "missing" of $out['meta'] of array type array{id:1,name:'n'}
+%s:93 PhanTypeSuspiciousEcho Suspicious argument $out['meta']['missing'] of type null for an echo/print statement
+%s:97 PhanTypeInvalidDimOffset Invalid offset "y" of $intKeyed['foo'] of array type array{x:1}
+%s:97 PhanTypeSuspiciousEcho Suspicious argument $intKeyed['foo']['y'] of type null for an echo/print statement
+%s:114 PhanTypeMismatchArgument Argument 1 ($callback) is $callbacks[1] of type array{0:object|string,1:string,2:'metadata'} but \takesCallable() takes callable defined at %s:100
+%s:129 PhanTypeInvalidDimOffset Invalid offset "missing" of $initialized of array type array{ok:1}
+%s:129 PhanTypeSuspiciousEcho Suspicious argument $initialized['missing'] of type null for an echo/print statement
