@@ -101,6 +101,13 @@ class GenericArrayTemplateKeyType extends GenericArrayType
     {
         $element_closure = parent::getTemplateTypeExtractorClosure($code_base, $template_type);
         $key_closure = $this->template_key_type->getTemplateTypeExtractorClosure($code_base, $template_type);
+        if ($key_closure) {
+            // If a function expects array<TKey,...>, then TKey is the key type of the passed in array (not the array itself)
+            $inner_key_closure = $key_closure;
+            $key_closure = static function (UnionType $array_type, Context $context) use ($inner_key_closure, $code_base): UnionType {
+                return $inner_key_closure($array_type->iterableKeyUnionType($code_base), $context);
+            };
+        }
         return TemplateType::combineParameterClosures($key_closure, $element_closure);
     }
 }
