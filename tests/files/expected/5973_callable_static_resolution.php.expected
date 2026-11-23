@@ -1,0 +1,8 @@
+%s:23 PhanTypeMismatchArgumentSuperType Argument 1 ($listener) is (function) of type Closure(\NS5973\Other):void but \NS5973\FinalEmitter::listen() takes callable(\NS5973\FinalEmitter):void defined at %s:8 (expected type to be the same or a subtype, but saw a supertype instead)
+%s:24 PhanTypeMismatchArgumentSuperType Argument 1 ($listener) is (function) of type Closure(\NS5973\Other):void but \NS5973\Emitter::listen() takes callable(\NS5973\Emitter):void defined at %s:8 (expected type to be the same or a subtype, but saw a supertype instead)
+%s:25 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type Closure(\NS5973\FinalEmitter):\NS5973\FinalEmitter(real=\Closure)
+%s:25 PhanUnusedVariable Unused definition of variable $f
+%s:39 PhanTypeMismatchReturnSuperType Returning (fn) of type Closure():\NS5973\Other but wrong() is declared to return Closure():\NS5973\Factory (saw a supertype instead of a subtype)
+%s:46 PhanDebugAnnotation @phan-debug-var requested for variable $create - it has union type Closure():\NS5973\Factory&\NS5973\Named(real=\Closure)
+%s:46 PhanDebugAnnotation @phan-debug-var requested for variable $other - it has union type Closure():\NS5973\Factory(real=\Closure)
+%s:46 PhanUnusedVariable Unused definition of variable $other

@@ -153,6 +153,17 @@ final class ClosureDeclarationParameter
         return new self($new_type, $this->is_variadic, $this->is_reference, $this->is_optional, $this->name);
     }
 
+    /**
+     * Creates a ClosureDeclarationParameter with the type replaced by $new_type (the same object if the type is the same).
+     */
+    public function withNonVariadicUnionType(UnionType $new_type): ClosureDeclarationParameter
+    {
+        if ($new_type === $this->type) {
+            return $this;
+        }
+        return new self($new_type, $this->is_variadic, $this->is_reference, $this->is_optional, $this->name);
+    }
+
     // TODO: Memoize?
     /**
      * Creates a parameter with the non-variadic version of the type
