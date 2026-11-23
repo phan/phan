@@ -138,3 +138,32 @@ function writeShapeOrGenericElement(array $rows): void {
     $rows[0]['a'] = 1;
     echo strlen($rows[0]['b']);
 }
+
+/**
+ * A write creates the element if the array or the element may be null or false: it then has only the written key,
+ * and is not a callable-array with the keys 0 and 1.
+ * @param ?array<callable-array> $nullable_outer
+ * @param array<callable-array|null> $null_element
+ * @param array<callable-array|false> $false_element
+ * @param array<callable-array> $plain
+ */
+function callableArrayMayBeCreated(?array $nullable_outer, array $null_element, array $false_element, array $plain): void {
+    $nullable_outer[0][1] = 'method';
+    $null_element[0][1] = 'method';
+    $false_element[0][1] = 'method';
+    $plain[0][1] = 'method';
+    '@phan-debug-var $nullable_outer, $null_element, $false_element, $plain';
+}
+
+/**
+ * The same applies if an array on the path may be absent from an array shape: an optional field, or a field of only some of the shapes.
+ * @param array{callbacks?:array<callable-array>} $optional
+ * @param array{a:int}|array{callbacks:array<callable-array>} $alternative
+ * @param array{callbacks:array<callable-array>} $required
+ */
+function callableArrayInOptionalField(array $optional, array $alternative, array $required): void {
+    $optional['callbacks'][0][1] = 'method';
+    $alternative['callbacks'][0][1] = 'method';
+    $required['callbacks'][0][1] = 'method';
+    '@phan-debug-var $optional, $alternative, $required';
+}
