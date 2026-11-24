@@ -362,7 +362,7 @@ final class TolerantASTConverterWithNodeMapping extends TolerantASTConverter
             };
         }
         $callback = $callback_map[\get_class($n)] ?? $fallback_closure;
-        $result = $callback($n, self::$file_position_map->getStartLine($n));
+        $result = $callback($n, self::getStartLine($n));
         if (($result instanceof ast\Node) && $result->kind === ast\AST_NAME) {
             $result = new ast\Node(ast\AST_CONST, 0, ['name' => $result], $result->lineno);
         }
