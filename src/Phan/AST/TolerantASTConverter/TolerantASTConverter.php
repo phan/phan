@@ -3744,8 +3744,14 @@ class TolerantASTConverter
                 $line += \substr_count($contents, "\n", $i, $end - $i);
                 $i = $end;
             } elseif (($c === '/' && ($contents[$i + 1] ?? '') === '/') || ($c === '#' && ($contents[$i + 1] ?? '') !== '[')) {
+                // A comment of one line ends at the end of the line or at the closing tag of php, which is the next token.
                 $end = \strpos($contents, "\n", $i);
-                $i = $end === false ? $length : $end;
+                $end = $end === false ? $length : $end;
+                $close_tag = \strpos($contents, '?>', $i);
+                if ($close_tag !== false && $close_tag < $end) {
+                    break;
+                }
+                $i = $end;
             } else {
                 break;
             }
