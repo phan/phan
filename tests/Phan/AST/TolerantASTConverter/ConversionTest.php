@@ -117,7 +117,8 @@ final class ConversionTest extends TestBase
             if (\PHP_VERSION_ID < 80500 && \str_contains($normalized_path, '/php85_or_newer/')) {
                 continue;
             }
-            if (\PHP_VERSION_ID < 80600 && \str_contains($normalized_path, '/php86_or_newer/')) {
+            // The fallback parser returns the shape of AST version 130 for partial function application, which older versions of php-ast do not return.
+            if ((\PHP_VERSION_ID < 80600 || Config::AST_VERSION < 130) && \str_contains($normalized_path, '/php86_or_newer/')) {
                 continue;
             }
             if (\str_contains($normalized_path, '/php84_or_newer/property_hooks.php') && !self::supportsPropertyHooks()) {

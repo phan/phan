@@ -2538,23 +2538,37 @@ class TolerantASTConverter
                 }
             }
             if ($has_placeholder) {
-                $callable_convert_line = self::getStartLine($filtered_children[0]);
-                if (self::$ast_version_parsing < 130) {
-                    // Older AST versions have no children: partial function application cannot be told apart from `f(...)`.
-                    return new ast\Node(ast\AST_CALLABLE_CONVERT, 0, [], $callable_convert_line);
+                if (self::$ast_version_parsing < 130 && \count($filtered_children) === 1 && $filtered_children[0] instanceof PhpParser\Node\Expression\ArgumentExpression && $filtered_children[0]->dotDotDotToken !== null) {
+                    // First-class callable syntax has no children in older AST versions.
+                    return new ast\Node(ast\AST_CALLABLE_CONVERT, 0, [], self::getStartLine($filtered_children[0]));
                 }
+                // Partial function application has the shape of AST version 130, also when an older version was requested:
+                // php-ast returns no children for older versions, and Phan recovers this shape for them (see PartialApplicationReparser).
                 $ast_args = [];
-                foreach ($filtered_children as $arg) {
+                $callable_convert_line = null;
+                $children = $args->children;
+                foreach ($children as $i => $arg) {
+                    if ($arg instanceof Token && $arg->kind === TokenKind::CommaToken) {
+                        continue;
+                    }
                     if (!($arg instanceof PhpParser\Node\Expression\ArgumentExpression) || !self::isPlaceholderArgument($arg)) {
                         $ast_args[] = static::phpParserNodeToAstNode($arg);
                         continue;
                     }
-                    $arg_line = self::getStartLine($arg);
+                    if ($arg->dotDotDotToken !== null) {
+                        // php reads the token after a `...` before it creates the placeholder, and uses its line.
+                        $call = $args->parent;
+                        $next_token = $children[$i + 1] ?? ($call instanceof PhpParser\Node\Expression\CallExpression || $call instanceof PhpParser\Node\Expression\ObjectCreationExpression ? $call->closeParen : null);
+                        $placeholder_line = self::getStartLine($next_token instanceof Token ? $next_token : $arg->dotDotDotToken);
+                    } else {
+                        $placeholder_line = self::getStartLine($arg->questionToken ?? $arg);
+                    }
+                    $callable_convert_line ??= $placeholder_line;
                     $placeholder = new ast\Node(
                         ast\AST_PLACEHOLDER_ARG,
                         $arg->dotDotDotToken !== null ? ast\flags\PLACEHOLDER_VARIADIC : 0,
                         [],
-                        $arg_line
+                        $placeholder_line
                     );
                     if ($arg->name instanceof Token) {
                         // A named placeholder: `f(a: ?)`
@@ -2562,16 +2576,18 @@ class TolerantASTConverter
                             ast\AST_NAMED_ARG,
                             0,
                             ['name' => static::tokenToString($arg->name), 'expr' => $placeholder],
-                            $arg_line
+                            self::getStartLine($arg)
                         );
                     }
                     $ast_args[] = $placeholder;
                 }
+                $first_arg = $ast_args[0];
+                $arg_list_line = $first_arg instanceof ast\Node ? $first_arg->lineno : self::getStartLine($filtered_children[0]);
                 return new ast\Node(
                     ast\AST_CALLABLE_CONVERT,
                     0,
-                    ['args' => new ast\Node(ast\AST_ARG_LIST, 0, $ast_args, $callable_convert_line)],
-                    $callable_convert_line
+                    ['args' => new ast\Node(ast\AST_ARG_LIST, 0, $ast_args, $arg_list_line)],
+                    $callable_convert_line ?? $arg_list_line
                 );
             }
         }
