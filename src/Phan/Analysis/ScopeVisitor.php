@@ -133,6 +133,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
         );
         foreach ($alias_target_map as $alias => [$flags, $target, $lineno]) {
             $this->warnAboutReservedUseAlias($alias, $flags, $lineno);
+            $this->warnAboutReservedClassAlias($alias, $target, $flags, $lineno);
             $context = $context->withNamespaceMap(
                 $flags,
                 $alias,
@@ -166,6 +167,7 @@ abstract class ScopeVisitor extends AnalysisVisitor
                 $this->maybeWarnSameNamespaceUse($alias, $target, $flags, $lineno);
             }
             $this->warnAboutReservedUseAlias($alias, $flags, $lineno);
+            $this->warnAboutReservedClassAlias($alias, $target, $flags, $lineno);
             $context = $context->withNamespaceMap(
                 $flags,
                 $alias,
@@ -214,6 +216,19 @@ abstract class ScopeVisitor extends AnalysisVisitor
             $this->warnAboutNameReservedInFutureVersion($alias, ['let', 'is', '_'], 'a constant alias', $lineno);
         } else {
             $this->warnAboutNameReservedInFutureVersion($alias, ['let', 'is', '_'], 'a class alias', $lineno);
+        }
+    }
+
+    /**
+     * Emit PhanReservedClassName for `use Foo as int;` and `use Foo\self;`: php does not allow these names for a class import.
+     */
+    private function warnAboutReservedClassAlias(string $alias, FullyQualifiedGlobalStructuralElement $target, int $flags, int $lineno): void
+    {
+        if ($flags === ast\flags\USE_FUNCTION || $flags === ast\flags\USE_CONST) {
+            return;
+        }
+        if (FullyQualifiedClassName::isReservedName($alias)) {
+            $this->emitIssue(Issue::ReservedClassName, $lineno, $alias, 'the alias of ' . $target);
         }
     }
 

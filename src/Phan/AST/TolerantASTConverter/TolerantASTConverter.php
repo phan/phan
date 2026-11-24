@@ -1514,7 +1514,8 @@ class TolerantASTConverter
                     static::tokenToString($n->name),
                     static::phpParserAttributeGroupsToAstAttributeList($n->attributes),
                     null,
-                    null,
+                    // The interfaces of the enum: `enum E implements I {}`
+                    $n->enumInterfaceClause,
                     static::phpParserStmtlistToAstNode($n->enumMembers->enumMemberDeclarations ?? [], self::getStartLine($n->enumMembers), false),
                     static::getStartLine($n->enumKeyword),
                     $end_line,
@@ -2557,7 +2558,7 @@ class TolerantASTConverter
         ?string $name,
         ?ast\Node $attributes,
         ?ast\Node $extends,
-        ?PhpParser\Node\ClassInterfaceClause $implements,
+        PhpParser\Node\ClassInterfaceClause|PhpParser\Node\EnumInterfaceClause|null $implements,
         ?ast\Node $stmts,
         int $line,
         int $end_line,

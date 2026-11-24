@@ -428,6 +428,16 @@ Please do file an issue or otherwise get in touch if you get one of these (or an
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/misc/fallback_test/expected/047_valid_define.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/misc/fallback_test/src/047_valid_define.php#L2).
 
+## PhanReservedClassName
+
+PHP reserves the names of its types (`int`, `string`, `self`, `parent`, `static`, `mixed`, `never`, ...), and stops with a fatal error when one is the name of a class, interface, trait or enum (`class int {}`), the alias of a class import (`use Foo as self;`, `use Foo\string;`), the class after `extends` or `implements` (`class A extends parent {}`), or a qualified type (`\self`, `Foo\int`).
+
+```
+Cannot use "{CLASS}" as {DETAILS} as it is reserved
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/1014_use.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/1014_use.php#L3).
+
 ## PhanReservedConstantName
 
 ```

@@ -97,6 +97,17 @@ class ParseVisitor extends ScopeVisitor
      */
 
     /**
+     * @return bool whether this is the name `self`, `parent` or `static`, which php does not allow after `extends` or `implements`
+     */
+    private static function isReservedClassReference(Node $node): bool
+    {
+        if ($node->kind !== ast\AST_NAME || $node->flags !== ast\flags\NAME_NOT_FQ) {
+            return false;
+        }
+        return \in_array(\strtolower((string)$node->children['name']), ['self', 'parent', 'static'], true);
+    }
+
+    /**
      * Visit a node with kind `\ast\AST_CLASS`
      *
      * @param Node $node
@@ -129,6 +140,10 @@ class ParseVisitor extends ScopeVisitor
             $this->warnAboutNameReservedInFutureVersion($class_name, ['let', 'is'], $class_kind, $node->lineno);
             // "_" is deprecated as the name of a class since PHP 8.4
             $this->warnAboutNameReservedInFutureVersion($class_name, ['_'], $class_kind, $node->lineno, 80400);
+            if (FullyQualifiedClassName::isReservedName($class_name)) {
+                // `class int {}`, `enum self {}`
+                $this->emitIssue(Issue::ReservedClassName, $node->lineno, $class_name, $class_kind . ' name');
+            }
         }
 
         $class_fqsen = FullyQualifiedClassName::fromStringInContext(
@@ -241,7 +256,10 @@ class ParseVisitor extends ScopeVisitor
             // Look to see if we have a parent class
             $extends_node = $node->children['extends'] ?? null;
             $parent_class_name = '';
-            if ($extends_node instanceof Node) {
+            if ($extends_node instanceof Node && self::isReservedClassReference($extends_node)) {
+                // `class A extends parent {}`
+                $this->emitIssue(Issue::ReservedClassName, $extends_node->lineno, (string)$extends_node->children['name'], 'a class name');
+            } elseif ($extends_node instanceof Node) {
                 try {
                     $parent_class_name = UnionTypeVisitor::unionTypeFromClassNode($this->code_base, $this->context, $extends_node)->__toString();
                 } catch (IssueException $e) {
@@ -290,6 +308,11 @@ class ParseVisitor extends ScopeVisitor
             foreach ($node->children['implements']->children ?? [] as $name_node) {
                 if (!$name_node instanceof Node) {
                     throw new AssertionError('Expected list of AST_NAME nodes');
+                }
+                if (self::isReservedClassReference($name_node)) {
+                    // `class A implements self {}`, `interface I extends static {}`
+                    $this->emitIssue(Issue::ReservedClassName, $name_node->lineno, (string)$name_node->children['name'], 'an interface name');
+                    continue;
                 }
                 try {
                     $name = (string)UnionTypeVisitor::unionTypeFromClassNode($this->code_base, $this->context, $name_node);

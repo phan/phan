@@ -736,6 +736,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             if ($kind === ast\AST_TYPE) {
                 $types[] = $this->visitType($c);
             } elseif ($kind === ast\AST_NAME) {
+                $this->warnAboutReservedNameInType($c);
                 if ($this->context->getScope()->isInTraitScope()) {
                     $name = \strtolower($c->children['name']);
                     if ($name === 'self') {
@@ -793,6 +794,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             if ($kind === ast\AST_TYPE) {
                 $types[] = $this->visitType($c);
             } elseif ($kind === ast\AST_NAME) {
+                $this->warnAboutReservedNameInType($c);
                 if ($this->context->getScope()->isInTraitScope()) {
                     $name = \strtolower($c->children['name']);
                     if ($name === 'self') {
@@ -927,6 +929,36 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
+     * Emits PhanReservedClassName for a type that php rejects because of a reserved name:
+     * `\self`, `\static` (php: "'\self' is an invalid class name") and `Foo\int` (php: 'Cannot use "Foo\int" as a type name as it is reserved').
+     *
+     * @param Node $node a node of kind AST_NAME in a type
+     */
+    private function warnAboutReservedNameInType(Node $node): void
+    {
+        $name = $node->children['name'];
+        if (!\is_string($name)) {
+            return;
+        }
+        $is_qualified = \str_contains($name, '\\');
+        if ($node->flags === ast\flags\NAME_NOT_FQ && !$is_qualified) {
+            return;
+        }
+        $prefix = $node->flags === ast\flags\NAME_FQ ? '\\' : ($node->flags === ast\flags\NAME_RELATIVE ? 'namespace\\' : '');
+        if (!$is_qualified) {
+            // `\self`, `\parent`, `\static`.
+            // (php accepts `namespace\self` and `namespace\parent` as types, and `\int` is reported as an undeclared class)
+            if ($node->flags === ast\flags\NAME_FQ && \in_array(\strtolower($name), ['self', 'parent', 'static'], true)) {
+                $this->emitIssue(Issue::ReservedClassName, $node->lineno, $prefix . $name, 'a qualified class name');
+            }
+            return;
+        }
+        if (FullyQualifiedClassName::isReservedName($name)) {
+            $this->emitIssue(Issue::ReservedClassName, $node->lineno, $prefix . $name, 'a type name');
+        }
+    }
+
+    /**
      * Returns the union type from a type in a parameter/return signature of a function-like.
      * This preserves `self` and `static`
      */
@@ -944,6 +976,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         if ($kind === ast\AST_TYPE) {
             $result = $this->visitType($node);
         } elseif ($kind === ast\AST_NAME) {
+            $this->warnAboutReservedNameInType($node);
             if ($this->context->getScope()->isInTraitScope()) {
                 $name = \strtolower($node->children['name']);
                 if ($name === 'self') {
