@@ -49,13 +49,14 @@ class AsymmetricVisibilityPlugin extends PluginV3 implements AnalyzePropertyCapa
             );
         }
 
+        // PHP rejects a property that can be written from more places than it can be read from:
+        // `protected public(set)`, `private public(set)` and `private protected(set)`.
+        // The same visibility for both is allowed (`public public(set)`, `private private(set)`).
         $isVisibilityLessRestrictiveThanSet = false;
         if ($property->isPublicSet()) {
-            $isVisibilityLessRestrictiveThanSet = true;
-        } else if ($property->isProtectedSet() && !$property->isPublic()) {
-            $isVisibilityLessRestrictiveThanSet = true;
-        } else if ($property->isPrivateSet() && $property->isPrivate()) {
-            $isVisibilityLessRestrictiveThanSet = true;
+            $isVisibilityLessRestrictiveThanSet = !$property->isPublic();
+        } elseif ($property->isProtectedSet()) {
+            $isVisibilityLessRestrictiveThanSet = $property->isPrivate();
         }
         if ($isVisibilityLessRestrictiveThanSet) {
             self::emitIssue(
@@ -72,7 +73,6 @@ class AsymmetricVisibilityPlugin extends PluginV3 implements AnalyzePropertyCapa
                 Issue::REMEDIATION_A
             );
         }
-        //
     }
 }
 
