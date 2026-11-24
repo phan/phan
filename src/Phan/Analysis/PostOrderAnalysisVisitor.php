@@ -44,6 +44,7 @@ use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\Type;
+use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
@@ -4867,7 +4868,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     private function analyzeCloneWithProperties(Node $node, mixed $with_properties): void
     {
         $with_properties_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $with_properties, true);
-        if (!$with_properties_type->isEmpty() && !$with_properties_type->hasArray() && !$with_properties_type->hasMixedOrNonEmptyMixedType()) {
+        // (A type that may be an array is accepted: `iterable`, `callable`, `?array`)
+        if (!$with_properties_type->isEmpty() && !$with_properties_type->hasAnyTypeOverlap($this->code_base, ArrayType::instance(false)->asPHPDocUnionType())) {
             $this->emitIssue(
                 Issue::TypeMismatchArgumentInternal,
                 $with_properties->lineno ?? $node->lineno,
@@ -4883,8 +4885,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if (!($with_properties instanceof Node) || $with_properties->kind !== ast\AST_ARRAY) {
             return;
         }
-        // The object that the properties are assigned to: the clone, which has the type of the object.
-        $clone_node = new Node(ast\AST_CLONE, 0, ['expr' => $node->children['expr']], $node->lineno);
+        // The object that the properties are assigned to is the clone, which has the type of the object.
+        // (This uses the node itself and not a copy without the properties: Phan caches the classes of a node by the id of the node,
+        // and the id of a temporary node can be used again in the same statement.)
+        $clone_node = $node;
         // The entries that php assigns: a later entry with the same key replaces an earlier one,
         // and so may `...$properties` or an entry with a key that is not known.
         $elem_for_key = [];

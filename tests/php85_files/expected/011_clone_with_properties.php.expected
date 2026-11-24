@@ -48,3 +48,9 @@
 %s:67 PhanTypeMismatchPropertyReal Assigning 'bad' of type string to property but \CloneWithProperties\WithReadOnlyDoc->a is int
 %s:69 PhanAccessReadOnlyProperty Cannot modify read-only property \CloneWithProperties\WithReadOnlyDoc->ro defined at %s:57
 %s:70 PhanAccessReadOnlyMagicProperty Cannot modify read-only magic property \CloneWithProperties\WithReadOnlyDoc->magic defined at %s:53
+%s:73 PhanWriteOnlyPublicProperty Possibly zero read references to public property \CloneWithProperties\OtherClass->name
+%s:74 PhanPluginUnknownArrayFunctionParamType Function possiblyArrays() has a parameter type of array for $na, but does not specify any key types or value types
+%s:74 PhanUnreferencedFunction Possibly zero references to function \CloneWithProperties\possiblyArrays()
+%s:75 PhanTypeMismatchArgumentInternal Argument 2 ($withProperties) is $t of type \Traversable but \clone() takes array
+%s:76 PhanUndeclaredProperty Reference to undeclared property \CloneWithProperties\O->name
+%s:76 PhanUndeclaredProperty Reference to undeclared property \CloneWithProperties\OtherClass->a

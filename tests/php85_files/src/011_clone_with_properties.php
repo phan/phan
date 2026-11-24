@@ -70,3 +70,8 @@ function overwritten(WithReadOnlyDoc $o, array $more, string $k): void {
     $c8 = clone($o, ['magic' => 2]);
     var_dump($c1, $c2, $c3, $c4, $c5, $c6, $c7, $c8);
 }
+class OtherClass { public string $name = ''; }
+function possiblyArrays(O $o, OtherClass $other, iterable $it, callable $cb, ?array $na, \Traversable $t): void {
+    var_dump(clone($o, $it), clone($o, $cb), clone($o, $na), clone($o, $t));
+    var_dump(clone($o, ['a' => 1]), clone($other, ['name' => 'x']), clone($o, ['name' => 2]), clone($other, ['a' => 3]));
+}
