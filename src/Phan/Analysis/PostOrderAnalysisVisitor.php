@@ -330,7 +330,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * This is used for `$b = &$a`, `[&$a]`, the arguments of parameters passed by reference,
      * and the expressions returned by functions returning a reference.
      */
-    private function createReferenceTarget(Node $node, bool $report_undefined = false): void
+    private function createReferenceTarget(Node $node, bool $report_undefined = false, bool $is_argument = false): void
     {
         $kind = $node->kind;
         if ($kind === ast\AST_VAR) {
@@ -352,6 +352,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $this->createVariableForReference($var_node, ArrayShapeType::empty(false)->asPHPDocUnionType(), $report_undefined);
         $null_type = NullType::instance(false)->asPHPDocUnionType();
         if ($node->children['dim'] === null) {
+            if ($is_argument) {
+                return;
+            }
             // `$x = &$var[];` appends null
             $element_type = $null_type;
         } else {
@@ -4723,6 +4726,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($parent_kind === ast\AST_DIM && $parent_node instanceof Node && $parent_node->children['expr'] === $node) {
             // `$var[...][...]`: the outermost dimension checks the chain, since its parent decides whether `$var` is read
             // (`byref($var[0][1])` and `$x = &$var[0][1]` create `$var`).
+        } elseif ($parent_kind === ast\AST_RETURN && $this->isInFunctionReturningReference()) {
+            // `return $var['k'];` in a function returning a reference creates `$var` and the offset: see analyzeReturnsReference()
         } elseif (!isset(self::SKIP_DIM_VAR_CHECK_TYPES[$parent_kind])) {
             $this->checkForPossiblyUndeclaredVariableOfDimRead($node);
         } elseif ($parent_kind !== ast\AST_ASSIGN_REF) {
@@ -5786,7 +5791,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     {
         if ($argument->kind === ast\AST_DIM) {
             // `preg_match($re, $s, $out['m'])` creates `$out` and the offset 'm'.
-            $this->createReferenceTarget($argument);
+            // (`$out[]` only creates `$out`: the element is appended when the type of the parameter is assigned)
+            $this->createReferenceTarget($argument, false, true);
             return;
         }
         if ($argument->kind === ast\AST_VAR) {

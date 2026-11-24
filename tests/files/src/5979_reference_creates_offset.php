@@ -36,3 +36,26 @@ function reference_creates_offset(string $key): array {
     var_dump($read['missing']);
     return [$first, $second, $by_key, $created, $undefined_array_ref];
 }
+
+function append_argument(): string
+{
+    $out = [];
+    preg_match('/(x)/', 'x', $out[]);
+    return $out[0][0];
+}
+
+function &return_offset_by_reference(bool $b)
+{
+    if ($b) {
+        $a = [];
+    }
+    return $a['k'];
+}
+
+function return_offset_by_value(bool $b)
+{
+    if ($b) {
+        $a = [];
+    }
+    return $a['k'];
+}
