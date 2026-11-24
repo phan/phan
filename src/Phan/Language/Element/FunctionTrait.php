@@ -23,6 +23,7 @@ use Phan\Language\Context;
 use Phan\Language\Element\Comment\Assertion;
 use Phan\Language\Element\Comment\ConditionalReturnType;
 use Phan\Language\Element\Comment\CustomAnnotation;
+use Phan\Language\Element\Comment\Parameter as CommentParameter;
 use Phan\Language\FileRef;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -2327,7 +2328,7 @@ trait FunctionTrait
             if ($union_type->isEmpty()) {
                 continue;
             }
-            $violations = TemplateVarianceUtil::collectVarianceViolations($code_base, $union_type, $template_map, self::getVariancePositionOfParameter($parameter));
+            $violations = TemplateVarianceUtil::collectVarianceViolations($code_base, $union_type, $template_map, self::getVariancePositionOfParameter($parameter, $comment_parameter));
             if (!$violations) {
                 continue;
             }
@@ -2353,21 +2354,21 @@ trait FunctionTrait
     /**
      * @return int the position of a parameter for template variance: one of the TemplateVarianceUtil::POSITION_* constants
      */
-    private static function getVariancePositionOfParameter(Parameter $parameter): int
+    private static function getVariancePositionOfParameter(Parameter $parameter, ?CommentParameter $comment_parameter): int
     {
         if (!$parameter->isPassByReference()) {
             return TemplateVarianceUtil::POSITION_CONTRAVARIANT;
         }
         // A reference is read and written by the method, unless it is annotated otherwise.
-        switch ($parameter->getReferenceType()) {
-            case Parameter::REFERENCE_WRITE_ONLY:
-                // `@phan-output-reference`: the method only produces the value
-                return TemplateVarianceUtil::POSITION_COVARIANT;
-            case Parameter::REFERENCE_IGNORED:
-                return TemplateVarianceUtil::POSITION_CONTRAVARIANT;
-            default:
-                return TemplateVarianceUtil::POSITION_INVARIANT;
+        // (The annotations are read from the comment: they are copied to the parameter when the scope of the method is created, which may be later)
+        if ($parameter->getReferenceType() === Parameter::REFERENCE_WRITE_ONLY || ($comment_parameter && $comment_parameter->isOutputReference())) {
+            // `@phan-output-reference`: the method only produces the value
+            return TemplateVarianceUtil::POSITION_COVARIANT;
         }
+        if ($parameter->getReferenceType() === Parameter::REFERENCE_IGNORED || ($comment_parameter && $comment_parameter->isIgnoredReference())) {
+            return TemplateVarianceUtil::POSITION_CONTRAVARIANT;
+        }
+        return TemplateVarianceUtil::POSITION_INVARIANT;
     }
 
     private function emitTemplateVarianceIssue(

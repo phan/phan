@@ -550,6 +550,11 @@ class Analysis
             if ($show_progress) {
                 CLI::progress('function', (++$i) / (count($function_map)), $function);
             }
+            if ($function instanceof Func && !$function->isPHPInternal()) {
+                // The variance of the templates of a function is checked after all classes were parsed:
+                // the variance of the templates of other classes is needed (`Consumer<T>`).
+                $function->enforceTemplateVarianceForSignature($code_base, null);
+            }
             $analyzer->analyze($function);
         }
 

@@ -3395,14 +3395,38 @@ class Clazz extends AddressableElement
             if (!($method instanceof Method)) {
                 continue;
             }
-            if ($method->getRealDefiningFQSEN()->getFullyQualifiedClassName() !== $this->fqsen || $method->isPHPInternal()) {
+            if ($method->isPHPInternal()) {
                 continue;
+            }
+            if ($method->getRealDefiningFQSEN()->getFullyQualifiedClassName() !== $this->fqsen) {
+                // The trait or class that declares the method checks it, unless the method is private there
+                // and this class makes it accessible: `use Writer { set as public; }`
+                if (!$has_variance || $method->isPrivate() || !self::isPrivateInDeclaringTrait($code_base, $method)) {
+                    continue;
+                }
             }
             // A method is also checked for the templates that it declares itself.
             if ($has_variance || $method->hasTemplateType()) {
                 $method->enforceTemplateVarianceForSignature($code_base, $this);
             }
         }
+    }
+
+    /**
+     * @return bool whether the method is a private method of a trait, which was not checked for variance in the trait
+     */
+    private static function isPrivateInDeclaringTrait(CodeBase $code_base, Method $method): bool
+    {
+        $real_fqsen = $method->getRealDefiningFQSEN();
+        $class_fqsen = $real_fqsen->getFullyQualifiedClassName();
+        if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+            return false;
+        }
+        $trait = $code_base->getClassByFQSEN($class_fqsen);
+        if (!$trait->isTrait() || !$trait->hasMethodWithName($code_base, $real_fqsen->getName(), true)) {
+            return false;
+        }
+        return $trait->getMethodByName($code_base, $real_fqsen->getName())->isPrivate();
     }
 
     /**

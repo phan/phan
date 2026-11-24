@@ -301,3 +301,106 @@ class MixedChild extends MixedBase
 class SuppressedChild extends WritableBase
 {
 }
+
+/**
+ * The class that the return type uses is declared after the function.
+ *
+ * @template-contravariant T
+ * @param T $value
+ * @return LaterConsumer<T>
+ */
+function makeLaterConsumer($value): LaterConsumer
+{
+    throw new \RuntimeException(\gettype($value));
+}
+
+/**
+ * @template-contravariant T
+ * @param T $in
+ * @return T
+ */
+function returnsContravariant($in)
+{
+    return $in;
+}
+
+/** @template-contravariant T */
+interface LaterConsumer
+{
+}
+
+/**
+ * @template-covariant T
+ */
+class AnnotatedReferences
+{
+    /** @var T */
+    private $value;
+
+    /** @param T $value */
+    public function __construct($value)
+    {
+        $this->value = $value;
+    }
+
+    /**
+     * @param T $out @phan-output-reference
+     */
+    public function output(&$out): void
+    {
+        $out = $this->value;
+    }
+
+    /**
+     * @param T $ref
+     */
+    public function readWrite(&$ref): void
+    {
+        $ref = $this->value;
+    }
+}
+
+/** @template-covariant T */
+trait PrivateWriter
+{
+    /** @var T */
+    private $written;
+
+    /** @param T $value */
+    private function write($value): void
+    {
+        $this->written = $value;
+    }
+
+    /** @return T */
+    public function read()
+    {
+        return $this->written;
+    }
+}
+
+/**
+ * @template-covariant T
+ * @use PrivateWriter<T>
+ */
+class ExposesWriter
+{
+    use PrivateWriter {
+        write as public;
+    }
+}
+
+/**
+ * @template-covariant T
+ * @use PrivateWriter<T>
+ */
+class KeepsWriterPrivate
+{
+    use PrivateWriter;
+
+    /** @param T $value */
+    public function __construct($value)
+    {
+        $this->write($value);
+    }
+}
