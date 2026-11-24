@@ -75,3 +75,13 @@ function possiblyArrays(O $o, OtherClass $other, iterable $it, callable $cb, ?ar
     var_dump(clone($o, $it), clone($o, $cb), clone($o, $na), clone($o, $t));
     var_dump(clone($o, ['a' => 1]), clone($other, ['name' => 'x']), clone($o, ['name' => 2]), clone($other, ['a' => 3]));
 }
+class ParentClass {
+    public function make(ChildClass $child): ChildClass { return clone($child, ['x' => 2]); }
+    public function makePriv(ChildClass $child): ChildClass { return clone($child, ['p' => 2]); }
+}
+class ChildClass extends ParentClass {
+    public function __construct(public readonly int $x = 1, public private(set) readonly int $p = 1) {}
+}
+class Sibling extends ParentClass {
+    public function make2(ChildClass $child): ChildClass { return clone($child, ['x' => 3]); }
+}

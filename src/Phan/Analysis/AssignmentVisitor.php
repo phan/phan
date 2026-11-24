@@ -1375,7 +1375,7 @@ class AssignmentVisitor extends AnalysisVisitor
 
     /**
      * `clone($obj, ['prop' => $value])` initializes the property of the new object, so a readonly property can be set
-     * from every scope that its set visibility allows: readonly is implicitly `protected(set)` (the class and its subclasses),
+     * from every scope that its set visibility allows: readonly is implicitly `protected(set)` (the class, its subclasses and its base classes),
      * unless the property is declared `public(set)` or `private(set)`.
      *
      * @return bool whether the readonly property can be set by clone from the current scope
@@ -1407,7 +1407,8 @@ class AssignmentVisitor extends AnalysisVisitor
         if ($property->isPrivateSet()) {
             return false;
         }
-        return $class_fqsen->asType()->isSubtypeOf($defining_fqsen->asType(), $this->code_base);
+        // Subclasses and base classes of the declaring class
+        return $property->checkCanAccessProtectedElement($this->code_base, $class_fqsen);
     }
 
     /**

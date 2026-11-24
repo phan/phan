@@ -54,3 +54,11 @@
 %s:75 PhanTypeMismatchArgumentInternal Argument 2 ($withProperties) is $t of type \Traversable but \clone() takes array
 %s:76 PhanUndeclaredProperty Reference to undeclared property \CloneWithProperties\O->name
 %s:76 PhanUndeclaredProperty Reference to undeclared property \CloneWithProperties\OtherClass->a
+%s:79 PhanUnreferencedPublicMethod Possibly zero references to public method \CloneWithProperties\ParentClass::make()
+%s:80 PhanAccessSetPropertyWrongContext Cannot modify private(set) property \CloneWithProperties\ChildClass->p defined at %s:83 from %s:80
+%s:80 PhanUnreferencedPublicMethod Possibly zero references to public method \CloneWithProperties\ParentClass::makePriv()
+%s:83 PhanWriteOnlyPublicProperty Possibly zero read references to public property \CloneWithProperties\ChildClass->p
+%s:83 PhanWriteOnlyPublicProperty Possibly zero read references to public property \CloneWithProperties\ChildClass->x
+%s:85 PhanUnreferencedClass Possibly zero references to class \CloneWithProperties\Sibling
+%s:86 PhanTypeModifyImmutableObjectProperty Saw attempt to modify class \CloneWithProperties\ChildClass's property $x declared at %s:83 (immutability of properties is enforced at runtime)
+%s:86 PhanUnreferencedPublicMethod Possibly zero references to public method \CloneWithProperties\Sibling::make2()
