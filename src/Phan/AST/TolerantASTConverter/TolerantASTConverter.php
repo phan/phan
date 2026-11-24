@@ -606,7 +606,31 @@ class TolerantASTConverter
      */
     final protected static function getStartLine(\Microsoft\PhpParser\Node|Token $n): int
     {
-        return self::$file_position_map->getStartLine($n);
+        $line = self::$file_position_map->getStartLine($n);
+        if ($n instanceof PhpParser\Node && self::startsWithHeredoc($n)) {
+            // php uses the line of the first line of the body for a heredoc or nowdoc, and for the nodes that start with it:
+            // `[<<<EOT`, `f(<<<EOT`, `<<<EOT ... EOT . $x`
+            return $line + 1;
+        }
+        return $line;
+    }
+
+    /**
+     * @return bool whether the first token of the node is the start of a heredoc or nowdoc
+     */
+    private static function startsWithHeredoc(PhpParser\Node $n): bool
+    {
+        $contents = self::$file_contents;
+        try {
+            $start = $n->getStartPosition();
+        } catch (\Exception) {
+            return false;
+        }
+        $c = $contents[$start] ?? '';
+        if ($c === 'b' || $c === 'B') {
+            $start++;
+        }
+        return \substr_compare($contents, '<<<', $start, 3) === 0;
     }
 
     /**
@@ -1080,9 +1104,29 @@ class TolerantASTConverter
             'Microsoft\PhpParser\Node\Expression\ObjectCreationExpression' => static function (PhpParser\Node\Expression\ObjectCreationExpression $n, int $start_line): ast\Node {
                 $end_line = static::getEndLine($n);
                 $class_type_designator = $n->classTypeDesignator;
+                // php uses the line of the class (the name, or `class`) for `new`, also when `new` is on an earlier line.
+                if ($class_type_designator instanceof Token || $class_type_designator instanceof PhpParser\Node) {
+                    $start_line = self::getStartLine($class_type_designator);
+                }
+                if ($n->closeParen !== null) {
+                    // php creates an empty argument list when it reaches the `)`. (The line of the first argument is used otherwise)
+                    $args_line = self::getStartLine($n->closeParen);
+                } elseif ($class_type_designator instanceof PhpParser\Node) {
+                    // Without parentheses, php creates the empty argument list when it reads the token after the class: `new Foo;`
+                    $args_line = self::getLineOfTokenAfter($class_type_designator);
+                } else {
+                    $args_line = $start_line;
+                }
                 if ($class_type_designator instanceof Token && $class_type_designator->kind === TokenKind::ClassKeyword) {
                     // Node of type AST_CLASS
                     $base_class = $n->classBaseClause->baseClass ?? null;
+                    // php uses the line of `{` for the statements of an anonymous class.
+                    $class_members = $n->classMembers;
+                    $stmts_line = $class_members !== null ? self::getStartLine($class_members) : $start_line;
+                    if ($n->closeParen === null) {
+                        // The token after `class`
+                        $args_line = self::getStartLine($n->classBaseClause ?? $n->classInterfaceClause ?? $class_members ?? $class_type_designator);
+                    }
                     $class_node = static::astStmtClass(
                         // The modifiers of an anonymous class: `new readonly class {}`
                         flags\CLASS_ANONYMOUS | self::phpParserClassModifiersToAstClassFlags(null, $n->modifiers ?? []),
@@ -1090,7 +1134,7 @@ class TolerantASTConverter
                         static::phpParserAttributeGroupsToAstAttributeList($n->attributes),
                         $base_class !== null ? static::phpParserNonValueNodeToAstNode($base_class) : null,
                         $n->classInterfaceClause,
-                        static::phpParserStmtlistToAstNode($n->classMembers->classMemberDeclarations ?? [], $start_line, false),
+                        static::phpParserStmtlistToAstNode($n->classMembers->classMemberDeclarations ?? [], $stmts_line, false),
                         $start_line,
                         $end_line,
                         $n->getDocCommentText(),
@@ -1101,7 +1145,7 @@ class TolerantASTConverter
                 }
                 return new ast\Node(ast\AST_NEW, 0, [
                     'class' => $class_node,
-                    'args' => static::phpParserArgListToAstArgList($n->argumentExpressionList, $start_line),
+                    'args' => static::phpParserArgListToAstArgList($n->argumentExpressionList, $args_line),
                 ], $start_line);
             },
             /** @return mixed */
@@ -1222,7 +1266,9 @@ class TolerantASTConverter
                     '@phan-var Token $part';
                     $imploded_parts = static::tokenToString($part);
                     if ($part->kind === TokenKind::Name) {
-                        if (\preg_match('@^__(LINE|FILE|DIR|FUNCTION|CLASS|TRAIT|METHOD|NAMESPACE)__$@iD', $imploded_parts) > 0) {
+                        // (`\__CLASS__` and `namespace\__CLASS__` are constants with that name, not magic constants)
+                        if ($n->globalSpecifier === null && $n->relativeSpecifier === null &&
+                            \preg_match('@^__(LINE|FILE|DIR|FUNCTION|CLASS|TRAIT|METHOD|NAMESPACE)__$@iD', $imploded_parts) > 0) {
                             return new ast\Node(
                                 ast\AST_MAGIC_CONST,
                                 self::MAGIC_CONST_LOOKUP[\strtoupper($imploded_parts)],
@@ -2002,7 +2048,8 @@ class TolerantASTConverter
                 'var'  => $var,
                 'expr' => $expr,
             ],
-            $line
+            // (An array that is destructured has the line of its first element, and php uses the line of the left side)
+            $var instanceof ast\Node && $var->kind === ast\AST_ARRAY ? $var->lineno : $line
         );
     }
 
@@ -2659,7 +2706,9 @@ class TolerantASTConverter
             }
             $ast_args[] = static::phpParserNodeToAstNode($arg);
         }
-        $result = new ast\Node(ast\AST_ARG_LIST, 0, $ast_args, $args ? self::getStartLine($args) : $line);
+        // php uses the line of the first argument, which is not always the line it starts on (`f([\n 1])`)
+        $first_arg = $ast_args[0] ?? null;
+        $result = new ast\Node(ast\AST_ARG_LIST, 0, $ast_args, $first_arg instanceof ast\Node ? $first_arg->lineno : ($args ? self::getStartLine($args) : $line));
         if (($arg->kind ?? null) === TokenKind::CommaToken) {
             // NOTE: This is deliberately using a dynamic property instead of a flag because other applications may use flags
             // @phan-suppress-next-line PhanUndeclaredProperty
@@ -3471,6 +3520,35 @@ class TolerantASTConverter
          */
     }
 
+    /**
+     * php uses the line of the value for an array element, which can follow the key on a later line (`'key' =>\n $value`)
+     * and can differ from the line that the value starts on (a nested array has the line of its first element).
+     *
+     * @param mixed $ast_value the converted value
+     */
+    private static function getStartLineOfArrayElement(PhpParser\Node\ArrayElement $item, mixed $ast_value): int
+    {
+        if ($ast_value instanceof ast\Node) {
+            return $ast_value->lineno;
+        }
+        $value = $item->elementValue;
+        return self::getStartLine($value instanceof PhpParser\Node ? $value : $item);
+    }
+
+    /**
+     * @param list<?ast\Node> $ast_items the elements of an array, with null for skipped elements (`[, $x] = $y`)
+     * @return ?int the line of the first element that is not skipped
+     */
+    private static function getLineOfFirstItem(array $ast_items): ?int
+    {
+        foreach ($ast_items as $item) {
+            if ($item !== null) {
+                return $item->lineno;
+            }
+        }
+        return null;
+    }
+
     private static function phpParserListToAstList(PhpParser\Node\Expression\ListIntrinsicExpression $n, int $start_line): ast\Node
     {
         $ast_items = [];
@@ -3499,14 +3577,19 @@ class TolerantASTConverter
                 continue;
             }
             $element_key = $item->elementKey;
+            $ast_value = static::phpParserNodeToAstNode($item->elementValue);
             $ast_items[] = new ast\Node(ast\AST_ARRAY_ELEM, 0, [
-                'value' => static::phpParserNodeToAstNode($item->elementValue),
+                'value' => $ast_value,
                 'key' => $element_key !== null ? static::phpParserNodeToAstNode($element_key) : null,
-            ], self::getStartLine($item));
+            ], self::getStartLineOfArrayElement($item, $ast_value));
         }
-        return new ast\Node(ast\AST_ARRAY, flags\ARRAY_SYNTAX_LIST, $ast_items, $start_line);
+        // (php uses the line of the first element)
+        return new ast\Node(ast\AST_ARRAY, flags\ARRAY_SYNTAX_LIST, $ast_items, self::getLineOfFirstItem($ast_items) ?? $start_line);
     }
 
+    /**
+     * @unused-param $start_line
+     */
     private static function phpParserArrayToAstArray(PhpParser\Node\Expression\ArrayCreationExpression $n, int $start_line): ast\Node
     {
         $ast_items = [];
@@ -3533,10 +3616,11 @@ class TolerantASTConverter
             }
             $flags = $item->byRef ? flags\ARRAY_ELEM_REF : 0;
             $element_key = $item->elementKey;
+            $ast_value = static::phpParserNodeToAstNode($item->elementValue);
             $ast_items[] = new ast\Node(ast\AST_ARRAY_ELEM, $flags, [
-                'value' => static::phpParserNodeToAstNode($item->elementValue),
+                'value' => $ast_value,
                 'key' => $element_key !== null ? static::phpParserNodeToAstNode($element_key) : null,
-            ], self::getStartLine($item));
+            ], self::getStartLineOfArrayElement($item, $ast_value));
         }
 
         $kind = $n->openParenOrBracket->kind;
@@ -3546,8 +3630,8 @@ class TolerantASTConverter
             $flags = flags\ARRAY_SYNTAX_LONG;
         }
 
-        // Workaround for ast line choice
-        return new ast\Node(ast\AST_ARRAY, $flags, $ast_items, $ast_items[0]->lineno ?? $start_line);
+        // php uses the line of the first element, or the line of the `]` of an empty array.
+        return new ast\Node(ast\AST_ARRAY, $flags, $ast_items, self::getLineOfFirstItem($ast_items) ?? self::getStartLine($n->closeParenOrBracket));
     }
 
     /**
