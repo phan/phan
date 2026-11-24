@@ -104,8 +104,8 @@ function test_ref_with_function_param() {
 
 // Test reference to undefined variable
 function test_undefined_ref() {
-    $ref =& $x;  // Reference to undefined variable
-    '@phan-debug-var $x'; // Should show empty type initially
+    $ref =& $x;  // Reference to undefined variable (this defines $x as null)
+    '@phan-debug-var $x'; // Should show null initially
 
     $x = 42;     // Now assign to $x
     '@phan-debug-var $x'; // Should show int(real=int), not 42(real=42)
@@ -117,9 +117,9 @@ function test_existing_var_becomes_ref() {
     $b = 17;
     '@phan-debug-var $b'; // Should show 17(real=17)
 
-    $b =& $a;  // Existing $b becomes reference to undefined $a
-    '@phan-debug-var $b'; // Should show empty type since $a is undefined
-    '@phan-debug-var $a'; // Should show empty type
+    $b =& $a;  // Existing $b becomes reference to undefined $a (this defines $a as null)
+    '@phan-debug-var $b'; // Should show null since $a was undefined
+    '@phan-debug-var $a'; // Should show null
 
     $b = 99;   // Assign through the reference
     '@phan-debug-var $b'; // Should show int(real=int), NOT 99(real=99) - literal erased

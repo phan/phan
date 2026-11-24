@@ -26,7 +26,7 @@ class RegexAnalyzer
      * Returns the union type of the matches output parameter in a call to `preg_match()`
      * with the nodes in $argument_list.
      *
-     * @param list<Node|string|float|int> $argument_list
+     * @param array<int,Node|string|float|int> $argument_list the arguments in the order of the parameters (see ArgumentType::normalizeNamedArgs())
      */
     public static function getPregMatchUnionType(
         CodeBase $code_base,
@@ -46,15 +46,15 @@ class RegexAnalyzer
             $shape_array_type  = UnionType::fromFullyQualifiedPHPDocString('array{0:string,1:int}[]');
             $shape_array_inner_type  = UnionType::fromFullyQualifiedPHPDocString('array{0:string,1:int}');
         }
-        $regex_node = $argument_list[0];
+        $regex_node = $argument_list[0] ?? null;
         $regex = $regex_node instanceof Node ? (new ContextNode($code_base, $context, $regex_node))->getEquivalentPHPScalarValue() : $regex_node;
         try {
             $regex_group_keys = RegexKeyExtractor::getKeys($regex);
         } catch (InvalidArgumentException) {
             $regex_group_keys = null;
         }
-        if (\count($argument_list) > 3) {
-            $offset_flags_node = $argument_list[3];
+        $offset_flags_node = $argument_list[3] ?? null;
+        if ($offset_flags_node !== null) {
             $bit = (new ContextNode($code_base, $context, $offset_flags_node))->getEquivalentPHPScalarValue();
         } else {
             $bit = 0;
@@ -81,15 +81,15 @@ class RegexAnalyzer
      * Returns the union type of the matches output parameter in a call to `preg_match_all()`
      * with the nodes in $argument_list.
      *
-     * @param list<Node|string|float|int> $argument_list
+     * @param array<int,Node|string|float|int> $argument_list the arguments in the order of the parameters (see ArgumentType::normalizeNamedArgs())
      */
     public static function getPregMatchAllUnionType(
         CodeBase $code_base,
         Context $context,
         array $argument_list
     ): UnionType {
-        if (\count($argument_list) > 3) {
-            $offset_flags_node = $argument_list[3];
+        $offset_flags_node = $argument_list[3] ?? null;
+        if ($offset_flags_node !== null) {
             $bit = (new ContextNode($code_base, $context, $offset_flags_node))->getEquivalentPHPScalarValue();
         } else {
             $bit = 0;

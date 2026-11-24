@@ -1,0 +1,10 @@
+%s:7 PhanUndeclaredGlobalVariable Global variable $global_undefined is undeclared
+%s:12 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $target of type null but \strlen() takes string
+%s:13 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $alias of type null but \strlen() takes string
+%s:14 PhanUndeclaredVariable Variable $undefined_value is undeclared
+%s:27 PhanPossiblyUndeclaredVariable Variable $other is possibly undeclared
+%s:33 PhanUndeclaredVariable Variable $undefined_element is undeclared
+%s:48 PhanUndeclaredVariable Variable $undefined_property_value is undeclared
+%s:56 PhanUndeclaredVariable Variable $returned_by_value is undeclared
+%s:73 PhanPossiblyUndeclaredVariable Variable $maybe_by_value is possibly undeclared
+%s:75 PhanUndeclaredVariable Variable $undefined_by_value is undeclared
