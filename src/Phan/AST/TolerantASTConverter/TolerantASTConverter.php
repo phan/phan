@@ -667,12 +667,20 @@ class TolerantASTConverter
             'Microsoft\PhpParser\Node\Expression\SubscriptExpression' => static function (PhpParser\Node\Expression\SubscriptExpression $n, int $start_line): \ast\Node|float|int|string {
                 $expr = static::phpParserNodeToAstNode($n->postfixExpression);
                 try {
+                    $access_expression = $n->accessExpression;
+                    if ($access_expression === null) {
+                        $dim = null;
+                    } elseif (self::isSimpleInterpolationSubscript($n)) {
+                        $dim = self::simpleInterpolationOffsetToAstValue($access_expression) ?? static::phpParserNodeToAstNode($access_expression);
+                    } else {
+                        $dim = static::phpParserNodeToAstNode($access_expression);
+                    }
                     return new ast\Node(
                         ast\AST_DIM,
                         ($n->openBracketOrBrace->kind ?? null) === TokenKind::OpenBraceToken ? ast\flags\DIM_ALTERNATIVE_SYNTAX : 0,
                         [
                             'expr' => $expr,
-                            'dim' => $n->accessExpression !== null ? static::phpParserNodeToAstNode($n->accessExpression) : null,
+                            'dim' => $dim,
                         ],
                         $start_line
                     );
@@ -883,7 +891,24 @@ class TolerantASTConverter
                 // Even though AST version 120+ represents clone as AST_CALL in php-ast,
                 // we normalize it here to AST_CLONE for consistency and to simplify
                 // downstream visitor logic (no special-casing needed in visitCall methods).
-                return new ast\Node(ast\AST_CLONE, 0, ['expr' => static::phpParserNodeToAstNode($n->expression)], $start_line);
+                $expression = $n->expression;
+                if ($expression === null) {
+                    // The arguments of `clone` are not the object followed by the optional property modifications:
+                    // `clone(?)`, `clone($obj, ...)`, `clone(object: $obj)`, `clone()`
+                    $args = static::phpParserArgListToAstArgList($n->argumentExpressionList, $start_line);
+                    // php creates the call when it reaches the `)`, and uses its line
+                    $line = $n->closeParen !== null ? self::getStartLine($n->closeParen) : $start_line;
+                    if ($args->kind === ast\AST_CALLABLE_CONVERT) {
+                        // Partial application of clone (php 8.6+) creates a closure, like php-ast's AST_CALL of the function `clone`.
+                        // ASTNormalizer leaves this call as it is.
+                        return new ast\Node(ast\AST_CALL, 0, [
+                            'expr' => new ast\Node(ast\AST_NAME, flags\NAME_FQ, ['name' => 'clone'], $line),
+                            'args' => $args,
+                        ], $line);
+                    }
+                    return new ast\Node(ast\AST_CLONE, 0, ['expr' => $args->children[0] ?? null], $line);
+                }
+                return new ast\Node(ast\AST_CLONE, 0, ['expr' => static::phpParserNodeToAstNode($expression)], $start_line);
             },
             'Microsoft\PhpParser\Node\Expression\ErrorControlExpression' => static function (PhpParser\Node\Expression\ErrorControlExpression $n, int $start_line): ast\Node {
                 return new ast\Node(
@@ -976,8 +1001,15 @@ class TolerantASTConverter
                         $start_line
                     );
                 } else {  // f()
+                    $name = static::phpParserNonValueNodeToAstNode($callable_expression);
+                    if ($callable_expression instanceof PhpParser\Node\QualifiedName && ($callable_expression->nameParts[0]->kind ?? null) === TokenKind::ReadonlyKeyword &&
+                        $name instanceof ast\Node && $n->closeParen instanceof Token) {
+                        // php 8.6 creates the name of a call of a function named readonly when it reaches the `)`, and uses its line: `readonly()`
+                        $start_line = self::getStartLine($n->closeParen);
+                        $name->lineno = $start_line;
+                    }
                     return static::astNodeCall(
-                        static::phpParserNonValueNodeToAstNode($callable_expression),
+                        $name,
                         $arg_list,
                         $start_line
                     );
@@ -1039,7 +1071,8 @@ class TolerantASTConverter
                     // Node of type AST_CLASS
                     $base_class = $n->classBaseClause->baseClass ?? null;
                     $class_node = static::astStmtClass(
-                        flags\CLASS_ANONYMOUS,
+                        // The modifiers of an anonymous class: `new readonly class {}`
+                        flags\CLASS_ANONYMOUS | self::phpParserClassModifiersToAstClassFlags(null, $n->modifiers ?? []),
                         null,
                         static::phpParserAttributeGroupsToAstAttributeList($n->attributes),
                         $base_class !== null ? static::phpParserNonValueNodeToAstNode($base_class) : null,
@@ -1184,11 +1217,23 @@ class TolerantASTConverter
                                 self::getStartLine($part)
                             );
                         }
+                        if (\defined('T_PROPERTY_C') && $n->globalSpecifier === null && $n->relativeSpecifier === null && \strcasecmp($imploded_parts, '__PROPERTY__') === 0) {
+                            // The magic constant of property hooks (php 8.4+). php-ast uses the token as the flags, and has no constant for it.
+                            return new ast\Node(
+                                ast\AST_MAGIC_CONST,
+                                \T_PROPERTY_C,
+                                [],
+                                self::getStartLine($part)
+                            );
+                        }
                     }
                 } else {
                     $imploded_parts = static::phpParserNameToString($n);
                 }
                 if ($n->globalSpecifier !== null) {
+                    $ast_kind = flags\NAME_FQ;
+                } elseif (($name_parts[0]->kind ?? null) === TokenKind::ReadonlyKeyword) {
+                    // php 8.6 represents the name of a call of a function named readonly as a fully qualified name: `readonly()`
                     $ast_kind = flags\NAME_FQ;
                 } elseif (($n->relativeSpecifier->namespaceKeyword ?? null) !== null) {
                     $ast_kind = flags\NAME_RELATIVE;
@@ -1217,7 +1262,9 @@ class TolerantASTConverter
                     static::phpParserUnionTypeToAstNode($type_declaration_list, $type_line),
                     static::variableTokenToString($n->variableName),
                     $default_node,
-                    $start_line
+                    $start_line,
+                    // The property hooks of a promoted constructor parameter: `public int $x { get => 1; }`
+                    static::phpParserPropertyHookListToAstNode($n->hookList)
                 );
             },
             /** @return int|float */
@@ -2110,7 +2157,7 @@ class TolerantASTConverter
      * @param string $name
      * @param \ast\Node|float|int|null|string $default
      */
-    private static function astNodeParam(?ast\Node $attributes, bool $is_nullable, int $flags, ?\ast\Node $type, string $name, \ast\Node|float|int|null|string $default, int $line): ast\Node
+    private static function astNodeParam(?ast\Node $attributes, bool $is_nullable, int $flags, ?\ast\Node $type, string $name, \ast\Node|float|int|null|string $default, int $line, ?ast\Node $hooks): ast\Node
     {
         if ($is_nullable) {
             $type = new ast\Node(
@@ -2128,9 +2175,9 @@ class TolerantASTConverter
             'docComment' => null,
         ];
 
-        // AST version 110+ adds 'hooks' field to AST_PARAM (always null for regular parameters)
+        // AST version 110+ adds 'hooks' field to AST_PARAM (null for parameters without property hooks)
         if (self::$ast_version_parsing >= 110) {
-            $children['hooks'] = null;
+            $children['hooks'] = $hooks;
         }
 
         return new ast\Node(
@@ -2558,7 +2605,7 @@ class TolerantASTConverter
                     if ($arg->dotDotDotToken !== null) {
                         // php reads the token after a `...` before it creates the placeholder, and uses its line.
                         $call = $args->parent;
-                        $next_token = $children[$i + 1] ?? ($call instanceof PhpParser\Node\Expression\CallExpression || $call instanceof PhpParser\Node\Expression\ObjectCreationExpression ? $call->closeParen : null);
+                        $next_token = $children[$i + 1] ?? ($call instanceof PhpParser\Node\Expression\CallExpression || $call instanceof PhpParser\Node\Expression\ObjectCreationExpression || $call instanceof PhpParser\Node\Expression\CloneExpression ? $call->closeParen : null);
                         $placeholder_line = self::getStartLine($next_token instanceof Token ? $next_token : $arg->dotDotDotToken);
                     } else {
                         $placeholder_line = self::getStartLine($arg->questionToken ?? $arg);
@@ -3060,6 +3107,10 @@ class TolerantASTConverter
             $modifier_tokens = [];
         }
         $flags = $modifier_tokens !== [] ? static::phpParserVisibilityToAstVisibility($modifier_tokens, false) : 0;
+        if ($hook->byRefToken !== null) {
+            // A hook that returns by reference: `&get => $this->x;`
+            $flags |= flags\FUNC_RETURNS_REF;
+        }
 
         if ($hook->arrowToken) {
             $expression = $hook->expression;
@@ -3091,7 +3142,8 @@ class TolerantASTConverter
                 'stmts' => $stmts,
                 'attributes' => static::phpParserAttributeGroupsToAstAttributeList($hook->attributes),
             ],
-            self::getStartLine($hook),
+            // php uses the line of the name, which can follow `&` on another line
+            self::getStartLine($keyword),
             static::extractPhpdocComment($hook),
             $name,
             self::getEndLine($hook),
@@ -3557,6 +3609,61 @@ class TolerantASTConverter
         return $n->getText(self::$file_contents);
     }
 
+    /**
+     * @return bool whether this is the subscript of a variable in a string without braces: `"$a[0]"`, `"$a[-1]"`, `"$a[key]"`
+     */
+    private static function isSimpleInterpolationSubscript(PhpParser\Node\Expression\SubscriptExpression $n): bool
+    {
+        $string = $n->parent;
+        $variable = $n->postfixExpression;
+        if (!$string instanceof PhpParser\Node\StringLiteral || !\is_array($string->children) ||
+            !$variable instanceof PhpParser\Node\Expression\Variable || ($variable->name->kind ?? null) !== TokenKind::VariableName) {
+            return false;
+        }
+        // Exclude `"{$a[0]}"`, where the offset is an expression
+        $i = \array_search($n, $string->children, true);
+        $previous = \is_int($i) && $i > 0 ? $string->children[$i - 1] : null;
+        return !($previous instanceof Token && ($previous->kind === TokenKind::OpenBraceDollarToken || $previous->kind === TokenKind::DollarOpenBraceToken));
+    }
+
+    /**
+     * Converts the offset of a variable in a string without braces the way php's lexer does:
+     * a decimal integer that fits in an int is an int, other numbers are strings (`"$a[0x1]"`, `"$a[01]"`),
+     * a negative offset is negated (`"$a[-1]"`, but `"$a[-0]"` is the string '-0'), and a name is a string (`"$a[key]"`).
+     *
+     * @return int|string|null null if this is not a number or a name
+     */
+    private static function simpleInterpolationOffsetToAstValue(PhpParser\Node $offset): int|string|null
+    {
+        $is_negative = false;
+        if ($offset instanceof PhpParser\Node\Expression\UnaryOpExpression && $offset->operator->kind === TokenKind::MinusToken) {
+            $is_negative = true;
+            $offset = $offset->operand;
+        }
+        if ($offset instanceof PhpParser\Node\StringLiteral && !$is_negative) {
+            $name = $offset->children;
+            return $name instanceof Token && $name->kind === TokenKind::Name ? static::tokenToString($name) : null;
+        }
+        if (!$offset instanceof PhpParser\Node\NumericLiteral) {
+            return null;
+        }
+        $token = $offset->children;
+        if (!$token instanceof Token) {
+            return null;
+        }
+        $text = static::tokenToString($token);
+        $max_digits = \ltrim((string)\PHP_INT_MIN, '-');
+        if (\preg_match('/^(0|[1-9][0-9]*)$/D', $text) &&
+            (\strlen($text) < \strlen($max_digits) || (\strlen($text) === \strlen($max_digits) && \strcmp($text, $max_digits) < 0))) {
+            $value = (int)$text;
+            if ($is_negative) {
+                return $value === 0 ? '-0' : -$value;
+            }
+            return $value;
+        }
+        return $is_negative ? "-$text" : $text;
+    }
+
     /** @internal */
     private const MAGIC_CONST_LOOKUP = [
         '__LINE__' => flags\MAGIC_LINE,
@@ -3704,7 +3811,8 @@ class TolerantASTConverter
     private static function parseMultiPartString(PhpParser\Node\StringLiteral $n, array $children): ast\Node
     {
         $start_quote = $n->startQuote;
-        if ($start_quote !== null && $start_quote->length >= 3) {
+        // (The length of a token includes the whitespace before it, so it does not tell a heredoc from a string)
+        if ($start_quote !== null && $start_quote->kind === TokenKind::HeredocStart) {
             return self::parseMultiPartHeredoc($n, $children);
         }
         return self::parseMultiPartRegularString($n, $children);
@@ -3719,7 +3827,8 @@ class TolerantASTConverter
         $start_quote = $n->startQuote;
         // @phan-suppress-next-line PhanPluginNoAssert for type narrowing
         \assert($start_quote !== null);
-        $start_quote_text = static::tokenToString($start_quote);
+        // (Ignore the binary string prefix: `b"a $x"`)
+        $start_quote_text = \ltrim(static::tokenToString($start_quote), 'bB');
         $end_quote_text = $n->endQuote->getText(self::$file_contents);
         $deprecated = false;
 

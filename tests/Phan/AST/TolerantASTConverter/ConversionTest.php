@@ -294,7 +294,12 @@ PHP;
         if (!($expr instanceof ast\Node) || $expr->kind !== ast\AST_NAME) {
             return false;
         }
-        return ($expr->children['name'] ?? null) === 'clone';
+        if (($expr->children['name'] ?? null) !== 'clone') {
+            return false;
+        }
+        // Partial application of clone (`clone(?)`, `clone($obj, ...)`, php 8.6+) creates a closure, and stays a call (see ASTNormalizer).
+        $args = $node->children['args'] ?? null;
+        return !($args instanceof ast\Node && $args->kind === ast\AST_CALLABLE_CONVERT);
     }
 
     /**

@@ -70,7 +70,7 @@ class ASTNormalizer
      * Check if an AST_CALL node represents a clone operation.
      *
      * @param Node $node An AST_CALL node
-     * @return bool True if the call is to 'clone'
+     * @return bool True if the call is to 'clone' and is not a partial application
      */
     private static function isCloneCall(Node $node): bool
     {
@@ -78,7 +78,12 @@ class ASTNormalizer
         if (!($expr instanceof Node) || $expr->kind !== \ast\AST_NAME) {
             return false;
         }
-        return ($expr->children['name'] ?? null) === 'clone';
+        if (($expr->children['name'] ?? null) !== 'clone') {
+            return false;
+        }
+        // Partial application of clone (`clone(?)`, `clone($obj, ...)`, php 8.6+) creates a closure, and stays a call.
+        $args = $node->children['args'] ?? null;
+        return !($args instanceof Node && $args->kind === \ast\AST_CALLABLE_CONVERT);
     }
 
     /**
