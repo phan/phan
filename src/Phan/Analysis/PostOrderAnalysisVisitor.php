@@ -346,15 +346,28 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $var_node = self::getBaseVariableNodeOfDim($node);
         if (!$var_node) {
             // E.g. `&$this->prop['k']`: the offset is not added to the type of the property.
+            // The expression that the dimensions start at is still checked: php creates the offset, but not an object (`&$nullable->prop['k']`).
+            $root = $node;
+            while ($root instanceof Node && $root->kind === ast\AST_DIM) {
+                $root = $root->children['expr'];
+            }
+            if ($root instanceof Node && $root->kind === ast\AST_PROP && Config::get_strict_object_checking()) {
+                $property_name = $root->children['prop'];
+                if (\is_string($property_name)) {
+                    // (The same check as for `$nullable->prop['k'] = $value;`. The flags that suppress it for reads are set on the whole chain.)
+                    ContextNode::checkPossiblyUndeclaredInstanceProperty($this->code_base, $this->context, $root, $property_name);
+                }
+            }
             return;
         }
         // An undefined `$var` becomes an array.
         $this->createVariableForReference($var_node, ArrayShapeType::empty(false)->asPHPDocUnionType(), $report_undefined);
         $null_type = NullType::instance(false)->asPHPDocUnionType();
+        if ($is_argument && self::hasAppendInDimChain($node)) {
+            // `f($out[])`, `f($out[]['m'])`: the element is appended once, when the type of the parameter is assigned.
+            return;
+        }
         if ($node->children['dim'] === null) {
-            if ($is_argument) {
-                return;
-            }
             // `$x = &$var[];` appends null
             $element_type = $null_type;
         } else {
@@ -371,6 +384,21 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
         // Analyze this as `$var[$k] = $var[$k]`, which adds the offset if it was missing (the type of a missing offset is null).
         self::assignTypeToReferencedDim($this->code_base, $this->context, $node, $element_type);
+    }
+
+    /**
+     * @param Node $node a node of kind ast\AST_DIM
+     * @return bool whether one of the dimensions of `$var[...][...]` is an append (`[]`)
+     */
+    private static function hasAppendInDimChain(Node $node): bool
+    {
+        while ($node instanceof Node && $node->kind === ast\AST_DIM) {
+            if ($node->children['dim'] === null) {
+                return true;
+            }
+            $node = $node->children['expr'];
+        }
+        return false;
     }
 
     /**
@@ -853,7 +881,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * Check if a given variable is undeclared.
      * @param Node $node Node with kind AST_VAR
      */
-    private function checkForUndeclaredVariable(Node $node): void
+    /**
+     * @param bool $was_undeclared true if the variable was undeclared when $node was evaluated,
+     * although it may be declared in the current scope (by a later argument of the same call)
+     */
+    private function checkForUndeclaredVariable(Node $node, bool $was_undeclared = false): void
     {
         $variable_name = $node->children['name'];
 
@@ -870,14 +902,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return;
         }
 
-        if (!$this->context->getScope()->hasVariableWithName($variable_name)
-            && !Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope())
+        if ($was_undeclared || (!$this->context->getScope()->hasVariableWithName($variable_name)
+            && !Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope()))
         ) {
             $this->emitIssueWithSuggestion(
                 Variable::chooseIssueForUndeclaredVariable($this->context, $variable_name),
                 $node->lineno,
                 [$variable_name],
-                IssueFixSuggester::suggestVariableTypoFix($this->code_base, $this->context, $variable_name)
+                // (The variable itself is in the scope by now if it was declared after $node was evaluated)
+                $was_undeclared ? null : IssueFixSuggester::suggestVariableTypoFix($this->code_base, $this->context, $variable_name)
             );
         }
     }
@@ -1225,6 +1258,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $parent_node = \end($this->parent_node_list);
         if ($parent_node instanceof Node && !($node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF)) {
             $parent_kind = $parent_node->kind;
+            if ($parent_kind === ast\AST_NAMED_ARG) {
+                // analyzeCallToFunctionLike() decides once it knows whether the parameter is by reference,
+                // but with the scope of this point, since a later argument can assign the variable (`f(a: $var, b: $var = 1)`).
+                $variable_name = $node->children['name'];
+                // @phan-suppress-next-line PhanUndeclaredProperty this is added for analyzeCallToFunctionLike()
+                $node->is_undeclared_variable_of_named_argument = \is_string($variable_name)
+                    && !$this->context->getScope()->hasVariableWithName($variable_name)
+                    && !Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope());
+            }
             if (!\array_key_exists($parent_kind, self::SKIP_VAR_CHECK_TYPES)
                 && !($parent_kind === ast\AST_RETURN && $this->isInFunctionReturningReference())) {
                 $this->checkForUndeclaredVariable($node);
@@ -5682,7 +5724,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 }
                 if ($argument_expression->kind === ast\AST_VAR) {
                     if (!($argument_expression->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF)) {
-                        $this->checkForUndeclaredVariable($argument_expression);
+                        // @phan-suppress-next-line PhanUndeclaredProperty this is added by visitVar()
+                        $this->checkForUndeclaredVariable($argument_expression, ($argument_expression->is_undeclared_variable_of_named_argument ?? false) === true);
                     }
                 } elseif ($argument_expression->kind === ast\AST_DIM && ($position !== null || $is_magic_call)) {
                     $this->emitPossiblyUndeclaredVariableOfDimArgument($argument_expression);

@@ -102,8 +102,8 @@ class PhanAnnotationAdder
      *
      * A reference to an offset creates the offset (as null), and creates `$x` as an array if `$x` is undefined or null,
      * without any warning, so the offset is not invalid and `$x` is not a suspicious null.
-     * This marks the rest of the chain the same way as the handlers for ast\AST_DIM and ast\AST_PROP,
-     * since it is also used during analysis, for the arguments of parameters passed by reference.
+     * This marks the dimensions and the variable they start at, and stops at a property.
+     * It is also used during analysis, for the arguments of parameters passed by reference.
      *
      * @param Node|string|int|float|null $node the expression a reference is taken to
      */
@@ -113,8 +113,12 @@ class PhanAnnotationAdder
             return;
         }
         while ($node instanceof Node) {
+            if ($node->kind === ast\AST_PROP) {
+                // `&$obj->items['k']`: php creates the offset, but not the object, so `$obj` is still checked.
+                return;
+            }
             self::markNode($node, self::FLAG_IGNORE_NULLABLE_AND_UNDEF);
-            if ($node->kind !== ast\AST_DIM && $node->kind !== ast\AST_PROP) {
+            if ($node->kind !== ast\AST_DIM) {
                 return;
             }
             $node = $node->children['expr'];

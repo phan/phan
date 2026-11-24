@@ -5,3 +5,5 @@
 %s:36 PhanTypeInvalidDimOffset Invalid offset "missing" of $read of array type array{x:1}
 %s:60 PhanPossiblyUndeclaredVariable Variable $a is possibly undeclared
 %s:60 PhanTypeInvalidDimOffset Invalid offset "k" of $a of array type array{}=
+%s:78 PhanUndeclaredVariable Variable $later is undeclared
+%s:78 PhanUnusedVariable Unused definition of variable $later

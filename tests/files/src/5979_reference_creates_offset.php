@@ -59,3 +59,21 @@ function return_offset_by_value(bool $b)
     }
     return $a['k'];
 }
+
+function nested_append_argument(): string
+{
+    $out = [];
+    preg_match('/(x)/', 'x', $out[]['m']);
+    return $out[0]['m'][0];
+}
+
+function by_value_pair(int $value, int $other): int
+{
+    return $value + $other;
+}
+
+function named_argument_read_before_assignment(): int
+{
+    // The read of $later is reported: the second argument assigns it after the first one was evaluated.
+    return by_value_pair(value: $later, other: ($later = 1));
+}
