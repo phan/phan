@@ -19,3 +19,16 @@ $d = [
   x
   E,
 ];
+$concat = <<<E
+x
+E . $x;
+f(<<<E
+x
+E . $x, 2);
+$key = [<<<E
+x
+E . $x => 1];
+$ternary = <<<E
+x
+E
+ ? 1 : 2;

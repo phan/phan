@@ -1020,7 +1020,8 @@ class TolerantASTConverter
             },
             'Microsoft\PhpParser\Node\Expression\CallExpression' => static function (PhpParser\Node\Expression\CallExpression $n, int $start_line): ast\Node {
                 $callable_expression = $n->callableExpression;
-                $arg_list = static::phpParserArgListToAstArgList($n->argumentExpressionList, $start_line);
+                // (php creates an empty argument list when it reaches the `)`, and uses its line)
+                $arg_list = static::phpParserArgListToAstArgList($n->argumentExpressionList, $n->closeParen instanceof Token ? self::getStartLine($n->closeParen) : $start_line);
                 if ($callable_expression instanceof PhpParser\Node\Expression\MemberAccessExpression) {  // $a->f()
                     return static::astNodeMethodCall(
                         $callable_expression->arrowToken->kind === TokenKind::QuestionArrowToken ? ast\AST_NULLSAFE_METHOD_CALL : ast\AST_METHOD_CALL,
@@ -3537,16 +3538,19 @@ class TolerantASTConverter
 
     /**
      * @param list<?ast\Node> $ast_items the elements of an array, with null for skipped elements (`[, $x] = $y`)
-     * @return ?int the line of the first element that is not skipped
+     * @param array<int,PhpParser\Node|Token> $children the elements and commas that $ast_items was created from
+     * @return ?int the line of the first element, which is the line of the first comma when the first element is skipped
      */
-    private static function getLineOfFirstItem(array $ast_items): ?int
+    private static function getLineOfFirstItem(array $ast_items, array $children): ?int
     {
-        foreach ($ast_items as $item) {
-            if ($item !== null) {
-                return $item->lineno;
-            }
+        if (!$ast_items) {
+            return null;
         }
-        return null;
+        $first = $ast_items[0];
+        if ($first !== null) {
+            return $first->lineno;
+        }
+        return isset($children[0]) ? self::getStartLine($children[0]) : null;
     }
 
     private static function phpParserListToAstList(PhpParser\Node\Expression\ListIntrinsicExpression $n, int $start_line): ast\Node
@@ -3584,7 +3588,7 @@ class TolerantASTConverter
             ], self::getStartLineOfArrayElement($item, $ast_value));
         }
         // (php uses the line of the first element)
-        return new ast\Node(ast\AST_ARRAY, flags\ARRAY_SYNTAX_LIST, $ast_items, self::getLineOfFirstItem($ast_items) ?? $start_line);
+        return new ast\Node(ast\AST_ARRAY, flags\ARRAY_SYNTAX_LIST, $ast_items, self::getLineOfFirstItem($ast_items, $n->listElements->children ?? []) ?? $start_line);
     }
 
     /**
@@ -3631,7 +3635,7 @@ class TolerantASTConverter
         }
 
         // php uses the line of the first element, or the line of the `]` of an empty array.
-        return new ast\Node(ast\AST_ARRAY, $flags, $ast_items, self::getLineOfFirstItem($ast_items) ?? self::getStartLine($n->closeParenOrBracket));
+        return new ast\Node(ast\AST_ARRAY, $flags, $ast_items, self::getLineOfFirstItem($ast_items, $n->arrayElements->children ?? []) ?? self::getStartLine($n->closeParenOrBracket));
     }
 
     /**

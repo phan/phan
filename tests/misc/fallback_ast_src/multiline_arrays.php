@@ -86,3 +86,22 @@ $ee = $o->m(
   [
 
    "k" => 1]);
+[,
+ $skip1] = $arr;
+[
+ ,
+ $skip2] = $arr;
+[
+
+ , ,
+
+ $skip3] = $arr;
+list(,
+ $skip4) = $arr;
+$emptyArgs1 = f(
+);
+$emptyArgs2 = $o->m(
+
+);
+$emptyArgs3 = C::s(
+  );
