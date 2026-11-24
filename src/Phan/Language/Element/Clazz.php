@@ -1030,8 +1030,6 @@ class Clazz extends AddressableElement
         }
 
         $code_base->addProperty($property);
-
-        $this->enforceTemplateVarianceForProperty($code_base, $property);
     }
 
     private static function checkPropertyCompatibility(
@@ -3368,6 +3366,36 @@ class Clazz extends AddressableElement
         }
     }
 
+    /**
+     * Checks that the properties and methods that this class declares only use its templates
+     * in the positions that their declared variance allows (`@template-covariant`, `@template-contravariant`).
+     *
+     * This runs after all classes were parsed: the variance of the templates of other classes is needed (`Consumer<T>`).
+     */
+    private function analyzeTemplateVariance(CodeBase $code_base): void
+    {
+        $has_variance = false;
+        foreach ($this->getTemplateTypeMap() as $template_type) {
+            if ($template_type instanceof TemplateType && ($template_type->isCovariant() || $template_type->isContravariant())) {
+                $has_variance = true;
+                break;
+            }
+        }
+        if (!$has_variance) {
+            return;
+        }
+        foreach ($this->getPropertyMap($code_base) as $property) {
+            if ($property->getRealDefiningFQSEN()->getFullyQualifiedClassName() === $this->fqsen) {
+                $this->enforceTemplateVarianceForProperty($code_base, $property);
+            }
+        }
+        foreach ($this->getMethodMap($code_base) as $method) {
+            if ($method->getRealDefiningFQSEN()->getFullyQualifiedClassName() === $this->fqsen && !$method->isPHPInternal()) {
+                $method->enforceTemplateVarianceForSignature($code_base, $this);
+            }
+        }
+    }
+
     private function enforceTemplateVarianceForProperty(CodeBase $code_base, Property $property): void
     {
         $template_types = $this->getTemplateTypeMap();
@@ -3384,81 +3412,50 @@ class Clazz extends AddressableElement
             return;
         }
 
-        $union_type = $property->getUnionType();
-        if ($union_type->isEmpty()) {
-            $union_type = $property->getPHPDocUnionType();
-        }
+        // (A property with a real type can have a phpdoc type with the templates: `/** @var Box<T> */ public Box $box;`)
+        $union_type = $property->getUnionType()->withUnionType($property->getPHPDocUnionType());
         if ($union_type->isEmpty()) {
             return;
         }
 
-        $usages = self::collectTemplateTypeUsagesForVariance($union_type, $template_lookup);
-        if (!$usages) {
+        if ($property->isPrivate() || $property->isStatic()) {
+            // A private property can only be accessed from the class itself, where the template is the same type.
+            return;
+        }
+        // A property that can be written both produces and consumes its value. A property that is only read produces it.
+        // Code outside of the class cannot write to a property that is readonly or `private(set)`
+        // (`protected(set)` can be written by subclasses), or to a property of an interface that only requires `get`.
+        $is_read_only = $property->isReadOnlyReal() || $property->isReadOnly() || $property->isPrivateSet() ||
+            ($this->isInterface() && $property->getGetHook() !== null && $property->getSetHook() === null);
+        $violations = TemplateVarianceUtil::collectVarianceViolations(
+            $code_base,
+            $union_type,
+            $template_lookup,
+            $is_read_only
+                ? TemplateVarianceUtil::POSITION_COVARIANT
+                // A property with `@phan-write-only` only consumes its value.
+                : ($property->isWriteOnly() ? TemplateVarianceUtil::POSITION_CONTRAVARIANT : TemplateVarianceUtil::POSITION_INVARIANT)
+        );
+        if (!$violations) {
             return;
         }
 
         $context = $property->getContext();
         $line = $property->getFileRef()->getLineNumberStart();
         $position = 'property ' . $property->asPropertyFQSENString();
-
-        $is_effectively_read_only = $property->isReadOnlyReal() || $property->isReadOnly();
-        foreach ($usages as $usage) {
-            $template_type = $usage['template'];
-            $position_label = $usage['context'] ? $usage['context'] . ' of ' . $position : $position;
-            if (!$template_type->isCovariant() && !$template_type->isContravariant()) {
-                continue;
-            }
-            if ($usage['is_invariant']) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $context,
-                    Issue::TemplateTypeVarianceViolation,
-                    $line,
-                    $template_type->getName(),
-                    $template_type->isCovariant() ? 'covariant' : 'contravariant',
-                    $position_label,
-                    (string)$this->fqsen
-                );
-                continue;
-            }
-            if ($template_type->isCovariant()) {
-                if ($is_effectively_read_only) {
-                    continue;
-                }
-                Issue::maybeEmit(
-                    $code_base,
-                    $context,
-                    Issue::TemplateTypeVarianceViolation,
-                    $line,
-                    $template_type->getName(),
-                    'covariant',
-                    $position_label,
-                    (string)$this->fqsen
-                );
-                continue;
-            }
-            if ($template_type->isContravariant()) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $context,
-                    Issue::TemplateTypeVarianceViolation,
-                    $line,
-                    $template_type->getName(),
-                    'contravariant',
-                    $position_label,
-                    (string)$this->fqsen
-                );
-            }
+        foreach ($violations as $violation) {
+            $template_type = $violation['template'];
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::TemplateTypeVarianceViolation,
+                $line,
+                $template_type->getName(),
+                $template_type->isContravariant() ? 'contravariant' : 'covariant',
+                $violation['context'] !== null ? $violation['context'] . ' of ' . $position : $position,
+                (string)$this->fqsen
+            );
         }
-    }
-
-    /**
-     * @param array<string,TemplateType> $template_map
-     * @return array<string,array{template:TemplateType,is_invariant:bool,context:?string}>
-     */
-    private static function collectTemplateTypeUsagesForVariance(UnionType $union_type, array $template_map): array
-    {
-        return TemplateVarianceUtil::collectTemplateUsagesForVariance($union_type, $template_map);
     }
 
     private function enforceTemplateConstraintForAncestor(
@@ -4427,6 +4424,8 @@ class Clazz extends AddressableElement
         );
 
         $this->analyzeTraitUse($code_base);
+
+        $this->analyzeTemplateVariance($code_base);
 
         $this->analyzeInheritedMethods($code_base);
 
