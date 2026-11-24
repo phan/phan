@@ -5029,7 +5029,7 @@ Template type {TYPE} declared {VARIANCE} cannot be used in {POSITION} of {FUNCTI
 ```
 
 e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/1104_template_variance_parsing.php.expected#L1) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/1104_template_variance_parsing.php#L20).
-Another example covering property variance (including contravariant properties, which are now disallowed even when write-only) appears in [this issue file](https://github.com/phan/phan/tree/v6/tests/files/expected/1102_template_parameter_mismatch.php.expected#L11), triggered by [this source snippet](https://github.com/phan/phan/tree/v6/tests/files/src/1102_template_parameter_mismatch.php#L135).
+A template is checked against the position it is used in: a return type produces the value, a parameter consumes it, and a property that can be written from outside of the class does both. The parameter of a callable and a template parameter of a class declared `@template-contravariant` reverse the position. The parameters of the constructor, private methods and private properties are not checked. Examples for properties, callables and nested generic types are in [this issue file](https://github.com/phan/phan/tree/v6/tests/files/expected/5976_template_variance_positions.php.expected#L1), triggered by [this source file](https://github.com/phan/phan/tree/v6/tests/files/src/5976_template_variance_positions.php#L29).
 
 # Internal
 

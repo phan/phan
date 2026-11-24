@@ -1030,8 +1030,6 @@ class Clazz extends AddressableElement
         }
 
         $code_base->addProperty($property);
-
-        $this->enforceTemplateVarianceForProperty($code_base, $property);
     }
 
     private static function checkPropertyCompatibility(
@@ -3368,11 +3366,129 @@ class Clazz extends AddressableElement
         }
     }
 
+    /**
+     * Checks that the properties and methods that this class declares only use its templates
+     * in the positions that their declared variance allows (`@template-covariant`, `@template-contravariant`).
+     *
+     * This runs after all classes were parsed: the variance of the templates of other classes is needed (`Consumer<T>`).
+     */
+    private function analyzeTemplateVariance(CodeBase $code_base): void
+    {
+        $has_variance = false;
+        foreach ($this->getTemplateTypeMap() as $template_type) {
+            if ($template_type instanceof TemplateType && ($template_type->isCovariant() || $template_type->isContravariant())) {
+                $has_variance = true;
+                break;
+            }
+        }
+        if ($has_variance) {
+            foreach ($this->getPropertyMap($code_base) as $property) {
+                // An inherited property is checked too: its type can use the templates of this class (`@extends Base<T>`).
+                // (Not if the class that declares it already reports the property for its own templates.)
+                if ($property->getRealDefiningFQSEN()->getFullyQualifiedClassName() === $this->fqsen || !self::isVarianceReportedByDeclaringClass($code_base, $property)) {
+                    $this->enforceTemplateVarianceForProperty($code_base, $property);
+                }
+            }
+        }
+        foreach ($this->getMethodEntryMap($code_base) as $method) {
+            // (A lazily inherited method is declared by another class)
+            if (!($method instanceof Method)) {
+                continue;
+            }
+            if ($method->isPHPInternal()) {
+                continue;
+            }
+            if ($method->getRealDefiningFQSEN()->getFullyQualifiedClassName() !== $this->fqsen) {
+                // The trait or class that declares the method checks it, unless the method is private there
+                // and this class makes it accessible: `use Writer { set as public; }`
+                if (!$has_variance || $method->isPrivate() || !self::isPrivateInDeclaringTrait($code_base, $method)) {
+                    continue;
+                }
+            }
+            // A method is also checked for the templates that it declares itself.
+            if ($has_variance || $method->hasTemplateType()) {
+                $method->enforceTemplateVarianceForSignature($code_base, $this);
+            }
+        }
+    }
+
+    /**
+     * @return bool whether the method is a private method of a trait, which was not checked for variance in the trait
+     */
+    private static function isPrivateInDeclaringTrait(CodeBase $code_base, Method $method): bool
+    {
+        $real_fqsen = $method->getRealDefiningFQSEN();
+        $class_fqsen = $real_fqsen->getFullyQualifiedClassName();
+        if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+            return false;
+        }
+        $trait = $code_base->getClassByFQSEN($class_fqsen);
+        if (!$trait->isTrait() || !$trait->hasMethodWithName($code_base, $real_fqsen->getName(), true)) {
+            return false;
+        }
+        return $trait->getMethodByName($code_base, $real_fqsen->getName())->isPrivate();
+    }
+
+    /**
+     * @return bool whether the class that declares the inherited property reports a variance violation for it
+     */
+    private static function isVarianceReportedByDeclaringClass(CodeBase $code_base, Property $property): bool
+    {
+        $class_fqsen = $property->getRealDefiningFQSEN()->getFullyQualifiedClassName();
+        if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+            return false;
+        }
+        $class = $code_base->getClassByFQSEN($class_fqsen);
+        $property_name = $property->getName();
+        if (!$class->hasPropertyWithName($code_base, $property_name)) {
+            return false;
+        }
+        return $class->getTemplateVarianceViolationsOfProperty($code_base, $class->getPropertyByName($code_base, $property_name)) !== [];
+    }
+
     private function enforceTemplateVarianceForProperty(CodeBase $code_base, Property $property): void
+    {
+        $violations = $this->getTemplateVarianceViolationsOfProperty($code_base, $property);
+        if (!$violations) {
+            return;
+        }
+
+        $context = $property->getContext();
+        $line = $property->getFileRef()->getLineNumberStart();
+        if ($property->getRealDefiningFQSEN()->getFullyQualifiedClassName() !== $this->fqsen) {
+            // An inherited property is reported at the class that inherits it: that class declares the variance,
+            // and the class that declares the property may be in a file that is not analyzed.
+            if ($this->checkHasSuppressIssueAndIncrementCount(Issue::TemplateTypeVarianceViolation)) {
+                return;
+            }
+            $context = $this->getContext();
+            $line = $context->getLineNumberStart();
+        }
+        $position = 'property ' . $property->asPropertyFQSENString();
+        foreach ($violations as $violation) {
+            $template_type = $violation['template'];
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::TemplateTypeVarianceViolation,
+                $line,
+                $template_type->getName(),
+                $template_type->isContravariant() ? 'contravariant' : 'covariant',
+                $violation['context'] !== null ? $violation['context'] . ' of ' . $position : $position,
+                (string)$this->fqsen
+            );
+        }
+    }
+
+    /**
+     * @return array<string,array{template:TemplateType,context:?string}> the uses of the templates of this class
+     * in the type of the property that violate their declared variance
+     */
+    private function getTemplateVarianceViolationsOfProperty(CodeBase $code_base, Property $property): array
     {
         $template_types = $this->getTemplateTypeMap();
         if (!$template_types) {
-            return;
+            return [];
         }
         $template_lookup = [];
         foreach ($template_types as $template_type) {
@@ -3381,84 +3497,36 @@ class Clazz extends AddressableElement
             }
         }
         if (!$template_lookup) {
-            return;
+            return [];
         }
 
-        $union_type = $property->getUnionType();
+        // (A property with a real type can have a phpdoc type with the templates: `/** @var Box<T> */ public Box $box;`)
+        $union_type = $property->getUnionType()->withUnionType($property->getPHPDocUnionType());
         if ($union_type->isEmpty()) {
-            $union_type = $property->getPHPDocUnionType();
-        }
-        if ($union_type->isEmpty()) {
-            return;
+            return [];
         }
 
-        $usages = self::collectTemplateTypeUsagesForVariance($union_type, $template_lookup);
-        if (!$usages) {
-            return;
+        if ($property->isPrivate() || $property->isStatic()) {
+            // A private property can only be accessed from the class itself, where the template is the same type.
+            return [];
         }
-
-        $context = $property->getContext();
-        $line = $property->getFileRef()->getLineNumberStart();
-        $position = 'property ' . $property->asPropertyFQSENString();
-
-        $is_effectively_read_only = $property->isReadOnlyReal() || $property->isReadOnly();
-        foreach ($usages as $usage) {
-            $template_type = $usage['template'];
-            $position_label = $usage['context'] ? $usage['context'] . ' of ' . $position : $position;
-            if (!$template_type->isCovariant() && !$template_type->isContravariant()) {
-                continue;
-            }
-            if ($usage['is_invariant']) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $context,
-                    Issue::TemplateTypeVarianceViolation,
-                    $line,
-                    $template_type->getName(),
-                    $template_type->isCovariant() ? 'covariant' : 'contravariant',
-                    $position_label,
-                    (string)$this->fqsen
-                );
-                continue;
-            }
-            if ($template_type->isCovariant()) {
-                if ($is_effectively_read_only) {
-                    continue;
-                }
-                Issue::maybeEmit(
-                    $code_base,
-                    $context,
-                    Issue::TemplateTypeVarianceViolation,
-                    $line,
-                    $template_type->getName(),
-                    'covariant',
-                    $position_label,
-                    (string)$this->fqsen
-                );
-                continue;
-            }
-            if ($template_type->isContravariant()) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $context,
-                    Issue::TemplateTypeVarianceViolation,
-                    $line,
-                    $template_type->getName(),
-                    'contravariant',
-                    $position_label,
-                    (string)$this->fqsen
-                );
-            }
-        }
-    }
-
-    /**
-     * @param array<string,TemplateType> $template_map
-     * @return array<string,array{template:TemplateType,is_invariant:bool,context:?string}>
-     */
-    private static function collectTemplateTypeUsagesForVariance(UnionType $union_type, array $template_map): array
-    {
-        return TemplateVarianceUtil::collectTemplateUsagesForVariance($union_type, $template_map);
+        // A property that can be written both produces and consumes its value. A property that is only read produces it.
+        // Code outside of the class cannot write to a property that is readonly or `private(set)`
+        // (`protected(set)` can be written by subclasses), or to a property of an interface that only requires `get`.
+        $is_read_only = $property->isReadOnlyReal() || $property->isReadOnly() || $property->isPrivateSet() ||
+            // (a virtual property without a set hook cannot be written)
+            // (a get hook that returns by reference lets the caller write: `&get => $this->stored;`)
+            (($get_hook = $property->getGetHook()) !== null && $property->getSetHook() === null && !($get_hook->getFlags() & \ast\flags\FUNC_RETURNS_REF) &&
+                ($this->isInterface() || $property->isVirtual()));
+        return TemplateVarianceUtil::collectVarianceViolations(
+            $code_base,
+            $union_type,
+            $template_lookup,
+            $is_read_only
+                ? TemplateVarianceUtil::POSITION_COVARIANT
+                // A property with `@phan-write-only` only consumes its value.
+                : ($property->isWriteOnly() ? TemplateVarianceUtil::POSITION_CONTRAVARIANT : TemplateVarianceUtil::POSITION_INVARIANT)
+        );
     }
 
     private function enforceTemplateConstraintForAncestor(
@@ -4427,6 +4495,8 @@ class Clazz extends AddressableElement
         );
 
         $this->analyzeTraitUse($code_base);
+
+        $this->analyzeTemplateVariance($code_base);
 
         $this->analyzeInheritedMethods($code_base);
 

@@ -23,6 +23,7 @@ use Phan\Language\Context;
 use Phan\Language\Element\Comment\Assertion;
 use Phan\Language\Element\Comment\ConditionalReturnType;
 use Phan\Language\Element\Comment\CustomAnnotation;
+use Phan\Language\Element\Comment\Parameter as CommentParameter;
 use Phan\Language\FileRef;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -2241,7 +2242,11 @@ trait FunctionTrait
         $this->setDependentReturnTypeClosure($analyzer);
     }
 
-    protected function enforceTemplateVarianceForSignature(CodeBase $code_base, ?Clazz $class = null): void
+    /**
+     * Checks that the return type and the parameters only use templates in the positions that their declared variance allows.
+     * @internal
+     */
+    public function enforceTemplateVarianceForSignature(CodeBase $code_base, ?Clazz $class = null): void
     {
         $template_map = [];
         if ($class) {
@@ -2260,8 +2265,21 @@ trait FunctionTrait
             return;
         }
 
+        $is_constructor = false;
+        if ($this instanceof Method) {
+            if ($this->isPrivate()) {
+                // A private method can only be called from the class itself, where the template is the same type.
+                return;
+            }
+            $is_constructor = \strcasecmp($this->getName(), '__construct') === 0;
+        }
+
         $this->enforceVarianceOnReturnType($code_base, $template_map);
-        $this->enforceVarianceOnParameters($code_base, $template_map);
+        if (!$is_constructor) {
+            // The constructor is called before the object has a type that could be cast to another one,
+            // so its parameters can use covariant templates: `@param T $value`.
+            $this->enforceVarianceOnParameters($code_base, $template_map);
+        }
     }
 
     /**
@@ -2273,36 +2291,21 @@ trait FunctionTrait
         if ($union_type->isEmpty()) {
             return;
         }
-        $usages = self::collectTemplateTypeUsagesFromUnion($union_type, $template_map);
-        if (!$usages) {
-            return;
-        }
+        // The caller can write to a value that is returned by reference: `function &values(): array`
+        $position = $this->returnsRef() ? TemplateVarianceUtil::POSITION_INVARIANT : TemplateVarianceUtil::POSITION_COVARIANT;
+        $violations = TemplateVarianceUtil::collectVarianceViolations($code_base, $union_type, $template_map, $position);
         $context = $this->getContext();
         $line = $context->getLineNumberStart();
-        foreach ($usages as $usage) {
-            $template_type = $usage['template'];
-            $position = $usage['context'] ? $usage['context'] . ' of return type' : 'return type';
-            if ($usage['is_invariant'] && ($template_type->isContravariant() || $template_type->isCovariant())) {
-                $this->emitTemplateVarianceIssue(
-                    $code_base,
-                    $context,
-                    $line,
-                    $template_type,
-                    $position,
-                    $template_type->isContravariant() ? 'contravariant' : 'covariant'
-                );
-                continue;
-            }
-            if ($template_type->isContravariant()) {
-                $this->emitTemplateVarianceIssue(
-                    $code_base,
-                    $context,
-                    $line,
-                    $template_type,
-                    $position,
-                    'contravariant'
-                );
-            }
+        foreach ($violations as $violation) {
+            $template_type = $violation['template'];
+            $this->emitTemplateVarianceIssue(
+                $code_base,
+                $context,
+                $line,
+                $template_type,
+                $violation['context'] !== null ? $violation['context'] . ' of return type' : 'return type',
+                $template_type->isContravariant() ? 'contravariant' : 'covariant'
+            );
         }
     }
 
@@ -2325,8 +2328,8 @@ trait FunctionTrait
             if ($union_type->isEmpty()) {
                 continue;
             }
-            $usages = self::collectTemplateTypeUsagesFromUnion($union_type, $template_map);
-            if (!$usages) {
+            $violations = TemplateVarianceUtil::collectVarianceViolations($code_base, $union_type, $template_map, self::getVariancePositionOfParameter($parameter, $comment_parameter));
+            if (!$violations) {
                 continue;
             }
             $line = $parameter->getFileRef()->getLineNumberStart();
@@ -2334,41 +2337,38 @@ trait FunctionTrait
                 $line = $comment_parameter->getLineno();
             }
             $position = 'parameter $' . $parameter->getName();
-            foreach ($usages as $usage) {
-                $template_type = $usage['template'];
-                $position_string = $usage['context'] ? $usage['context'] . ' of ' . $position : $position;
-                if ($usage['is_invariant'] && ($template_type->isCovariant() || $template_type->isContravariant())) {
-                    $this->emitTemplateVarianceIssue(
-                        $code_base,
-                        $function_context,
-                        $line,
-                        $template_type,
-                        $position_string,
-                        $template_type->isCovariant() ? 'covariant' : 'contravariant'
-                    );
-                    continue;
-                }
-                if ($template_type->isCovariant()) {
-                    $this->emitTemplateVarianceIssue(
-                        $code_base,
-                        $function_context,
-                        $line,
-                        $template_type,
-                        $position_string,
-                        'covariant'
-                    );
-                }
+            foreach ($violations as $violation) {
+                $template_type = $violation['template'];
+                $this->emitTemplateVarianceIssue(
+                    $code_base,
+                    $function_context,
+                    $line,
+                    $template_type,
+                    $violation['context'] !== null ? $violation['context'] . ' of ' . $position : $position,
+                    $template_type->isContravariant() ? 'contravariant' : 'covariant'
+                );
             }
         }
     }
 
     /**
-     * @param array<string,TemplateType> $template_map
-     * @return array<string,array{template:TemplateType,is_invariant:bool,context:?string}>
+     * @return int the position of a parameter for template variance: one of the TemplateVarianceUtil::POSITION_* constants
      */
-    private static function collectTemplateTypeUsagesFromUnion(UnionType $union_type, array $template_map): array
+    private static function getVariancePositionOfParameter(Parameter $parameter, ?CommentParameter $comment_parameter): int
     {
-        return TemplateVarianceUtil::collectTemplateUsagesForVariance($union_type, $template_map);
+        if (!$parameter->isPassByReference()) {
+            return TemplateVarianceUtil::POSITION_CONTRAVARIANT;
+        }
+        // A reference is read and written by the method, unless it is annotated otherwise.
+        // (The annotations are read from the comment: they are copied to the parameter when the scope of the method is created, which may be later)
+        if ($parameter->getReferenceType() === Parameter::REFERENCE_WRITE_ONLY || ($comment_parameter && $comment_parameter->isOutputReference())) {
+            // `@phan-output-reference`: the method only produces the value
+            return TemplateVarianceUtil::POSITION_COVARIANT;
+        }
+        if ($parameter->getReferenceType() === Parameter::REFERENCE_IGNORED || ($comment_parameter && $comment_parameter->isIgnoredReference())) {
+            return TemplateVarianceUtil::POSITION_CONTRAVARIANT;
+        }
+        return TemplateVarianceUtil::POSITION_INVARIANT;
     }
 
     private function emitTemplateVarianceIssue(

@@ -1,0 +1,23 @@
+%s:29 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in property \TemplateVariancePositions5976\Box->writable of \TemplateVariancePositions5976\Box
+%s:32 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in property \TemplateVariancePositions5976\Box->consumer of \TemplateVariancePositions5976\Box
+%s:38 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in property \TemplateVariancePositions5976\Box->writeOnly of \TemplateVariancePositions5976\Box
+%s:73 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in callable parameter $p0 of return type of \TemplateVariancePositions5976\Box::getConsumer()
+%s:89 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in callable return type of parameter $f of \TemplateVariancePositions5976\Box::replaceWith()
+%s:95 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in parameter $value of \TemplateVariancePositions5976\Box::set()
+%s:101 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in array element of parameter $values of \TemplateVariancePositions5976\Box::setAll()
+%s:113 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in parameter $producer of \TemplateVariancePositions5976\Box::drain()
+%s:126 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in return type of \TemplateVariancePositions5976\Box::asConsumer()
+%s:162 PhanTemplateTypeVarianceViolation Template type T declared contravariant cannot be used in callable parameter $p0 of parameter $consumer of \TemplateVariancePositions5976\Sink::forward()
+%s:166 PhanTemplateTypeVarianceViolation Template type T declared contravariant cannot be used in return type of \TemplateVariancePositions5976\Sink::last()
+%s:175 PhanTemplateTypeVarianceViolation Template type T declared contravariant cannot be used in return type of \TemplateVariancePositions5976\Sink::asProducer()
+%s:185 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in callable parameter $p0 of parameter $f of \TemplateVariancePositions5976\MoreCases::byReference()
+%s:199 PhanTemplateTypeVarianceViolation Template type U declared contravariant cannot be used in return type of \TemplateVariancePositions5976\NotGeneric::methodTemplate()
+%s:222 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in property \TemplateVariancePositions5976\CovariantChild->writable of \TemplateVariancePositions5976\CovariantChild
+%s:236 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in callable parameter $p0 of parameter $callback of \TemplateVariancePositions5976\References::replaceCallback()
+%s:243 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in array element of return type of \TemplateVariancePositions5976\References::valuesByReference()
+%s:260 PhanTemplateTypeVarianceViolation Template type T declared contravariant cannot be used in array element of parameter $items of \TemplateVariancePositions5976\ReferenceSink::replace()
+%s:285 PhanTemplateTypeVarianceViolation Template type A declared covariant cannot be used in property \TemplateVariancePositions5976\MixedBase->a of \TemplateVariancePositions5976\MixedBase
+%s:292 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in property \TemplateVariancePositions5976\MixedChild->b of \TemplateVariancePositions5976\MixedChild
+%s:322 PhanTemplateTypeVarianceViolation Template type T declared contravariant cannot be used in return type of \TemplateVariancePositions5976\returnsContravariant()
+%s:355 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in parameter $ref of \TemplateVariancePositions5976\AnnotatedReferences::readWrite()
+%s:369 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in parameter $value of \TemplateVariancePositions5976\ExposesWriter::write()
