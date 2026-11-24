@@ -12,3 +12,5 @@ class ReadonlyMethod {
         return $this->readonly() + self::readonly();
     }
 }
+$n = new (readonly())();
+$m = namespace\readonly();
