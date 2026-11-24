@@ -671,7 +671,7 @@ class TolerantASTConverter
                     $access_expression = $n->accessExpression;
                     if ($access_expression === null) {
                         $dim = null;
-                    } elseif (self::isSimpleInterpolationSubscript($n)) {
+                    } elseif ($access_expression instanceof PhpParser\Node && self::isSimpleInterpolationSubscript($n)) {
                         $dim = self::simpleInterpolationOffsetToAstValue($access_expression) ?? static::phpParserNodeToAstNode($access_expression);
                     } else {
                         $dim = static::phpParserNodeToAstNode($access_expression);
