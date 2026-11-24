@@ -20,3 +20,9 @@ class PromotedHooks {
         },
     ) {}
 }
+class WithObjectDefault {
+    public function __construct(
+        public \stdClass $x = new \stdClass() { get => $this->x; },
+        public \stdClass $y = new \stdClass { get => $this->y; },
+    ) {}
+}
