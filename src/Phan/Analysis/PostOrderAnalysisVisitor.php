@@ -310,7 +310,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
         if ($expr_node instanceof Node) {
             // `$b = &$a` defines `$a` (as null), `$b = &$a['k']` creates `$a` and the offset 'k'.
-            $this->createReferenceTarget($expr_node);
+            // (An `$a` that is undefined on every path is still reported: it is probably a typo)
+            $this->createReferenceTarget($expr_node, true);
         }
         return $this->visitAssign($node);
     }
@@ -320,17 +321,20 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * before the type of $node is computed:
      *
      * - `&$var` defines `$var` (as null) if it is undefined, or possibly undefined.
+     *   With $report_undefined, a `$var` that is undefined on every path is reported as undeclared first:
+     *   that is used for `=&`, `[&$var]` and `return $var;`, where a new variable is probably a typo,
+     *   and not for arguments, where it is the usual way to receive a result (`preg_match($re, $s, $matches)`).
      * - `&$var[$k]` (also `&$var[$k][$j]`, etc.) defines `$var` the same way, and creates the offset `$k` (as null)
      *   if it does not exist. (PHP creates the array if `$var` is null.)
      *
      * This is used for `$b = &$a`, `[&$a]`, the arguments of parameters passed by reference,
      * and the expressions returned by functions returning a reference.
      */
-    private function createReferenceTarget(Node $node): void
+    private function createReferenceTarget(Node $node, bool $report_undefined = false): void
     {
         $kind = $node->kind;
         if ($kind === ast\AST_VAR) {
-            $this->createVariableForReference($node);
+            $this->createVariableForReference($node, null, $report_undefined);
             return;
         }
         if ($kind !== ast\AST_DIM) {
@@ -345,7 +349,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return;
         }
         // An undefined `$var` becomes an array.
-        $this->createVariableForReference($var_node, ArrayShapeType::empty(false)->asPHPDocUnionType());
+        $this->createVariableForReference($var_node, ArrayShapeType::empty(false)->asPHPDocUnionType(), $report_undefined);
         $null_type = NullType::instance(false)->asPHPDocUnionType();
         if ($node->children['dim'] === null) {
             // `$x = &$var[];` appends null
@@ -372,7 +376,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      *
      * @param Node $node a node of kind ast\AST_VAR
      */
-    private function createVariableForReference(Node $node, ?UnionType $type_if_undefined = null): void
+    private function createVariableForReference(Node $node, ?UnionType $type_if_undefined = null, bool $report_undefined = false): void
     {
         $variable_name = $node->children['name'];
         if (!\is_string($variable_name) || $variable_name === 'this') {
@@ -391,6 +395,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         } else {
             if (Variable::isHardcodedVariableInScopeWithName($variable_name, $context->isInGlobalScope())) {
                 return;
+            }
+            if ($report_undefined) {
+                // PHP creates the variable without a warning, but a variable that is undefined on every path
+                // is more likely a typo than intended: `$ref = &$itmes;`
+                $this->checkForUndeclaredVariable($node);
             }
             // The type is only null until the variable is assigned through any of the references to it, which Phan does not track.
             $variable = new Variable(
@@ -1237,7 +1246,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if ($child instanceof Node && ($child->flags & flags\ARRAY_ELEM_REF) && !($child->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF)) {
                 $value = $child->children['value'];
                 if ($value instanceof Node) {
-                    $this->createReferenceTarget($value);
+                    $this->createReferenceTarget($value, true);
                 }
             }
         }
@@ -2232,7 +2241,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $expr = $node->children['expr'];
         if ($expr instanceof Node) {
             // `return $undef;` in a function returning a reference defines `$undef` (as null)
-            $this->createReferenceTarget($expr);
+            $this->createReferenceTarget($expr, true);
         }
         if ((!$expr instanceof Node) || !\in_array($expr->kind, ArgumentType::REFERENCE_NODE_KINDS, true)) {
             $is_possible_reference = ArgumentType::isExpressionReturningReference($this->code_base, $this->context, $expr);

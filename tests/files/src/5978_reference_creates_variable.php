@@ -1,6 +1,7 @@
 <?php
 // Taking a reference to an undefined variable defines it (as null) in PHP, without any warning.
-// Reading an undefined variable is still reported.
+// Phan still reports a variable that is undefined on every path (it is probably a typo), once, and then treats it as null.
+// A variable that is only possibly undefined is not reported. Reading an undefined variable is always reported.
 
 $global_alias = &$global_target;
 var_dump($global_alias, $global_target);

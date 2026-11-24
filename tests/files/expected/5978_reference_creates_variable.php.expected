@@ -1,10 +1,19 @@
-%s:7 PhanUndeclaredGlobalVariable Global variable $global_undefined is undeclared
-%s:12 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $target of type null but \strlen() takes string
-%s:13 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $alias of type null but \strlen() takes string
-%s:14 PhanUndeclaredVariable Variable $undefined_value is undeclared
-%s:27 PhanPossiblyUndeclaredVariable Variable $other is possibly undeclared
-%s:33 PhanUndeclaredVariable Variable $undefined_element is undeclared
-%s:48 PhanUndeclaredVariable Variable $undefined_property_value is undeclared
-%s:56 PhanUndeclaredVariable Variable $returned_by_value is undeclared
-%s:73 PhanPossiblyUndeclaredVariable Variable $maybe_by_value is possibly undeclared
-%s:75 PhanUndeclaredVariable Variable $undefined_by_value is undeclared
+%s:6 PhanUndeclaredGlobalVariable Global variable $global_target is undeclared
+%s:8 PhanUndeclaredGlobalVariable Global variable $global_undefined is undeclared
+%s:12 PhanUndeclaredVariable Variable $target is undeclared
+%s:13 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $target of type null but \strlen() takes string
+%s:14 PhanTypeMismatchArgumentInternal Argument 1 ($string) is $alias of type null but \strlen() takes string
+%s:15 PhanUndeclaredVariable Variable $undefined_value is undeclared
+%s:28 PhanPossiblyUndeclaredVariable Variable $other is possibly undeclared
+%s:33 PhanUndeclaredVariable Variable $element is undeclared
+%s:34 PhanUndeclaredVariable Variable $undefined_element is undeclared
+%s:39 PhanUndeclaredVariable Variable $self is undeclared
+%s:40 PhanUndeclaredVariable Variable $dim is undeclared
+%s:41 PhanUndeclaredVariable Variable $append is undeclared
+%s:42 PhanUndeclaredVariable Variable $outer is undeclared
+%s:47 PhanUndeclaredVariable Variable $property_target is undeclared
+%s:49 PhanUndeclaredVariable Variable $undefined_property_value is undeclared
+%s:53 PhanUndeclaredVariable Variable $returned_by_reference is undeclared
+%s:57 PhanUndeclaredVariable Variable $returned_by_value is undeclared
+%s:74 PhanPossiblyUndeclaredVariable Variable $maybe_by_value is possibly undeclared
+%s:76 PhanUndeclaredVariable Variable $undefined_by_value is undeclared

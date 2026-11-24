@@ -1,4 +1,5 @@
 %s:16 PhanUndeclaredVariable Variable $undefined_named is undeclared
 %s:22 PhanTypeArraySuspiciousNull Suspicious array access to $undefined_base of type null
 %s:22 PhanUndeclaredVariable Variable $undefined_base is undeclared
+%s:34 PhanUndeclaredVariable Variable $created is undeclared
 %s:36 PhanTypeInvalidDimOffset Invalid offset "missing" of $read of array type array{x:1}
