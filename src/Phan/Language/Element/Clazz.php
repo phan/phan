@@ -3481,6 +3481,56 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * Checks whether code outside of the class cannot write to the property because it only has a get hook and no backing storage.
+     *
+     * A hook or the backing storage that a class does not redeclare is inherited: a property that redeclares
+     * only `get` can still be written if a parent class declares `set` for it, or declares it without hooks.
+     *
+     * @param Clazz $class the class that declares $property
+     */
+    private static function isGetOnlyVirtualProperty(CodeBase $code_base, Clazz $class, Property $property): bool
+    {
+        $name = $property->getName();
+        for ($depth = 0; $depth < 50; $depth++) {
+            $get_hook = $property->getGetHook();
+            if ($get_hook === null || $property->getSetHook() !== null) {
+                return false;
+            }
+            if ($get_hook->getFlags() & \ast\flags\FUNC_RETURNS_REF) {
+                // A get hook that returns by reference lets the caller write: `&get => $this->stored;`
+                return false;
+            }
+            if (!$class->isInterface() && !$property->isVirtual()) {
+                return false;
+            }
+            // The declaration of the parent class, if there is one
+            $declaring_fqsen = $property->getRealDefiningFQSEN()->getFullyQualifiedClassName();
+            if (!$code_base->hasClassWithFQSEN($declaring_fqsen)) {
+                return true;
+            }
+            $declaring_class = $code_base->getClassByFQSEN($declaring_fqsen);
+            if (!$declaring_class->hasParentType() || !$code_base->hasClassWithFQSEN($declaring_class->getParentClassFQSEN())) {
+                return true;
+            }
+            $parent_class = $declaring_class->getParentClass($code_base);
+            if (!$parent_class->hasPropertyWithName($code_base, $name)) {
+                return true;
+            }
+            $property = $parent_class->getPropertyByName($code_base, $name);
+            if ($property->isPrivate()) {
+                // A private property of the parent class is another property
+                return true;
+            }
+            $parent_declaring_fqsen = $property->getRealDefiningFQSEN()->getFullyQualifiedClassName();
+            if (!$code_base->hasClassWithFQSEN($parent_declaring_fqsen)) {
+                return true;
+            }
+            $class = $code_base->getClassByFQSEN($parent_declaring_fqsen);
+        }
+        return true;
+    }
+
+    /**
      * @return array<string,array{template:TemplateType,context:?string}> the uses of the templates of this class
      * in the type of the property that violate their declared variance
      */
@@ -3512,12 +3562,10 @@ class Clazz extends AddressableElement
         }
         // A property that can be written both produces and consumes its value. A property that is only read produces it.
         // Code outside of the class cannot write to a property that is readonly or `private(set)`
-        // (`protected(set)` can be written by subclasses), or to a property of an interface that only requires `get`.
+        // (`protected(set)` can be written by subclasses), or to a property that only has `get` and no backing storage.
         $is_read_only = $property->isReadOnlyReal() || $property->isReadOnly() || $property->isPrivateSet() ||
             // (a virtual property without a set hook cannot be written)
-            // (a get hook that returns by reference lets the caller write: `&get => $this->stored;`)
-            (($get_hook = $property->getGetHook()) !== null && $property->getSetHook() === null && !($get_hook->getFlags() & \ast\flags\FUNC_RETURNS_REF) &&
-                ($this->isInterface() || $property->isVirtual()));
+            self::isGetOnlyVirtualProperty($code_base, $this, $property);
         return TemplateVarianceUtil::collectVarianceViolations(
             $code_base,
             $union_type,

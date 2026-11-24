@@ -12,3 +12,10 @@
 %s:41 PhanUnreferencedPublicProperty Possibly zero references to public property \TemplateVarianceHooks\Readable->value
 %s:44 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in property \TemplateVarianceHooks\Readable->both of \TemplateVarianceHooks\Readable
 %s:44 PhanUnreferencedPublicProperty Possibly zero references to public property \TemplateVarianceHooks\Readable->both
+%s:58 PhanUnreferencedPublicProperty Possibly zero references to public property \TemplateVarianceHooks\HookBase->both
+%s:61 PhanUnreferencedPublicProperty Possibly zero references to public property \TemplateVarianceHooks\HookBase->plain
+%s:64 PhanUnreferencedPublicProperty Possibly zero references to public property \TemplateVarianceHooks\HookBase->getOnly
+%s:71 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in property \TemplateVarianceHooks\HookChild->stored of \TemplateVarianceHooks\HookChild
+%s:71 PhanUnreferencedClass Possibly zero references to class \TemplateVarianceHooks\HookChild
+%s:74 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in property \TemplateVarianceHooks\HookChild->both of \TemplateVarianceHooks\HookChild
+%s:77 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in property \TemplateVarianceHooks\HookChild->plain of \TemplateVarianceHooks\HookChild

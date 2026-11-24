@@ -43,3 +43,39 @@ interface Readable
     /** @var T */
     public mixed $both { get; set; }
 }
+
+/**
+ * A hook or the backing storage that is not redeclared is inherited.
+ *
+ * @template T
+ */
+class HookBase
+{
+    /** @var T */
+    protected mixed $stored = null;
+
+    /** @var T */
+    public mixed $both { get => $this->stored; set { $this->stored = $value; } }
+
+    /** @var T */
+    public mixed $plain = null;
+
+    /** @var T */
+    public mixed $getOnly { get => $this->stored; }
+}
+
+/**
+ * @template-covariant T
+ * @extends HookBase<T>
+ */
+class HookChild extends HookBase
+{
+    /** @var T this can be written with the set hook of the parent class */
+    public mixed $both { get => $this->stored; }
+
+    /** @var T this can be written to the backing storage of the parent class */
+    public mixed $plain { get => $this->stored; }
+
+    /** @var T this cannot be written */
+    public mixed $getOnly { get => $this->stored; }
+}
