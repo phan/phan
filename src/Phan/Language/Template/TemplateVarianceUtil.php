@@ -24,6 +24,7 @@ use Phan\Language\UnionType;
  *
  * The position changes inside of a type:
  * - The parameter of a callable reverses it: the `T` in `@param callable(T):void $f` is produced by the class.
+ *   (A parameter passed by reference is an invariant position.)
  * - The template parameter of a class that is declared contravariant reverses it too.
  * - Everything else keeps it: the return type of a callable, the elements of arrays and iterables (which are values in php),
  *   and the template parameters of other classes. (Phan treats a template without a declared variance as covariant.)
@@ -126,12 +127,13 @@ final class TemplateVarianceUtil
                     continue;
                 }
                 // The parameter of a callable reverses the position.
+                // A reference is read and written by the callable, so it is an invariant position: `callable(T&):void`
                 self::collectFromUnion(
                     $code_base,
                     $parameter->getUnionType(),
                     $template_map,
                     $result,
-                    -$position,
+                    $parameter->isPassByReference() ? self::POSITION_INVARIANT : -$position,
                     $context ?? ('callable parameter $' . $parameter->getName()),
                     $depth + 1
                 );

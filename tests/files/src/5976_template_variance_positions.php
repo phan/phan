@@ -174,3 +174,51 @@ interface Sink
     /** @return Producer<T> */
     public function asProducer(): Producer;
 }
+
+/**
+ * A reference in a callable, method-level templates and inherited properties.
+ *
+ * @template-covariant T
+ */
+class MoreCases
+{
+    /** @param callable(T&):void $f */
+    public function byReference(callable $f): void
+    {
+        \var_dump($f);
+    }
+}
+
+class NotGeneric
+{
+    /**
+     * @template-contravariant U
+     * @param U $in
+     * @return U
+     */
+    public function methodTemplate($in)
+    {
+        return $in;
+    }
+}
+
+/** @template U */
+class WritableBase
+{
+    /** @var U */
+    public $writable;
+
+    /** @param U $u */
+    public function __construct($u)
+    {
+        $this->writable = $u;
+    }
+}
+
+/**
+ * @template-covariant T
+ * @extends WritableBase<T>
+ */
+class CovariantChild extends WritableBase
+{
+}

@@ -10,3 +10,6 @@
 %s:162 PhanTemplateTypeVarianceViolation Template type T declared contravariant cannot be used in callable parameter $p0 of parameter $consumer of \TemplateVariancePositions5976\Sink::forward()
 %s:166 PhanTemplateTypeVarianceViolation Template type T declared contravariant cannot be used in return type of \TemplateVariancePositions5976\Sink::last()
 %s:175 PhanTemplateTypeVarianceViolation Template type T declared contravariant cannot be used in return type of \TemplateVariancePositions5976\Sink::asProducer()
+%s:185 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in callable parameter $p0 of parameter $f of \TemplateVariancePositions5976\MoreCases::byReference()
+%s:199 PhanTemplateTypeVarianceViolation Template type U declared contravariant cannot be used in return type of \TemplateVariancePositions5976\NotGeneric::methodTemplate()
+%s:209 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in property \TemplateVariancePositions5976\CovariantChild->writable of \TemplateVariancePositions5976\CovariantChild
