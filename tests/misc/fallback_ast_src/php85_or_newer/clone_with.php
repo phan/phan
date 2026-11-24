@@ -19,3 +19,4 @@ $unary = clone
     $object;
 $after = clone $object
 ;
+$reversed = clone(withProperties: $p = ['prop' => 1], object: $object);

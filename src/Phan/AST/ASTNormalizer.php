@@ -107,6 +107,7 @@ class ASTNormalizer
      *
      * The node has the child 'expr' (the object), and the child 'withProperties'
      * when the call has that argument (php 8.5+): `clone($obj, ['prop' => $value])`.
+     * 'withProperties' is the first child when it is the first argument (`clone(withProperties: [...], object: $obj)`).
      *
      * @param array<int|string,mixed> $args the children of the argument list
      */
@@ -115,7 +116,13 @@ class ASTNormalizer
         $children = ['expr' => self::getCloneObjectArgument($args)];
         $with_properties = self::getCloneWithPropertiesArgument($args);
         if ($with_properties !== null) {
-            $children['withProperties'] = $with_properties;
+            $first = $args[0] ?? null;
+            if ($first instanceof Node && $first->kind === \ast\AST_NAMED_ARG && $first->children['name'] === 'withProperties') {
+                // `clone(withProperties: $props = [], object: f($props))`: the children are analyzed in the order php evaluates them
+                $children = ['withProperties' => $with_properties] + $children;
+            } else {
+                $children['withProperties'] = $with_properties;
+            }
         }
         return new Node(\ast\AST_CLONE, 0, $children, $lineno);
     }

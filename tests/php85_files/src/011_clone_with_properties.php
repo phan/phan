@@ -50,3 +50,23 @@ class Unrelated {
     public function f(ReadonlyParent $p): ReadonlyParent { return clone($p, ['x' => 3]); }
     public function g(ReadonlyParent $p): ReadonlyParent { return clone($p, ['pub' => 3]); }
 }
+/** @property-read int $magic */
+class WithReadOnlyDoc {
+    public int $a = 1;
+    /** @phan-read-only */
+    public int $ro = 1;
+    public function __get(string $n): int { return 1; }
+    public function withRo(int $v): static { return clone($this, ['ro' => $v]); }
+}
+function makeObject(array $props): WithReadOnlyDoc { var_dump($props); return new WithReadOnlyDoc(); }
+function overwritten(WithReadOnlyDoc $o, array $more, string $k): void {
+    $c1 = clone($o, ['a' => 'x', ...['a' => 1]]);
+    $c2 = clone($o, ['a' => 'discarded', 'a' => 2]);
+    $c3 = clone($o, ['a' => 'x', ...$more]);
+    $c4 = clone($o, ['a' => 'x', $k => 1]);
+    $c5 = clone($o, [...$more, 'a' => 'bad']);
+    $c6 = clone(withProperties: $props = [], object: makeObject($props));
+    $c7 = clone($o, ['ro' => 2]);
+    $c8 = clone($o, ['magic' => 2]);
+    var_dump($c1, $c2, $c3, $c4, $c5, $c6, $c7, $c8);
+}

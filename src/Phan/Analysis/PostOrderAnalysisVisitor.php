@@ -4885,18 +4885,29 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
         // The object that the properties are assigned to: the clone, which has the type of the object.
         $clone_node = new Node(ast\AST_CLONE, 0, ['expr' => $node->children['expr']], $node->lineno);
+        // The entries that php assigns: a later entry with the same key replaces an earlier one,
+        // and so may `...$properties` or an entry with a key that is not known.
+        $elem_for_key = [];
         foreach ($with_properties->children as $elem) {
             if (!($elem instanceof Node) || $elem->kind !== ast\AST_ARRAY_ELEM) {
-                // `...$properties`
+                $elem_for_key = [];
                 continue;
             }
             $key = $elem->children['key'];
             if ($key instanceof Node) {
                 $key = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $key)->asSingleScalarValueOrNull();
+                if ($key === null) {
+                    $elem_for_key = [];
+                    continue;
+                }
             }
-            if (!\is_string($key)) {
-                continue;
+            if (\is_string($key)) {
+                $elem_for_key[$key] = $elem;
             }
+        }
+        foreach ($elem_for_key as $key => $elem) {
+            // (php converts a key that is a numeric string to an int)
+            $key = (string)$key;
             $value = $elem->children['value'];
             $prop_node = new Node(ast\AST_PROP, 0, ['expr' => $clone_node, 'prop' => $key], $elem->lineno);
             $assign_node = new Node(ast\AST_ASSIGN, 0, ['var' => $prop_node, 'expr' => $value], $elem->lineno);

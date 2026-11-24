@@ -1351,6 +1351,29 @@ class AssignmentVisitor extends AnalysisVisitor
     }
 
     /**
+     * @return bool whether this assigns to a read-only property with `clone($obj, ['prop' => $value])` in a way that is an initialization
+     * of the new object, which the check for assignments outside of the constructor should not report.
+     * (For a native readonly property, the set visibility was checked before this.
+     * A property with `@phan-read-only` can be initialized this way in its class and subclasses.
+     * A magic `@property-read` cannot be written.)
+     */
+    private function isInitializationByCloneWithProperties(Property $property): bool
+    {
+        if (!$this->is_clone_with_properties) {
+            return false;
+        }
+        if ($property->isReadOnlyReal()) {
+            return true;
+        }
+        if ($property->isFromPHPDoc() || !$this->context->isInClassScope()) {
+            return false;
+        }
+        $class_fqsen = $this->context->getClassFQSEN();
+        $property_class_fqsen = $property->getClassFQSEN();
+        return $class_fqsen === $property_class_fqsen || $class_fqsen->asType()->isSubtypeOf($property_class_fqsen->asType(), $this->code_base);
+    }
+
+    /**
      * `clone($obj, ['prop' => $value])` initializes the property of the new object, so a readonly property can be set
      * from every scope that its set visibility allows: readonly is implicitly `protected(set)` (the class and its subclasses),
      * unless the property is declared `public(set)` or `private(set)`.
@@ -1463,7 +1486,7 @@ class AssignmentVisitor extends AnalysisVisitor
         if ($property->isReadOnly()) {
             // Skip read-only checks if this is a conditional check (isset/array_key_exists)
             // We're only inferring that the field exists, not actually modifying it
-            if (!$this->is_conditional_check && !$this->is_clone_with_properties && ($this->dim_depth === 0 || !self::shouldSkipReadOnlyDimAssignmentCheck($property))) {
+            if (!$this->is_conditional_check && !$this->isInitializationByCloneWithProperties($property) && ($this->dim_depth === 0 || !self::shouldSkipReadOnlyDimAssignmentCheck($property))) {
                 $this->analyzeAssignmentToReadOnlyProperty($property, $node);
             }
         }

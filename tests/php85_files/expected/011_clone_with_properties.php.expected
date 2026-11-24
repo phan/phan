@@ -33,3 +33,18 @@
 %s:50 PhanTypeModifyImmutableObjectProperty Saw attempt to modify class \CloneWithProperties\ReadonlyParent's property $x declared at %s:38 (immutability of properties is enforced at runtime)
 %s:50 PhanUnreferencedPublicMethod Possibly zero references to public method \CloneWithProperties\Unrelated::f()
 %s:51 PhanUnreferencedPublicMethod Possibly zero references to public method \CloneWithProperties\Unrelated::g()
+%s:53 PhanWriteOnlyPHPDocProperty Possibly zero read references to PHPDoc @property \CloneWithProperties\WithReadOnlyDoc->magic
+%s:55 PhanWriteOnlyPublicProperty Possibly zero read references to public property \CloneWithProperties\WithReadOnlyDoc->a
+%s:57 PhanWriteOnlyPublicProperty Possibly zero read references to public property \CloneWithProperties\WithReadOnlyDoc->ro
+%s:58 PhanUnusedPublicNoOverrideMethodParameter Parameter $n is never used
+%s:59 PhanUnreferencedPublicMethod Possibly zero references to public method \CloneWithProperties\WithReadOnlyDoc::withRo()
+%s:61 PhanPluginUnknownArrayFunctionParamType Function makeObject() has a parameter type of array for $props, but does not specify any key types or value types (Types inferred after analysis: array)
+%s:62 PhanPluginUnknownArrayFunctionParamType Function overwritten() has a parameter type of array for $more, but does not specify any key types or value types
+%s:62 PhanUnreferencedFunction Possibly zero references to function \CloneWithProperties\overwritten()
+%s:63 PhanPluginMixedKeyNoKey Should not mix array entries of the form [key => value,] with entries of the form [value,].
+%s:64 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value('a') detected in array - the earlier entry 'a' at line 64 will be ignored.
+%s:65 PhanPluginMixedKeyNoKey Should not mix array entries of the form [key => value,] with entries of the form [value,].
+%s:67 PhanPluginMixedKeyNoKey Should not mix array entries of the form [key => value,] with entries of the form [value,].
+%s:67 PhanTypeMismatchPropertyReal Assigning 'bad' of type string to property but \CloneWithProperties\WithReadOnlyDoc->a is int
+%s:69 PhanAccessReadOnlyProperty Cannot modify read-only property \CloneWithProperties\WithReadOnlyDoc->ro defined at %s:57
+%s:70 PhanAccessReadOnlyMagicProperty Cannot modify read-only magic property \CloneWithProperties\WithReadOnlyDoc->magic defined at %s:53
