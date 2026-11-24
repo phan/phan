@@ -1,0 +1,2 @@
+src/080_incomplete_interpolation.php:3 PhanSyntaxError syntax error, unexpected token "]", expecting "-" or identifier or variable or number
+src/080_incomplete_interpolation.php:3 PhanTypeConversionFromArray array to string conversion

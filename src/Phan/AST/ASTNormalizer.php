@@ -70,7 +70,7 @@ class ASTNormalizer
      * Check if an AST_CALL node represents a clone operation.
      *
      * @param Node $node An AST_CALL node
-     * @return bool True if the call is to 'clone'
+     * @return bool True if the call is to 'clone' and is not a partial application
      */
     private static function isCloneCall(Node $node): bool
     {
@@ -78,7 +78,12 @@ class ASTNormalizer
         if (!($expr instanceof Node) || $expr->kind !== \ast\AST_NAME) {
             return false;
         }
-        return ($expr->children['name'] ?? null) === 'clone';
+        if (($expr->children['name'] ?? null) !== 'clone') {
+            return false;
+        }
+        // Partial application of clone (`clone(?)`, `clone($obj, ...)`, php 8.6+) creates a closure, and stays a call.
+        $args = $node->children['args'] ?? null;
+        return !($args instanceof Node && $args->kind === \ast\AST_CALLABLE_CONVERT);
     }
 
     /**
@@ -92,8 +97,8 @@ class ASTNormalizer
         $args = $call_node->children['args'] ?? null;
         $expr = null;
 
-        if ($args instanceof Node && isset($args->children[0])) {
-            $expr = $args->children[0];
+        if ($args instanceof Node) {
+            $expr = self::getCloneObjectArgument($args->children);
         }
 
         // Create a new AST_CLONE node with the proper structure
@@ -103,5 +108,26 @@ class ASTNormalizer
             ['expr' => $expr],
             $call_node->lineno
         );
+    }
+
+    /**
+     * Returns the object that is cloned from the arguments of a call of `clone`:
+     * the first positional argument, or the argument named `object` (`clone(withProperties: [], object: $obj)`).
+     *
+     * @param array<int|string,mixed> $args the children of the argument list
+     * @return Node|float|int|string|null the expression, or null if there is none
+     */
+    public static function getCloneObjectArgument(array $args): mixed
+    {
+        $first = $args[0] ?? null;
+        if (!($first instanceof Node && $first->kind === \ast\AST_NAMED_ARG)) {
+            return $first;
+        }
+        foreach ($args as $arg) {
+            if ($arg instanceof Node && $arg->kind === \ast\AST_NAMED_ARG && $arg->children['name'] === 'object') {
+                return $arg->children['expr'];
+            }
+        }
+        return null;
     }
 }

@@ -86,6 +86,10 @@ final class StringUtil
         }
         $binary_length = 0;
         if ('b' === $c || 'B' === $c) {
+            if (($str[1] ?? '') === '<') {
+                // A heredoc or nowdoc with the binary string prefix: `b<<<'E'`
+                return self::parseHeredoc(substr($str, 1));
+            }
             $binary_length = 1;
         }
 

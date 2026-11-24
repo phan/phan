@@ -6,6 +6,7 @@ namespace Phan\Tests\AST\TolerantASTConverter;
 
 use AssertionError;
 use ast;
+use Phan\AST\ASTNormalizer;
 use Phan\AST\TolerantASTConverter\NodeDumper;
 use Phan\AST\TolerantASTConverter\Shim;
 use Phan\AST\TolerantASTConverter\TolerantASTConverter;
@@ -294,7 +295,12 @@ PHP;
         if (!($expr instanceof ast\Node) || $expr->kind !== ast\AST_NAME) {
             return false;
         }
-        return ($expr->children['name'] ?? null) === 'clone';
+        if (($expr->children['name'] ?? null) !== 'clone') {
+            return false;
+        }
+        // Partial application of clone (`clone(?)`, `clone($obj, ...)`, php 8.6+) creates a closure, and stays a call (see ASTNormalizer).
+        $args = $node->children['args'] ?? null;
+        return !($args instanceof ast\Node && $args->kind === ast\AST_CALLABLE_CONVERT);
     }
 
     /**
@@ -305,8 +311,8 @@ PHP;
         $args = $node->children['args'] ?? null;
         $expr = null;
 
-        if ($args instanceof ast\Node && isset($args->children[0])) {
-            $expr = $args->children[0];
+        if ($args instanceof ast\Node) {
+            $expr = ASTNormalizer::getCloneObjectArgument($args->children);
         }
 
         // Modify the node in-place to convert from AST_CALL to AST_CLONE
