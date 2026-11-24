@@ -1,0 +1,35 @@
+%s:7 PhanWriteOnlyPublicProperty Possibly zero read references to public property \CloneWithProperties\O->a
+%s:8 PhanWriteOnlyPublicProperty Possibly zero read references to public property \CloneWithProperties\O->r
+%s:9 PhanWriteOnlyPrivateProperty Possibly zero read references to private property \CloneWithProperties\O->p
+%s:10 PhanWriteOnlyProtectedProperty Possibly zero read references to protected property \CloneWithProperties\O->q
+%s:11 PhanWriteOnlyPublicProperty Possibly zero read references to public property \CloneWithProperties\O->s
+%s:12 PhanWriteOnlyPublicProperty Possibly zero read references to public property \CloneWithProperties\O->h
+%s:14 PhanUnreferencedPublicMethod Possibly zero references to public method \CloneWithProperties\O::inside()
+%s:16 PhanUnreferencedClass Possibly zero references to class \CloneWithProperties\F
+%s:16 PhanUnreferencedPublicMethod Possibly zero references to public method \CloneWithProperties\F::with()
+%s:16 PhanWriteOnlyPublicProperty Possibly zero read references to public property \CloneWithProperties\F->x
+%s:17 PhanPluginUnknownArrayFunctionParamType Function t() has a parameter type of array for $arr, but does not specify any key types or value types
+%s:17 PhanUnreferencedFunction Possibly zero references to function \CloneWithProperties\t()
+%s:19 PhanTypeMismatchPropertyReal Assigning 'x' of type string to property but \CloneWithProperties\O->a is int
+%s:20 PhanTypeModifyImmutableObjectProperty Saw attempt to modify class \CloneWithProperties\O's property $r declared at %s:8 (immutability of properties is enforced at runtime)
+%s:21 PhanAccessPropertyPrivate Cannot access private property \CloneWithProperties\O->p defined at %s:9
+%s:22 PhanAccessPropertyProtected Cannot access protected property \CloneWithProperties\O->q defined at %s:10
+%s:23 PhanAccessSetPropertyWrongContext Cannot modify private(set) property \CloneWithProperties\O->s defined at %s:11 from %s:23
+%s:24 PhanUndeclaredProperty Reference to undeclared property \CloneWithProperties\O->nope
+%s:27 PhanTypeMismatchArgumentInternal Argument 2 ($withProperties) is $str of type string but \clone() takes array
+%s:28 PhanTypeMismatchArgumentInternal Argument 2 ($withProperties) is null of type null but \clone() takes array
+%s:33 PhanTypeMismatchPropertyReal Assigning (clone($o)) of type \CloneWithProperties\O to property but \CloneWithProperties\O->a is int
+%s:38 PhanWriteOnlyPublicProperty Possibly zero read references to public property \CloneWithProperties\ReadonlyParent->x
+%s:39 PhanWriteOnlyPublicProperty Possibly zero read references to public property \CloneWithProperties\ReadonlyParent->y
+%s:40 PhanWriteOnlyPublicProperty Possibly zero read references to public property \CloneWithProperties\ReadonlyParent->priv
+%s:41 PhanPluginAsymmetricVisibilityLessRestrictive Visibility (public) of property \CloneWithProperties\ReadonlyParent->pub must not be weaker than set visibility (public)
+%s:41 PhanWriteOnlyPublicProperty Possibly zero read references to public property \CloneWithProperties\ReadonlyParent->pub
+%s:45 PhanUnreferencedPublicMethod Possibly zero references to public method \CloneWithProperties\ReadonlyChild::withX()
+%s:46 PhanAccessSetPropertyWrongContext Cannot modify private(set) property \CloneWithProperties\ReadonlyChild->priv defined at %s:40 from %s:46
+%s:46 PhanUnreferencedPublicMethod Possibly zero references to public method \CloneWithProperties\ReadonlyChild::withPriv()
+%s:47 PhanTypeModifyImmutableObjectProperty Saw attempt to modify class \CloneWithProperties\ReadonlyChild's property $y declared at %s:39 (immutability of properties is enforced at runtime)
+%s:47 PhanUnreferencedPublicMethod Possibly zero references to public method \CloneWithProperties\ReadonlyChild::setDirect()
+%s:49 PhanUnreferencedClass Possibly zero references to class \CloneWithProperties\Unrelated
+%s:50 PhanTypeModifyImmutableObjectProperty Saw attempt to modify class \CloneWithProperties\ReadonlyParent's property $x declared at %s:38 (immutability of properties is enforced at runtime)
+%s:50 PhanUnreferencedPublicMethod Possibly zero references to public method \CloneWithProperties\Unrelated::f()
+%s:51 PhanUnreferencedPublicMethod Possibly zero references to public method \CloneWithProperties\Unrelated::g()

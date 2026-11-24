@@ -4850,8 +4850,94 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->emitIssue(Issue::TypeInstantiateEnum, $node->lineno, $type_part);
             }
         }
+        if (isset($node->children['withProperties'])) {
+            $this->analyzeCloneWithProperties($node, $node->children['withProperties']);
+        }
 
         return $this->context;
+    }
+
+    /**
+     * Analyzes the second argument of `clone($obj, ['prop' => $value])` (php 8.5+):
+     * php assigns each value to the property of the new object, from the scope of the caller.
+     *
+     * @param Node $node a node of kind AST_CLONE
+     * @param Node|float|int|string|null $with_properties the argument `withProperties`
+     */
+    private function analyzeCloneWithProperties(Node $node, mixed $with_properties): void
+    {
+        $with_properties_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $with_properties, true);
+        if (!$with_properties_type->isEmpty() && !$with_properties_type->hasArray() && !$with_properties_type->hasMixedOrNonEmptyMixedType()) {
+            $this->emitIssue(
+                Issue::TypeMismatchArgumentInternal,
+                $with_properties->lineno ?? $node->lineno,
+                2,
+                'withProperties',
+                ASTReverter::toShortString($with_properties),
+                $with_properties_type,
+                '\\clone()',
+                'array'
+            );
+            return;
+        }
+        if (!($with_properties instanceof Node) || $with_properties->kind !== ast\AST_ARRAY) {
+            return;
+        }
+        // The object that the properties are assigned to: the clone, which has the type of the object.
+        $clone_node = new Node(ast\AST_CLONE, 0, ['expr' => $node->children['expr']], $node->lineno);
+        foreach ($with_properties->children as $elem) {
+            if (!($elem instanceof Node) || $elem->kind !== ast\AST_ARRAY_ELEM) {
+                // `...$properties`
+                continue;
+            }
+            $key = $elem->children['key'];
+            if ($key instanceof Node) {
+                $key = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $key)->asSingleScalarValueOrNull();
+            }
+            if (!\is_string($key)) {
+                continue;
+            }
+            $value = $elem->children['value'];
+            $prop_node = new Node(ast\AST_PROP, 0, ['expr' => $clone_node, 'prop' => $key], $elem->lineno);
+            $assign_node = new Node(ast\AST_ASSIGN, 0, ['var' => $prop_node, 'expr' => $value], $elem->lineno);
+            (new AssignmentVisitor(
+                $this->code_base,
+                $this->context->withLineNumberStart($elem->lineno),
+                $assign_node,
+                UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $value),
+                0,
+                null,
+                false,
+                false,
+                false,
+                true
+            ))->__invoke($prop_node);
+            $this->trackWriteReferenceOfClonedProperty($node->children['expr'], $key);
+        }
+    }
+
+    /**
+     * Records that `clone($obj, ['prop' => $value])` writes to the property, for dead code detection.
+     *
+     * @param Node|float|int|string|null $expr the object that is cloned
+     */
+    private function trackWriteReferenceOfClonedProperty(mixed $expr, string $property_name): void
+    {
+        if (!($expr instanceof Node) || !Config::get_track_references()) {
+            return;
+        }
+        try {
+            $class_list = (new ContextNode($this->code_base, $this->context, $expr))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT);
+        } catch (Exception) {
+            return;
+        }
+        foreach ($class_list as $class) {
+            if ($class->hasPropertyWithName($this->code_base, $property_name)) {
+                $property = $class->getPropertyByName($this->code_base, $property_name);
+                $property->addReference($this->context);
+                $property->setHasWriteReference();
+            }
+        }
     }
 
     private function isTypeEnum(Type $type): bool

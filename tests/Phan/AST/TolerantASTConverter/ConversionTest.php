@@ -309,15 +309,10 @@ PHP;
     private static function convertCallToClone(ast\Node &$node): void
     {
         $args = $node->children['args'] ?? null;
-        $expr = null;
-
-        if ($args instanceof ast\Node) {
-            $expr = ASTNormalizer::getCloneObjectArgument($args->children);
-        }
 
         // Modify the node in-place to convert from AST_CALL to AST_CLONE
         $node->kind = ast\AST_CLONE;
-        $node->children = ['expr' => $expr];
+        $node->children = ASTNormalizer::newCloneNode($args instanceof ast\Node ? $args->children : [], $node->lineno)->children;
     }
 
     // TODO: TolerantPHPParser gets more information than PHP-Parser for statement lists,

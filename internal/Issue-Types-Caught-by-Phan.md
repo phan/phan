@@ -299,6 +299,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/4703
 Cannot modify {TYPE} property {PROPERTY} defined at {FILE}:{LINE} from {FILE}:{LINE}
 ```
 
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php85_files/expected/011_clone_with_properties.php.expected#L17) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php85_files/src/011_clone_with_properties.php#L23).
+
 ## PhanAccessSignatureMismatch
 
 ```
