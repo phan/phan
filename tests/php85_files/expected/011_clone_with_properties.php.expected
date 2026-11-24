@@ -22,7 +22,6 @@
 %s:38 PhanWriteOnlyPublicProperty Possibly zero read references to public property \CloneWithProperties\ReadonlyParent->x
 %s:39 PhanWriteOnlyPublicProperty Possibly zero read references to public property \CloneWithProperties\ReadonlyParent->y
 %s:40 PhanWriteOnlyPublicProperty Possibly zero read references to public property \CloneWithProperties\ReadonlyParent->priv
-%s:41 PhanPluginAsymmetricVisibilityLessRestrictive Visibility (public) of property \CloneWithProperties\ReadonlyParent->pub must not be weaker than set visibility (public)
 %s:41 PhanWriteOnlyPublicProperty Possibly zero read references to public property \CloneWithProperties\ReadonlyParent->pub
 %s:45 PhanUnreferencedPublicMethod Possibly zero references to public method \CloneWithProperties\ReadonlyChild::withX()
 %s:46 PhanAccessSetPropertyWrongContext Cannot modify private(set) property \CloneWithProperties\ReadonlyChild->priv defined at %s:40 from %s:46
