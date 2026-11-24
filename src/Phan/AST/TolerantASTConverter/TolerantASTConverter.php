@@ -630,7 +630,14 @@ class TolerantASTConverter
         if ($c === 'b' || $c === 'B') {
             $start++;
         }
-        return \substr_compare($contents, '<<<', $start, 3) === 0;
+        if (\substr_compare($contents, '<<<', $start, 3) !== 0) {
+            return false;
+        }
+        // (Inline HTML can also start with `<<<`)
+        foreach ($n->getDescendantTokens() as $token) {
+            return $token->kind === TokenKind::HeredocStart;
+        }
+        return false;
     }
 
     /**
