@@ -1,0 +1,28 @@
+%s:5 PhanReservedClassName Cannot use "object" as the alias of \Foo5975\Bar as it is reserved
+%s:5 PhanUnreferencedUseNormal Possibly zero references to use statement for classlike/namespace object (\Foo5975\Bar)
+%s:6 PhanReservedClassName Cannot use "self" as the alias of \Foo5975\Baz as it is reserved
+%s:7 PhanReservedClassName Cannot use "string" as the alias of \Foo5975\string as it is reserved
+%s:7 PhanUnreferencedUseNormal Possibly zero references to use statement for classlike/namespace string (\Foo5975\string)
+%s:8 PhanReservedClassName Cannot use "void" as the alias of \Foo5975\Qux as it is reserved
+%s:8 PhanUnreferencedUseNormal Possibly zero references to use statement for classlike/namespace void (\Foo5975\Qux)
+%s:13 PhanReservedClassName Cannot use "int" as a class name as it is reserved
+%s:14 PhanReservedClassName Cannot use "bool" as a trait name as it is reserved
+%s:15 PhanReservedClassName Cannot use "float" as an interface name as it is reserved
+%s:16 PhanReservedClassName Cannot use "Mixed" as an enum name as it is reserved
+%s:17 PhanReservedClassName Cannot use "Never" as a class name as it is reserved
+%s:18 PhanReservedClassName Cannot use "iterable" as a class name as it is reserved
+%s:20 PhanReservedClassName Cannot use "self" as a class name as it is reserved
+%s:21 PhanReservedClassName Cannot use "parent" as a class name as it is reserved
+%s:22 PhanReservedClassName Cannot use "static" as an interface name as it is reserved
+%s:23 PhanReservedClassName Cannot use "self" as an interface name as it is reserved
+%s:24 PhanReservedClassName Cannot use "parent" as an interface name as it is reserved
+%s:30 PhanUndeclaredTypeProperty Property \ReservedClassNames5975\ValidClass->valid has undeclared type ?\Foo5975\Str (Did you mean string)
+%s:30 PhanUndeclaredTypeProperty Property \ReservedClassNames5975\ValidClass->valid has undeclared type ?\Foo5975\Valid
+%s:31 PhanReservedClassName Cannot use "Other\int" as a type name as it is reserved
+%s:31 PhanReservedClassName Cannot use "\self" as a qualified class name as it is reserved
+%s:31 PhanUndeclaredTypeParameter Parameter $a has undeclared type \Foo5975\Baz
+%s:31 PhanUndeclaredTypeParameter Parameter $b has undeclared type \Foo5975\Bar
+%s:31 PhanUndeclaredTypeParameter Parameter $c has undeclared type ?\Foo5975\Str (Did you mean string)
+%s:33 PhanUndeclaredConstant Reference to undeclared constant \Foo5975\MIXED. This would throw an Error.
+%s:33 PhanUndeclaredFunction Call to undeclared function \Foo5975\int()
+%s:36 PhanReservedClassName Cannot use "Other\void" as a type name as it is reserved

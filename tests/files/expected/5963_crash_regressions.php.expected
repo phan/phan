@@ -2,7 +2,7 @@
 %s:11 PhanUndeclaredTypeReturnType Return type of fq_static_5963() is undeclared type static
 %s:15 PhanTypeMissingReturnReal Method \Trait5963::foo is declared to return \Iterator in its real type signature but has no return value
 %s:19 PhanInvalidNode Cannot create Closure as attribute argument
-%s:23 PhanContextNotObject Cannot access parent when not in object context
+%s:23 PhanReservedClassName Cannot use "parent" as a class name as it is reserved
 %s:25 PhanContextNotObject Cannot access parent when not in object context
 %s:25 PhanTypeMissingReturn Method \returns_parent_5963 is declared to return non-null-mixed in phpdoc but has no return value
 %s:42 PhanContextNotObject Cannot access parent when not in object context
@@ -19,4 +19,4 @@
 %s:86 PhanTypeMismatchArgumentInternalReal Argument 2 ($array) is ',' of type string but \implode() takes string (real type ?array)
 %s:87 PhanMissingNamedArgumentInternal Missing named argument for array &$array in call to \sort(array &$array, int $flags = 0)
 %s:89 PhanMissingNamedArgumentInternal Missing named argument for array $haystack in call to \in_array($needle, array $haystack, bool $strict = false)
-%s:105 PhanContextNotObject Cannot access parent when not in object context
+%s:105 PhanReservedClassName Cannot use "parent" as an interface name as it is reserved

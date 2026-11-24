@@ -128,4 +128,42 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
             return self::fromFullyQualifiedString("\stdClass");
         });
     }
+
+    /**
+     * The names that php does not allow for a class, interface, trait, enum or the alias of one:
+     * `class int {}` and `use Foo as self;` are compile errors.
+     * (`array` and `callable` are tokens, and only possible as aliases)
+     */
+    private const RESERVED_NAMES = [
+        'bool' => true,
+        'false' => true,
+        'float' => true,
+        'int' => true,
+        'null' => true,
+        'parent' => true,
+        'self' => true,
+        'static' => true,
+        'string' => true,
+        'true' => true,
+        'void' => true,
+        'never' => true,
+        'iterable' => true,
+        'object' => true,
+        'mixed' => true,
+        'array' => true,
+        'callable' => true,
+    ];
+
+    /**
+     * @param string $name the name of a class, with or without a namespace
+     * @return bool whether php reserves the unqualified name, so that it cannot be the name of a classlike or the alias of one
+     */
+    public static function isReservedName(string $name): bool
+    {
+        $i = \strrpos($name, '\\');
+        if ($i !== false) {
+            $name = \substr($name, $i + 1);
+        }
+        return isset(self::RESERVED_NAMES[\strtolower($name)]);
+    }
 }

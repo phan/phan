@@ -328,6 +328,7 @@ class Issue
     public const UnanalyzableInheritance   = 'PhanUnanalyzableInheritance';
     public const InvalidConstantFQSEN      = 'PhanInvalidConstantFQSEN';
     public const ReservedConstantName      = 'PhanReservedConstantName';
+    public const ReservedClassName         = 'PhanReservedClassName';
 
     // Issue::CATEGORY_VARIABLE
     public const VariableUseClause         = 'PhanVariableUseClause';
@@ -1624,6 +1625,14 @@ class Issue
                 "'{CONST}' has a reserved keyword in the constant name",
                 self::REMEDIATION_B,
                 2003
+            ),
+            new Issue(
+                self::ReservedClassName,
+                self::CATEGORY_ANALYSIS,
+                self::SEVERITY_CRITICAL,
+                'Cannot use "{CLASS}" as {DETAILS} as it is reserved',
+                self::REMEDIATION_B,
+                2004
             ),
 
             // Issue::CATEGORY_TYPE
