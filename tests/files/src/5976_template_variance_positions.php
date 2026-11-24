@@ -292,3 +292,12 @@ class MixedBase
 class MixedChild extends MixedBase
 {
 }
+
+/**
+ * @template-covariant T
+ * @extends WritableBase<T>
+ * @suppress PhanTemplateTypeVarianceViolation
+ */
+class SuppressedChild extends WritableBase
+{
+}

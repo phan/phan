@@ -3431,6 +3431,15 @@ class Clazz extends AddressableElement
 
         $context = $property->getContext();
         $line = $property->getFileRef()->getLineNumberStart();
+        if ($property->getRealDefiningFQSEN()->getFullyQualifiedClassName() !== $this->fqsen) {
+            // An inherited property is reported at the class that inherits it: that class declares the variance,
+            // and the class that declares the property may be in a file that is not analyzed.
+            if ($this->checkHasSuppressIssueAndIncrementCount(Issue::TemplateTypeVarianceViolation)) {
+                return;
+            }
+            $context = $this->getContext();
+            $line = $context->getLineNumberStart();
+        }
         $position = 'property ' . $property->asPropertyFQSENString();
         foreach ($violations as $violation) {
             $template_type = $violation['template'];
