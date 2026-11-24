@@ -109,6 +109,12 @@ class AssignmentVisitor extends AnalysisVisitor
     private $is_coalesce_assign;
 
     /**
+     * @var bool
+     * True if this is the assignment of a property by `clone($obj, ['prop' => $value])` (php 8.5+)
+     */
+    private $is_clone_with_properties;
+
+    /**
      * @param CodeBase $code_base
      * The global code base we're operating within
      *
@@ -139,6 +145,10 @@ class AssignmentVisitor extends AnalysisVisitor
      * True if this assignment comes from a ??= operator. Allows writes to non-nullable
      * native readonly properties within the declaring class scope, since ??= short-circuits
      * if the property is already set to a non-null value.
+     *
+     * @param bool $is_clone_with_properties
+     * True if this is the assignment of a property by `clone($obj, ['prop' => $value])` (php 8.5+).
+     * That initializes the property of the new object, so a readonly property can be assigned outside of the constructor.
      */
     public function __construct(
         CodeBase $code_base,
@@ -149,7 +159,8 @@ class AssignmentVisitor extends AnalysisVisitor
         ?UnionType $dim_type = null,
         bool $suppress_dim_property_mismatch = false,
         bool $is_conditional_check = false,
-        bool $is_coalesce_assign = false
+        bool $is_coalesce_assign = false,
+        bool $is_clone_with_properties = false
     ) {
         parent::__construct($code_base, $context);
 
@@ -160,6 +171,7 @@ class AssignmentVisitor extends AnalysisVisitor
         $this->suppress_dim_property_mismatch = $suppress_dim_property_mismatch;
         $this->is_conditional_check = $is_conditional_check;
         $this->is_coalesce_assign = $is_coalesce_assign;
+        $this->is_clone_with_properties = $is_clone_with_properties;
     }
 
     /**
@@ -1235,7 +1247,8 @@ class AssignmentVisitor extends AnalysisVisitor
             $expr_has_static_type = $expr_union_type->hasStaticType();
         }
         foreach ($class_list as $clazz) {
-            if ($clazz->isPropertyImmutableFromContext($this->code_base, $this->context, $property_name)) {
+            if ($clazz->isPropertyImmutableFromContext($this->code_base, $this->context, $property_name) &&
+                    !($this->is_clone_with_properties && $this->canCloneWithSetReadonlyProperty($clazz, $property_name))) {
                 $this->emitTypeModifyImmutableObjectPropertyIssue($clazz, $property_name, $node);
                 return $this->context;
             }
@@ -1338,6 +1351,67 @@ class AssignmentVisitor extends AnalysisVisitor
     }
 
     /**
+     * @return bool whether this assigns to a read-only property with `clone($obj, ['prop' => $value])` in a way that is an initialization
+     * of the new object, which the check for assignments outside of the constructor should not report.
+     * (For a native readonly property, the set visibility was checked before this.
+     * A property with `@phan-read-only` can be initialized this way in its class and subclasses.
+     * A magic `@property-read` cannot be written.)
+     */
+    private function isInitializationByCloneWithProperties(Property $property): bool
+    {
+        if (!$this->is_clone_with_properties) {
+            return false;
+        }
+        if ($property->isReadOnlyReal()) {
+            return true;
+        }
+        if ($property->isFromPHPDoc() || !$this->context->isInClassScope()) {
+            return false;
+        }
+        $class_fqsen = $this->context->getClassFQSEN();
+        $property_class_fqsen = $property->getClassFQSEN();
+        return $class_fqsen === $property_class_fqsen || $class_fqsen->asType()->isSubtypeOf($property_class_fqsen->asType(), $this->code_base);
+    }
+
+    /**
+     * `clone($obj, ['prop' => $value])` initializes the property of the new object, so a readonly property can be set
+     * from every scope that its set visibility allows: readonly is implicitly `protected(set)` (the class, its subclasses and its base classes),
+     * unless the property is declared `public(set)` or `private(set)`.
+     *
+     * @return bool whether the readonly property can be set by clone from the current scope
+     */
+    private function canCloneWithSetReadonlyProperty(Clazz $clazz, string $property_name): bool
+    {
+        if (!$clazz->hasPropertyWithName($this->code_base, $property_name)) {
+            return false;
+        }
+        if ($clazz->isImmutableAtRuntime() && !$clazz->isReadonly()) {
+            // An enum or an internal class with properties that cannot be modified
+            return false;
+        }
+        $property = $clazz->getPropertyByName($this->code_base, $property_name);
+        if (!$property->isReadOnlyReal()) {
+            return false;
+        }
+        if ($property->isPublicSet()) {
+            return true;
+        }
+        if (!$this->context->isInClassScope()) {
+            return false;
+        }
+        $class_fqsen = $this->context->getClassFQSEN();
+        $defining_fqsen = $property->getDefiningClassFQSEN();
+        if ($class_fqsen === $defining_fqsen) {
+            return true;
+        }
+        if ($property->isPrivateSet()) {
+            return false;
+        }
+        // Subclasses and base classes of the declaring class
+        return $property->checkCanAccessProtectedElement($this->code_base, $class_fqsen);
+    }
+
+    /**
      * @throws \InvalidArgumentException|\Phan\Exception\FQSENException if a new shaped type cannot be constructed
      */
     private function refineStdClassShapeAfterDynamicPropertyAssignment(mixed $expr_node, ?UnionType $expr_union_type, string $property_name): void
@@ -1413,7 +1487,7 @@ class AssignmentVisitor extends AnalysisVisitor
         if ($property->isReadOnly()) {
             // Skip read-only checks if this is a conditional check (isset/array_key_exists)
             // We're only inferring that the field exists, not actually modifying it
-            if (!$this->is_conditional_check && ($this->dim_depth === 0 || !self::shouldSkipReadOnlyDimAssignmentCheck($property))) {
+            if (!$this->is_conditional_check && !$this->isInitializationByCloneWithProperties($property) && ($this->dim_depth === 0 || !self::shouldSkipReadOnlyDimAssignmentCheck($property))) {
                 $this->analyzeAssignmentToReadOnlyProperty($property, $node);
             }
         }

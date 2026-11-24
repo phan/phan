@@ -32,6 +32,7 @@ class ASTNormalizer
      *     expr: expr
      * )
      * ```
+     * with an additional child 'withProperties' for the second argument of `clone($obj, ['prop' => $value])` (php 8.5+).
      *
      * This ensures downstream visitors don't need to special-case clone handling.
      *
@@ -57,7 +58,10 @@ class ASTNormalizer
                 // Check if this is an AST_CALL node representing 'clone'
                 if ($child->kind === \ast\AST_CALL && self::isCloneCall($child)) {
                     // Replace with normalized AST_CLONE node
-                    $node->children[$key] = self::convertCallToClone($child);
+                    $child = self::convertCallToClone($child);
+                    $node->children[$key] = $child;
+                    // The arguments may contain other clones: `clone(clone($a))`, `clone($a, ['b' => clone $c])`
+                    self::normalizeCloneNodesRecursive($child);
                 } else {
                     // Recursively process child nodes
                     self::normalizeCloneNodesRecursive($child);
@@ -95,19 +99,53 @@ class ASTNormalizer
     private static function convertCallToClone(Node $call_node): Node
     {
         $args = $call_node->children['args'] ?? null;
-        $expr = null;
+        return self::newCloneNode($args instanceof Node ? $args->children : [], $call_node->lineno);
+    }
 
-        if ($args instanceof Node) {
-            $expr = self::getCloneObjectArgument($args->children);
+    /**
+     * Creates the AST_CLONE node for the arguments of a call of `clone`.
+     *
+     * The node has the child 'expr' (the object), and the child 'withProperties'
+     * when the call has that argument (php 8.5+): `clone($obj, ['prop' => $value])`.
+     * 'withProperties' is the first child when it is the first argument (`clone(withProperties: [...], object: $obj)`).
+     *
+     * @param array<int|string,mixed> $args the children of the argument list
+     */
+    public static function newCloneNode(array $args, int $lineno): Node
+    {
+        $children = ['expr' => self::getCloneObjectArgument($args)];
+        $with_properties = self::getCloneWithPropertiesArgument($args);
+        if ($with_properties !== null) {
+            $first = $args[0] ?? null;
+            if ($first instanceof Node && $first->kind === \ast\AST_NAMED_ARG && $first->children['name'] === 'withProperties') {
+                // `clone(withProperties: $props = [], object: f($props))`: the children are analyzed in the order php evaluates them
+                $children = ['withProperties' => $with_properties] + $children;
+            } else {
+                $children['withProperties'] = $with_properties;
+            }
         }
+        return new Node(\ast\AST_CLONE, 0, $children, $lineno);
+    }
 
-        // Create a new AST_CLONE node with the proper structure
-        return new Node(
-            \ast\AST_CLONE,
-            0,
-            ['expr' => $expr],
-            $call_node->lineno
-        );
+    /**
+     * Returns the argument `withProperties` from the arguments of a call of `clone`:
+     * the second positional argument, or the argument with that name.
+     *
+     * @param array<int|string,mixed> $args the children of the argument list
+     * @return Node|float|int|string|null the expression, or null if there is none
+     */
+    public static function getCloneWithPropertiesArgument(array $args): mixed
+    {
+        foreach ($args as $i => $arg) {
+            if ($arg instanceof Node && $arg->kind === \ast\AST_NAMED_ARG) {
+                if ($arg->children['name'] === 'withProperties') {
+                    return $arg->children['expr'];
+                }
+            } elseif ($i === 1) {
+                return $arg;
+            }
+        }
+        return null;
     }
 
     /**

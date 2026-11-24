@@ -7,3 +7,16 @@ class ClonableExample {
 $object = new ClonableExample();
 
 clone($object, ['prop' => 42]);
+$nested = clone(clone($object), ['a' => clone($object, ['b' => 2])]);
+$multiline = clone(
+    $object,
+    [
+        'a' => 1,
+    ]
+);
+$named = clone(withProperties: ['a' => 1], object: $object);
+$unary = clone
+    $object;
+$after = clone $object
+;
+$reversed = clone(withProperties: $p = ['prop' => 1], object: $object);

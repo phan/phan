@@ -399,6 +399,13 @@ class ASTReverter
             ast\AST_CLONE => static function (Node $node): string {
                 // clone($x)->someMethod() has surprising precedence,
                 // so surround `clone $x` with parenthesis.
+                if (isset($node->children['withProperties'])) {
+                    return sprintf(
+                        '(clone(%s, %s))',
+                        self::toShortString($node->children['expr']),
+                        self::toShortString($node->children['withProperties'])
+                    );
+                }
                 return sprintf(
                     '(clone(%s))',
                     self::toShortString($node->children['expr'])

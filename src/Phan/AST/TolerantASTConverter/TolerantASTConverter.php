@@ -907,9 +907,21 @@ class TolerantASTConverter
                             'args' => $args,
                         ], $line);
                     }
-                    return new ast\Node(ast\AST_CLONE, 0, ['expr' => ASTNormalizer::getCloneObjectArgument($args->children)], $line);
+                    return ASTNormalizer::newCloneNode($args->children, $line);
                 }
-                return new ast\Node(ast\AST_CLONE, 0, ['expr' => static::phpParserNodeToAstNode($expression)], $start_line);
+                $children = ['expr' => static::phpParserNodeToAstNode($expression)];
+                if ($n->modifications !== null) {
+                    // `clone($obj, ['prop' => $value])` (php 8.5+)
+                    $children['withProperties'] = static::phpParserNodeToAstNode($n->modifications);
+                }
+                if ($n->closeParen !== null) {
+                    // php creates the call when it reaches the `)`, and uses its line
+                    $line = self::getStartLine($n->closeParen);
+                } else {
+                    // `clone $obj`, `clone ($obj)->prop`: php reads the token after the expression before it creates the node, and uses its line.
+                    $line = self::getLineOfTokenAfter($n);
+                }
+                return new ast\Node(ast\AST_CLONE, 0, $children, $line);
             },
             'Microsoft\PhpParser\Node\Expression\ErrorControlExpression' => static function (PhpParser\Node\Expression\ErrorControlExpression $n, int $start_line): ast\Node {
                 return new ast\Node(
@@ -3609,6 +3621,41 @@ class TolerantASTConverter
     private static function tokenToRawString(Token $n): string
     {
         return $n->getText(self::$file_contents);
+    }
+
+    /**
+     * @return int the line of the first token after the node, skipping whitespace and comments
+     */
+    private static function getLineOfTokenAfter(PhpParser\Node $n): int
+    {
+        $line = self::getEndLine($n);
+        $contents = self::$file_contents;
+        $length = \strlen($contents);
+        try {
+            $i = $n->getEndPosition();
+        } catch (\Exception) {
+            return $line;
+        }
+        while ($i < $length) {
+            $c = $contents[$i];
+            if ($c === "\n") {
+                $line++;
+                $i++;
+            } elseif ($c === ' ' || $c === "\t" || $c === "\r") {
+                $i++;
+            } elseif ($c === '/' && ($contents[$i + 1] ?? '') === '*') {
+                $end = \strpos($contents, '*/', $i + 2);
+                $end = $end === false ? $length : $end + 2;
+                $line += \substr_count($contents, "\n", $i, $end - $i);
+                $i = $end;
+            } elseif (($c === '/' && ($contents[$i + 1] ?? '') === '/') || ($c === '#' && ($contents[$i + 1] ?? '') !== '[')) {
+                $end = \strpos($contents, "\n", $i);
+                $i = $end === false ? $length : $end;
+            } else {
+                break;
+            }
+        }
+        return $line;
     }
 
     /**

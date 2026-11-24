@@ -44,6 +44,7 @@ use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\Type;
+use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
@@ -4850,8 +4851,108 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->emitIssue(Issue::TypeInstantiateEnum, $node->lineno, $type_part);
             }
         }
+        if (isset($node->children['withProperties'])) {
+            $this->analyzeCloneWithProperties($node, $node->children['withProperties']);
+        }
 
         return $this->context;
+    }
+
+    /**
+     * Analyzes the second argument of `clone($obj, ['prop' => $value])` (php 8.5+):
+     * php assigns each value to the property of the new object, from the scope of the caller.
+     *
+     * @param Node $node a node of kind AST_CLONE
+     * @param Node|float|int|string|null $with_properties the argument `withProperties`
+     */
+    private function analyzeCloneWithProperties(Node $node, mixed $with_properties): void
+    {
+        $with_properties_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $with_properties, true);
+        // (A type that may be an array is accepted: `iterable`, `callable`, `?array`)
+        if (!$with_properties_type->isEmpty() && !$with_properties_type->hasAnyTypeOverlap($this->code_base, ArrayType::instance(false)->asPHPDocUnionType())) {
+            $this->emitIssue(
+                Issue::TypeMismatchArgumentInternal,
+                $with_properties->lineno ?? $node->lineno,
+                2,
+                'withProperties',
+                ASTReverter::toShortString($with_properties),
+                $with_properties_type,
+                '\\clone()',
+                'array'
+            );
+            return;
+        }
+        if (!($with_properties instanceof Node) || $with_properties->kind !== ast\AST_ARRAY) {
+            return;
+        }
+        // The object that the properties are assigned to is the clone, which has the type of the object.
+        // (This uses the node itself and not a copy without the properties: Phan caches the classes of a node by the id of the node,
+        // and the id of a temporary node can be used again in the same statement.)
+        $clone_node = $node;
+        // The entries that php assigns: a later entry with the same key replaces an earlier one,
+        // and so may `...$properties` or an entry with a key that is not known.
+        $elem_for_key = [];
+        foreach ($with_properties->children as $elem) {
+            if (!($elem instanceof Node) || $elem->kind !== ast\AST_ARRAY_ELEM) {
+                $elem_for_key = [];
+                continue;
+            }
+            $key = $elem->children['key'];
+            if ($key instanceof Node) {
+                $key = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $key)->asSingleScalarValueOrNull();
+                if ($key === null) {
+                    $elem_for_key = [];
+                    continue;
+                }
+            }
+            if (\is_string($key)) {
+                $elem_for_key[$key] = $elem;
+            }
+        }
+        foreach ($elem_for_key as $key => $elem) {
+            // (php converts a key that is a numeric string to an int)
+            $key = (string)$key;
+            $value = $elem->children['value'];
+            $prop_node = new Node(ast\AST_PROP, 0, ['expr' => $clone_node, 'prop' => $key], $elem->lineno);
+            $assign_node = new Node(ast\AST_ASSIGN, 0, ['var' => $prop_node, 'expr' => $value], $elem->lineno);
+            (new AssignmentVisitor(
+                $this->code_base,
+                $this->context->withLineNumberStart($elem->lineno),
+                $assign_node,
+                UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $value),
+                0,
+                null,
+                false,
+                false,
+                false,
+                true
+            ))->__invoke($prop_node);
+            $this->trackWriteReferenceOfClonedProperty($node->children['expr'], $key);
+        }
+    }
+
+    /**
+     * Records that `clone($obj, ['prop' => $value])` writes to the property, for dead code detection.
+     *
+     * @param Node|float|int|string|null $expr the object that is cloned
+     */
+    private function trackWriteReferenceOfClonedProperty(mixed $expr, string $property_name): void
+    {
+        if (!($expr instanceof Node) || !Config::get_track_references()) {
+            return;
+        }
+        try {
+            $class_list = (new ContextNode($this->code_base, $this->context, $expr))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT);
+        } catch (Exception) {
+            return;
+        }
+        foreach ($class_list as $class) {
+            if ($class->hasPropertyWithName($this->code_base, $property_name)) {
+                $property = $class->getPropertyByName($this->code_base, $property_name);
+                $property->addReference($this->context);
+                $property->setHasWriteReference();
+            }
+        }
     }
 
     private function isTypeEnum(Type $type): bool
