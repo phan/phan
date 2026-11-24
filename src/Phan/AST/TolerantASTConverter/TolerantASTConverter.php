@@ -1221,7 +1221,8 @@ class TolerantASTConverter
                             // The magic constant of property hooks (php 8.4+). php-ast uses the token as the flags, and has no constant for it.
                             return new ast\Node(
                                 ast\AST_MAGIC_CONST,
-                                \T_PROPERTY_C,
+                                // (The constant is not declared before php 8.4)
+                                (int)\constant('T_PROPERTY_C'),
                                 [],
                                 self::getStartLine($part)
                             );
