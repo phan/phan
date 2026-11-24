@@ -2077,6 +2077,9 @@ class TolerantASTConverter
                 case 'never':
                     $flags = flags\TYPE_NEVER;
                     break;
+                case 'mixed':
+                    $flags = flags\TYPE_MIXED;
+                    break;
                 default:
                     // TODO: Refactor this into a function accepting a QualifiedName
                     if ($original_type instanceof PhpParser\Node\QualifiedName) {
