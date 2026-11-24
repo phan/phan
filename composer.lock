@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f668362c63f6bb703c446baa4018bd92",
+    "content-hash": "14ddd15ac832c27ea0f168263c699710",
     "packages": [
         {
             "name": "composer/pcre",
@@ -374,16 +374,16 @@
         },
         {
             "name": "phan/tolerant-php-parser",
-            "version": "v0.2.0",
+            "version": "v0.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phan/phan-tolerant.git",
-                "reference": "199a81a43531cea4872893f10adc3eefcacacea9"
+                "reference": "2efe456b385027339b197cfd6950d94d827107f5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phan/phan-tolerant/zipball/199a81a43531cea4872893f10adc3eefcacacea9",
-                "reference": "199a81a43531cea4872893f10adc3eefcacacea9",
+                "url": "https://api.github.com/repos/phan/phan-tolerant/zipball/2efe456b385027339b197cfd6950d94d827107f5",
+                "reference": "2efe456b385027339b197cfd6950d94d827107f5",
                 "shasum": ""
             },
             "require": {
@@ -401,7 +401,13 @@
                     ]
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "Microsoft\\PhpParser\\Tests\\Unit\\": [
+                        "tests/unit/"
+                    ]
+                }
+            },
             "license": [
                 "MIT"
             ],
@@ -413,10 +419,10 @@
             ],
             "description": "Tolerant PHP-to-AST parser designed for IDE usage scenarios",
             "support": {
-                "issues": "https://github.com/phan/phan-tolerant/issues",
-                "source": "https://github.com/phan/phan-tolerant/tree/v0.2.0"
+                "source": "https://github.com/phan/phan-tolerant/tree/v0.2.1",
+                "issues": "https://github.com/phan/phan-tolerant/issues"
             },
-            "time": "2025-10-29T19:20:13+00:00"
+            "time": "2026-11-24T03:56:11+00:00"
         },
         {
             "name": "phan/var_representation_polyfill",
@@ -3288,5 +3294,5 @@
         "ext-tokenizer": "*"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }

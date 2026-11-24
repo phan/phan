@@ -1606,7 +1606,6 @@ class TolerantASTConverter
                     self::getStartLine($n->text) ?: $start_line
                 );
             },
-            /** @suppress PhanTypeMismatchArgument TODO: Make ForStatement have more accurate docs? */
             'Microsoft\PhpParser\Node\Statement\ForStatement' => static function (PhpParser\Node\Statement\ForStatement $n, int $start_line): ast\Node {
                 return new ast\Node(
                     ast\AST_FOR,
