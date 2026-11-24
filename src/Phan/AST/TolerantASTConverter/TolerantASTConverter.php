@@ -21,6 +21,7 @@ use Microsoft\PhpParser\Node\Expression\TernaryExpression;
 use Microsoft\PhpParser\Node\SourceFileNode;
 use Microsoft\PhpParser\Token;
 use Microsoft\PhpParser\TokenKind;
+use Phan\AST\ASTNormalizer;
 use Phan\CLI;
 use Phan\Library\Cache;
 use RuntimeException;
@@ -906,7 +907,7 @@ class TolerantASTConverter
                             'args' => $args,
                         ], $line);
                     }
-                    return new ast\Node(ast\AST_CLONE, 0, ['expr' => $args->children[0] ?? null], $line);
+                    return new ast\Node(ast\AST_CLONE, 0, ['expr' => ASTNormalizer::getCloneObjectArgument($args->children)], $line);
                 }
                 return new ast\Node(ast\AST_CLONE, 0, ['expr' => static::phpParserNodeToAstNode($expression)], $start_line);
             },
@@ -1217,12 +1218,12 @@ class TolerantASTConverter
                                 self::getStartLine($part)
                             );
                         }
-                        if (\defined('T_PROPERTY_C') && $n->globalSpecifier === null && $n->relativeSpecifier === null && \strcasecmp($imploded_parts, '__PROPERTY__') === 0) {
+                        if ($n->globalSpecifier === null && $n->relativeSpecifier === null && \strcasecmp($imploded_parts, '__PROPERTY__') === 0) {
                             // The magic constant of property hooks (php 8.4+). php-ast uses the token as the flags, and has no constant for it.
                             return new ast\Node(
                                 ast\AST_MAGIC_CONST,
-                                // (The constant is not declared before php 8.4)
-                                (int)\constant('T_PROPERTY_C'),
+                                // (The token is not declared before php 8.4. Any other value is also analyzed as a string.)
+                                \defined('T_PROPERTY_C') ? (int)\constant('T_PROPERTY_C') : 0,
                                 [],
                                 self::getStartLine($part)
                             );

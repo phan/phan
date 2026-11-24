@@ -31,3 +31,5 @@ $p = clone(
 $r = clone $o;
 $s = clone($o, ["x" => 3]);
 $t = clone ($o)->x;
+$n1 = clone(object: $o);
+$n2 = clone(withProperties: ["a" => 1], object: $o);

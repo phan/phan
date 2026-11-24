@@ -1,0 +1,7 @@
+%s:5 PhanUnreferencedClass Possibly zero references to class \CloneNamedArguments\O
+%s:7 PhanUnreferencedPublicProperty Possibly zero references to public property \CloneNamedArguments\O->a
+%s:10 PhanUnreferencedFunction Possibly zero references to function \CloneNamedArguments\test()
+%s:14 PhanUndeclaredProperty Reference to undeclared property \CloneNamedArguments\O->missing
+%s:15 PhanUndeclaredProperty Reference to undeclared property \CloneNamedArguments\O->alsoMissing
+%s:16 PhanTypeInvalidCloneNotObject Expected an object to be passed to clone() but got 42
+%s:16 PhanTypeSuspiciousEcho Suspicious argument (clone(42)) of type object for an echo/print statement

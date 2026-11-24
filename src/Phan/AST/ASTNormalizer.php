@@ -97,8 +97,8 @@ class ASTNormalizer
         $args = $call_node->children['args'] ?? null;
         $expr = null;
 
-        if ($args instanceof Node && isset($args->children[0])) {
-            $expr = $args->children[0];
+        if ($args instanceof Node) {
+            $expr = self::getCloneObjectArgument($args->children);
         }
 
         // Create a new AST_CLONE node with the proper structure
@@ -108,5 +108,26 @@ class ASTNormalizer
             ['expr' => $expr],
             $call_node->lineno
         );
+    }
+
+    /**
+     * Returns the object that is cloned from the arguments of a call of `clone`:
+     * the first positional argument, or the argument named `object` (`clone(withProperties: [], object: $obj)`).
+     *
+     * @param array<int|string,mixed> $args the children of the argument list
+     * @return Node|float|int|string|null the expression, or null if there is none
+     */
+    public static function getCloneObjectArgument(array $args): mixed
+    {
+        $first = $args[0] ?? null;
+        if (!($first instanceof Node && $first->kind === \ast\AST_NAMED_ARG)) {
+            return $first;
+        }
+        foreach ($args as $arg) {
+            if ($arg instanceof Node && $arg->kind === \ast\AST_NAMED_ARG && $arg->children['name'] === 'object') {
+                return $arg->children['expr'];
+            }
+        }
+        return null;
     }
 }
