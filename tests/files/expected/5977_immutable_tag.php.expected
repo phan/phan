@@ -1,0 +1,4 @@
+%s:19 PhanAccessReadOnlyProperty Cannot modify read-only property \ImmutableTag5977\Point->x defined at %s:10
+%s:49 PhanAccessReadOnlyProperty Cannot modify read-only property \ImmutableTag5977\Point->x defined at %s:10
+%s:50 PhanAccessReadOnlyProperty Cannot modify read-only property \ImmutableTag5977\PsalmPoint->x defined at %s:26
+%s:54 PhanInvalidCommentForDeclarationType The phpdoc comment for @immutable cannot occur on a function
