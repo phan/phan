@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "14ddd15ac832c27ea0f168263c699710",
+    "content-hash": "851f94a0dc220740a63e6cd40ef5516a",
     "packages": [
         {
             "name": "composer/pcre",
@@ -374,16 +374,16 @@
         },
         {
             "name": "phan/tolerant-php-parser",
-            "version": "v0.2.1",
+            "version": "v0.2.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phan/phan-tolerant.git",
-                "reference": "2efe456b385027339b197cfd6950d94d827107f5"
+                "reference": "f6b6f22abb63686bf782b7be7c5d1b5bc3a5f1e0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phan/phan-tolerant/zipball/2efe456b385027339b197cfd6950d94d827107f5",
-                "reference": "2efe456b385027339b197cfd6950d94d827107f5",
+                "url": "https://api.github.com/repos/phan/phan-tolerant/zipball/f6b6f22abb63686bf782b7be7c5d1b5bc3a5f1e0",
+                "reference": "f6b6f22abb63686bf782b7be7c5d1b5bc3a5f1e0",
                 "shasum": ""
             },
             "require": {
@@ -419,10 +419,10 @@
             ],
             "description": "Tolerant PHP-to-AST parser designed for IDE usage scenarios",
             "support": {
-                "source": "https://github.com/phan/phan-tolerant/tree/v0.2.1",
+                "source": "https://github.com/phan/phan-tolerant/tree/v0.2.2",
                 "issues": "https://github.com/phan/phan-tolerant/issues"
             },
-            "time": "2026-11-24T03:56:11+00:00"
+            "time": "2026-11-24T13:01:25+00:00"
         },
         {
             "name": "phan/var_representation_polyfill",
