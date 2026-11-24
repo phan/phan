@@ -925,7 +925,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if (!$context->isInFunctionLikeScope()) {
             return false;
         }
-        return $context->getFunctionLikeInScope($this->code_base)->returnsRef();
+        $function = $context->getFunctionLikeInScope($this->code_base);
+        // (In a generator, the yielded values are references, not the returned value)
+        return $function->returnsRef() && !$function->hasYield();
     }
 
     /**
@@ -2284,8 +2286,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     private function analyzeReturnsReference(FunctionInterface $method, Node $node): void
     {
         $expr = $node->children['expr'];
-        if ($expr instanceof Node) {
+        if ($expr instanceof Node && !$method->hasYield()) {
             // `return $undef;` in a function returning a reference defines `$undef` (as null)
+            // (In a generator, the yielded values are references, not the returned value)
             $this->createReferenceTarget($expr, true);
         }
         if ((!$expr instanceof Node) || !\in_array($expr->kind, ArgumentType::REFERENCE_NODE_KINDS, true)) {
@@ -5980,7 +5983,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             } catch (IssueException) {
                 return;
             }
+            if ($variable_type->isNull()) {
+                // The offset is null because the reference created it (or it was null before): the function is expected to assign it,
+                // so null is not kept as one of the types, the same as for a variable that the reference creates.
+                $variable_type = UnionType::empty();
+            }
             $set_variable_type = static function (UnionType $new_type) use ($code_base, $context, $argument): void {
+                if ($new_type->isEmpty()) {
+                    // The parameter has no type (`function f(&$value)`): the function can assign anything.
+                    $new_type = MixedType::instance(false)->asPHPDocUnionType();
+                }
                 self::assignTypeToReferencedDim($code_base, $context, $argument, $new_type);
             };
         } else {

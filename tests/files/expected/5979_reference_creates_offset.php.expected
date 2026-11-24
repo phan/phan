@@ -7,3 +7,6 @@
 %s:60 PhanTypeInvalidDimOffset Invalid offset "k" of $a of array type array{}=
 %s:78 PhanUndeclaredVariable Variable $later is undeclared
 %s:78 PhanUnusedVariable Unused definition of variable $later
+%s:101 PhanTypeMismatchArgument Argument 1 ($value) is $out['k'] of type null but \typed_output() takes int defined at %s:86
+%s:102 PhanTypeMismatchReturn Returning $out['k'] of type int but offset_for_typed_parameter() is declared to return string
+%s:110 PhanTypeInvalidDimOffset Invalid offset "missing" of $a of array type array{x:1}

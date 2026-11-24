@@ -77,3 +77,35 @@ function named_argument_read_before_assignment(): int
     // The read of $later is reported: the second argument assigns it after the first one was evaluated.
     return by_value_pair(value: $later, other: ($later = 1));
 }
+
+function untyped_output(&$value): void
+{
+    $value = 42;
+}
+
+function typed_output(int &$value): void
+{
+    $value = 42;
+}
+
+function offset_for_untyped_parameter(): int
+{
+    $out = [];
+    untyped_output($out['k']);
+    return $out['k'];
+}
+
+function offset_for_typed_parameter(): string
+{
+    $out = [];
+    typed_output($out['k']);
+    return $out['k'];
+}
+
+/** @return \Generator<int,int,mixed,mixed> */
+function &generator_return_is_not_a_reference()
+{
+    $a = ['x' => 1];
+    yield 1;
+    return $a['missing'];
+}
