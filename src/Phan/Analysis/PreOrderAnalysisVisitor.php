@@ -558,7 +558,12 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                         $variable = clone($variable);
                     } else {
                         $union_type = $variable->getUnionType();
-                        if ($union_type->hasRealTypeSet()) {
+                        if ($union_type->isPossiblyUndefined()) {
+                            // `use (&$var)` defines `$var` (as null) in the outer scope if it is undefined.
+                            $variable = clone($variable);
+                            $variable->setUnionType($union_type->convertUndefinedToNullable()->eraseRealTypeSetRecursively());
+                            $context->addScopeVariable($variable);
+                        } elseif ($union_type->hasRealTypeSet()) {
                             $variable->setUnionType($union_type->eraseRealTypeSetRecursively());
                         }
                     }

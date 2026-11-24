@@ -2697,7 +2697,13 @@ class AssignmentVisitor extends AnalysisVisitor
                     // @phan-suppress-next-line PhanUndeclaredProperty used in unused variable detection - array access to an object might have a side effect
                     $node->phan_is_assignment_to_real_array = true;
                 }
-                $right_type = $this->typeCheckDimAssignment($old_variable_union_type, $node);
+                if ($old_variable_union_type->isNull() && $variable->getPhanFlagsHasState(Flags::HAS_REFERENCE)) {
+                    // E.g. `$b[0] = &$b;` or `$a = &$b; $b[] = 1;`: a reference defined the variable as null
+                    // (or it may have been modified through a reference), and PHP creates the array without any warning.
+                    $right_type = $this->typeCheckDimAssignment(UnionType::empty(), $node);
+                } else {
+                    $right_type = $this->typeCheckDimAssignment($old_variable_union_type, $node);
+                }
                 $container_may_be_absent = !$this->is_conditional_check && self::typeSetContainsNullOrFalse($old_variable_union_type);
                 if ($old_variable_union_type->isEmpty()) {
                     $old_variable_union_type = ArrayType::instance(false)->asPHPDocUnionType();

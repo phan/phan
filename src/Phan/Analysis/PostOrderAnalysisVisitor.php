@@ -45,6 +45,7 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
@@ -307,7 +308,143 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 ASTReverter::toShortString($expr_node)
             );
         }
+        if ($expr_node instanceof Node) {
+            // `$b = &$a` defines `$a` (as null), `$b = &$a['k']` creates `$a` and the offset 'k'.
+            // (An `$a` that is undefined on every path is still reported: it is probably a typo)
+            $this->createReferenceTarget($expr_node, true);
+        }
         return $this->visitAssign($node);
+    }
+
+    /**
+     * Creates what PHP creates, without any warning, when a reference is taken to $node,
+     * before the type of $node is computed:
+     *
+     * - `&$var` defines `$var` (as null) if it is undefined, or possibly undefined.
+     *   With $report_undefined, a `$var` that is undefined on every path is reported as undeclared first:
+     *   that is used for `=&`, `[&$var]` and `return $var;`, where a new variable is probably a typo,
+     *   and not for arguments, where it is the usual way to receive a result (`preg_match($re, $s, $matches)`).
+     * - `&$var[$k]` (also `&$var[$k][$j]`, etc.) defines `$var` the same way, and creates the offset `$k` (as null)
+     *   if it does not exist. (PHP creates the array if `$var` is null.)
+     *
+     * This is used for `$b = &$a`, `[&$a]`, the arguments of parameters passed by reference,
+     * and the expressions returned by functions returning a reference.
+     */
+    private function createReferenceTarget(Node $node, bool $report_undefined = false, bool $is_argument = false): void
+    {
+        $kind = $node->kind;
+        if ($kind === ast\AST_VAR) {
+            $this->createVariableForReference($node, null, $report_undefined);
+            return;
+        }
+        if ($kind !== ast\AST_DIM) {
+            return;
+        }
+        // Don't report the offset as invalid or the array as null.
+        // (This is already done when parsing, except for arguments and returned expressions)
+        PhanAnnotationAdder::markReferenceTarget($node);
+        $var_node = self::getBaseVariableNodeOfDim($node);
+        if (!$var_node) {
+            // E.g. `&$this->prop['k']`: the offset is not added to the type of the property.
+            // The expression that the dimensions start at is still checked: php creates the offset, but not an object (`&$nullable->prop['k']`).
+            $root = $node;
+            while ($root instanceof Node && $root->kind === ast\AST_DIM) {
+                $root = $root->children['expr'];
+            }
+            if ($root instanceof Node && $root->kind === ast\AST_PROP && Config::get_strict_object_checking()) {
+                $property_name = $root->children['prop'];
+                if (\is_string($property_name)) {
+                    // (The same check as for `$nullable->prop['k'] = $value;`. The flags that suppress it for reads are set on the whole chain.)
+                    ContextNode::checkPossiblyUndeclaredInstanceProperty($this->code_base, $this->context, $root, $property_name);
+                }
+            }
+            return;
+        }
+        // An undefined `$var` becomes an array.
+        $this->createVariableForReference($var_node, ArrayShapeType::empty(false)->asPHPDocUnionType(), $report_undefined);
+        $null_type = NullType::instance(false)->asPHPDocUnionType();
+        if ($is_argument && self::hasAppendInDimChain($node)) {
+            // `f($out[])`, `f($out[]['m'])`: the element is appended once, when the type of the parameter is assigned.
+            return;
+        }
+        if ($node->children['dim'] === null) {
+            // `$x = &$var[];` appends null
+            $element_type = $null_type;
+        } else {
+            try {
+                $element_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node, false);
+            } catch (IssueException) {
+                // Reported when the reference is analyzed
+                return;
+            }
+            if ($element_type->isNull()) {
+                // The offset is null until it is assigned through the reference, which Phan does not track.
+                $element_type = $null_type;
+            }
+        }
+        // Analyze this as `$var[$k] = $var[$k]`, which adds the offset if it was missing (the type of a missing offset is null).
+        self::assignTypeToReferencedDim($this->code_base, $this->context, $node, $element_type);
+    }
+
+    /**
+     * @param Node $node a node of kind ast\AST_DIM
+     * @return bool whether one of the dimensions of `$var[...][...]` is an append (`[]`)
+     */
+    private static function hasAppendInDimChain(Node $node): bool
+    {
+        while ($node instanceof Node && $node->kind === ast\AST_DIM) {
+            if ($node->children['dim'] === null) {
+                return true;
+            }
+            $node = $node->children['expr'];
+        }
+        return false;
+    }
+
+    /**
+     * Defines the variable $node for a reference to it, if it is undefined (as $type_if_undefined, by default null),
+     * or if it is possibly undefined (as null).
+     *
+     * @param Node $node a node of kind ast\AST_VAR
+     */
+    private function createVariableForReference(Node $node, ?UnionType $type_if_undefined = null, bool $report_undefined = false): void
+    {
+        $variable_name = $node->children['name'];
+        if (!\is_string($variable_name) || $variable_name === 'this') {
+            return;
+        }
+        $context = $this->context;
+        $scope = $context->getScope();
+        if ($scope->hasVariableWithName($variable_name)) {
+            $variable = $scope->getVariableByName($variable_name);
+            $union_type = $variable->getUnionType();
+            if (!$union_type->isPossiblyUndefined()) {
+                return;
+            }
+            $variable = clone $variable;
+            $variable->setUnionType($union_type->convertUndefinedToNullable());
+        } else {
+            if (Variable::isHardcodedVariableInScopeWithName($variable_name, $context->isInGlobalScope())) {
+                return;
+            }
+            if ($report_undefined) {
+                // PHP creates the variable without a warning, but a variable that is undefined on every path
+                // is more likely a typo than intended: `$ref = &$itmes;`
+                $this->checkForUndeclaredVariable($node);
+            }
+            // The type is only null until the variable is assigned through any of the references to it, which Phan does not track.
+            $variable = new Variable(
+                $context->withLineNumberStart($node->lineno),
+                $variable_name,
+                $type_if_undefined ?? NullType::instance(false)->asPHPDocUnionType(),
+                0
+            );
+        }
+        // (So that `$b[0] = &$b;` does not warn about adding an offset to null)
+        $variable->enablePhanFlagBits(\Phan\Language\Element\Flags::HAS_REFERENCE);
+        $context->addScopeVariable($variable);
+        // The type of the variable may have been computed and cached for the node already.
+        $context->clearCachedUnionTypes();
     }
 
     /**
@@ -744,7 +881,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * Check if a given variable is undeclared.
      * @param Node $node Node with kind AST_VAR
      */
-    private function checkForUndeclaredVariable(Node $node): void
+    /**
+     * @param bool $was_undeclared true if the variable was undeclared when $node was evaluated,
+     * although it may be declared in the current scope (by a later argument of the same call)
+     */
+    private function checkForUndeclaredVariable(Node $node, bool $was_undeclared = false): void
     {
         $variable_name = $node->children['name'];
 
@@ -761,16 +902,32 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return;
         }
 
-        if (!$this->context->getScope()->hasVariableWithName($variable_name)
-            && !Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope())
+        if ($was_undeclared || (!$this->context->getScope()->hasVariableWithName($variable_name)
+            && !Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope()))
         ) {
             $this->emitIssueWithSuggestion(
                 Variable::chooseIssueForUndeclaredVariable($this->context, $variable_name),
                 $node->lineno,
                 [$variable_name],
-                IssueFixSuggester::suggestVariableTypoFix($this->code_base, $this->context, $variable_name)
+                // (The variable itself is in the scope by now if it was declared after $node was evaluated)
+                $was_undeclared ? null : IssueFixSuggester::suggestVariableTypoFix($this->code_base, $this->context, $variable_name)
             );
         }
+    }
+
+    /**
+     * Returns true if this is the scope of a function, method or closure returning a reference (`function &f()`).
+     * `return $var;` takes a reference to `$var` there, which is checked in analyzeReturnsReference().
+     */
+    private function isInFunctionReturningReference(): bool
+    {
+        $context = $this->context;
+        if (!$context->isInFunctionLikeScope()) {
+            return false;
+        }
+        $function = $context->getFunctionLikeInScope($this->code_base);
+        // (In a generator, the yielded values are references, not the returned value)
+        return $function->returnsRef() && !$function->hasYield();
     }
 
     /**
@@ -1074,6 +1231,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     private const SKIP_VAR_CHECK_TYPES = [
         ast\AST_ARG_LIST       => true,  // may be a reference
+        ast\AST_NAMED_ARG      => true,  // same, checked in analyzeCallToFunctionLike()
         ast\AST_ARRAY_ELEM     => true,  // [$x, $y] = expr() is an AST_ARRAY_ELEM. visitArray() checks the right-hand side.
         ast\AST_ASSIGN_OP      => true,  // checked in visitAssignOp
         ast\AST_ASSIGN_REF     => true,  // Creates by reference?
@@ -1102,7 +1260,17 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $parent_node = \end($this->parent_node_list);
         if ($parent_node instanceof Node && !($node->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF)) {
             $parent_kind = $parent_node->kind;
-            if (!\array_key_exists($parent_kind, self::SKIP_VAR_CHECK_TYPES)) {
+            if ($parent_kind === ast\AST_NAMED_ARG) {
+                // analyzeCallToFunctionLike() decides once it knows whether the parameter is by reference,
+                // but with the scope of this point, since a later argument can assign the variable (`f(a: $var, b: $var = 1)`).
+                $variable_name = $node->children['name'];
+                // @phan-suppress-next-line PhanUndeclaredProperty this is added for analyzeCallToFunctionLike()
+                $node->is_undeclared_variable_of_named_argument = \is_string($variable_name)
+                    && !$this->context->getScope()->hasVariableWithName($variable_name)
+                    && !Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope());
+            }
+            if (!\array_key_exists($parent_kind, self::SKIP_VAR_CHECK_TYPES)
+                && !($parent_kind === ast\AST_RETURN && $this->isInFunctionReturningReference())) {
                 $this->checkForUndeclaredVariable($node);
             }
         }
@@ -1120,6 +1288,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     public function visitArray(Node $node): Context
     {
         $this->analyzeNoOp($node, Issue::NoopArray);
+        foreach ($node->children as $child) {
+            // `[&$a]` defines `$a`, unless this is the left side of an assignment (`[&$a] = $values;` assigns `$a`)
+            if ($child instanceof Node && ($child->flags & flags\ARRAY_ELEM_REF) && !($child->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF)) {
+                $value = $child->children['value'];
+                if ($value instanceof Node) {
+                    $this->createReferenceTarget($value, true);
+                }
+            }
+        }
         return $this->context;
     }
 
@@ -2109,6 +2286,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     private function analyzeReturnsReference(FunctionInterface $method, Node $node): void
     {
         $expr = $node->children['expr'];
+        if ($expr instanceof Node && !$method->hasYield()) {
+            // `return $undef;` in a function returning a reference defines `$undef` (as null)
+            // (In a generator, the yielded values are references, not the returned value)
+            $this->createReferenceTarget($expr, true);
+        }
         if ((!$expr instanceof Node) || !\in_array($expr->kind, ArgumentType::REFERENCE_NODE_KINDS, true)) {
             $is_possible_reference = ArgumentType::isExpressionReturningReference($this->code_base, $this->context, $expr);
 
@@ -4589,6 +4771,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($parent_kind === ast\AST_DIM && $parent_node instanceof Node && $parent_node->children['expr'] === $node) {
             // `$var[...][...]`: the outermost dimension checks the chain, since its parent decides whether `$var` is read
             // (`byref($var[0][1])` and `$x = &$var[0][1]` create `$var`).
+        } elseif ($parent_kind === ast\AST_RETURN && $this->isInFunctionReturningReference()) {
+            // `return $var['k'];` in a function returning a reference creates `$var` and the offset: see analyzeReturnsReference()
         } elseif (!isset(self::SKIP_DIM_VAR_CHECK_TYPES[$parent_kind])) {
             $this->checkForPossiblyUndeclaredVariableOfDimRead($node);
         } elseif ($parent_kind !== ast\AST_ASSIGN_REF) {
@@ -5404,15 +5588,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $code_base
         );
 
-        // Take another pass over pass-by-reference parameters
-        // and assign types to passed in variables
         foreach ($argument_list as $i => $argument) {
             if (!$argument instanceof Node) {
                 continue;
             }
-            $parameter = $method->getParameterForCaller($i);
-
-            if (!$parameter) {
+            if (!$method->getParameterForCaller($i)) {
                 continue;
             }
 
@@ -5429,16 +5609,28 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $this->trackReferencesToClosuresInArray($argument);
                 }
             }
+        }
+
+        // Take another pass over pass-by-reference parameters
+        // and assign types to passed in variables.
+        // (Named arguments are put at the positions of their parameters)
+        $normalized_argument_list = ArgumentType::normalizeNamedArgs($argument_list, $method);
+        foreach ($normalized_argument_list as $i => $argument) {
+            if (!$argument instanceof Node || $argument->kind === ast\AST_NAMED_ARG) {
+                // A named argument left here has no parameter of that name
+                continue;
+            }
+            $parameter = $method->getParameterForCaller($i);
 
             // If the parameter is pass-by-reference and we're
             // passing a variable in, see if we should pass
             // the parameter and variable types to each other
-            if ($parameter->isPassByReference()) {
+            if ($parameter && $parameter->isPassByReference()) {
                 self::analyzePassByReferenceArgument(
                     $code_base,
                     $context,
                     $argument,
-                    $argument_list,
+                    $normalized_argument_list,
                     $method,
                     $parameter,
                     $method->getRealParameterForCaller($i),
@@ -5515,25 +5707,31 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
 
             if ($argument->kind === ast\AST_NAMED_ARG) {
-                // visitDim() leaves `name: $var[...]` to this check as well: the parameter is found by name here.
+                // visitVar() and visitDim() leave `name: $var` and `name: $var[...]` to this check as well:
+                // the parameter is found by name here.
                 // (An unknown name is reported by ArgumentType::analyze().)
                 $argument_expression = $argument->children['expr'];
-                if ($argument_expression instanceof Node && $argument_expression->kind === ast\AST_DIM) {
-                    if ($method instanceof Method && ($method->isMagicCall() || $method->isMagicCallStatic())) {
-                        // __call()/__callStatic() collect every named argument by value (the stand-in Method has no real parameters).
-                        $this->emitPossiblyUndeclaredVariableOfDimArgument($argument_expression);
+                if (!($argument_expression instanceof Node)) {
+                    continue;
+                }
+                // __call()/__callStatic() collect every named argument by value (the stand-in Method has no real parameters).
+                $is_magic_call = $method instanceof Method && ($method->isMagicCall() || $method->isMagicCallStatic());
+                $position = $is_magic_call ? null : self::getParameterPositionOfNamedArgument($method, (string)$argument->children['name']);
+                if ($position !== null) {
+                    $parameter = $method->getParameterForCaller($position);
+                    if ($parameter && $parameter->isPassByReference()) {
+                        // The same as for the positional argument: `preg_match($re, $s, matches: $m)` defines `$m`.
+                        $this->createPassByReferenceArgumentInCall($method, $argument_expression, $parameter, $method->getRealParameterForCaller($position));
                         continue;
                     }
-                    $parameter = null;
-                    foreach ($method->getRealParameterList() as $parameter) {
-                        if ($parameter->getName() === $argument->children['name']) {
-                            break;
-                        }
+                }
+                if ($argument_expression->kind === ast\AST_VAR) {
+                    if (!($argument_expression->flags & PhanAnnotationAdder::FLAG_IGNORE_UNDEF)) {
+                        // @phan-suppress-next-line PhanUndeclaredProperty this is added by visitVar()
+                        $this->checkForUndeclaredVariable($argument_expression, ($argument_expression->is_undeclared_variable_of_named_argument ?? false) === true);
                     }
-                    // Without a match, $parameter is the last parameter: a variadic one collects the argument (as in ArgumentType::analyze()).
-                    if ($parameter && ($parameter->getName() === $argument->children['name'] || $parameter->isVariadic()) && !$parameter->isPassByReference()) {
-                        $this->emitPossiblyUndeclaredVariableOfDimArgument($argument_expression);
-                    }
+                } elseif ($argument_expression->kind === ast\AST_DIM && ($position !== null || $is_magic_call)) {
+                    $this->emitPossiblyUndeclaredVariableOfDimArgument($argument_expression);
                 }
                 continue;
             }
@@ -5611,12 +5809,38 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * Returns the position of the parameter that the named argument `$name: ...` is passed to,
+     * or null if no parameter has that name and the last parameter is not variadic (that is reported by ArgumentType::analyze()).
+     * (A variadic last parameter collects the arguments with unknown names, as in ArgumentType::analyze())
+     */
+    private static function getParameterPositionOfNamedArgument(FunctionInterface $method, string $name): ?int
+    {
+        $parameter_list = $method->getRealParameterList();
+        foreach ($parameter_list as $i => $parameter) {
+            if ($parameter->getName() === $name) {
+                return $i;
+            }
+        }
+        $last_position = \count($parameter_list) - 1;
+        if ($last_position >= 0 && $parameter_list[$last_position]->isVariadic()) {
+            return $last_position;
+        }
+        return null;
+    }
+
+    /**
      * @param Parameter $parameter the parameter types inferred from combination of real and union type
      *
      * @param ?Parameter $real_parameter the real parameter type from the type signature
      */
     private function createPassByReferenceArgumentInCall(FunctionInterface $method, Node $argument, Parameter $parameter, ?Parameter $real_parameter): void
     {
+        if ($argument->kind === ast\AST_DIM) {
+            // `preg_match($re, $s, $out['m'])` creates `$out` and the offset 'm'.
+            // (`$out[]` only creates `$out`: the element is appended when the type of the parameter is assigned)
+            $this->createReferenceTarget($argument, false, true);
+            return;
+        }
         if ($argument->kind === ast\AST_VAR) {
             // We don't do anything with the new variable; just create it
             // if it doesn't exist
@@ -5675,7 +5899,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param list<Node|string|int|float> $argument_list the arguments of the invocation, containing the pass by reference argument
+     * @param array<int,Node|string|int|float> $argument_list the arguments of the invocation in the order of the parameters (see ArgumentType::normalizeNamedArgs()), containing the pass by reference argument
      *
      * @param Parameter $parameter the parameter types inferred from combination of real and union type
      *
@@ -5751,49 +5975,97 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 // TODO: If @param-out is ever supported, then use that type to check
                 self::checkPassingPropertyByReference($code_base, $context, $method, $parameter, $argument, $variable, $parameter_offset);
             }
-            switch ($parameter->getReferenceType()) {
-                case Parameter::REFERENCE_WRITE_ONLY:
-                    self::analyzeWriteOnlyReference($code_base, $context, $method, $set_variable_type, $argument_list, $parameter);
-                    break;
-                case Parameter::REFERENCE_READ_WRITE:
-                    $reference_parameter_type = $parameter->getNonVariadicUnionType();
-                    $variable_type = $variable->getUnionType();
-                    if ($variable_type->isEmpty()) {
-                        // if Phan doesn't know the variable type,
-                        // then guess that the variable is the type of the reference
-                        // when analyzing the following statements.
-                        $set_variable_type($reference_parameter_type);
-                    } elseif (!$variable_type->canCastToUnionType($reference_parameter_type, $code_base)) {
-                        // Phan already warned about incompatible types.
-                        // But analyze the following statements as if it could have been the type expected,
-                        // to reduce false positives.
-                        $set_variable_type($variable->getUnionType()->withUnionType(
-                            $reference_parameter_type
-                        ));
-                    }
-                    // don't modify - assume the function takes the same type in that it returns,
-                    // and we want to preserve generic array types for sorting functions (May change later on)
-                    // TODO: Check type compatibility earlier, and don't modify?
-                    break;
-                case Parameter::REFERENCE_IGNORED:
-                    // Pretend this reference doesn't modify the passed in argument.
-                    break;
-                case Parameter::REFERENCE_DEFAULT:
-                default:
-                    $reference_parameter_type = $parameter->getNonVariadicUnionType();
-                    // We have no idea what type of reference this is.
-                    // Probably user defined code.
-                    $set_variable_type($variable->getUnionType()->withUnionType(
+            $variable_type = $variable->getUnionType();
+        } elseif ($kind === ast\AST_DIM && self::getBaseVariableNodeOfDim($argument)) {
+            // `$var[$k]`: createPassByReferenceArgumentInCall() created `$var` and the offset `$k` if they did not exist.
+            try {
+                $variable_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $argument, false);
+            } catch (IssueException) {
+                return;
+            }
+            if ($variable_type->isNull()) {
+                // The offset is null because the reference created it (or it was null before): the function is expected to assign it,
+                // so null is not kept as one of the types, the same as for a variable that the reference creates.
+                $variable_type = UnionType::empty();
+            }
+            $set_variable_type = static function (UnionType $new_type) use ($code_base, $context, $argument): void {
+                if ($new_type->isEmpty()) {
+                    // The parameter has no type (`function f(&$value)`): the function can assign anything.
+                    $new_type = MixedType::instance(false)->asPHPDocUnionType();
+                }
+                self::assignTypeToReferencedDim($code_base, $context, $argument, $new_type);
+            };
+        } else {
+            return;
+        }
+        switch ($parameter->getReferenceType()) {
+            case Parameter::REFERENCE_WRITE_ONLY:
+                self::analyzeWriteOnlyReference($code_base, $context, $method, $set_variable_type, $argument_list, $parameter);
+                break;
+            case Parameter::REFERENCE_READ_WRITE:
+                $reference_parameter_type = $parameter->getNonVariadicUnionType();
+                if ($variable_type->isEmpty()) {
+                    // if Phan doesn't know the variable type,
+                    // then guess that the variable is the type of the reference
+                    // when analyzing the following statements.
+                    $set_variable_type($reference_parameter_type);
+                } elseif (!$variable_type->canCastToUnionType($reference_parameter_type, $code_base)) {
+                    // Phan already warned about incompatible types.
+                    // But analyze the following statements as if it could have been the type expected,
+                    // to reduce false positives.
+                    $set_variable_type($variable_type->withUnionType(
                         $reference_parameter_type
                     ));
-                    break;
-            }
+                }
+                // don't modify - assume the function takes the same type in that it returns,
+                // and we want to preserve generic array types for sorting functions (May change later on)
+                // TODO: Check type compatibility earlier, and don't modify?
+                break;
+            case Parameter::REFERENCE_IGNORED:
+                // Pretend this reference doesn't modify the passed in argument.
+                break;
+            case Parameter::REFERENCE_DEFAULT:
+            default:
+                $reference_parameter_type = $parameter->getNonVariadicUnionType();
+                // We have no idea what type of reference this is.
+                // Probably user defined code.
+                $set_variable_type($variable_type->withUnionType(
+                    $reference_parameter_type
+                ));
+                break;
         }
     }
 
     /**
+     * Analyzes `$var[$k] = <value of type $type>` for the offset `$var[$k]` that a reference was taken to.
+     * Nothing is done if `$var` cannot be an array, e.g. if it is an ArrayAccess object.
+     *
+     * @param Node $node a node of kind ast\AST_DIM, for which getBaseVariableNodeOfDim() is not null
+     */
+    private static function assignTypeToReferencedDim(CodeBase $code_base, Context $context, Node $node, UnionType $type): void
+    {
+        $var_node = self::getBaseVariableNodeOfDim($node);
+        $variable_name = $var_node->children['name'] ?? null;
+        if (!\is_string($variable_name) || !$context->getScope()->hasVariableWithName($variable_name)) {
+            return;
+        }
+        $var_type = $context->getScope()->getVariableByName($variable_name)->getUnionType();
+        if (!($var_type->isEmpty() || $var_type->hasArray() || $var_type->containsNullable() || $var_type->hasMixedOrNonEmptyMixedType())) {
+            return;
+        }
+        (new AssignmentVisitor(
+            $code_base,
+            $context,
+            new Node(ast\AST_ASSIGN, 0, ['var' => $node, 'expr' => null], $node->lineno),
+            $type
+        ))->__invoke($node);
+        // The types of the variable and of the offset may have been computed and cached for these nodes already.
+        $context->clearCachedUnionTypes();
+    }
+
+    /**
      * @param Closure(UnionType):void $set_variable_type
-     * @param list<Node|string|int|float> $argument_list
+     * @param array<int,Node|string|int|float> $argument_list (see ArgumentType::normalizeNamedArgs())
      */
     private static function analyzeWriteOnlyReference(
         CodeBase $code_base,

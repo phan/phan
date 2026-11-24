@@ -97,6 +97,34 @@ class PhanAnnotationAdder
         }
     }
 
+    /**
+     * Marks the dimensions of `$x[...]` (and `$x[...][...]`, etc.) that a reference is taken to.
+     *
+     * A reference to an offset creates the offset (as null), and creates `$x` as an array if `$x` is undefined or null,
+     * without any warning, so the offset is not invalid and `$x` is not a suspicious null.
+     * This marks the dimensions and the variable they start at, and stops at a property.
+     * It is also used during analysis, for the arguments of parameters passed by reference.
+     *
+     * @param Node|string|int|float|null $node the expression a reference is taken to
+     */
+    public static function markReferenceTarget(Node|float|int|null|string $node): void
+    {
+        if (!($node instanceof Node) || $node->kind !== ast\AST_DIM) {
+            return;
+        }
+        while ($node instanceof Node) {
+            if ($node->kind === ast\AST_PROP) {
+                // `&$obj->items['k']`: php creates the offset, but not the object, so `$obj` is still checked.
+                return;
+            }
+            self::markNode($node, self::FLAG_IGNORE_NULLABLE_AND_UNDEF);
+            if ($node->kind !== ast\AST_DIM) {
+                return;
+            }
+            $node = $node->children['expr'];
+        }
+    }
+
     private static function initInner(): void
     {
         /**
@@ -188,7 +216,18 @@ class PhanAnnotationAdder
                 if (($inner_node instanceof Node)) {
                     self::markNode($inner_node, $bit);
                 }
+            } elseif ($node->flags & flags\ARRAY_ELEM_REF) {
+                // `[&$x['k']]` creates `$x` and the offset `'k'`
+                self::markReferenceTarget($node->children['value']);
             }
+        };
+        /**
+         * @param Node $node a node of kind ast\AST_ASSIGN_REF
+         */
+        $assign_ref_handler = static function (Node $node) use ($initializes_handler): void {
+            $initializes_handler($node);
+            // `$y = &$x['k']` creates `$x` and the offset `'k'`
+            self::markReferenceTarget($node->children['expr']);
         };
 
         self::$closures_for_kind = [
@@ -200,7 +239,7 @@ class PhanAnnotationAdder
             ast\AST_ISSET => $isset_handler,
             ast\AST_UNSET => $ignore_nullable_and_undef_handler,
             ast\AST_ASSIGN => $initializes_handler,
-            ast\AST_ASSIGN_REF => $initializes_handler,
+            ast\AST_ASSIGN_REF => $assign_ref_handler,
             // Skip over AST_ARRAY
             ast\AST_ARRAY_ELEM => $ast_array_elem_handler,
         ];
