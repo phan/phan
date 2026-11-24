@@ -4,6 +4,7 @@ Phan 6.0.12-dev
 --------------
 
 New features:
+- Support `@immutable` and `@psalm-immutable` on classes and properties as aliases of `@phan-immutable`: the properties cannot be modified after the object is created (`PhanAccessReadOnlyProperty`), and they can use a covariant template.
 - Add `PhanReservedClassName` (critical) for the names that PHP reserves for its types, where PHP stops with a fatal error. None of these were reported, or they were reported as an undeclared class or as `PhanContextNotObject`:
   - a class, interface, trait or enum with a reserved name: `class int {}`, `enum Mixed {}`;
   - the alias of a class import: `use Foo as self;`, `use Foo\string;` (not for `use function` and `use const`);

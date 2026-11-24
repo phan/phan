@@ -72,6 +72,7 @@ final class Builder
         'psalm-var' => 'var',
         'psalm-require-extends' => 'require-extends',
         'psalm-require-implements' => 'require-implements',
+        'psalm-immutable' => 'immutable',
     ];
     /** @var list<Type> the list of (at)use annotations with template parameters for traits */
     public $used_trait_types = [];
@@ -560,7 +561,7 @@ final class Builder
         // (?i) makes this case-sensitive, (?-1) makes it case-insensitive
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
         // Support both regular tags ("@something") and inline versions of tags ("optional_prefix {@something}").
-        if (\preg_match('/(?:^|{)@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|implements|use|require-extends|require-implements|suppress|unused-param|no-named-arguments|phan-[a-z0-9_-]*|psalm-(?:template(?:-(?:co|contra)variant)?|param|var|return|require-extends|require-implements)(?-i)|method|property|property-read|property-write|abstract|template(?:-(?:co|contra)variant)?|PhanClosureScope|readonly|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $trimmed, $matches)) {
+        if (\preg_match('/(?:^|{)@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|implements|use|require-extends|require-implements|suppress|unused-param|no-named-arguments|phan-[a-z0-9_-]*|psalm-(?:template(?:-(?:co|contra)variant)?|param|var|return|require-extends|require-implements|immutable)(?-i)|method|property|property-read|property-write|abstract|template(?:-(?:co|contra)variant)?|PhanClosureScope|readonly|immutable|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $trimmed, $matches)) {
             $case_sensitive_type = $matches[1];
             $type = \strtolower($case_sensitive_type);
             $type = self::TAG_ALIAS_MAP[$type] ?? $type;
@@ -635,6 +636,11 @@ final class Builder
                     break;
                 case 'readonly':
                     $this->setPhanAccessFlag($i, false, 'readonly');
+                    break;
+                case 'immutable':
+                    // The same as (at)phan-immutable: the properties of the class cannot be modified after the object is created.
+                    // ((at)psalm-immutable is an alias)
+                    $this->setPhanAccessFlag($i, false, 'immutable');
                     break;
                 case 'mixin':
                     $this->parseMixin($i, $line, 'mixin');
