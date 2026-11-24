@@ -736,6 +736,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             if ($kind === ast\AST_TYPE) {
                 $types[] = $this->visitType($c);
             } elseif ($kind === ast\AST_NAME) {
+                $this->warnAboutReservedNameInType($c);
                 if ($this->context->getScope()->isInTraitScope()) {
                     $name = \strtolower($c->children['name']);
                     if ($name === 'self') {
@@ -793,6 +794,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             if ($kind === ast\AST_TYPE) {
                 $types[] = $this->visitType($c);
             } elseif ($kind === ast\AST_NAME) {
+                $this->warnAboutReservedNameInType($c);
                 if ($this->context->getScope()->isInTraitScope()) {
                     $name = \strtolower($c->children['name']);
                     if ($name === 'self') {
@@ -928,7 +930,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
     /**
      * Emits PhanReservedClassName for a type that php rejects because of a reserved name:
-     * `\self`, `namespace\static` (php: "'\self' is an invalid class name") and `Foo\int` (php: 'Cannot use "Foo\int" as a type name as it is reserved').
+     * `\self`, `\static` (php: "'\self' is an invalid class name") and `Foo\int` (php: 'Cannot use "Foo\int" as a type name as it is reserved').
      *
      * @param Node $node a node of kind AST_NAME in a type
      */
@@ -944,9 +946,9 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
         $prefix = $node->flags === ast\flags\NAME_FQ ? '\\' : ($node->flags === ast\flags\NAME_RELATIVE ? 'namespace\\' : '');
         if (!$is_qualified) {
-            // `\self`, `namespace\parent`.
-            // (`\int` is reported as an undeclared class)
-            if (\in_array(\strtolower($name), ['self', 'parent', 'static'], true)) {
+            // `\self`, `\parent`, `\static`.
+            // (php accepts `namespace\self` and `namespace\parent` as types, and `\int` is reported as an undeclared class)
+            if ($node->flags === ast\flags\NAME_FQ && \in_array(\strtolower($name), ['self', 'parent', 'static'], true)) {
                 $this->emitIssue(Issue::ReservedClassName, $node->lineno, $prefix . $name, 'a qualified class name');
             }
             return;

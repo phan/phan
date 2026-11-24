@@ -26,3 +26,10 @@
 %s:33 PhanUndeclaredConstant Reference to undeclared constant \Foo5975\MIXED. This would throw an Error.
 %s:33 PhanUndeclaredFunction Call to undeclared function \Foo5975\int()
 %s:36 PhanReservedClassName Cannot use "Other\void" as a type name as it is reserved
+%s:41 PhanReservedClassName Cannot use "Other\int" as a type name as it is reserved
+%s:42 PhanReservedClassName Cannot use "\self" as a qualified class name as it is reserved
+%s:43 PhanImpossibleIntersectionType Intersection type \ReservedClassNames5975\Stringable2&non-zero-int contains part \ReservedClassNames5975\Stringable2 which cannot cast to the declared type non-zero-int
+%s:43 PhanReservedClassName Cannot use "Other\float" as a type name as it is reserved
+%s:43 PhanReservedClassName Cannot use "Other\int" as a type name as it is reserved
+%s:43 PhanReservedClassName Cannot use "\static" as a qualified class name as it is reserved
+%s:48 PhanUndeclaredTypeReturnType Return type of valid() is undeclared type \Foo5975\Baz

@@ -35,3 +35,19 @@ class ValidClass extends Integer implements Stringable2
     }
     public Other\void $invalid;
 }
+
+class CompositeTypes
+{
+    public Other\int|null $union = null;
+    public \self|int $qualifiedSelf = 1;
+    public function intersection(Other\int&Stringable2 $a, Other\float|null $b): \static|null
+    {
+        var_dump($a, $b);
+        return null;
+    }
+    public function valid(Integer|Stringable2|null $x, Integer&Stringable2 $y): self|static|null
+    {
+        var_dump($x, $y);
+        return null;
+    }
+}
