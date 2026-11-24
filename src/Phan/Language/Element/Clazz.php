@@ -3500,11 +3500,15 @@ class Clazz extends AddressableElement
                 // A get hook that returns by reference lets the caller write: `&get => $this->stored;`
                 return false;
             }
-            if (!$class->isInterface() && !$property->isVirtual()) {
+            // (An abstract declaration and a declaration in an interface only require the hook: they have no backing storage,
+            // although a hook without a body is not marked as virtual.)
+            $is_abstract = $class->isInterface() || ($property->getFlags() & \ast\flags\MODIFIER_ABSTRACT);
+            if (!$is_abstract && !$property->isVirtual()) {
                 return false;
             }
-            // The declaration of the parent class, if there is one
-            $declaring_fqsen = $property->getRealDefiningFQSEN()->getFullyQualifiedClassName();
+            // The declaration of the parent class, if there is one.
+            // (For a property from a trait, this is the class that uses the trait)
+            $declaring_fqsen = $property->getDefiningFQSEN()->getFullyQualifiedClassName();
             if (!$code_base->hasClassWithFQSEN($declaring_fqsen)) {
                 return true;
             }
@@ -3521,7 +3525,7 @@ class Clazz extends AddressableElement
                 // A private property of the parent class is another property
                 return true;
             }
-            $parent_declaring_fqsen = $property->getRealDefiningFQSEN()->getFullyQualifiedClassName();
+            $parent_declaring_fqsen = $property->getDefiningFQSEN()->getFullyQualifiedClassName();
             if (!$code_base->hasClassWithFQSEN($parent_declaring_fqsen)) {
                 return true;
             }

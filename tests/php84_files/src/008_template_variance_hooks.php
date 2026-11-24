@@ -79,3 +79,57 @@ class HookChild extends HookBase
     /** @var T this cannot be written */
     public mixed $getOnly { get => $this->stored; }
 }
+
+abstract class RequiresGet
+{
+    abstract public mixed $value { get; }
+}
+
+class PlainValue
+{
+    public mixed $value = null;
+}
+
+/** @template-covariant T */
+trait GetValue
+{
+    /** @var T */
+    public mixed $value { get => $this->produce(); }
+
+    /** @return T */
+    abstract public function produce();
+}
+
+/**
+ * An abstract declaration has no backing storage.
+ *
+ * @template-covariant T
+ */
+abstract class ImplementsRequiredGet extends RequiresGet
+{
+    /** @var T */
+    public mixed $value { get => $this->produce(); }
+
+    /** @return T */
+    abstract public function produce();
+}
+
+/**
+ * The property of the trait can be written to the backing storage of the parent class.
+ *
+ * @template-covariant T
+ * @use GetValue<T>
+ */
+abstract class TraitOverPlainValue extends PlainValue
+{
+    use GetValue;
+}
+
+/**
+ * @template-covariant T
+ * @use GetValue<T>
+ */
+abstract class TraitWithoutParent
+{
+    use GetValue;
+}
