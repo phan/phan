@@ -2290,7 +2290,9 @@ trait FunctionTrait
         if ($union_type->isEmpty()) {
             return;
         }
-        $violations = TemplateVarianceUtil::collectVarianceViolations($code_base, $union_type, $template_map, TemplateVarianceUtil::POSITION_COVARIANT);
+        // The caller can write to a value that is returned by reference: `function &values(): array`
+        $position = $this->returnsRef() ? TemplateVarianceUtil::POSITION_INVARIANT : TemplateVarianceUtil::POSITION_COVARIANT;
+        $violations = TemplateVarianceUtil::collectVarianceViolations($code_base, $union_type, $template_map, $position);
         $context = $this->getContext();
         $line = $context->getLineNumberStart();
         foreach ($violations as $violation) {
@@ -2325,7 +2327,7 @@ trait FunctionTrait
             if ($union_type->isEmpty()) {
                 continue;
             }
-            $violations = TemplateVarianceUtil::collectVarianceViolations($code_base, $union_type, $template_map, TemplateVarianceUtil::POSITION_CONTRAVARIANT);
+            $violations = TemplateVarianceUtil::collectVarianceViolations($code_base, $union_type, $template_map, self::getVariancePositionOfParameter($parameter));
             if (!$violations) {
                 continue;
             }
@@ -2345,6 +2347,26 @@ trait FunctionTrait
                     $template_type->isContravariant() ? 'contravariant' : 'covariant'
                 );
             }
+        }
+    }
+
+    /**
+     * @return int the position of a parameter for template variance: one of the TemplateVarianceUtil::POSITION_* constants
+     */
+    private static function getVariancePositionOfParameter(Parameter $parameter): int
+    {
+        if (!$parameter->isPassByReference()) {
+            return TemplateVarianceUtil::POSITION_CONTRAVARIANT;
+        }
+        // A reference is read and written by the method, unless it is annotated otherwise.
+        switch ($parameter->getReferenceType()) {
+            case Parameter::REFERENCE_WRITE_ONLY:
+                // `@phan-output-reference`: the method only produces the value
+                return TemplateVarianceUtil::POSITION_COVARIANT;
+            case Parameter::REFERENCE_IGNORED:
+                return TemplateVarianceUtil::POSITION_CONTRAVARIANT;
+            default:
+                return TemplateVarianceUtil::POSITION_INVARIANT;
         }
     }
 

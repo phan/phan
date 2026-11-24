@@ -222,3 +222,73 @@ class WritableBase
 class CovariantChild extends WritableBase
 {
 }
+
+/**
+ * A reference can be written by the code that receives it.
+ *
+ * @template-covariant T
+ */
+class References
+{
+    /** @var list<T> */
+    private array $stored = [];
+
+    /** @param callable(T):void $callback */
+    public function replaceCallback(callable &$callback): void
+    {
+        \var_dump($callback);
+    }
+
+    /** @return list<T> */
+    public function &valuesByReference(): array
+    {
+        return $this->stored;
+    }
+
+    /** @return list<T> */
+    public function values(): array
+    {
+        return $this->stored;
+    }
+}
+
+/**
+ * @template-contravariant T
+ */
+class ReferenceSink
+{
+    /** @param list<T> $items */
+    public function replace(array &$items): void
+    {
+        \var_dump($items);
+    }
+
+    /** @param list<T> $items */
+    public function take(array $items): void
+    {
+        \var_dump($items);
+    }
+}
+
+/**
+ * Only one of the templates has a declared variance.
+ *
+ * @template-covariant A
+ * @template B
+ */
+class MixedBase
+{
+    /** @var B */
+    public $b;
+
+    /** @var A */
+    public $a;
+}
+
+/**
+ * @template-covariant T
+ * @extends MixedBase<int, T>
+ */
+class MixedChild extends MixedBase
+{
+}

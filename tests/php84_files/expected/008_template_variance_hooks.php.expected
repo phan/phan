@@ -1,0 +1,14 @@
+%s:8 PhanUnreferencedClass Possibly zero references to class \TemplateVarianceHooks\Box
+%s:11 PhanReadOnlyPrivateProperty Possibly zero write references to private property \TemplateVarianceHooks\Box->stored
+%s:14 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in array element of property \TemplateVarianceHooks\Box->byReference of \TemplateVarianceHooks\Box
+%s:14 PhanUnreferencedPublicProperty Possibly zero references to public property \TemplateVarianceHooks\Box->byReference
+%s:17 PhanUnreferencedPublicProperty Possibly zero references to public property \TemplateVarianceHooks\Box->virtual
+%s:20 PhanReadOnlyPublicProperty Possibly zero write references to public property \TemplateVarianceHooks\Box->backed
+%s:20 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in array element of property \TemplateVarianceHooks\Box->backed of \TemplateVarianceHooks\Box
+%s:23 PhanUnreferencedPublicProperty Possibly zero references to public property \TemplateVarianceHooks\Box->privateSet
+%s:26 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in array element of property \TemplateVarianceHooks\Box->protectedSet of \TemplateVarianceHooks\Box
+%s:26 PhanUnreferencedPublicProperty Possibly zero references to public property \TemplateVarianceHooks\Box->protectedSet
+%s:38 PhanUnreferencedClass Possibly zero references to interface \TemplateVarianceHooks\Readable
+%s:41 PhanUnreferencedPublicProperty Possibly zero references to public property \TemplateVarianceHooks\Readable->value
+%s:44 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in property \TemplateVarianceHooks\Readable->both of \TemplateVarianceHooks\Readable
+%s:44 PhanUnreferencedPublicProperty Possibly zero references to public property \TemplateVarianceHooks\Readable->both

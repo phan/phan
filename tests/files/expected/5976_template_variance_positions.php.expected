@@ -13,3 +13,8 @@
 %s:185 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in callable parameter $p0 of parameter $f of \TemplateVariancePositions5976\MoreCases::byReference()
 %s:199 PhanTemplateTypeVarianceViolation Template type U declared contravariant cannot be used in return type of \TemplateVariancePositions5976\NotGeneric::methodTemplate()
 %s:209 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in property \TemplateVariancePositions5976\CovariantChild->writable of \TemplateVariancePositions5976\CovariantChild
+%s:236 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in callable parameter $p0 of parameter $callback of \TemplateVariancePositions5976\References::replaceCallback()
+%s:243 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in array element of return type of \TemplateVariancePositions5976\References::valuesByReference()
+%s:260 PhanTemplateTypeVarianceViolation Template type T declared contravariant cannot be used in array element of parameter $items of \TemplateVariancePositions5976\ReferenceSink::replace()
+%s:282 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in property \TemplateVariancePositions5976\MixedChild->b of \TemplateVariancePositions5976\MixedChild
+%s:285 PhanTemplateTypeVarianceViolation Template type A declared covariant cannot be used in property \TemplateVariancePositions5976\MixedBase->a of \TemplateVariancePositions5976\MixedBase
