@@ -292,3 +292,34 @@ function moreNarrowing(Generic $g, $nif, $ms, $ai, array $list): void {
         '@phan-debug-var $list';
     }
 }
+
+class Base2 {
+}
+interface Tag {
+}
+
+/** @phpstan-assert-if-true Base2|false $x */
+function isBase2OrFalse($x): bool {
+    return (bool)$x;
+}
+
+/** @phpstan-assert-if-true ?int $x */
+function isNullableInt($x): bool {
+    return $x === null || is_int($x);
+}
+
+/**
+ * @param Tag|false $tf
+ * @param string|int|null $sn
+ */
+function nullAndIntersections($tf, ?string $ns, $sn): void {
+    // An object can be a Tag and a Base2
+    if (isBase2OrFalse($tf)) {
+        '@phan-debug-var $tf';
+    }
+    // Excluding `?int` also excludes null
+    if (isNullableInt($ns) || isNullableInt($sn)) {
+        return;
+    }
+    '@phan-debug-var $ns, $sn';
+}

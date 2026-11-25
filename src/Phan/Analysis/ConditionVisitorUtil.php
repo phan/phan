@@ -1817,15 +1817,28 @@ trait ConditionVisitorUtil
      */
     private static function typesWithoutSubtypesOf(CodeBase $code_base, array $type_set, array $excluded_type_set): array
     {
+        // Excluding `?int` also excludes null, from every type.
+        $is_null_excluded = false;
+        foreach ($excluded_type_set as $excluded) {
+            if ($excluded->isNullable()) {
+                $is_null_excluded = true;
+                break;
+            }
+        }
         $result = [];
         foreach ($type_set as $type) {
             if ($type instanceof MixedType) {
                 $result[] = $type;
                 continue;
             }
+            if ($type instanceof NullType) {
+                if (!$is_null_excluded) {
+                    $result[] = $type;
+                }
+                continue;
+            }
             $non_nullable_type = $type->withIsNullable(false);
             $is_excluded = false;
-            $is_null_excluded = false;
             foreach ($excluded_type_set as $excluded) {
                 if ($excluded instanceof CallableInterface && !($non_nullable_type instanceof CallableInterface || $non_nullable_type instanceof ClosureType)) {
                     // An array or a string is treated as a subtype of callable, but only some of their values are callable.
@@ -1833,15 +1846,12 @@ trait ConditionVisitorUtil
                 }
                 if ($non_nullable_type->isSubtypeOf($excluded, $code_base)) {
                     $is_excluded = true;
-                    if ($excluded->isNullable()) {
-                        $is_null_excluded = true;
-                        break;
-                    }
+                    break;
                 }
             }
             if (!$is_excluded) {
-                $result[] = $type;
-            } elseif ($type->isNullable() && !$is_null_excluded && !($type instanceof NullType)) {
+                $result[] = $is_null_excluded ? $non_nullable_type : $type;
+            } elseif ($type->isNullable() && !$is_null_excluded) {
                 $result[] = NullType::instance(false);
             }
         }

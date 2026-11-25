@@ -36,3 +36,6 @@
 %s:286 PhanDebugAnnotation @phan-debug-var requested for variable $ai - it has union type \Closure|array
 %s:288 PhanDebugAnnotation @phan-debug-var requested for variable $ai - it has union type array|int
 %s:291 PhanDebugAnnotation @phan-debug-var requested for variable $list - it has union type array(real=array)
+%s:317 PhanDebugAnnotation @phan-debug-var requested for variable $tf - it has union type \NS5988\Base2|false
+%s:321 PhanDebugAnnotation @phan-debug-var requested for variable $ns - it has union type string(real=string)
+%s:321 PhanDebugAnnotation @phan-debug-var requested for variable $sn - it has union type string
