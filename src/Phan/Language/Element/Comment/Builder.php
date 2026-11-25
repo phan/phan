@@ -1053,7 +1053,7 @@ final class Builder
     /**
      * @internal
      */
-    public const CONDITIONAL_ASSERT_REGEX = '/@(phan|phpstan|psalm)-assert-if-(true|false)\s+([!=]?)(' . UnionType::union_type_regex . ')\s+\$(' . self::WORD_REGEX . ')/';
+    public const CONDITIONAL_ASSERT_REGEX = '/@(phan|phpstan|psalm)-assert-if-(true|false)\s+(=?!?|!=)(' . UnionType::union_type_regex . ')\s+\$(' . self::WORD_REGEX . ')(?=\s|$)/i';
 
     /**
      * Parses `(at)phan-assert-if-true T $param`, `(at)phpstan-assert-if-false !T $param`, etc.
@@ -1065,10 +1065,13 @@ final class Builder
      */
     private function maybeParseConditionalAssert(int $i, string $line): void
     {
-        if (!$this->checkCompatible('@phan-assert-if-true', Comment::FUNCTION_LIKE, $i)) {
+        // (`$this->prop`, `$param->method()` etc. are not matched: only a parameter can be asserted)
+        if (!\preg_match(self::CONDITIONAL_ASSERT_REGEX, $line, $match)) {
+            $this->checkCompatible('@phan-assert-if-true', Comment::FUNCTION_LIKE, $i);
             return;
         }
-        if (!\preg_match(self::CONDITIONAL_ASSERT_REGEX, $line, $match)) {
+        $if_true = \strtolower($match[2]) === 'true';
+        if (!$this->checkCompatible('@' . \strtolower($match[1]) . '-assert-if-' . ($if_true ? 'true' : 'false'), Comment::FUNCTION_LIKE, $i)) {
             return;
         }
         $union_type = UnionType::fromStringInContext(
@@ -1083,9 +1086,9 @@ final class Builder
         $this->conditional_assertion_list[] = new ConditionalAssertion(
             $union_type,
             $match[\count($match) - 1],
-            $match[2] === 'true',
-            $match[3] === '!',
-            $match[3] !== '=' && $match[1] !== 'psalm'
+            $if_true,
+            \str_contains($match[3], '!'),
+            !\str_contains($match[3], '=') && \strtolower($match[1]) !== 'psalm'
         );
     }
 

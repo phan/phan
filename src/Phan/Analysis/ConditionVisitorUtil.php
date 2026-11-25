@@ -1782,10 +1782,13 @@ trait ConditionVisitorUtil
                 $affected_type = $affected_type->nonFalseClone();
             } elseif ($type instanceof TrueType) {
                 $affected_type = $affected_type->nonTrueClone();
-            } elseif (!$type->isNullable() && $type->hasObjectWithKnownFQSEN()) {
+            } elseif ($type->hasObjectWithKnownFQSEN()) {
                 // As for `!($x instanceof C)`: only the types that are C or a subclass of C are excluded.
                 // (`object` or an interface can be cast to C, but a value of that type may be something else)
-                $affected_type = $affected_type->withoutSubclassesOf($code_base, $type);
+                if ($type->isNullable()) {
+                    $affected_type = $affected_type->nonNullableClone();
+                }
+                $affected_type = $affected_type->withoutSubclassesOf($code_base, $type->withIsNullable(false));
             } else {
                 continue;
             }
@@ -1795,8 +1798,19 @@ trait ConditionVisitorUtil
         if ($excluded_type->isEmpty()) {
             return $affected_type;
         }
-        return $affected_type->makeFromFilter(static function (Type $type) use ($code_base, $excluded_type): bool {
-            return $type instanceof MixedType || !$type->asPHPDocUnionType()->canCastToUnionType($excluded_type, $code_base);
+        // Only the types that are subtypes of an excluded type are removed:
+        // a `string` that is not a `non-empty-string` is still a `string`.
+        $excluded_type_set = $excluded_type->getTypeSet();
+        return $affected_type->makeFromFilter(static function (Type $type) use ($code_base, $excluded_type_set): bool {
+            if ($type instanceof MixedType) {
+                return true;
+            }
+            foreach ($excluded_type_set as $excluded) {
+                if ($type->isSubtypeOf($excluded, $code_base)) {
+                    return false;
+                }
+            }
+            return true;
         });
     }
 

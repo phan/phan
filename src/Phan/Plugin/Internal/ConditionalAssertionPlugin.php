@@ -86,7 +86,7 @@ final class ConditionalAssertionPlugin extends PluginV3 implements ConditionalCa
                 );
                 continue;
             }
-            if ($assertion->union_type->hasTemplateTypeRecursive()) {
+            if ($assertion->union_type->hasTemplateTypeRecursive() || $assertion->union_type->hasStaticType()) {
                 // The type depends on the call: nothing is assumed.
                 continue;
             }
@@ -123,7 +123,7 @@ final class ConditionalAssertionPlugin extends PluginV3 implements ConditionalCa
             $has_type = !$has_type;
         }
         if ($has_type) {
-            return ConditionVisitor::updateToHaveType($code_base, $context, $arg, $assertion->union_type);
+            return ConditionVisitor::updateToHaveNarrowedType($code_base, $context, $arg, $assertion->union_type);
         }
         return ConditionVisitor::updateToNotHaveType($code_base, $context, $arg, $assertion->union_type);
     }

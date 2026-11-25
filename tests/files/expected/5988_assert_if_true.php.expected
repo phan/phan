@@ -16,3 +16,14 @@
 %s:110 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type 'a'|'b'
 %s:119 PhanCommentParamAssertionWithoutRealParam Saw an @phan-assert annotation for $missing, but it was not found in the param list of badAnnotations()
 %s:123 PhanInvalidCommentForDeclarationType The phpdoc comment for @phan-assert-if-true cannot occur on a class
+%s:178 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \NS5988\Box(real=\NS5988\Box)
+%s:181 PhanDebugAnnotation @phan-debug-var requested for variable $shape - it has union type array{id:int}
+%s:184 PhanDebugAnnotation @phan-debug-var requested for variable $sub - it has union type \NS5988\SubErr(real=\NS5988\SubErr)
+%s:187 PhanDebugAnnotation @phan-debug-var requested for variable $se - it has union type \NS5988\SubErr
+%s:190 PhanDebugAnnotation @phan-debug-var requested for variable $obj - it has union type object(real=object)
+%s:193 PhanDebugAnnotation @phan-debug-var requested for variable $obj - it has union type \NS5988\Err
+%s:196 PhanDebugAnnotation @phan-debug-var requested for variable $o - it has union type \NS5988\Marker|object(real=non-null-mixed)
+%s:199 PhanDebugAnnotation @phan-debug-var requested for variable $sf - it has union type non-empty-string
+%s:201 PhanDebugAnnotation @phan-debug-var requested for variable $sf - it has union type false|string
+%s:204 PhanDebugAnnotation @phan-debug-var requested for variable $n - it has union type int(real=int)
+%s:206 PhanDebugAnnotation @phan-debug-var requested for variable $n - it has union type ?int(real=?int)

@@ -123,3 +123,87 @@ function badAnnotations($thing): bool {
 /** @phan-assert-if-true Err $x */
 class NotAFunction {
 }
+
+class Box {
+    public ?string $value = null;
+
+    // Only a parameter can be asserted: these are ignored
+    /** @phpstan-assert-if-true string $this->value */
+    public function hasValue(): bool {
+        return $this->value !== null;
+    }
+
+    /** @phpstan-assert-if-true string $box->value */
+    public static function boxHasValue(Box $box): bool {
+        return $box->value !== null;
+    }
+
+    // `static` depends on the call: ignored
+    /** @phpstan-assert-if-true static $x */
+    public static function isInstance($x): bool {
+        return $x instanceof static;
+    }
+}
+
+/** @phpstan-assert-if-true array $x */
+function is_arr($x): bool {
+    return is_array($x);
+}
+
+/** @phpstan-assert-if-true ?Err $x */
+function is_nullable_err($x): bool {
+    return $x === null || $x instanceof Err;
+}
+
+/** @PHPStan-Assert-If-True non-empty-string $x */
+function isNonEmptyString($x): bool {
+    return is_string($x) && $x !== '';
+}
+
+/** @phpstan-assert-if-true =!null $x */
+function isNotNull($x): bool {
+    return $x !== null;
+}
+
+/**
+ * The types that the argument already has are kept if they are subtypes of the asserted type,
+ * and only subtypes of the asserted type are removed for the other return value.
+ *
+ * @param array{id:int}|null $shape
+ * @param object|Marker|?Err $o
+ * @param string|false $sf
+ * @param SubErr|false $se
+ */
+function narrowing(Box $b, $shape, SubErr $sub, $o, $sf, $se, ?int $n, object $obj): void {
+    if (Box::boxHasValue($b)) {
+        '@phan-debug-var $b';
+    }
+    if (is_arr($shape)) {
+        '@phan-debug-var $shape';
+    }
+    if (is_err($sub)) {
+        '@phan-debug-var $sub';
+    }
+    if (is_err($se)) {
+        '@phan-debug-var $se';
+    }
+    if (Box::isInstance($obj)) {
+        '@phan-debug-var $obj';
+    }
+    if (is_err($obj)) {
+        '@phan-debug-var $obj';
+    }
+    if (!is_nullable_err($o)) {
+        '@phan-debug-var $o';
+    }
+    if (isNonEmptyString($sf)) {
+        '@phan-debug-var $sf';
+    } else {
+        '@phan-debug-var $sf';
+    }
+    if (isNotNull($n)) {
+        '@phan-debug-var $n';
+    } else {
+        '@phan-debug-var $n';
+    }
+}
