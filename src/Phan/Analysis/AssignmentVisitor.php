@@ -1912,8 +1912,9 @@ class AssignmentVisitor extends AnalysisVisitor
         if ($property->getGetHook() === null || !Clazz::isAssignmentToGetOnlyVirtualProperty($this->code_base, $property)) {
             return false;
         }
-        if ($this->is_coalesce_assign && self::isPropertyNeverNull($property)) {
-            // `$o->p ??= $x` only assigns when the get hook returns null
+        if ($this->is_coalesce_assign) {
+            // `$o->p ??= $x` only assigns when the get hook returns null, which it may never do
+            // (also when the type is nullable: a subclass can declare a type that is not)
             return false;
         }
         if ($this->mayOtherReceiverAllowWrite($property, $node)) {
@@ -1928,15 +1929,6 @@ class AssignmentVisitor extends AnalysisVisitor
             $property_context->getLineNumberStart()
         );
         return true;
-    }
-
-    /**
-     * @return bool whether the real type of the property rules out null, so that `$o->p ??= $x` never assigns
-     */
-    private static function isPropertyNeverNull(Property $property): bool
-    {
-        $real_type = $property->getRealUnionType();
-        return !$real_type->isEmpty() && !$real_type->containsNullable();
     }
 
     /**
@@ -1966,11 +1958,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 // A dynamic property, `__set`, or an undeclared property that is reported elsewhere
                 return true;
             }
-            $other_property = $clazz->getPropertyByName($this->code_base, $name);
-            if (!Clazz::isAssignmentToGetOnlyVirtualProperty($this->code_base, $other_property)) {
-                return true;
-            }
-            if ($this->is_coalesce_assign && self::isPropertyNeverNull($other_property)) {
+            if (!Clazz::isAssignmentToGetOnlyVirtualProperty($this->code_base, $clazz->getPropertyByName($this->code_base, $name))) {
                 return true;
             }
         }

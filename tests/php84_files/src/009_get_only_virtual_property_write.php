@@ -54,7 +54,8 @@ function writes(Circle $c, GetOnlyChild $child): void
     foreach ([1.0] as $c->area) {
     }
     $c->area ??= 1.0; // never assigns: the type is not nullable
-    $c->label ??= 'x';
+    $c->label ??= 'x'; // only assigns when the hook returns null
+    $c->label = 'x';
     $c->list = [1];
     $c->list[] = 1; // the get hook returns a reference
     $c->backed = 1;
@@ -207,7 +208,7 @@ function writesMixed(VirtualOnly $v, MixinProxy $proxy, $unknown, VirtualOnly|Nu
     $v->n = 1; // a class with `@mixin VirtualOnly` is not a subclass
     $proxy->n = 1; // handled by __set
     $unknown->n = 1; // may be an object of another class
-    $either->n ??= 1; // never assigns for a VirtualOnly
+    $either->n ??= 1;
     $either->n = 1;
     if ($o instanceof VirtualOnly) {
         $o->n = 1;
