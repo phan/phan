@@ -75,6 +75,37 @@ namespace NS5987\Callee {
     }
 }
 
+// The `else` branch declares the class when it exists; a loop can declare the function again
+namespace NS5987\Elsewhere {
+    if (!class_exists('NS5987\\Elsewhere\\C')) {
+        class C {
+        }
+    } else {
+        class C {
+        }
+    }
+    if (!function_exists('NS5987\\Elsewhere\\f')) {
+        function f(): void {
+        }
+        foreach ([1] as $_) {
+            function f(): void {
+            }
+        }
+    }
+}
+
+// `function_exists` is another function here
+namespace NS5987\Alias {
+    use function strlen as function_exists;
+
+    function g(): void {
+    }
+    if (!function_exists('NS5987\\Alias\\g')) {
+        function g(): void {
+        }
+    }
+}
+
 // These are guarded
 namespace NS5987\Ok {
     if (!\function_exists('NS5987\\Ok\\fine') && PHP_VERSION_ID > 80000) {

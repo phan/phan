@@ -1710,7 +1710,8 @@ class ParseVisitor extends ScopeVisitor
     {
         // The functions and classes that are known not to exist in the branch, from the conditions seen so far.
         $missing = [];
-        foreach ($node->children as $if_elem) {
+        $missing_by_branch = [];
+        foreach ($node->children as $i => $if_elem) {
             if (!($if_elem instanceof Node)) {
                 continue;
             }
@@ -1721,16 +1722,34 @@ class ParseVisitor extends ScopeVisitor
                 // In the branches after this one, what this condition checks for with a plain `function_exists('f')` does not exist.
                 self::addNamesFromExistenceChecks($context, $cond, false, $missing);
             }
-            if (!$missing_in_branch) {
+            if ($missing_in_branch) {
+                $missing_by_branch[$i] = $missing_in_branch;
+            }
+        }
+        if (!$missing_by_branch) {
+            return;
+        }
+        // Collect the declarations of all branches: a name that is declared more than once in this statement is not guarded.
+        // (`if (!class_exists('C')) { class C {} } else { class C {} }` declares C when it exists)
+        $namespace = \strtolower(\ltrim($context->getNamespace(), '\\'));
+        $declarations_by_branch = [];
+        $counts = [];
+        foreach ($node->children as $i => $if_elem) {
+            if (!($if_elem instanceof Node)) {
                 continue;
             }
             $declarations = [];
-            self::collectDeclarations($if_elem->children['stmts'], \strtolower(\ltrim($context->getNamespace(), '\\')), $declarations);
-            foreach ($declarations as $key => $declarations_for_name) {
-                // (With more than one declaration of the name in the branch, the guard says nothing about the later ones)
-                if (isset($missing_in_branch[$key]) && \count($declarations_for_name) === 1) {
+            self::collectDeclarations($if_elem->children['stmts'], $namespace, true, $declarations);
+            foreach ($declarations as [$key, $unused_declaration]) {
+                $counts[$key] = ($counts[$key] ?? 0) + 1;
+            }
+            $declarations_by_branch[$i] = $declarations;
+        }
+        foreach ($missing_by_branch as $i => $missing_in_branch) {
+            foreach ($declarations_by_branch[$i] as [$key, $declaration]) {
+                if ($declaration !== null && $counts[$key] === 1 && isset($missing_in_branch[$key])) {
                     self::$guarded_declarations ??= new WeakMap();
-                    self::$guarded_declarations[$declarations_for_name[0]] = true;
+                    self::$guarded_declarations[$declaration] = true;
                 }
             }
         }
@@ -1773,6 +1792,10 @@ class ParseVisitor extends ScopeVisitor
         $function_name = $function_name_node->children['name'];
         // Only `\function_exists()` or `function_exists()`: `namespace\function_exists()` and `NS\function_exists()` are other functions.
         if (!\is_string($function_name) || $function_name_node->flags === ast\flags\NAME_RELATIVE || \strpos($function_name, '\\') !== false) {
+            return;
+        }
+        if ($function_name_node->flags !== ast\flags\NAME_FQ && $context->hasNamespaceMapFor(ast\flags\USE_FUNCTION, $function_name)) {
+            // `use function NS\my_check as function_exists;`
             return;
         }
         $function_name = \strtolower($function_name);
@@ -1826,24 +1849,27 @@ class ParseVisitor extends ScopeVisitor
     }
 
     /**
-     * Collects the functions and classes that are declared in $stmts or in the `if` statements in it.
+     * Collects the functions and classes that are declared in $node, outside of the functions and classes in it.
      *
-     * @param Node|string|int|float|null $stmts
+     * @param Node|string|int|float|null $node
      * @param string $namespace the namespace of the declarations, in lowercase, without a leading backslash
-     * @param array<string,list<Node>> $declarations maps 'f:name' (function), 'c:name' (class), 'i:name' (interface), 't:name' (trait)
-     * and 'e:name' (enum) to the declarations, where the name is fully qualified
+     * @param bool $is_direct whether $node is only inside of statement lists and `if` statements.
+     * A declaration in a loop, `try`, `switch` etc. is collected to be counted, but not to be marked as guarded.
+     * @param list<array{0:string,1:?Node}> $declarations pairs of a key and the declaration (null if it is not direct).
+     * The key is 'f:name' (function), 'c:name' (class), 'i:name' (interface), 't:name' (trait) or 'e:name' (enum),
+     * where the name is fully qualified.
      */
-    private static function collectDeclarations(Node|string|int|float|null $stmts, string $namespace, array &$declarations): void
+    private static function collectDeclarations(Node|string|int|float|null $node, string $namespace, bool $is_direct, array &$declarations): void
     {
-        if (!($stmts instanceof Node)) {
+        if (!($node instanceof Node)) {
             return;
         }
-        switch ($stmts->kind) {
+        switch ($node->kind) {
             case ast\AST_FUNC_DECL:
                 $prefix = 'f:';
                 break;
             case ast\AST_CLASS:
-                $flags = $stmts->flags;
+                $flags = $node->flags;
                 if ($flags & ast\flags\CLASS_ANONYMOUS) {
                     return;
                 }
@@ -1857,20 +1883,24 @@ class ParseVisitor extends ScopeVisitor
                     $prefix = 'c:';
                 }
                 break;
+            case ast\AST_CLOSURE:
+            case ast\AST_ARROW_FUNC:
+                return;
             case ast\AST_STMT_LIST:
             case ast\AST_IF:
-                foreach ($stmts->children as $child) {
-                    self::collectDeclarations($child, $namespace, $declarations);
+            case ast\AST_IF_ELEM:
+                foreach ($node->children as $child) {
+                    self::collectDeclarations($child, $namespace, $is_direct, $declarations);
                 }
                 return;
-            case ast\AST_IF_ELEM:
-                self::collectDeclarations($stmts->children['stmts'], $namespace, $declarations);
-                return;
             default:
+                foreach ($node->children as $child) {
+                    self::collectDeclarations($child, $namespace, false, $declarations);
+                }
                 return;
         }
-        $name = \strtolower((string)$stmts->children['name']);
-        $declarations[$prefix . ($namespace === '' ? $name : $namespace . '\\' . $name)][] = $stmts;
+        $name = \strtolower((string)$node->children['name']);
+        $declarations[] = [$prefix . ($namespace === '' ? $name : $namespace . '\\' . $name), $is_direct ? $node : null];
     }
 
     /**

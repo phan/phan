@@ -12,3 +12,9 @@
 %s:54 PhanRedefineClass Interface \NS5987\Kind\I defined at %s:54 was previously defined as Interface \NS5987\Kind\I at %s:51
 %s:68 PhanRedefineFunction Function notGuarded defined at %s:68 was previously defined at %s:71
 %s:71 PhanRedefineFunction Function notGuarded defined at %s:71 was previously defined at %s:68
+%s:81 PhanRedefineClass Class \NS5987\Elsewhere\C defined at %s:81 was previously defined as Class \NS5987\Elsewhere\C at %s:84
+%s:84 PhanRedefineClass Class \NS5987\Elsewhere\C defined at %s:84 was previously defined as Class \NS5987\Elsewhere\C at %s:81
+%s:88 PhanRedefineFunction Function f defined at %s:88 was previously defined at %s:91
+%s:91 PhanRedefineFunction Function f defined at %s:91 was previously defined at %s:88
+%s:101 PhanRedefineFunction Function g defined at %s:101 was previously defined at %s:104
+%s:104 PhanRedefineFunction Function g defined at %s:104 was previously defined at %s:101
