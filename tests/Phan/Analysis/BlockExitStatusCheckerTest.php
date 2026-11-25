@@ -141,6 +141,28 @@ final class BlockExitStatusCheckerTest extends TestBase
                 'while ($a) { while ($b) { while ($c) { while ($d) { break 4; } } } }',
             ],
             [
+                // The depth is not a literal (a compile error in php)
+                'proceed',
+                'while (true) { break 1 + 1; }',
+            ],
+            [
+                'proceed',
+                'while ($a) { continue $n; }',
+            ],
+            [
+                // The body of do-while runs at least once
+                'break',
+                'do { break 2; } while ($a);',
+            ],
+            [
+                'never',
+                'while (true) { do { continue 2; } while ($a); return 1; }',
+            ],
+            [
+                'proceed/return',
+                'switch ($a) { case 1: switch ($b) { case 1: break 2; default: return 1; } default: return 2; }',
+            ],
+            [
                 'proceed',
                 '',
             ],

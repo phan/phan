@@ -84,3 +84,12 @@ function break3ThenReturn(): int {
     }
     return 1;
 }
+function doWhileBreak2(bool $cond): int {
+    while (true) {
+        do {
+            break 2;
+        } while ($cond);
+        echo "unreachable";
+    }
+    return 1;
+}

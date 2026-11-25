@@ -22,3 +22,5 @@ src/333_break_depth.php:65 PhanUnreferencedFunction Possibly zero references to 
 src/333_break_depth.php:67 PhanUnusedVariable Unused definition of variable $y
 src/333_break_depth.php:69 PhanPluginNonBoolBranch Non bool value of type mixed evaluated in if clause
 src/333_break_depth.php:77 PhanUnreferencedFunction Possibly zero references to function \NS333\break3ThenReturn()
+src/333_break_depth.php:87 PhanUnreferencedFunction Possibly zero references to function \NS333\doWhileBreak2()
+src/333_break_depth.php:92 PhanPluginUnreachableCode Unreachable statement detected

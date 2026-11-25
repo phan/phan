@@ -44,7 +44,7 @@ use function count;
  */
 final class BlockExitStatusChecker extends KindVisitorImplementation
 {
-    // These should be at most 1 << 31, in order to work in 32-bit php.
+    // These should be at most 1 << 30, in order to work in 32-bit php. (Bits 20 to 30 are all in use)
     // NOTE: Any exit status must be a combination of at least one of these bits
     // E.g. if STATUS_PROCEED is mixed with STATUS_RETURN, it would mean it is possible both to go to completion or return.
     public const STATUS_PROCEED        = (1 << 20);       // At least one branch continues to completion.
@@ -187,13 +187,12 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     public function visitBreak(Node $node): int
     {
-        switch ($node->children['depth']) {
-            case 2:
-                return self::STATUS_BREAK_2;
-            case 3:
-                return self::STATUS_BREAK_3;
-        }
-        return self::STATUS_BREAK;
+        // (The depth is a Node for the invalid `break 1 + 1;`)
+        return match ($node->children['depth']) {
+            2 => self::STATUS_BREAK_2,
+            3 => self::STATUS_BREAK_3,
+            default => self::STATUS_BREAK,
+        };
     }
 
     /**
@@ -202,13 +201,12 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     public function visitContinue(Node $node): int
     {
-        switch ($node->children['depth']) {
-            case 2:
-                return self::STATUS_CONTINUE_2;
-            case 3:
-                return self::STATUS_CONTINUE_3;
-        }
-        return self::STATUS_CONTINUE;
+        // (The depth is a Node for the invalid `break 1 + 1;`)
+        return match ($node->children['depth']) {
+            2 => self::STATUS_CONTINUE_2,
+            3 => self::STATUS_CONTINUE_3,
+            default => self::STATUS_CONTINUE,
+        };
     }
 
     /**
@@ -1260,9 +1258,9 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     {
         // @phan-suppress-next-line PhanTypeMismatchArgumentNullable this is never null
         $inner_status = $this->visitStmtList($node->children['stmts']);
-        if (($inner_status & ~self::STATUS_THROW_OR_RETURN_BITMASK) === 0) {
-            // The inner block throws or returns before the end can be reached.
-            return $inner_status;
+        if (($inner_status & ~(self::STATUS_THROW_OR_RETURN_BITMASK | self::STATUS_OUTER_EXIT_BITMASK)) === 0) {
+            // The inner block throws, returns or leaves a loop around this one before the end can be reached.
+            return self::leaveLoopOrSwitch($inner_status);
         }
         // TODO: Check for unconditionally false conditions.
         if (self::isTruthyLiteral($node->children['cond'])) {
