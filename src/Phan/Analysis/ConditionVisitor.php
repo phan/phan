@@ -34,8 +34,6 @@ use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\Library\StringUtil;
-use Phan\Output\Collector\NullCollector;
-use Phan\Phan;
 use ReflectionMethod;
 
 /**
@@ -55,9 +53,6 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
      * @var int Maximum recursion depth for re-applying stored conditional expressions (issue #4854)
      */
     private const MAX_CONDITIONAL_EXPR_DEPTH = 3;
-
-    /** @var ?NullCollector discards the issues found while computing the type of the operand of isset() */
-    private static $null_collector = null;
 
     /**
      * @var int Current depth when recursively processing stored conditional expressions (issue #4854)
@@ -562,9 +557,8 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             // (Only done if the type of the element is known. $x['a'] was handled above.)
             // Not done for isset($x['a'][$i]): that would make every element of $x['a'] non-null.
             // isset() reports nothing about its operand, so nothing found while computing the type of the element is reported.
-            $issue_collector = Phan::getIssueCollector();
-            $emit_attempt_count = Issue::$emit_attempt_count;
-            Phan::setIssueCollector(self::$null_collector ??= new NullCollector());
+            $was_discarding_issues = Issue::$is_discarding_issues;
+            Issue::$is_discarding_issues = true;
             try {
                 $context = $this->updateDimExpressionWithConditionalFilter(
                     $node,
@@ -579,8 +573,7 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                     false
                 );
             } finally {
-                Phan::setIssueCollector($issue_collector);
-                Issue::$emit_attempt_count = $emit_attempt_count;
+                Issue::$is_discarding_issues = $was_discarding_issues;
             }
         }
         $this->context = $context;

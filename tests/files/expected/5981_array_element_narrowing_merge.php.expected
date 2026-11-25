@@ -8,3 +8,4 @@
 %s:71 PhanDebugAnnotation @phan-debug-var requested for variable $q - it has union type array{a:1,year?:'x'}(real=array{a:1,year?:'x'})
 %s:72 PhanUnusedVariable Unused definition of variable $q
 %s:82 PhanTypeArraySuspicious Suspicious array access to $o of type \stdClass
+%s:93 PhanDebugAnnotation @phan-debug-var requested for variable $q - it has union type array<int,\stdClass>|array{year?:'x',5?:'y'|\stdClass}|non-empty-array<int,\stdClass>(real=array|array{year?:mixed,5?:mixed}|non-empty-array<mixed,mixed>)

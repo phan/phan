@@ -337,6 +337,7 @@ final class GoToDefinitionRequest extends NodeInfoRequest
         }
         foreach ($locations as $location) {
             if (is_array($location)) {
+                // @phan-suppress-next-line PhanPartialTypeMismatchArgument
                 $location = Location::fromArray($location);
             }
             $this->recordDefinitionLocation($location);

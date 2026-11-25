@@ -84,3 +84,16 @@ function nestedIssetOfObject(\stdClass $o): int {
     }
     return 0;
 }
+
+/**
+ * The arrays of the other branch that cannot have the key add nothing to the field
+ * @param array<int,\stdClass> $q
+ */
+function keyOfOtherKind(array $q, bool $c): string {
+    if ($c) {
+        $q['year'] = 'x';
+        $q[5] = 'y';
+    }
+    '@phan-debug-var $q';
+    return $q['year'] ?? '';
+}

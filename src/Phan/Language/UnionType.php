@@ -5446,6 +5446,7 @@ class UnionType implements Serializable, Stringable
             $mixed_phpdoc = MixedType::instance(false)->asPHPDocUnionType()->withIsPossiblyUndefined(true);
             $mixed_real = MixedType::instance(false)->asRealUnionType()->withIsPossiblyUndefined(true);
         }
+        $ignore_key_type = null;
         foreach ($union_types as $union_type) {
             $type_set = $from_real_type_set ? $union_type->real_type_set : $union_type->type_set;
             $has_other_array = false;
@@ -5458,39 +5459,59 @@ class UnionType implements Serializable, Stringable
             if (!$has_other_array) {
                 continue;
             }
-            $element_types = self::$empty_instance;
+            $ignore_key_type ??= (bool)Config::getValue('scalar_array_key_cast');
+            // The types of the elements that an int key and a string key can have in the other arrays:
+            // array<int,T> has no element for 'year', and list<T> none for -1.
+            $int_element_types = self::$empty_instance;
+            $string_element_types = self::$empty_instance;
+            $has_list = false;
             $shape_field_types = [];
             foreach ($type_set as $type) {
                 if ($type instanceof ArrayShapeType) {
                     $shape_field_types += $type->getFieldTypes();
                 } elseif ($type instanceof GenericArrayInterface) {
-                    $element_types = $element_types->withUnionType($type->genericArrayElementUnionType());
+                    $key_type = $ignore_key_type ? GenericArrayType::KEY_MIXED : ($type->getKeyType() ?: GenericArrayType::KEY_MIXED);
+                    if ($type instanceof ListType) {
+                        $has_list = true;
+                    }
+                    if ($key_type & GenericArrayType::KEY_INT) {
+                        $int_element_types = $int_element_types->withUnionType($type->genericArrayElementUnionType());
+                    }
+                    if ($key_type & GenericArrayType::KEY_STRING) {
+                        $string_element_types = $string_element_types->withUnionType($type->genericArrayElementUnionType());
+                    }
                 } elseif ($type instanceof ArrayType) {
-                    $element_types = $element_types->withType(MixedType::instance(false));
+                    $int_element_types = $int_element_types->withType(MixedType::instance(false));
+                    $string_element_types = $string_element_types->withType(MixedType::instance(false));
                 }
             }
-            if ($element_types->isEmpty() || \count($shape_field_types) === \count($new_field_types)) {
+            if (\count($shape_field_types) === \count($new_field_types)) {
                 // (The fields of the array shapes of a union type are a subset of the fields of the combination)
                 continue;
             }
-            if ($from_real_type_set) {
-                $element_types = $element_types->asRealUnionType();
-            } else {
-                $element_types = $element_types->eraseRealTypeSetRecursively();
-            }
-            if ($element_types->hasMixedOrNonEmptyMixedType()) {
-                // The field can be anything. (Not `'x'|mixed`: that says the same with a larger type)
-                $element_types = $from_real_type_set ? $mixed_real : $mixed_phpdoc;
-                foreach ($new_field_types as $key => $_) {
-                    if (!isset($shape_field_types[$key])) {
-                        $new_field_types[$key] = $element_types;
-                    }
+            $mixed = $from_real_type_set ? $mixed_real : $mixed_phpdoc;
+            foreach ([$int_element_types, $string_element_types] as $is_string => $element_types) {
+                if ($element_types->hasMixedOrNonEmptyMixedType()) {
+                    // The field can be anything. (Not `'x'|mixed`: that says the same with a larger type)
+                    $element_types = $mixed;
+                } elseif ($from_real_type_set) {
+                    $element_types = $element_types->asRealUnionType();
+                } else {
+                    $element_types = $element_types->eraseRealTypeSetRecursively();
                 }
-                continue;
-            }
-            foreach ($new_field_types as $key => $field_type) {
-                if (!isset($shape_field_types[$key])) {
-                    $new_field_types[$key] = $field_type->withUnionType($element_types)->withIsPossiblyUndefined(true);
+                foreach ($new_field_types as $key => $field_type) {
+                    if (\is_string($key) !== (bool)$is_string || isset($shape_field_types[$key])) {
+                        continue;
+                    }
+                    if ($element_types === $mixed) {
+                        $new_field_types[$key] = $mixed;
+                    } elseif ($has_list && $key < 0 && !$ignore_key_type) {
+                        // Not worth computing the types without the lists
+                        $new_field_types[$key] = $mixed;
+                    } else {
+                        // No array of this union type has the key if $element_types is empty: the field is possibly undefined
+                        $new_field_types[$key] = $field_type->withUnionType($element_types)->withIsPossiblyUndefined(true);
+                    }
                 }
             }
         }
