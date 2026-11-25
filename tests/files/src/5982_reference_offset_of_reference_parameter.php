@@ -24,3 +24,20 @@ class Query {
         }
     }
 }
+
+/**
+ * The reference turns null into an array, which is assigned to the property
+ */
+function createArray(&$value): void {
+    $ref = &$value['k'];
+    $ref = 1;
+}
+
+class Holder {
+    /** @var ?int */
+    public $count;
+
+    public function run(): void {
+        createArray($this->count);
+    }
+}

@@ -1,1 +1,3 @@
 %s:23 PhanTypeMismatchPropertyByRef $category['term_id'] of type array{term_id:mixed,cat_ID:mixed}|non-empty-array<mixed,mixed> may end up assigned to property \NS5982\Query->obj of type ?\stdClass by reference at %s:13
+%s:32 PhanTypeArraySuspicious Suspicious array access to $value of type ?int
+%s:41 PhanTypeMismatchPropertyByRef $value['k'] of type array{k:} may end up assigned to property \NS5982\Holder->count of type ?int by reference at %s:32

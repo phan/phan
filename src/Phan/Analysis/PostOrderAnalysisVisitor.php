@@ -383,7 +383,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
         }
         // Analyze this as `$var[$k] = $var[$k]`, which adds the offset if it was missing (the type of a missing offset is null).
-        self::assignTypeToReferencedDim($this->code_base, $this->context, $node, $element_type);
+        self::assignTypeToReferencedDim($this->code_base, $this->context, $node, $element_type, true);
     }
 
     /**
@@ -6041,8 +6041,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * Nothing is done if `$var` cannot be an array, e.g. if it is an ArrayAccess object.
      *
      * @param Node $node a node of kind ast\AST_DIM, for which getBaseVariableNodeOfDim() is not null
+     * @param bool $creates_reference_target true if no value is assigned: $type is the type that the offset has already, or null for a new offset.
+     *        False for the type that a function assigns to the offset through a reference parameter.
      */
-    private static function assignTypeToReferencedDim(CodeBase $code_base, Context $context, Node $node, UnionType $type): void
+    private static function assignTypeToReferencedDim(CodeBase $code_base, Context $context, Node $node, UnionType $type, bool $creates_reference_target = false): void
     {
         $var_node = self::getBaseVariableNodeOfDim($node);
         $variable_name = $var_node->children['name'] ?? null;
@@ -6056,7 +6058,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         (new AssignmentVisitor(
             $code_base,
             $context,
-            new Node(ast\AST_ASSIGN, AssignmentVisitor::FLAG_CREATES_REFERENCE_TARGET, ['var' => $node, 'expr' => null], $node->lineno),
+            new Node(ast\AST_ASSIGN, $creates_reference_target ? AssignmentVisitor::FLAG_CREATES_REFERENCE_TARGET : 0, ['var' => $node, 'expr' => null], $node->lineno),
             $type
         ))->__invoke($node);
         // The types of the variable and of the offset may have been computed and cached for these nodes already.

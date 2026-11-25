@@ -61,7 +61,7 @@ class AssignmentVisitor extends AnalysisVisitor
     /**
      * A flag of the assignment node that PostOrderAnalysisVisitor creates for the offset that a reference is taken to
      * (`$x = &$var['k']` is analyzed as `$var['k'] = $var['k']` first, to add the offset to the type of `$var`).
-     * No value is assigned, so there is nothing to check against what `$var` is a reference to.
+     * No value is assigned unless `$var` can be null, so there is nothing else to check against what `$var` is a reference to.
      */
     public const FLAG_CREATES_REFERENCE_TARGET = 1 << 26;
 
@@ -718,8 +718,15 @@ class AssignmentVisitor extends AnalysisVisitor
             $element_type = $element_type->asNonLiteralType();
         }
 
+        if ($this->assignment_node->flags & self::FLAG_CREATES_REFERENCE_TARGET) {
+            // The reference only assigns something if it turns null (or an undefined variable) into an array.
+            $is_assignment = $element->getUnionType()->containsNullableOrUndefined();
+            $node = $this->assignment_node->children['var'];
+        } else {
+            $is_assignment = true;
+        }
         $element->setUnionType($element_type);
-        if ($element instanceof PassByReferenceVariable && !($this->assignment_node->flags & self::FLAG_CREATES_REFERENCE_TARGET)) {
+        if ($is_assignment && $element instanceof PassByReferenceVariable) {
             $assign_node = new Node(ast\AST_ASSIGN, 0, ['expr' => $node], $node->lineno ?? $this->assignment_node->lineno);
             self::analyzeSetUnionTypePassByRef($this->code_base, $this->context, $element, $element_type, $assign_node);
         }
