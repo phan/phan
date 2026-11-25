@@ -1402,7 +1402,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     /**
      * @return bool whether $node contains a label, outside of the functions and classes declared in it
      */
-    private static function containsLabel(Node $node): bool
+    public static function containsLabel(Node $node): bool
     {
         switch ($node->kind) {
             case ast\AST_LABEL:

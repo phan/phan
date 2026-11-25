@@ -203,6 +203,32 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
+     * Is this `$var->method()` in a function that contains a label?
+     *
+     * The inferred type of $var is then not reliable enough to mark the call as never returning:
+     * a `goto` may skip the assignment that the type comes from (`$x = new A(); if ($c) { goto done; } $x = new B(); done: $x->run();`).
+     */
+    private function isMethodCallOnVariableInFunctionWithLabel(Node $node): bool
+    {
+        if ($node->kind !== ast\AST_METHOD_CALL) {
+            return false;
+        }
+        $expr = $node->children['expr'];
+        if (!($expr instanceof Node) || ($expr->kind === ast\AST_VAR && $expr->children['name'] === 'this')) {
+            return false;
+        }
+        $scope_node = $this->parent_node_list[0] ?? null;
+        for ($i = \count($this->parent_node_list) - 1; $i >= 0; $i--) {
+            $parent = $this->parent_node_list[$i];
+            if (\in_array($parent->kind, [ast\AST_FUNC_DECL, ast\AST_METHOD, ast\AST_CLOSURE, ast\AST_ARROW_FUNC], true)) {
+                $scope_node = $parent->children['stmts'];
+                break;
+            }
+        }
+        return $scope_node instanceof Node && BlockExitStatusChecker::containsLabel($scope_node);
+    }
+
+    /**
      * @param list<FunctionInterface> $function_list
      */
     private function checkIfUsingFunctionThatNeverReturns(array $function_list, Node $node): void
@@ -219,7 +245,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
                 return;
             }
         }
-        if (Config::getValue('dead_code_detection_treat_never_type_as_unreachable')) {
+        if (Config::getValue('dead_code_detection_treat_never_type_as_unreachable') && !$this->isMethodCallOnVariableInFunctionWithLabel($node)) {
             // We now know that this is AST_CALL, AST_STATIC_CALL, or AST_METHOD_CALL
             // Mark this to affect BlockExitStatusChecker
             $node->flags = (($node->flags & ~BlockExitStatusChecker::STATUS_PROCEED) | BlockExitStatusChecker::STATUS_THROW);

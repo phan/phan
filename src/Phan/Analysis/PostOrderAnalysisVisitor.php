@@ -6953,7 +6953,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // Work around fallback parser generating methods without statements list.
         // Otherwise, 'stmts' would always be a Node due to preconditions.
         $stmts_node = $node->children['stmts'];
-        return $stmts_node instanceof Node && BlockExitStatusChecker::willUnconditionallyNeverReturn($stmts_node, $this->code_base, $this->context);
+        return $stmts_node instanceof Node && BlockExitStatusChecker::willFunctionBodyUnconditionallyNeverReturn($stmts_node, $this->code_base, $this->context);
     }
 
     private function canApplyStaticPropertyOverride(FullyQualifiedClassName $calling_class, FullyQualifiedClassName $target_class): bool
