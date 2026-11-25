@@ -1679,12 +1679,15 @@ class ParseVisitor extends ScopeVisitor
      */
     private static $guarded_declarations = null;
 
-    /** The functions that check if a class-like exists, in lowercase */
+    /**
+     * The functions that check if a class-like exists (in lowercase), and the prefixes of the kinds of declarations that they find.
+     * (`class_exists()` is also true for an enum, and false for an interface or a trait)
+     */
     private const CLASS_EXISTS_FUNCTIONS = [
-        'class_exists' => true,
-        'interface_exists' => true,
-        'trait_exists' => true,
-        'enum_exists' => true,
+        'class_exists' => ['c:', 'e:'],
+        'interface_exists' => ['i:'],
+        'trait_exists' => ['t:'],
+        'enum_exists' => ['e:'],
     ];
 
     /**
@@ -1695,12 +1698,15 @@ class ParseVisitor extends ScopeVisitor
      *
      * Phan would otherwise report PhanRedefineFunction, PhanRedefineFunctionInternal, PhanRedefineClass, etc. for these.
      *
+     * The name that is checked must be the fully qualified name of the declaration,
+     * and the declaration must be the only one of that name in the branch.
+     *
      * (Declarations of the same name in different branches of an `if` are still reported:
      * Phan analyzes the code with only one of them, and they may differ.)
      *
-     * @param Node $node an AST_IF node
+     * @param Node $node an AST_IF node outside of a function
      */
-    public function visitIf(Node $node): Context
+    public static function markGuardedDeclarations(Context $context, Node $node): void
     {
         // The functions and classes that are known not to exist in the branch, from the conditions seen so far.
         $missing = [];
@@ -1711,43 +1717,39 @@ class ParseVisitor extends ScopeVisitor
             $cond = $if_elem->children['cond'];
             $missing_in_branch = $missing;
             if ($cond instanceof Node) {
-                self::addNamesFromExistenceChecks($cond, true, $missing_in_branch);
+                self::addNamesFromExistenceChecks($context, $cond, true, $missing_in_branch);
                 // In the branches after this one, what this condition checks for with a plain `function_exists('f')` does not exist.
-                self::addNamesFromExistenceChecks($cond, false, $missing);
+                self::addNamesFromExistenceChecks($context, $cond, false, $missing);
             }
             if (!$missing_in_branch) {
                 continue;
             }
             $declarations = [];
-            self::collectDeclarations($if_elem->children['stmts'], $declarations);
-            foreach ($declarations as [$key, $declaration]) {
-                if (isset($missing_in_branch[$key])) {
-                    self::markGuardedDeclaration($declaration);
+            self::collectDeclarations($if_elem->children['stmts'], \strtolower(\ltrim($context->getNamespace(), '\\')), $declarations);
+            foreach ($declarations as $key => $declarations_for_name) {
+                // (With more than one declaration of the name in the branch, the guard says nothing about the later ones)
+                if (isset($missing_in_branch[$key]) && \count($declarations_for_name) === 1) {
+                    self::$guarded_declarations ??= new WeakMap();
+                    self::$guarded_declarations[$declarations_for_name[0]] = true;
                 }
             }
         }
-        return $this->context;
-    }
-
-    private static function markGuardedDeclaration(Node $declaration): void
-    {
-        self::$guarded_declarations ??= new WeakMap();
-        self::$guarded_declarations[$declaration] = true;
     }
 
     /**
-     * Adds 'f:name' for `!function_exists('name')` and 'c:name' for `!class_exists('name')` in $cond (also as an operand of `&&`),
+     * Adds 'f:name' for `!function_exists('name')` and 'c:name' etc. for `!class_exists('name')` in $cond (also as an operand of `&&`),
      * or, if $negated is false, for the same calls without `!` (also as an operand of `||`).
+     * The names are fully qualified, in lowercase, without a leading backslash.
      *
      * @param array<string,true> $names
      */
-    private static function addNamesFromExistenceChecks(Node $cond, bool $negated, array &$names): void
+    private static function addNamesFromExistenceChecks(Context $context, Node $cond, bool $negated, array &$names): void
     {
         if ($cond->kind === ast\AST_BINARY_OP) {
             if ($cond->flags === ($negated ? ast\flags\BINARY_BOOL_AND : ast\flags\BINARY_BOOL_OR)) {
                 foreach ($cond->children as $operand) {
                     if ($operand instanceof Node) {
-                        self::addNamesFromExistenceChecks($operand, $negated, $names);
+                        self::addNamesFromExistenceChecks($context, $operand, $negated, $names);
                     }
                 }
             }
@@ -1765,54 +1767,110 @@ class ParseVisitor extends ScopeVisitor
             return;
         }
         $function_name_node = $call->children['expr'];
-        $function_name = $function_name_node instanceof Node && $function_name_node->kind === ast\AST_NAME ? $function_name_node->children['name'] : null;
-        $name = $call->children['args']->children[0] ?? null;
-        if (!\is_string($function_name) || !\is_string($name)) {
+        if (!($function_name_node instanceof Node) || $function_name_node->kind !== ast\AST_NAME) {
             return;
         }
-        $function_name = \strtolower(\ltrim($function_name, '\\'));
+        $function_name = $function_name_node->children['name'];
+        // Only `\function_exists()` or `function_exists()`: `namespace\function_exists()` and `NS\function_exists()` are other functions.
+        if (!\is_string($function_name) || $function_name_node->flags === ast\flags\NAME_RELATIVE || \strpos($function_name, '\\') !== false) {
+            return;
+        }
+        $function_name = \strtolower($function_name);
         if ($function_name === 'function_exists') {
-            $prefix = 'f:';
-        } elseif (isset(self::CLASS_EXISTS_FUNCTIONS[$function_name])) {
-            $prefix = 'c:';
+            $prefixes = ['f:'];
         } else {
+            $prefixes = self::CLASS_EXISTS_FUNCTIONS[$function_name] ?? null;
+            if ($prefixes === null) {
+                return;
+            }
+        }
+        $name = self::nameFromExistenceCheckArgument($context, $call->children['args']->children[0] ?? null);
+        if ($name === null) {
             return;
         }
-        // The declaration is found by its name without the namespace.
-        $separator_pos = \strrpos($name, '\\');
-        $names[$prefix . \strtolower($separator_pos === false ? $name : \substr($name, $separator_pos + 1))] = true;
+        foreach ($prefixes as $prefix) {
+            $names[$prefix . $name] = true;
+        }
+    }
+
+    /**
+     * @param Node|string|int|float|null $arg the first argument of `function_exists()`, `class_exists()`, etc.
+     * @return ?string the fully qualified name that is checked for (in lowercase, without a leading backslash), for a string literal or `Name::class`
+     */
+    private static function nameFromExistenceCheckArgument(Context $context, Node|string|int|float|null $arg): ?string
+    {
+        if (\is_string($arg)) {
+            // A name in a string is always fully qualified.
+            return \strtolower(\ltrim($arg, '\\'));
+        }
+        // `Name::class`
+        if (!($arg instanceof Node) || $arg->kind !== ast\AST_CLASS_NAME) {
+            return null;
+        }
+        $class_node = $arg->children['class'];
+        if (!($class_node instanceof Node) || $class_node->kind !== ast\AST_NAME || !\is_string($class_node->children['name'])) {
+            return null;
+        }
+        $class_name = $class_node->children['name'];
+        if ($class_node->flags === ast\flags\NAME_FQ) {
+            return \strtolower($class_name);
+        }
+        if ($class_node->flags !== ast\flags\NAME_NOT_FQ || \in_array(\strtolower($class_name), ['self', 'static', 'parent'], true)) {
+            return null;
+        }
+        try {
+            return \strtolower(\ltrim(FullyQualifiedClassName::fromStringInContext($class_name, $context)->__toString(), '\\'));
+        } catch (FQSENException) {
+            return null;
+        }
     }
 
     /**
      * Collects the functions and classes that are declared in $stmts or in the `if` statements in it.
      *
      * @param Node|string|int|float|null $stmts
-     * @param list<array{0:string,1:Node}> $declarations
+     * @param string $namespace the namespace of the declarations, in lowercase, without a leading backslash
+     * @param array<string,list<Node>> $declarations maps 'f:name' (function), 'c:name' (class), 'i:name' (interface), 't:name' (trait)
+     * and 'e:name' (enum) to the declarations, where the name is fully qualified
      */
-    private static function collectDeclarations(Node|string|int|float|null $stmts, array &$declarations): void
+    private static function collectDeclarations(Node|string|int|float|null $stmts, string $namespace, array &$declarations): void
     {
         if (!($stmts instanceof Node)) {
             return;
         }
         switch ($stmts->kind) {
             case ast\AST_FUNC_DECL:
-                $declarations[] = ['f:' . \strtolower((string)$stmts->children['name']), $stmts];
-                return;
+                $prefix = 'f:';
+                break;
             case ast\AST_CLASS:
-                if (!($stmts->flags & ast\flags\CLASS_ANONYMOUS)) {
-                    $declarations[] = ['c:' . \strtolower((string)$stmts->children['name']), $stmts];
+                $flags = $stmts->flags;
+                if ($flags & ast\flags\CLASS_ANONYMOUS) {
+                    return;
                 }
-                return;
+                if ($flags & ast\flags\CLASS_INTERFACE) {
+                    $prefix = 'i:';
+                } elseif ($flags & ast\flags\CLASS_TRAIT) {
+                    $prefix = 't:';
+                } elseif ($flags & ast\flags\CLASS_ENUM) {
+                    $prefix = 'e:';
+                } else {
+                    $prefix = 'c:';
+                }
+                break;
             case ast\AST_STMT_LIST:
             case ast\AST_IF:
                 foreach ($stmts->children as $child) {
-                    self::collectDeclarations($child, $declarations);
+                    self::collectDeclarations($child, $namespace, $declarations);
                 }
                 return;
             case ast\AST_IF_ELEM:
-                self::collectDeclarations($stmts->children['stmts'], $declarations);
+                self::collectDeclarations($stmts->children['stmts'], $namespace, $declarations);
+                return;
+            default:
                 return;
         }
+        $name = \strtolower((string)$stmts->children['name']);
+        $declarations[$prefix . ($namespace === '' ? $name : $namespace . '\\' . $name)][] = $stmts;
     }
 
     /**
@@ -2516,6 +2574,7 @@ class ParseVisitor extends ScopeVisitor
         ast\AST_FOREACH => true,
         ast\AST_ISSET => true,
         ast\AST_GLOBAL => true,
+        ast\AST_IF => true,
         ast\AST_IF_ELEM => true,
         ast\AST_INSTANCEOF => true,
         ast\AST_MAGIC_CONST => true,

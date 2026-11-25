@@ -7,6 +7,7 @@ namespace Phan\Language;
 use Closure;
 use Generator;
 use InvalidArgumentException;
+use Phan\Analysis\DuplicateClassAnalyzer;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Debug\Frame;
@@ -15,7 +16,6 @@ use Phan\Exception\IssueException;
 use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
-use Phan\Language\Element\Flags;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -3364,7 +3364,7 @@ class UnionType implements Serializable, Stringable
             // already checked if $class was internal.
             return;
         }
-        if (($class->getPhanFlags() | $other_class->getPhanFlags()) & Flags::IS_GUARDED_DECLARATION) {
+        if (DuplicateClassAnalyzer::isGuardedPair($class, $other_class)) {
             // e.g. `if (!class_exists('C')) { class C {} }`: only one of the declarations is used.
             return;
         }

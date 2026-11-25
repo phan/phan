@@ -1,0 +1,14 @@
+%s:6 PhanRedefineFunction Function helper defined at %s:6 was previously defined at %s:9
+%s:9 PhanRedefineFunction Function helper defined at %s:9 was previously defined at %s:6
+%s:12 PhanRedefineClass Class \NS5987\WrongName\Cls defined at %s:12 was previously defined as Class \NS5987\WrongName\Cls at %s:15
+%s:15 PhanRedefineClass Class \NS5987\WrongName\Cls defined at %s:15 was previously defined as Class \NS5987\WrongName\Cls at %s:12
+%s:25 PhanRedefineClass Class \NS5987\Three\Cls defined at %s:25 was previously defined as Class \NS5987\Three\Cls at %s:27
+%s:27 PhanRedefineClass Class \NS5987\Three\Cls defined at %s:27 was previously defined as Class \NS5987\Three\Cls at %s:25
+%s:33 PhanRedefineFunction Function three defined at %s:33 was previously defined at %s:35
+%s:35 PhanRedefineFunction Function three defined at %s:35 was previously defined at %s:33
+%s:42 PhanRedefineFunction Function twice defined at %s:42 was previously defined at %s:44
+%s:44 PhanRedefineFunction Function twice defined at %s:44 was previously defined at %s:42
+%s:51 PhanRedefineClass Interface \NS5987\Kind\I defined at %s:51 was previously defined as Interface \NS5987\Kind\I at %s:54
+%s:54 PhanRedefineClass Interface \NS5987\Kind\I defined at %s:54 was previously defined as Interface \NS5987\Kind\I at %s:51
+%s:68 PhanRedefineFunction Function notGuarded defined at %s:68 was previously defined at %s:71
+%s:71 PhanRedefineFunction Function notGuarded defined at %s:71 was previously defined at %s:68
