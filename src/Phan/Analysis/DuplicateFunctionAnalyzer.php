@@ -6,6 +6,7 @@ namespace Phan\Analysis;
 
 use Phan\CodeBase;
 use Phan\Issue;
+use Phan\Language\Element\Flags;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 
@@ -44,6 +45,15 @@ class DuplicateFunctionAnalyzer
             }
 
             $original_method = $code_base->getMethodByFQSEN($original_fqsen);
+        }
+
+        if ((($method->getPhanFlags() | $original_method->getPhanFlags()) & Flags::IS_GUARDED_DECLARATION)
+            && $method->getNumberOfRequiredParameters() === $original_method->getNumberOfRequiredParameters()
+            && $method->getNumberOfParameters() === $original_method->getNumberOfParameters()
+        ) {
+            // e.g. `if (!function_exists('f')) { function f() {} }` does not redefine f().
+            // (Still reported if the declarations take a different number of parameters: calls are only checked against one of them.)
+            return;
         }
 
         $method_name = $method->getName();

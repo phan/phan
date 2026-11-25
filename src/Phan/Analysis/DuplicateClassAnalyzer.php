@@ -7,6 +7,7 @@ namespace Phan\Analysis;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\Flags;
 
 /**
  * Analyzer that checks for duplicate classes/traits/interfaces.
@@ -37,6 +38,11 @@ class DuplicateClassAnalyzer
 
         // Get the original class
         $original_class = $code_base->getClassByFQSEN($original_fqsen);
+
+        if (($clazz->getPhanFlags() | $original_class->getPhanFlags()) & Flags::IS_GUARDED_DECLARATION) {
+            // e.g. `if (!class_exists('C')) { class C {} }` does not redefine C.
+            return;
+        }
 
         // Check to see if the original definition was from
         // an internal class

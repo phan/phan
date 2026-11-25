@@ -15,6 +15,7 @@ use Phan\Exception\IssueException;
 use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\Flags;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -3361,6 +3362,10 @@ class UnionType implements Serializable, Stringable
 
         if ($other_class->isPHPInternal() || $other_class->hasSuppressIssue(Issue::RedefinedClassReference)) {
             // already checked if $class was internal.
+            return;
+        }
+        if (($class->getPhanFlags() | $other_class->getPhanFlags()) & Flags::IS_GUARDED_DECLARATION) {
+            // e.g. `if (!class_exists('C')) { class C {} }`: only one of the declarations is used.
             return;
         }
         Issue::maybeEmit(

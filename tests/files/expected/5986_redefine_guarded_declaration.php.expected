@@ -1,0 +1,12 @@
+%s:18 PhanRedefineFunction Function scrub5986 defined at %s:18 was previously defined at %s:27
+%s:21 PhanRedefineClass Class \Impl5986 defined at %s:21 was previously defined as Class \Impl5986 at %s:30
+%s:27 PhanRedefineFunction Function scrub5986 defined at %s:27 was previously defined at %s:18
+%s:30 PhanRedefineClass Class \Impl5986 defined at %s:30 was previously defined as Class \Impl5986 at %s:21
+%s:49 PhanRedefinedClassReference Saw reference to \Impl5986 declared at %s:21 which is also declared at %s:30. This may lead to confusing errors. It may be possible to exclude the class that isn't used with exclude_file_list. In addition to normal ways to suppress issues, this issue type can be suppressed on either of the class definitions if it is impractical to exclude one file.
+%s:54 PhanRedefineFunctionInternal Function str_starts_with defined at %s:54 was previously defined internally
+%s:60 PhanRedefineFunctionInternal Function strlen defined at %s:60 was previously defined internally
+%s:66 PhanRedefineFunction Function twice5986 defined at %s:66 was previously defined at %s:69
+%s:69 PhanRedefineFunction Function twice5986 defined at %s:69 was previously defined at %s:66
+%s:71 PhanRedefineClass Class \Twice5986 defined at %s:71 was previously defined as Class \Twice5986 at %s:74
+%s:74 PhanRedefineClass Class \Twice5986 defined at %s:74 was previously defined as Class \Twice5986 at %s:71
+%s:78 PhanRedefinedClassReference Saw reference to \Twice5986 declared at %s:71 which is also declared at %s:74. This may lead to confusing errors. It may be possible to exclude the class that isn't used with exclude_file_list. In addition to normal ways to suppress issues, this issue type can be suppressed on either of the class definitions if it is impractical to exclude one file.
