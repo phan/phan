@@ -32,6 +32,8 @@ class PhanAnnotationAdder
 {
     public const PHAN_NODE_FLAGS = 'phan_nf';
 
+    // NOTE: BlockExitStatusChecker uses these bits for the flags of statements (BlockExitStatusChecker::KINDS_WITH_STATEMENT_STATUS).
+    // Don't add these flags to those kinds of nodes.
     public const FLAG_INITIALIZES = 1 << 28;
     public const FLAG_IGNORE_NULLABLE = 1 << 29;
     public const FLAG_IGNORE_UNDEF = 1 << 30;

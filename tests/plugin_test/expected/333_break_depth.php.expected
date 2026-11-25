@@ -1,0 +1,26 @@
+src/333_break_depth.php:5 PhanPluginAlwaysReturnFunction Function \NS333\break2 has a return type of int, but may fail to return a value
+src/333_break_depth.php:5 PhanUnreferencedFunction Possibly zero references to function \NS333\break2()
+src/333_break_depth.php:8 PhanPluginUnreachableCode Unreachable statement detected
+src/333_break_depth.php:11 PhanUnreferencedFunction Possibly zero references to function \NS333\break1()
+src/333_break_depth.php:13 PhanSideEffectFreeWhileBody Saw a while loop which probably has no side effects
+src/333_break_depth.php:17 PhanUnreferencedFunction Possibly zero references to function \NS333\continue2()
+src/333_break_depth.php:18 PhanUnusedVariable Unused definition of variable $x
+src/333_break_depth.php:20 PhanPluginNonBoolBranch Non bool value of type mixed evaluated in if clause
+src/333_break_depth.php:27 PhanPluginAlwaysReturnFunction Function \NS333\switchBreak2 has a return type of int, but may fail to return a value
+src/333_break_depth.php:27 PhanUnreferencedFunction Possibly zero references to function \NS333\switchBreak2()
+src/333_break_depth.php:35 PhanUnreferencedFunction Possibly zero references to function \NS333\switchContinue2()
+src/333_break_depth.php:43 PhanPluginAlwaysReturnFunction Function \NS333\break3 has a return type of int, but may fail to return a value
+src/333_break_depth.php:43 PhanPluginUseReturnValueNoopVoid The function/method \NS333\break3() is declared to return int and it has no side effects
+src/333_break_depth.php:43 PhanTypeMissingReturnReal Method \NS333\break3 is declared to return int in its real type signature but has no return value
+src/333_break_depth.php:43 PhanUnreferencedFunction Possibly zero references to function \NS333\break3()
+src/333_break_depth.php:50 PhanUnreferencedFunction Possibly zero references to function \NS333\unreachableAfterInner()
+src/333_break_depth.php:53 PhanPluginUnreachableCode Unreachable statement detected
+src/333_break_depth.php:57 PhanPluginAlwaysReturnFunction Function \NS333\goto_ has a return type of int, but may fail to return a value
+src/333_break_depth.php:57 PhanUnreferencedFunction Possibly zero references to function \NS333\goto_()
+src/333_break_depth.php:62 PhanPluginUnreachableCode Unreachable statement detected
+src/333_break_depth.php:65 PhanUnreferencedFunction Possibly zero references to function \NS333\continue3()
+src/333_break_depth.php:67 PhanUnusedVariable Unused definition of variable $y
+src/333_break_depth.php:69 PhanPluginNonBoolBranch Non bool value of type mixed evaluated in if clause
+src/333_break_depth.php:77 PhanUnreferencedFunction Possibly zero references to function \NS333\break3ThenReturn()
+src/333_break_depth.php:87 PhanUnreferencedFunction Possibly zero references to function \NS333\doWhileBreak2()
+src/333_break_depth.php:92 PhanPluginUnreachableCode Unreachable statement detected
