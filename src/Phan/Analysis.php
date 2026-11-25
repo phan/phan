@@ -445,6 +445,10 @@ class Analysis
         if (isset(ParseVisitor::NO_OP_NODE_KINDS[$kind])) {
             // ParseVisitor's handler for this kind (most nodes) returns $context and does nothing else,
             // so skip creating the visitor. This is equivalent to the default case below.
+            if ($kind === ast\AST_IF && !$context->isInFunctionLikeScope()) {
+                // Find the declarations in `if (!function_exists('f')) { function f() {} }`
+                ParseVisitor::markGuardedDeclarations($context, $node);
+            }
             $child_context = $context;
             foreach ($node->children as $child_node) {
                 if (\is_object($child_node)) {

@@ -58,6 +58,7 @@ use Phan\Language\UnionType;
 use Phan\Library\IncrementalAnalysis\DependencyTracker;
 use Phan\Library\None;
 use Phan\Plugin\ConfigPluginSet;
+use WeakMap;
 
 use function count;
 
@@ -176,6 +177,9 @@ class ParseVisitor extends ScopeVisitor
             $class_fqsen
         );
         $class->setDeclId($node->children['__declId']);
+        if (self::$guarded_declarations !== null && isset(self::$guarded_declarations[$node])) {
+            $class->setPhanFlags($class->getPhanFlags() | Flags::IS_GUARDED_DECLARATION);
+        }
         $class->setDidFinishParsing(false);
         $class->setAttributeList(Attribute::fromNodeForAttributeList(
             $this->code_base,
@@ -1671,6 +1675,238 @@ class ParseVisitor extends ScopeVisitor
     }
 
     /**
+     * @var ?WeakMap<Node,true> the declarations of functions and classes that cannot redefine anything (see markGuardedDeclarations)
+     */
+    private static $guarded_declarations = null;
+
+    /**
+     * The functions that check if a class-like exists (in lowercase), and the prefixes of the kinds of declarations that they find.
+     * (`class_exists()` is also true for an enum, and false for an interface or a trait)
+     */
+    private const CLASS_EXISTS_FUNCTIONS = [
+        'class_exists' => ['c:', 'e:'],
+        'interface_exists' => ['i:'],
+        'trait_exists' => ['t:'],
+        'enum_exists' => ['e:'],
+    ];
+
+    /**
+     * Records the function and class declarations in this `if` statement that cannot redefine anything:
+     *
+     * - `if (!function_exists('f')) { function f() {} }`, and the same for `class_exists` etc.
+     * - `if (function_exists('f')) { ... } else { function f() {} }`
+     *
+     * Phan would otherwise report PhanRedefineFunction, PhanRedefineFunctionInternal, PhanRedefineClass, etc. for these.
+     *
+     * The name that is checked must be the fully qualified name of the declaration,
+     * and the declaration must be the only one of that name in the branch.
+     *
+     * (Declarations of the same name in different branches of an `if` are still reported:
+     * Phan analyzes the code with only one of them, and they may differ.)
+     *
+     * @param Node $node an AST_IF node outside of a function
+     */
+    public static function markGuardedDeclarations(Context $context, Node $node): void
+    {
+        // The functions and classes that are known not to exist in the branch, from the conditions seen so far.
+        $missing = [];
+        $missing_by_branch = [];
+        foreach ($node->children as $i => $if_elem) {
+            if (!($if_elem instanceof Node)) {
+                continue;
+            }
+            $cond = $if_elem->children['cond'];
+            $missing_in_branch = $missing;
+            if ($cond instanceof Node) {
+                self::addNamesFromExistenceChecks($context, $cond, true, $missing_in_branch);
+                // In the branches after this one, what this condition checks for with a plain `function_exists('f')` does not exist.
+                self::addNamesFromExistenceChecks($context, $cond, false, $missing);
+            }
+            if ($missing_in_branch) {
+                $missing_by_branch[$i] = $missing_in_branch;
+            }
+        }
+        if (!$missing_by_branch) {
+            return;
+        }
+        // Collect the declarations of all branches: a name that is declared more than once in this statement is not guarded.
+        // (`if (!class_exists('C')) { class C {} } else { class C {} }` declares C when it exists)
+        $namespace = \strtolower(\ltrim($context->getNamespace(), '\\'));
+        $declarations_by_branch = [];
+        $counts = [];
+        foreach ($node->children as $i => $if_elem) {
+            if (!($if_elem instanceof Node)) {
+                continue;
+            }
+            $declarations = [];
+            self::collectDeclarations($if_elem->children['stmts'], $namespace, true, $declarations);
+            foreach ($declarations as [$key, $unused_declaration]) {
+                $counts[$key] = ($counts[$key] ?? 0) + 1;
+            }
+            $declarations_by_branch[$i] = $declarations;
+        }
+        foreach ($missing_by_branch as $i => $missing_in_branch) {
+            foreach ($declarations_by_branch[$i] as [$key, $declaration]) {
+                if ($declaration !== null && $counts[$key] === 1 && isset($missing_in_branch[$key])) {
+                    self::$guarded_declarations ??= new WeakMap();
+                    self::$guarded_declarations[$declaration] = true;
+                }
+            }
+        }
+    }
+
+    /**
+     * Adds 'f:name' for `!function_exists('name')` and 'c:name' etc. for `!class_exists('name')` in $cond (also as an operand of `&&`),
+     * or, if $negated is false, for the same calls without `!` (also as an operand of `||`).
+     * The names are fully qualified, in lowercase, without a leading backslash.
+     *
+     * @param array<string,true> $names
+     */
+    private static function addNamesFromExistenceChecks(Context $context, Node $cond, bool $negated, array &$names): void
+    {
+        if ($cond->kind === ast\AST_BINARY_OP) {
+            if ($cond->flags === ($negated ? ast\flags\BINARY_BOOL_AND : ast\flags\BINARY_BOOL_OR)) {
+                foreach ($cond->children as $operand) {
+                    if ($operand instanceof Node) {
+                        self::addNamesFromExistenceChecks($context, $operand, $negated, $names);
+                    }
+                }
+            }
+            return;
+        }
+        if ($negated) {
+            if ($cond->kind !== ast\AST_UNARY_OP || $cond->flags !== ast\flags\UNARY_BOOL_NOT) {
+                return;
+            }
+            $call = $cond->children['expr'];
+        } else {
+            $call = $cond;
+        }
+        if (!($call instanceof Node) || $call->kind !== ast\AST_CALL) {
+            return;
+        }
+        $function_name_node = $call->children['expr'];
+        if (!($function_name_node instanceof Node) || $function_name_node->kind !== ast\AST_NAME) {
+            return;
+        }
+        $function_name = $function_name_node->children['name'];
+        // Only `\function_exists()` or `function_exists()`: `namespace\function_exists()` and `NS\function_exists()` are other functions.
+        if (!\is_string($function_name) || $function_name_node->flags === ast\flags\NAME_RELATIVE || \strpos($function_name, '\\') !== false) {
+            return;
+        }
+        if ($function_name_node->flags !== ast\flags\NAME_FQ && $context->hasNamespaceMapFor(ast\flags\USE_FUNCTION, $function_name)) {
+            // `use function NS\my_check as function_exists;` is another function, `use function function_exists;` is not.
+            $function_name = \ltrim($context->getNamespaceMapFor(ast\flags\USE_FUNCTION, $function_name)->__toString(), '\\');
+            if (\strpos($function_name, '\\') !== false) {
+                return;
+            }
+        }
+        $function_name = \strtolower($function_name);
+        if ($function_name === 'function_exists') {
+            $prefixes = ['f:'];
+        } else {
+            $prefixes = self::CLASS_EXISTS_FUNCTIONS[$function_name] ?? null;
+            if ($prefixes === null) {
+                return;
+            }
+        }
+        $name = self::nameFromExistenceCheckArgument($context, $call->children['args']->children[0] ?? null);
+        if ($name === null) {
+            return;
+        }
+        foreach ($prefixes as $prefix) {
+            $names[$prefix . $name] = true;
+        }
+    }
+
+    /**
+     * @param Node|string|int|float|null $arg the first argument of `function_exists()`, `class_exists()`, etc.
+     * @return ?string the fully qualified name that is checked for (in lowercase, without a leading backslash), for a string literal or `Name::class`
+     */
+    private static function nameFromExistenceCheckArgument(Context $context, Node|string|int|float|null $arg): ?string
+    {
+        if (\is_string($arg)) {
+            // A name in a string is always fully qualified.
+            return \strtolower(\ltrim($arg, '\\'));
+        }
+        // `Name::class`
+        if (!($arg instanceof Node) || $arg->kind !== ast\AST_CLASS_NAME) {
+            return null;
+        }
+        $class_node = $arg->children['class'];
+        if (!($class_node instanceof Node) || $class_node->kind !== ast\AST_NAME || !\is_string($class_node->children['name'])) {
+            return null;
+        }
+        $class_name = $class_node->children['name'];
+        if ($class_node->flags === ast\flags\NAME_FQ) {
+            return \strtolower($class_name);
+        }
+        if ($class_node->flags !== ast\flags\NAME_NOT_FQ || \in_array(\strtolower($class_name), ['self', 'static', 'parent'], true)) {
+            return null;
+        }
+        try {
+            return \strtolower(\ltrim(FullyQualifiedClassName::fromStringInContext($class_name, $context)->__toString(), '\\'));
+        } catch (FQSENException) {
+            return null;
+        }
+    }
+
+    /**
+     * Collects the functions and classes that are declared in $node, outside of the functions and classes in it.
+     *
+     * @param Node|string|int|float|null $node
+     * @param string $namespace the namespace of the declarations, in lowercase, without a leading backslash
+     * @param bool $is_direct whether $node is only inside of statement lists and `if` statements.
+     * A declaration in a loop, `try`, `switch` etc. is collected to be counted, but not to be marked as guarded.
+     * @param list<array{0:string,1:?Node}> $declarations pairs of a key and the declaration (null if it is not direct).
+     * The key is 'f:name' (function), 'c:name' (class), 'i:name' (interface), 't:name' (trait) or 'e:name' (enum),
+     * where the name is fully qualified.
+     */
+    private static function collectDeclarations(Node|string|int|float|null $node, string $namespace, bool $is_direct, array &$declarations): void
+    {
+        if (!($node instanceof Node)) {
+            return;
+        }
+        switch ($node->kind) {
+            case ast\AST_FUNC_DECL:
+                $prefix = 'f:';
+                break;
+            case ast\AST_CLASS:
+                $flags = $node->flags;
+                if ($flags & ast\flags\CLASS_ANONYMOUS) {
+                    return;
+                }
+                if ($flags & ast\flags\CLASS_INTERFACE) {
+                    $prefix = 'i:';
+                } elseif ($flags & ast\flags\CLASS_TRAIT) {
+                    $prefix = 't:';
+                } elseif ($flags & ast\flags\CLASS_ENUM) {
+                    $prefix = 'e:';
+                } else {
+                    $prefix = 'c:';
+                }
+                break;
+            case ast\AST_CLOSURE:
+            case ast\AST_ARROW_FUNC:
+                return;
+            case ast\AST_STMT_LIST:
+            case ast\AST_IF:
+            case ast\AST_IF_ELEM:
+                foreach ($node->children as $child) {
+                    self::collectDeclarations($child, $namespace, $is_direct, $declarations);
+                }
+                return;
+            default:
+                foreach ($node->children as $child) {
+                    self::collectDeclarations($child, $namespace, false, $declarations);
+                }
+                return;
+        }
+        $name = \strtolower((string)$node->children['name']);
+        $declarations[] = [$prefix . ($namespace === '' ? $name : $namespace . '\\' . $name), $is_direct ? $node : null];
+    }
+
+    /**
      * Visit a node with kind `\ast\AST_STATIC` (a static variable)
      */
     public function visitStatic(Node $node): Context
@@ -1784,6 +2020,10 @@ class ParseVisitor extends ScopeVisitor
             $node,
             $function_fqsen
         );
+
+        if (self::$guarded_declarations !== null && isset(self::$guarded_declarations[$node])) {
+            $func->setPhanFlags($func->getPhanFlags() | Flags::IS_GUARDED_DECLARATION);
+        }
 
         if ($context->isPHPInternal()) {
             // only for stubs

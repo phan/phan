@@ -1,0 +1,23 @@
+%s:6 PhanRedefineFunction Function helper defined at %s:6 was previously defined at %s:9
+%s:9 PhanRedefineFunction Function helper defined at %s:9 was previously defined at %s:6
+%s:12 PhanRedefineClass Class \NS5987\WrongName\Cls defined at %s:12 was previously defined as Class \NS5987\WrongName\Cls at %s:15
+%s:15 PhanRedefineClass Class \NS5987\WrongName\Cls defined at %s:15 was previously defined as Class \NS5987\WrongName\Cls at %s:12
+%s:25 PhanRedefineClass Class \NS5987\Three\Cls defined at %s:25 was previously defined as Class \NS5987\Three\Cls at %s:27
+%s:27 PhanRedefineClass Class \NS5987\Three\Cls defined at %s:27 was previously defined as Class \NS5987\Three\Cls at %s:25
+%s:33 PhanRedefineFunction Function three defined at %s:33 was previously defined at %s:35
+%s:35 PhanRedefineFunction Function three defined at %s:35 was previously defined at %s:33
+%s:42 PhanRedefineFunction Function twice defined at %s:42 was previously defined at %s:44
+%s:44 PhanRedefineFunction Function twice defined at %s:44 was previously defined at %s:42
+%s:51 PhanRedefineClass Interface \NS5987\Kind\I defined at %s:51 was previously defined as Interface \NS5987\Kind\I at %s:54
+%s:54 PhanRedefineClass Interface \NS5987\Kind\I defined at %s:54 was previously defined as Interface \NS5987\Kind\I at %s:51
+%s:68 PhanRedefineFunction Function notGuarded defined at %s:68 was previously defined at %s:71
+%s:71 PhanRedefineFunction Function notGuarded defined at %s:71 was previously defined at %s:68
+%s:81 PhanRedefineClass Class \NS5987\Elsewhere\C defined at %s:81 was previously defined as Class \NS5987\Elsewhere\C at %s:84
+%s:84 PhanRedefineClass Class \NS5987\Elsewhere\C defined at %s:84 was previously defined as Class \NS5987\Elsewhere\C at %s:81
+%s:88 PhanRedefineFunction Function f defined at %s:88 was previously defined at %s:91
+%s:91 PhanRedefineFunction Function f defined at %s:91 was previously defined at %s:88
+%s:101 PhanRedefineFunction Function g defined at %s:101 was previously defined at %s:104
+%s:104 PhanRedefineFunction Function g defined at %s:104 was previously defined at %s:101
+%s:115 PhanRedefineClass Class \NS5987\Reference\C defined at %s:115 was previously defined as Class \NS5987\Reference\C at %s:117
+%s:117 PhanRedefineClass Class \NS5987\Reference\C defined at %s:117 was previously defined as Class \NS5987\Reference\C at %s:115
+%s:119 PhanRedefinedClassReference Saw reference to \NS5987\Reference\C declared at %s:115 which is also declared at %s:117. This may lead to confusing errors. It may be possible to exclude the class that isn't used with exclude_file_list. In addition to normal ways to suppress issues, this issue type can be suppressed on either of the class definitions if it is impractical to exclude one file.

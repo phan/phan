@@ -251,7 +251,6 @@ namespace ast;
 if (!\class_exists('\ast\Node')) {
     /**
      * This class describes a single node in a PHP AST.
-     * @suppress PhanRedefineClassInternal
      */
     #[\AllowDynamicProperties]
     class Node
@@ -288,7 +287,6 @@ if (!\class_exists('\ast\Node')) {
 if (!\class_exists('ast\Metadata')) {
     /**
      * Metadata entry for a single AST kind, as returned by ast\get_metadata().
-     * @suppress PhanRedefineClassInternal
      * @suppress PhanUnreferencedClass
      */
     class Metadata

@@ -92,6 +92,9 @@ class Flags
 
     // only set on properties
     public const IS_PROMOTED_PROPERTY = (1 << 30);
+    // only set on functions and classes: the declaration cannot redefine anything.
+    // (It is in `if (!function_exists('name'))`/`if (!class_exists('name'))`)
+    public const IS_GUARDED_DECLARATION = (1 << 30);
 
     // only set on variables - indicates the variable is involved in a reference assignment
     // and should have its real types erased to avoid incorrect literal type tracking

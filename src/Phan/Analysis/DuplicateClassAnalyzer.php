@@ -7,6 +7,7 @@ namespace Phan\Analysis;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\Flags;
 
 /**
  * Analyzer that checks for duplicate classes/traits/interfaces.
@@ -35,8 +36,24 @@ class DuplicateClassAnalyzer
             return;
         }
 
-        // Get the original class
-        $original_class = $code_base->getClassByFQSEN($original_fqsen);
+        // Find the earlier declarations that this one conflicts with.
+        // (`if (!class_exists('C')) { class C {} }` does not redefine C)
+        $conflicting_classes = [];
+        $alternate_id = $clazz->getFQSEN()->getAlternateId();
+        for ($i = 0; $i < $alternate_id; $i++) {
+            $other_fqsen = $original_fqsen->withAlternateId($i);
+            if (!$code_base->hasClassWithFQSEN($other_fqsen)) {
+                continue;
+            }
+            $other_class = $code_base->getClassByFQSEN($other_fqsen);
+            if (!self::isGuardedPair($clazz, $other_class)) {
+                $conflicting_classes[] = $other_class;
+            }
+        }
+        if (!$conflicting_classes) {
+            return;
+        }
+        $original_class = $conflicting_classes[0];
 
         // Check to see if the original definition was from
         // an internal class
@@ -73,7 +90,7 @@ class DuplicateClassAnalyzer
             // If there are 3 classes with the same namespace and name,
             // warn *once* about the first (user-defined) class being a duplicate.
             // NOTE: This won't work very well in language server mode.
-            if ($clazz->getFQSEN()->getAlternateId() === 1) {
+            if (\count($conflicting_classes) === 1) {
                 if (!$original_class->checkHasSuppressIssueAndIncrementCount(Issue::RedefineClass)) {
                     Issue::maybeEmit(
                         $code_base,
@@ -92,5 +109,18 @@ class DuplicateClassAnalyzer
         }
 
         return;
+    }
+
+    /**
+     * @return bool whether one of the classes is declared in `if (!class_exists('name'))`, so that only one of the two gets declared.
+     *
+     * (`class_exists()` does not find an interface or a trait, etc.: this is only the case for two declarations of the same kind)
+     */
+    public static function isGuardedPair(Clazz $a, Clazz $b): bool
+    {
+        return (($a->getPhanFlags() | $b->getPhanFlags()) & Flags::IS_GUARDED_DECLARATION) !== 0
+            && $a->isInterface() === $b->isInterface()
+            && $a->isTrait() === $b->isTrait()
+            && $a->isEnum() === $b->isEnum();
     }
 }

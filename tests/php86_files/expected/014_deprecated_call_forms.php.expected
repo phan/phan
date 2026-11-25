@@ -46,4 +46,3 @@
 %s:66 PhanPluginUnknownArrayFunctionParamType Function imagepolygon() has a parameter type of array for $points, but does not specify any key types or value types
 %s:66 PhanPluginUnknownFunctionParamType Function imagepolygon() has no declared or inferred parameter type for $image
 %s:66 PhanPluginUnknownFunctionParamType Function imagepolygon() has no declared or inferred parameter type for $num_points_or_color
-%s:66 PhanRedefineFunctionInternal Function imagepolygon defined at %s:66 was previously defined internally
