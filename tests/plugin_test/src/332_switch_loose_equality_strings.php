@@ -64,3 +64,20 @@ function floats($x): int {
     }
     return 0;
 }
+
+// A float is compared with a string that is not numeric as a string
+function infinity($x): int {
+    switch ($x) {
+        case 'INF':
+            return 1;
+        case 1e999:
+            return 2;
+        case -1e999:
+            return 3;
+        case '-INF':
+            return 4;
+        case 'NAN':
+            return 5;
+    }
+    return 0;
+}

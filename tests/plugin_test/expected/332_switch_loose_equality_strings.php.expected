@@ -11,3 +11,5 @@ src/332_switch_loose_equality_strings.php:46 PhanPluginDuplicateSwitchCaseLooseE
 src/332_switch_loose_equality_strings.php:54 PhanUnreferencedFunction Possibly zero references to function \NS332\floats()
 src/332_switch_loose_equality_strings.php:58 PhanPluginDuplicateSwitchCaseLooseEquality Switch case('1e999') is loosely equivalent (==) to an earlier case (INF) in switch statement - the earlier entry may be chosen instead.
 src/332_switch_loose_equality_strings.php:62 PhanPluginDuplicateSwitchCaseLooseEquality Switch case(1) is loosely equivalent (==) to an earlier case (1.0) in switch statement - the earlier entry may be chosen instead.
+src/332_switch_loose_equality_strings.php:69 PhanUnreferencedFunction Possibly zero references to function \NS332\infinity()
+src/332_switch_loose_equality_strings.php:73 PhanPluginDuplicateSwitchCaseLooseEquality Switch case(INF) is loosely equivalent (==) to an earlier case ('INF') in switch statement - the earlier entry may be chosen instead.

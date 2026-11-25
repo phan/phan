@@ -156,11 +156,11 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
      */
     private function extendedLooseEqualityCheck(array $values_to_check, array $children): void
     {
-        // The indexes of the cases that are int, float and numeric strings, by the value as a float.
+        // The indexes of the cases that are int, float and string, by looseEqualityKey().
         // (A list: two different large integers can have the same value as a float)
         $int_set = [];
         $float_set = [];
-        $numeric_string_set = [];
+        $string_set = [];
         // The indexes of the cases that are bool or null
         $bool_or_null_list = [];
         // The indexes of all cases seen so far, for the cases that are bool or null
@@ -182,35 +182,33 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
                         break;
                     }
                 }
-                if (is_string($value) ? !is_numeric($value) : is_nan((float)$value)) {
-                    // Not == to a number or to a different string.
-                    $candidate_lists = [];
-                } else {
-                    $float_value = (float)$value;
-                    // (-0.0 is '-0' as a string, and `0 == '-0'`)
-                    $key = $float_value === 0.0 ? '0' : (string)$float_value;
+                $key = self::looseEqualityKey($value);
+                if ($key !== null) {
+                    // An integer is not compared with the other integers: they are different integers, or PhanPluginDuplicateSwitchCase was emitted instead.
+                    $candidate_lists = [$float_set[$key] ?? [], $string_set[$key] ?? []];
+                    if (!is_int($value)) {
+                        $candidate_lists[] = $int_set[$key] ?? [];
+                    }
+                    foreach ($candidate_lists as $candidates) {
+                        foreach ($candidates as $j) {
+                            if ($old_index !== null && $j > $old_index) {
+                                break;
+                            }
+                            // (Checked again: two different large integers can have the same value as a float)
+                            if ($value == $values_to_check[$j]) {
+                                $old_index = $j;
+                                break;
+                            }
+                        }
+                    }
+                    // (Released before appending, so that the list is not copied)
+                    unset($candidate_lists, $candidates);
                     if (is_string($value)) {
-                        $candidate_lists = [$int_set[$key] ?? [], $float_set[$key] ?? [], $numeric_string_set[$key] ?? []];
-                        $numeric_string_set[$key][] = $i;
+                        $string_set[$key][] = $i;
                     } elseif (is_int($value)) {
-                        // Not compared with the other integers: they are different integers, or PhanPluginDuplicateSwitchCase was emitted instead.
-                        $candidate_lists = [$float_set[$key] ?? [], $numeric_string_set[$key] ?? []];
                         $int_set[$key][] = $i;
                     } else {
-                        $candidate_lists = [$int_set[$key] ?? [], $float_set[$key] ?? [], $numeric_string_set[$key] ?? []];
                         $float_set[$key][] = $i;
-                    }
-                }
-                foreach ($candidate_lists as $candidates) {
-                    foreach ($candidates as $j) {
-                        if ($old_index !== null && $j > $old_index) {
-                            break;
-                        }
-                        // (Checked again: two different large integers can have the same value as a float)
-                        if ($value == $values_to_check[$j]) {
-                            $old_index = $j;
-                            break;
-                        }
                     }
                 }
             }
@@ -228,6 +226,24 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
                 );
             }
         }
+    }
+
+    /**
+     * @return ?string a key that is the same for the numbers and strings that can be `==` to $value,
+     * or null if $value is only `==` to itself, bools and null.
+     */
+    private static function looseEqualityKey(float|int|string $value): ?string
+    {
+        if (is_string($value) && !is_numeric($value)) {
+            // A float is compared with a string that is not numeric as a string: `INF == 'INF'`
+            return $value === 'INF' || $value === '-INF' ? $value : null;
+        }
+        $float_value = (float)$value;
+        if (is_nan($float_value)) {
+            return null;
+        }
+        // (-0.0 is '-0' as a string, and `0 == '-0'`)
+        return $float_value === 0.0 ? '0' : (string)$float_value;
     }
 
     /**
