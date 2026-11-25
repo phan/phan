@@ -92,6 +92,20 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         self::STATUS_PROCEED |
         self::STATUS_NOT_PROCEED_BITMASK;
 
+    /**
+     * The kinds of nodes that a status with STATUS_OUTER_EXIT_BITMASK is cached for (with STATUS_STATEMENT_BITMASK).
+     * PhanAnnotationAdder must not add its flags to these kinds. (Checked by BlockExitStatusCheckerTest)
+     */
+    public const KINDS_WITH_STATEMENT_STATUS = [
+        ast\AST_STMT_LIST,
+        ast\AST_IF,
+        ast\AST_IF_ELEM,
+        ast\AST_TRY,
+        ast\AST_CATCH_LIST,
+        ast\AST_SWITCH_LIST,
+        ast\AST_SWITCH_CASE,
+    ];
+
     /** The bits of the status that is cached in the flags of a statement. (STATUS_BITMASK is used for expressions) */
     private const STATUS_STATEMENT_BITMASK =
         self::STATUS_BITMASK |

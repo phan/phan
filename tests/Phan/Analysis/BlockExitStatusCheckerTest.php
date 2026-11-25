@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan\Tests\Analysis;
 
 use Phan\Analysis\BlockExitStatusChecker;
+use Phan\AST\PhanAnnotationAdder;
 use Phan\Config;
 use Phan\Tests\TestBase;
 
@@ -53,6 +54,18 @@ final class BlockExitStatusCheckerTest extends TestBase
                 case BlockExitStatusChecker::STATUS_NORETURN:
                     $parts[] = 'never';
                     break;
+                case BlockExitStatusChecker::STATUS_BREAK_2:
+                    $parts[] = 'break2';
+                    break;
+                case BlockExitStatusChecker::STATUS_CONTINUE_2:
+                    $parts[] = 'continue2';
+                    break;
+                case BlockExitStatusChecker::STATUS_BREAK_3:
+                    $parts[] = 'break3';
+                    break;
+                case BlockExitStatusChecker::STATUS_CONTINUE_3:
+                    $parts[] = 'continue3';
+                    break;
                 default:
                     $parts[] = \sprintf("invalid(1<<%d)", (int)\round(\log($bit, 2)));
                     break;
@@ -73,11 +86,60 @@ final class BlockExitStatusCheckerTest extends TestBase
     }
 
     /**
+     * The statuses of `break N`/`continue N` use the same bits of ast\Node->flags as the flags of PhanAnnotationAdder.
+     * That is only safe while no kind of node gets both.
+     */
+    public function testStatusFlagsDoNotOverlapAnnotationFlags(): void
+    {
+        $annotation_flags = PhanAnnotationAdder::FLAG_INITIALIZES
+            | PhanAnnotationAdder::FLAG_IGNORE_NULLABLE
+            | PhanAnnotationAdder::FLAG_IGNORE_UNDEF
+            | PhanAnnotationAdder::FLAG_IGNORE_UNDEF_IN_ISSET_EMPTY;
+        // The status that is cached for an expression must not use the annotation flags.
+        $this->assertSame(0, BlockExitStatusChecker::STATUS_BITMASK & $annotation_flags);
+        // The kinds of statements that the wider status is cached for must not be annotated.
+        foreach (BlockExitStatusChecker::KINDS_WITH_STATEMENT_STATUS as $kind) {
+            $this->assertArrayNotHasKey($kind, PhanAnnotationAdder::FLAGS_NODE_TYPE_SET, \ast\get_kind_name($kind));
+            $this->assertNotSame(\ast\AST_ARRAY_ELEM, $kind);
+        }
+    }
+
+    /**
      * @return list<array{0:string,1:string}>
      */
     public static function exitStatusProvider(): array
     {
         return [
+            [
+                'break2',
+                'if ($a) { break 2; } else { break 2; }',
+            ],
+            [
+                // For the statements around the loop, this is `break`
+                'break',
+                'while (true) { break 2; }',
+            ],
+            [
+                'proceed',
+                'while (true) { while (true) { break 2; } return 1; }',
+            ],
+            [
+                // An infinite loop
+                'never',
+                'while (true) { while (true) { continue 2; } return 1; }',
+            ],
+            [
+                'proceed/continue',
+                'foreach ($a as $b) { foreach ($b as $c) { continue 3; } }',
+            ],
+            [
+                'proceed/return',
+                'while (true) { switch ($x) { case 1: break 2; default: return 1; } }',
+            ],
+            [
+                'proceed',
+                'while ($a) { while ($b) { while ($c) { while ($d) { break 4; } } } }',
+            ],
             [
                 'proceed',
                 '',
