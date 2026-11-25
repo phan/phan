@@ -1795,8 +1795,11 @@ class ParseVisitor extends ScopeVisitor
             return;
         }
         if ($function_name_node->flags !== ast\flags\NAME_FQ && $context->hasNamespaceMapFor(ast\flags\USE_FUNCTION, $function_name)) {
-            // `use function NS\my_check as function_exists;`
-            return;
+            // `use function NS\my_check as function_exists;` is another function, `use function function_exists;` is not.
+            $function_name = \ltrim($context->getNamespaceMapFor(ast\flags\USE_FUNCTION, $function_name)->__toString(), '\\');
+            if (\strpos($function_name, '\\') !== false) {
+                return;
+            }
         }
         $function_name = \strtolower($function_name);
         if ($function_name === 'function_exists') {

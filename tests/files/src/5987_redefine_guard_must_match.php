@@ -106,6 +106,38 @@ namespace NS5987\Alias {
     }
 }
 
+// A reference to a class with a guarded declaration and two others is still ambiguous
+namespace NS5987\Reference {
+    if (!class_exists('NS5987\\Reference\\C')) {
+        class C {
+        }
+    }
+    class C {
+    }
+    class C {
+    }
+    var_dump(new C());
+    if (!class_exists('NS5987\\Reference\\D')) {
+        class D {
+        }
+    }
+    class D {
+    }
+    var_dump(new D());
+}
+
+// An imported global function_exists() is a guard
+namespace NS5987\Imported {
+    use function function_exists;
+
+    if (!function_exists('NS5987\\Imported\\imported')) {
+        function imported(): void {
+        }
+    }
+    function imported(): void {
+    }
+}
+
 // These are guarded
 namespace NS5987\Ok {
     if (!\function_exists('NS5987\\Ok\\fine') && PHP_VERSION_ID > 80000) {

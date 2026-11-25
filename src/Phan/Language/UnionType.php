@@ -3354,31 +3354,37 @@ class UnionType implements Serializable, Stringable
             return;
         }
 
-        $other_fqsen = $class_fqsen->withAlternateId($class_fqsen->getAlternateId() ? 0 : 1);
-        if (!$code_base->hasClassWithFQSEN($other_fqsen)) {
-            return;
+        // Find two declarations of the class that conflict.
+        // (`if (!class_exists('C')) { class C {} }` does not conflict with another one: only one of the two is used)
+        $canonical_fqsen = $class_fqsen->withAlternateId(0);
+        $classes = [];
+        for ($alternate_id = 0; $code_base->hasClassWithFQSEN($canonical_fqsen->withAlternateId($alternate_id)); $alternate_id++) {
+            $other_class = $code_base->getClassByFQSENWithoutHydrating($canonical_fqsen->withAlternateId($alternate_id));
+            if ($other_class->isPHPInternal() || $other_class->hasSuppressIssue(Issue::RedefinedClassReference)) {
+                return;
+            }
+            $classes[] = $other_class;
         }
-        $other_class = $code_base->getClassByFQSENWithoutHydrating($other_fqsen);
-
-        if ($other_class->isPHPInternal() || $other_class->hasSuppressIssue(Issue::RedefinedClassReference)) {
-            // already checked if $class was internal.
-            return;
+        $class_count = \count($classes);
+        for ($i = 1; $i < $class_count; $i++) {
+            for ($j = 0; $j < $i; $j++) {
+                if (DuplicateClassAnalyzer::isGuardedPair($classes[$j], $classes[$i])) {
+                    continue;
+                }
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::RedefinedClassReference,
+                    $context->getLineNumberStart(),
+                    $canonical_fqsen,
+                    $classes[$j]->getContext()->getFile(),
+                    $classes[$j]->getContext()->getLineNumberStart(),
+                    $classes[$i]->getContext()->getFile(),
+                    $classes[$i]->getContext()->getLineNumberStart()
+                );
+                return;
+            }
         }
-        if (DuplicateClassAnalyzer::isGuardedPair($class, $other_class)) {
-            // e.g. `if (!class_exists('C')) { class C {} }`: only one of the declarations is used.
-            return;
-        }
-        Issue::maybeEmit(
-            $code_base,
-            $context,
-            Issue::RedefinedClassReference,
-            $context->getLineNumberStart(),
-            $class_fqsen->withAlternateId(0),
-            $class->getContext()->getFile(),
-            $class->getContext()->getLineNumberStart(),
-            $other_class->getContext()->getFile(),
-            $other_class->getContext()->getLineNumberStart()
-        );
     }
 
     /**

@@ -57,6 +57,10 @@ class DuplicateFunctionAnalyzer
                     continue;
                 }
                 $other_function = $code_base->getFunctionByFQSEN($other_fqsen);
+                if ($alternate_id > 0 && $other_function->isPHPInternal()) {
+                    // Another signature of the internal function (e.g. session_set_cookie_params()), not another declaration.
+                    continue;
+                }
                 if (!self::isGuardedPair($method, $other_function)) {
                     $conflicting_functions[] = $other_function;
                 }

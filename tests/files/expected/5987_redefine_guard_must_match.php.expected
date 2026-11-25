@@ -18,3 +18,6 @@
 %s:91 PhanRedefineFunction Function f defined at %s:91 was previously defined at %s:88
 %s:101 PhanRedefineFunction Function g defined at %s:101 was previously defined at %s:104
 %s:104 PhanRedefineFunction Function g defined at %s:104 was previously defined at %s:101
+%s:115 PhanRedefineClass Class \NS5987\Reference\C defined at %s:115 was previously defined as Class \NS5987\Reference\C at %s:117
+%s:117 PhanRedefineClass Class \NS5987\Reference\C defined at %s:117 was previously defined as Class \NS5987\Reference\C at %s:115
+%s:119 PhanRedefinedClassReference Saw reference to \NS5987\Reference\C declared at %s:115 which is also declared at %s:117. This may lead to confusing errors. It may be possible to exclude the class that isn't used with exclude_file_list. In addition to normal ways to suppress issues, this issue type can be suppressed on either of the class definitions if it is impractical to exclude one file.
