@@ -45,8 +45,16 @@ src/331_always_return_goto.php:135 PhanTypeMissingReturnReal Method \NS331\label
 src/331_always_return_goto.php:135 PhanUnreferencedFunction Possibly zero references to function \NS331\labelAfterAssignmentNullsafe()
 src/331_always_return_goto.php:136 PhanUnusedVariable Unused definition of variable $runner
 src/331_always_return_goto.php:145 PhanPluginAlwaysReturnFunction Function \NS331\labelBeforeCallOnParameter has a return type of int, but may fail to return a value
+src/331_always_return_goto.php:145 PhanTypeMissingReturnReal Method \NS331\labelBeforeCallOnParameter is declared to return int in its real type signature but has no return value
 src/331_always_return_goto.php:145 PhanUnreferencedFunction Possibly zero references to function \NS331\labelBeforeCallOnParameter()
 src/331_always_return_goto.php:158 PhanPluginAlwaysReturnFunction Function \NS331\labelAfterAssignmentOfArgument has a return type of int, but may fail to return a value
 src/331_always_return_goto.php:158 PhanTypeMissingReturnReal Method \NS331\labelAfterAssignmentOfArgument is declared to return int in its real type signature but has no return value
 src/331_always_return_goto.php:158 PhanUnreferencedFunction Possibly zero references to function \NS331\labelAfterAssignmentOfArgument()
 src/331_always_return_goto.php:159 PhanUnusedVariable Unused definition of variable $runner
+src/331_always_return_goto.php:168 PhanPluginAlwaysReturnFunction Function \NS331\labelAfterNarrowing has a return type of int, but may fail to return a value
+src/331_always_return_goto.php:168 PhanTypeMissingReturnReal Method \NS331\labelAfterNarrowing is declared to return int in its real type signature but has no return value
+src/331_always_return_goto.php:168 PhanUnreferencedFunction Possibly zero references to function \NS331\labelAfterNarrowing()
+src/331_always_return_goto.php:173 PhanThrowTypeAbsent \NS331\labelAfterNarrowing() can throw new \RuntimeException() of type \RuntimeException here, but has no '@throws' declarations for that class
+src/331_always_return_goto.php:179 PhanPluginAlwaysReturnFunction Function \NS331\labelWithoutGoto has a return type of int, but may fail to return a value
+src/331_always_return_goto.php:179 PhanUnreferencedFunction Possibly zero references to function \NS331\labelWithoutGoto()
+src/331_always_return_goto.php:180 PhanUnusedGotoLabel Unused goto label done

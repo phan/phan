@@ -204,22 +204,18 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * Does what this calls depend on the inferred type of a variable or property that a `goto` may invalidate?
-     * (`$var->method()`, `$var?->method()`, `$var::method()`, `$var()`, `f($var)->method()`, but not `(new C())->method()`)
+     * Does what this calls depend on a variable or property, in a function that contains `goto`?
+     * (`$var->method()`, `$this->method()`, `$var?->method()`, `$var::method()`, `$var()`, `f($var)->method()`,
+     * but not `f()`, `C::method()` or `(new C())->method()`)
      *
-     * In a function that contains a label, the inferred type is not reliable enough to mark the call as never returning:
-     * a `goto` may skip the assignment that the type comes from (`$x = new A(); if ($c) { goto done; } $x = new B(); done: $x->run();`).
-     * A variable that is not modified in the function (e.g. a parameter) is not affected.
+     * The inferred type is then not reliable enough to mark the call as never returning: types are inferred as if `goto` did not jump,
+     * and the jump may skip the assignment or the check that the type comes from.
+     * (`$x = new A(); if ($c) { goto done; } $x = new B(); done: $x->run();`)
      */
-    private function isCallOnVariableInFunctionWithLabel(Node $node): bool
+    private function isCallOnVariableInFunctionWithGoto(Node $node): bool
     {
         $target = $node->children[$node->kind === ast\AST_STATIC_CALL ? 'class' : 'expr'] ?? null;
-        if (!($target instanceof Node)) {
-            return false;
-        }
-        $variable_names = [];
-        $is_trackable = self::collectVariableNames($target, $variable_names);
-        if ($is_trackable && !$variable_names) {
+        if (!($target instanceof Node) || !self::dependsOnVariable($target)) {
             return false;
         }
         $scope_node = $this->parent_node_list[0] ?? null;
@@ -234,61 +230,35 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
             return false;
         }
         // (Cached: a visitor is created for each node)
-        self::$contains_label_cache ??= new WeakMap();
-        if (!(self::$contains_label_cache[$scope_node] ??= BlockExitStatusChecker::containsLabel($scope_node))) {
-            return false;
+        self::$contains_goto_cache ??= new WeakMap();
+        return self::$contains_goto_cache[$scope_node] ??= BlockExitStatusChecker::containsGoto($scope_node);
+    }
+
+    /** @var ?WeakMap<Node,bool> whether the body of a function contains `goto` */
+    private static $contains_goto_cache;
+
+    /**
+     * @return bool whether the value of $node depends on a variable (including $this and the variables used by a closure) or on a property
+     */
+    private static function dependsOnVariable(Node $node): bool
+    {
+        switch ($node->kind) {
+            case ast\AST_VAR:
+            case ast\AST_PROP:
+            case ast\AST_NULLSAFE_PROP:
+            case ast\AST_STATIC_PROP:
+                return true;
+            case ast\AST_NEW:
+                // The arguments don't change the class of the object.
+                $class = $node->children['class'];
+                return $class instanceof Node && $class->kind !== ast\AST_CLASS && self::dependsOnVariable($class);
         }
-        if (!$is_trackable) {
-            return true;
-        }
-        foreach ($variable_names as $name => $_) {
-            if (BlockExitStatusChecker::statementMayModifyVariable($scope_node, (string)$name)) {
+        foreach ($node->children as $child) {
+            if ($child instanceof Node && self::dependsOnVariable($child)) {
                 return true;
             }
         }
         return false;
-    }
-
-    /** @var ?WeakMap<Node,bool> whether the body of a function contains a label */
-    private static $contains_label_cache;
-
-    /**
-     * Collects the names of the variables (other than $this) that the value of $node depends on.
-     *
-     * @param array<string|int,true> $variable_names
-     * @return bool false if the value also depends on a property or on a variable with a dynamic name
-     */
-    private static function collectVariableNames(Node $node, array &$variable_names): bool
-    {
-        switch ($node->kind) {
-            case ast\AST_VAR:
-                $name = $node->children['name'];
-                if (!\is_string($name)) {
-                    return false;
-                }
-                if ($name !== 'this') {
-                    $variable_names[$name] = true;
-                }
-                return true;
-            case ast\AST_PROP:
-            case ast\AST_NULLSAFE_PROP:
-            case ast\AST_STATIC_PROP:
-                return false;
-            case ast\AST_NEW:
-                // The arguments don't change the class of the object.
-                $class = $node->children['class'];
-                return !($class instanceof Node) || self::collectVariableNames($class, $variable_names);
-            case ast\AST_CLOSURE:
-            case ast\AST_ARROW_FUNC:
-            case ast\AST_CLASS:
-                return true;
-        }
-        foreach ($node->children as $child) {
-            if ($child instanceof Node && !self::collectVariableNames($child, $variable_names)) {
-                return false;
-            }
-        }
-        return true;
     }
 
     /**
@@ -308,7 +278,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
                 return;
             }
         }
-        if (Config::getValue('dead_code_detection_treat_never_type_as_unreachable') && !$this->isCallOnVariableInFunctionWithLabel($node)) {
+        if (Config::getValue('dead_code_detection_treat_never_type_as_unreachable') && !$this->isCallOnVariableInFunctionWithGoto($node)) {
             // We now know that this is AST_CALL, AST_STATIC_CALL, or AST_METHOD_CALL
             // Mark this to affect BlockExitStatusChecker
             $node->flags = (($node->flags & ~BlockExitStatusChecker::STATUS_PROCEED) | BlockExitStatusChecker::STATUS_THROW);

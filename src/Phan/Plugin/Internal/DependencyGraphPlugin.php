@@ -304,6 +304,7 @@ final class DependencyGraphPlugin extends PluginV3 implements
     /**
      * Process either the cached or generated graph
      * @param ?array<string,mixed> $cached_graph
+     * @suppress PhanPluginNeverReturnMethod this always exits, but declaring that would make finalizeProcess() (which implements an interface method returning void) never return as well
      */
     public function processGraph(?array $cached_graph = null): void
     {

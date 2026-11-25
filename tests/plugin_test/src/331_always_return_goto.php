@@ -126,7 +126,7 @@ function neverFallsOffAfterLabel(bool $x): never {
     exit(1);
     done:
 }
-// The class of the object does not depend on a variable: the call never returns
+// The class of the object does not depend on a variable: no PhanTypeMissingReturnReal
 function labelBeforeNew(): int {
     goto done;
     done:
@@ -141,7 +141,7 @@ function labelAfterAssignmentNullsafe(bool $skip): int {
     done:
     $runner?->run();
 }
-// The parameter is not modified: the call never returns
+// What is called depends on a variable in a function with goto: not known to never return
 function labelBeforeCallOnParameter(Stops $runner): int {
     goto done;
     done:
@@ -163,4 +163,20 @@ function labelAfterAssignmentOfArgument(bool $skip): int {
     $runner = new Stops();
     done:
     identity($runner)->run();
+}
+// The goto skips the check that narrows the type
+function labelAfterNarrowing(Normal|Stops $runner, bool $skip): int {
+    if ($skip) {
+        goto done;
+    }
+    if (!($runner instanceof Stops)) {
+        throw new \RuntimeException();
+    }
+    done:
+    $runner->run();
+}
+// A label without goto changes nothing
+function labelWithoutGoto(Stops $runner): int {
+    done:
+    $runner->run();
 }

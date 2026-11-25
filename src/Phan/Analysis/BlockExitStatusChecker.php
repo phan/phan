@@ -924,7 +924,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      * Conservatively checks whether executing $node may reassign the variable $var_name.
      * (does not attempt to account for functions modifying variables by reference)
      */
-    public static function statementMayModifyVariable(Node $node, string $var_name): bool
+    private static function statementMayModifyVariable(Node $node, string $var_name): bool
     {
         switch ($node->kind) {
             case ast\AST_ASSIGN_REF:
@@ -1402,10 +1402,23 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     /**
      * @return bool whether $node contains a label, outside of the functions and classes declared in it
      */
-    public static function containsLabel(Node $node): bool
+    private static function containsLabel(Node $node): bool
+    {
+        return self::containsKind($node, ast\AST_LABEL);
+    }
+
+    /**
+     * @return bool whether $node contains a `goto`, outside of the functions and classes declared in it
+     */
+    public static function containsGoto(Node $node): bool
+    {
+        return self::containsKind($node, ast\AST_GOTO);
+    }
+
+    private static function containsKind(Node $node, int $kind): bool
     {
         switch ($node->kind) {
-            case ast\AST_LABEL:
+            case $kind:
                 return true;
             case ast\AST_FUNC_DECL:
             case ast\AST_CLOSURE:
@@ -1415,7 +1428,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
                 return false;
         }
         foreach ($node->children as $child) {
-            if ($child instanceof Node && self::containsLabel($child)) {
+            if ($child instanceof Node && self::containsKind($child, $kind)) {
                 return true;
             }
         }
