@@ -12,3 +12,17 @@
 %s:41 PhanUnreferencedPublicProperty Possibly zero references to public property \TemplateVarianceHooks\Readable->value
 %s:44 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in property \TemplateVarianceHooks\Readable->both of \TemplateVarianceHooks\Readable
 %s:44 PhanUnreferencedPublicProperty Possibly zero references to public property \TemplateVarianceHooks\Readable->both
+%s:58 PhanUnreferencedPublicProperty Possibly zero references to public property \TemplateVarianceHooks\HookBase->both
+%s:61 PhanUnreferencedPublicProperty Possibly zero references to public property \TemplateVarianceHooks\HookBase->plain
+%s:64 PhanUnreferencedPublicProperty Possibly zero references to public property \TemplateVarianceHooks\HookBase->getOnly
+%s:71 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in property \TemplateVarianceHooks\HookChild->stored of \TemplateVarianceHooks\HookChild
+%s:71 PhanUnreferencedClass Possibly zero references to class \TemplateVarianceHooks\HookChild
+%s:74 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in property \TemplateVarianceHooks\HookChild->both of \TemplateVarianceHooks\HookChild
+%s:77 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in property \TemplateVarianceHooks\HookChild->plain of \TemplateVarianceHooks\HookChild
+%s:85 PhanUnreferencedPublicProperty Possibly zero references to public property \TemplateVarianceHooks\RequiresGet->value
+%s:90 PhanUnreferencedPublicProperty Possibly zero references to public property \TemplateVarianceHooks\PlainValue->value
+%s:97 PhanUnreferencedPublicProperty Possibly zero references to public property \TemplateVarianceHooks\GetValue->value
+%s:108 PhanUnreferencedClass Possibly zero references to class \TemplateVarianceHooks\ImplementsRequiredGet
+%s:123 PhanTemplateTypeVarianceViolation Template type T declared covariant cannot be used in property \TemplateVarianceHooks\TraitOverPlainValue->value of \TemplateVarianceHooks\TraitOverPlainValue
+%s:123 PhanUnreferencedClass Possibly zero references to class \TemplateVarianceHooks\TraitOverPlainValue
+%s:132 PhanUnreferencedClass Possibly zero references to class \TemplateVarianceHooks\TraitWithoutParent
