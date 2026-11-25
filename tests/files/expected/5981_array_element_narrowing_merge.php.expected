@@ -1,0 +1,10 @@
+%s:10 PhanDebugAnnotation @phan-debug-var requested for variable $all - it has union type array{raw:int,total:array{debug:int}}|non-empty-array<string,array{debug?:int}>(real=array{total:array{debug:int}}|non-empty-array<mixed,mixed>)
+%s:24 PhanTypeMismatchReturnNullable Returning $all['total']['debug'] of type ?int but nestedIssetOfGenericArray() is declared to return int (expected returned value to be non-nullable)
+%s:24 PhanTypePossiblyInvalidDimOffset Possibly invalid offset 'debug' of $all['total'] of array type array{debug?:?int}
+%s:32 PhanDebugAnnotation @phan-debug-var requested for variable $all - it has union type non-empty-array<string,array<string,?int>>(real=non-empty-array<mixed,mixed>)
+%s:47 PhanDebugAnnotation @phan-debug-var requested for variable $q - it has union type array{before?:mixed,year:array}|non-empty-array<mixed,mixed>(real=array{before?:mixed,year:array}|non-empty-array<mixed,mixed>)
+%s:47 PhanDebugAnnotation @phan-debug-var requested for variable $q - it has union type array{before?:mixed,year?:mixed}|non-empty-array<mixed,mixed>(real=array{before?:mixed,year?:mixed}|non-empty-array<mixed,mixed>)
+%s:59 PhanDebugAnnotation @phan-debug-var requested for variable $q - it has union type array<string,int>|array{year?:'x'|int}|non-empty-array<string,int>(real=array|array{year?:mixed}|non-empty-array<mixed,mixed>)
+%s:71 PhanDebugAnnotation @phan-debug-var requested for variable $q - it has union type array{a:1,year?:'x'}(real=array{a:1,year?:'x'})
+%s:72 PhanUnusedVariable Unused definition of variable $q
+%s:82 PhanTypeArraySuspicious Suspicious array access to $o of type \stdClass

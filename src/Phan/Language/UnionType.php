@@ -5414,6 +5414,7 @@ class UnionType implements Serializable, Stringable
         }
         // Replace the prior array shape types with the new array shape types.
         $array_shape_type = self::combineArrayShapeTypes($array_shape_types, $add_mixed);
+        $array_shape_type = self::withElementTypesOfOtherArrays($array_shape_type, $union_types, $from_real_type_set);
         $new_type_set = [$array_shape_type];
         foreach ($type_set as $type) {
             if (!$type instanceof ArrayShapeType) {
@@ -5421,6 +5422,82 @@ class UnionType implements Serializable, Stringable
             }
         }
         return $new_type_set;
+    }
+
+    /**
+     * A field that the array shapes of one of the merged union types don't have may still be set in the arrays of that union type:
+     * $x['year'] of array{before:array}|array<string,mixed> is mixed.
+     * After merging array{year:'x'}|array<string,int> with array<string,int>, the field is `year?:'x'|int`, not `year:'x'`.
+     * If the elements of the other arrays can be anything, the field is `year?:mixed`.
+     *
+     * @param ArrayShapeType $array_shape_type the combination of the array shapes of $union_types
+     * @param non-empty-list<UnionType> $union_types
+     */
+    private static function withElementTypesOfOtherArrays(ArrayShapeType $array_shape_type, array $union_types, bool $from_real_type_set): ArrayShapeType
+    {
+        $field_types = $array_shape_type->getFieldTypes();
+        if (!$field_types) {
+            return $array_shape_type;
+        }
+        $new_field_types = $field_types;
+        static $mixed_phpdoc = null;
+        static $mixed_real = null;
+        if ($mixed_phpdoc === null) {
+            $mixed_phpdoc = MixedType::instance(false)->asPHPDocUnionType()->withIsPossiblyUndefined(true);
+            $mixed_real = MixedType::instance(false)->asRealUnionType()->withIsPossiblyUndefined(true);
+        }
+        foreach ($union_types as $union_type) {
+            $type_set = $from_real_type_set ? $union_type->real_type_set : $union_type->type_set;
+            $has_other_array = false;
+            foreach ($type_set as $type) {
+                if ($type instanceof ArrayType && !($type instanceof ArrayShapeType)) {
+                    $has_other_array = true;
+                    break;
+                }
+            }
+            if (!$has_other_array) {
+                continue;
+            }
+            $element_types = self::$empty_instance;
+            $shape_field_types = [];
+            foreach ($type_set as $type) {
+                if ($type instanceof ArrayShapeType) {
+                    $shape_field_types += $type->getFieldTypes();
+                } elseif ($type instanceof GenericArrayInterface) {
+                    $element_types = $element_types->withUnionType($type->genericArrayElementUnionType());
+                } elseif ($type instanceof ArrayType) {
+                    $element_types = $element_types->withType(MixedType::instance(false));
+                }
+            }
+            if ($element_types->isEmpty() || \count($shape_field_types) === \count($new_field_types)) {
+                // (The fields of the array shapes of a union type are a subset of the fields of the combination)
+                continue;
+            }
+            if ($from_real_type_set) {
+                $element_types = $element_types->asRealUnionType();
+            } else {
+                $element_types = $element_types->eraseRealTypeSetRecursively();
+            }
+            if ($element_types->hasMixedOrNonEmptyMixedType()) {
+                // The field can be anything. (Not `'x'|mixed`: that says the same with a larger type)
+                $element_types = $from_real_type_set ? $mixed_real : $mixed_phpdoc;
+                foreach ($new_field_types as $key => $_) {
+                    if (!isset($shape_field_types[$key])) {
+                        $new_field_types[$key] = $element_types;
+                    }
+                }
+                continue;
+            }
+            foreach ($new_field_types as $key => $field_type) {
+                if (!isset($shape_field_types[$key])) {
+                    $new_field_types[$key] = $field_type->withUnionType($element_types)->withIsPossiblyUndefined(true);
+                }
+            }
+        }
+        if ($new_field_types === $field_types) {
+            return $array_shape_type;
+        }
+        return ArrayShapeType::fromFieldTypes($new_field_types, $array_shape_type->isNullable());
     }
 
     /**
