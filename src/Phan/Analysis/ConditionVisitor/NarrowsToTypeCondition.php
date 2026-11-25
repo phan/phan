@@ -96,7 +96,7 @@ class NarrowsToTypeCondition extends HasTypeCondition
             foreach ($asserted_type_set as $asserted) {
                 if ($asserted->withIsNullable(false)->isSubtypeOf($type->withIsNullable(false), $code_base)) {
                     // A value of this type may be of the asserted type, and nothing more is known about it.
-                    return $asserted_type;
+                    $new_type_set[] = $asserted;
                 }
             }
         }

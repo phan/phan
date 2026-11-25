@@ -207,3 +207,31 @@ function narrowing(Box $b, $shape, SubErr $sub, $o, $sf, $se, ?int $n, object $o
         '@phan-debug-var $n';
     }
 }
+
+/** @phpstan-assert-if-true int $x */
+function isInt($x): bool {
+    return is_int($x);
+}
+
+/** @phpstan-assert-if-true array|non-empty-string $x */
+function isArrayOrNonEmptyString($x): bool {
+    return is_array($x) || (is_string($x) && $x !== '');
+}
+
+/**
+ * @param array{id:int}|string $u
+ */
+function nullableAndUnions(?int $v, $u, ?array $na): void {
+    if (isArrayOrNonEmptyString($u)) {
+        '@phan-debug-var $u';
+    }
+    if (isInt($na)) {
+        return;
+    }
+    '@phan-debug-var $na';
+    // `?int` without `int` is null
+    if (isInt($v)) {
+        return;
+    }
+    '@phan-debug-var $v';
+}

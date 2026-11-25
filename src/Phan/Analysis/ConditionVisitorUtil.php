@@ -1801,17 +1801,45 @@ trait ConditionVisitorUtil
         // Only the types that are subtypes of an excluded type are removed:
         // a `string` that is not a `non-empty-string` is still a `string`.
         $excluded_type_set = $excluded_type->getTypeSet();
-        return $affected_type->makeFromFilter(static function (Type $type) use ($code_base, $excluded_type_set): bool {
+        return UnionType::of(
+            self::typesWithoutSubtypesOf($code_base, $affected_type->getTypeSet(), $excluded_type_set),
+            self::typesWithoutSubtypesOf($code_base, $affected_type->getRealTypeSet(), $excluded_type_set)
+        );
+    }
+
+    /**
+     * @param list<Type> $type_set
+     * @param list<Type> $excluded_type_set
+     * @return list<Type> $type_set without the types that are subtypes of a type in $excluded_type_set.
+     * (`?int` without `int` is `null`)
+     */
+    private static function typesWithoutSubtypesOf(CodeBase $code_base, array $type_set, array $excluded_type_set): array
+    {
+        $result = [];
+        foreach ($type_set as $type) {
             if ($type instanceof MixedType) {
-                return true;
+                $result[] = $type;
+                continue;
             }
+            $non_nullable_type = $type->withIsNullable(false);
+            $is_excluded = false;
+            $is_null_excluded = false;
             foreach ($excluded_type_set as $excluded) {
-                if ($type->isSubtypeOf($excluded, $code_base)) {
-                    return false;
+                if ($non_nullable_type->isSubtypeOf($excluded, $code_base)) {
+                    $is_excluded = true;
+                    if ($excluded->isNullable()) {
+                        $is_null_excluded = true;
+                        break;
+                    }
                 }
             }
-            return true;
-        });
+            if (!$is_excluded) {
+                $result[] = $type;
+            } elseif ($type->isNullable() && !$is_null_excluded && !($type instanceof NullType)) {
+                $result[] = NullType::instance(false);
+            }
+        }
+        return $result;
     }
 
     /**
