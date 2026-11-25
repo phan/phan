@@ -55,3 +55,27 @@ function gotoInClosure(int $x): int {
 function noGoto(int $x): int {
     if ($x) { return 1; }
 }
+function breakAfterNestedLabel(): int {
+    while (1) {
+        goto done;
+        if (0) {
+            done:
+            break;
+        }
+        return 1;
+    }
+}
+function throwAfterLabelInTry(): int {
+    goto done;
+    try {
+        done:
+        throw new \Exception();
+    } catch (\Exception $e) {
+    }
+}
+function unreachableAfterLabel(): int {
+    return 1;
+    done:
+    return 2;
+    echo 'unreachable';
+}

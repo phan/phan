@@ -1293,36 +1293,53 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             return false;
         }
         // Without the jumps, every path throws or returns. Check the code that the jumps continue at.
-        return !$checker->mayProceedPastEndFromLabel($stmts->children);
+        return $checker->statusFromLabels($stmts->children) === 0;
     }
 
     /**
+     * Where the code after a label may end up, for a label in $block or in a block nested in it:
+     *
+     * - 0: it always throws, returns or jumps again (or there is no label)
+     * - STATUS_PROCEED: it may reach the end of $block
+     * - STATUS_BREAK: it may leave an enclosing loop or switch with `break` or `continue`, or be in a `try` that catches what it throws.
+     *   Nothing is known about where that continues.
+     *
      * @param list<mixed> $block the statements of a block
-     * @return bool whether the code after a label in $block, or in a block nested in it, may reach the end of $block (or break or continue out of it)
      */
-    private function mayProceedPastEndFromLabel(array $block): bool
+    private function statusFromLabels(array $block): int
     {
         foreach ($block as $i => $child) {
             if (!($child instanceof Node)) {
                 continue;
             }
-            // The code after a label in a nested block may reach the end of that block. Assume that the statement containing it is then left normally.
-            if ($child->kind !== ast\AST_LABEL && !$this->hasNestedBlockProceedingFromLabel($child)) {
-                continue;
+            if ($child->kind !== ast\AST_LABEL) {
+                $nested_status = $this->statusFromLabelsInNode($child);
+                if ($nested_status === 0) {
+                    continue;
+                }
+                if ($nested_status !== self::STATUS_PROCEED) {
+                    return $nested_status;
+                }
+                // The code after a label in a nested block may reach the end of that block.
+                // Assume that the statement containing the block is then left normally.
             }
             $rest = new Node(ast\AST_STMT_LIST, 0, \array_slice($block, $i + 1), $child->lineno);
-            if (($this->__invoke($rest) & ~(self::STATUS_THROW_OR_RETURN_BITMASK | self::STATUS_GOTO)) !== 0) {
-                return true;
+            $status = $this->__invoke($rest);
+            if (($status & (self::STATUS_BREAK | self::STATUS_CONTINUE)) !== 0) {
+                return self::STATUS_BREAK;
+            }
+            if (($status & self::STATUS_PROCEED) !== 0) {
+                return self::STATUS_PROCEED;
             }
         }
-        return false;
+        return 0;
     }
 
     /**
-     * @return bool whether $node contains a statement list for which mayProceedPastEndFromLabel() is true.
+     * @return int statusFromLabels() for the statement lists in $node.
      * (Not looking into functions and classes declared in $node: a `goto` cannot jump into or out of them)
      */
-    private function hasNestedBlockProceedingFromLabel(Node $node): bool
+    private function statusFromLabelsInNode(Node $node): int
     {
         switch ($node->kind) {
             case ast\AST_FUNC_DECL:
@@ -1330,12 +1347,43 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             case ast\AST_ARROW_FUNC:
             case ast\AST_CLASS:
             case ast\AST_METHOD:
-                return false;
+                return 0;
             case ast\AST_STMT_LIST:
-                return $this->mayProceedPastEndFromLabel($node->children);
+                return $this->statusFromLabels($node->children);
+            case ast\AST_TRY:
+                // What the code after a label in `try` throws may be caught, and `finally` may return: not followed.
+                return self::containsLabel($node) ? self::STATUS_BREAK : 0;
+        }
+        $result = 0;
+        foreach ($node->children as $child) {
+            if ($child instanceof Node) {
+                $status = $this->statusFromLabelsInNode($child);
+                if ($status === self::STATUS_BREAK) {
+                    return $status;
+                }
+                $result |= $status;
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * @return bool whether $node contains a label, outside of the functions and classes declared in it
+     */
+    private static function containsLabel(Node $node): bool
+    {
+        switch ($node->kind) {
+            case ast\AST_LABEL:
+                return true;
+            case ast\AST_FUNC_DECL:
+            case ast\AST_CLOSURE:
+            case ast\AST_ARROW_FUNC:
+            case ast\AST_CLASS:
+            case ast\AST_METHOD:
+                return false;
         }
         foreach ($node->children as $child) {
-            if ($child instanceof Node && $this->hasNestedBlockProceedingFromLabel($child)) {
+            if ($child instanceof Node && self::containsLabel($child)) {
                 return true;
             }
         }

@@ -158,7 +158,8 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
     private function extendedLooseEqualityCheck(array $values_to_check, array $children): void
     {
         $is_php7 = Config::get_closest_minimum_target_php_version_id() < 80000;
-        // The indexes of the cases that are int|float, numeric strings and other strings, by the value as a float
+        // The indexes of the cases that are int|float, numeric strings and (before php 8.0) other strings, by the value as a float.
+        // (A list: two different large integers can have the same value as a float)
         $number_set = [];
         $numeric_string_set = [];
         $other_string_set = [];
@@ -186,21 +187,29 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
                 $key = (string)(float)$value;
                 if (is_string($value)) {
                     if (is_numeric($value)) {
-                        $candidates = [$number_set[$key] ?? null, $numeric_string_set[$key] ?? null];
-                        $numeric_string_set[$key] ??= $i;
+                        $candidate_lists = [$number_set[$key] ?? [], $numeric_string_set[$key] ?? []];
+                        $numeric_string_set[$key][] = $i;
                     } else {
                         // Only a number can be == to this, and only before php 8.0
-                        $candidates = $is_php7 ? [$number_set[$key] ?? null] : [];
-                        $other_string_set[$key] ??= $i;
+                        $candidate_lists = $is_php7 ? [$number_set[$key] ?? []] : [];
+                        if ($is_php7) {
+                            $other_string_set[$key][] = $i;
+                        }
                     }
                 } else {
-                    $candidates = [$number_set[$key] ?? null, $numeric_string_set[$key] ?? null, $is_php7 ? ($other_string_set[$key] ?? null) : null];
-                    $number_set[$key] ??= $i;
+                    $candidate_lists = [$number_set[$key] ?? [], $numeric_string_set[$key] ?? [], $other_string_set[$key] ?? []];
+                    $number_set[$key][] = $i;
                 }
-                foreach ($candidates as $j) {
-                    // (Checked again: two different large integers can have the same value as a float)
-                    if ($j !== null && ($old_index === null || $j < $old_index) && self::looseEquals($value, $values_to_check[$j], $is_php7)) {
-                        $old_index = $j;
+                foreach ($candidate_lists as $candidates) {
+                    foreach ($candidates as $j) {
+                        if ($old_index !== null && $j > $old_index) {
+                            break;
+                        }
+                        // (Checked again: two different large integers can have the same value as a float)
+                        if (self::looseEquals($value, $values_to_check[$j], $is_php7)) {
+                            $old_index = $j;
+                            break;
+                        }
                     }
                 }
             }

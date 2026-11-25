@@ -25,3 +25,16 @@ function status($s): string {
     }
     return 'h';
 }
+
+// Two different large integers can have the same value as a float
+function bigInts($x): int {
+    switch ($x) {
+        case 9007199254740992:
+            return 1;
+        case 9007199254740993:
+            return 2;
+        case '9007199254740993':
+            return 3;
+    }
+    return 0;
+}

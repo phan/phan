@@ -69,12 +69,17 @@ final class UnreachableCodeVisitor extends PluginAwarePostAnalysisVisitor
         $child_nodes = $node->children;
 
         $last_node_index = count($child_nodes) - 1;
+        // The statements up to this index were checked already: the scan continues at a label
+        $skip_until = -1;
         foreach ($child_nodes as $i => $node) {
             if (!\is_int($i)) {
                 throw new AssertionError("Expected integer index");
             }
             if ($i >= $last_node_index) {
                 break;
+            }
+            if ($i < $skip_until) {
+                continue;
             }
             if (!($node instanceof Node)) {
                 continue;
@@ -90,7 +95,9 @@ final class UnreachableCodeVisitor extends PluginAwarePostAnalysisVisitor
                 }
                 if ($next_node->kind === ast\AST_LABEL) {
                     // A `goto` can jump to the label: this statement and the following ones can be reached.
-                    break;
+                    // Continue with the statements after the label: `return; done: return; echo 'unreachable';`
+                    $skip_until = $j;
+                    continue 2;
                 }
                 if (array_key_exists($next_node->kind, self::DECL_KIND_SET)) {
                     if ($this->context->isInGlobalScope()) {
