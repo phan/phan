@@ -59,6 +59,13 @@ use Phan\Library\StringUtil;
 class AssignmentVisitor extends AnalysisVisitor
 {
     /**
+     * A flag of the assignment node that PostOrderAnalysisVisitor creates for the offset that a reference is taken to
+     * (`$x = &$var['k']` is analyzed as `$var['k'] = $var['k']` first, to add the offset to the type of `$var`).
+     * No value is assigned unless `$var` can be null, so there is nothing else to check against what `$var` is a reference to.
+     */
+    public const FLAG_CREATES_REFERENCE_TARGET = 1 << 26;
+
+    /**
      * @var UnionType
      * The type of the element on the right side of the assignment
      */
@@ -711,11 +718,43 @@ class AssignmentVisitor extends AnalysisVisitor
             $element_type = $element_type->asNonLiteralType();
         }
 
+        if ($this->assignment_node->flags & self::FLAG_CREATES_REFERENCE_TARGET) {
+            // The reference only assigns something if it turns null (or an undefined variable or offset) into an array:
+            // $var of `&$var['k']`, and also $var['k'] of `&$var['k']['j']`.
+            $node = $this->assignment_node->children['var'];
+            $is_assignment = $element->getUnionType()->containsNullableOrUndefined() || !($node instanceof Node) || $this->hasNullableContainerOffset($node);
+        } else {
+            $is_assignment = true;
+        }
         $element->setUnionType($element_type);
-        if ($element instanceof PassByReferenceVariable) {
+        if ($is_assignment && $element instanceof PassByReferenceVariable) {
             $assign_node = new Node(ast\AST_ASSIGN, 0, ['expr' => $node], $node->lineno ?? $this->assignment_node->lineno);
             self::analyzeSetUnionTypePassByRef($this->code_base, $this->context, $element, $element_type, $assign_node);
         }
+    }
+
+    /**
+     * @param Node $node a node of kind ast\AST_DIM
+     * @return bool whether one of the offsets that $node is an offset of can be null, undefined or of an unknown type:
+     * $var['k'] for $var['k']['j']. (False for $var['k']: the variable is not checked here)
+     */
+    private function hasNullableContainerOffset(Node $node): bool
+    {
+        $was_discarding_issues = Issue::$is_discarding_issues;
+        Issue::$is_discarding_issues = true;
+        try {
+            for ($container = $node->children['expr']; $container instanceof Node && $container->kind === ast\AST_DIM; $container = $container->children['expr']) {
+                $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $container);
+                if ($type->isEmpty() || $type->containsNullableOrUndefined()) {
+                    return true;
+                }
+            }
+        } catch (\Exception) {
+            return true;
+        } finally {
+            Issue::$is_discarding_issues = $was_discarding_issues;
+        }
+        return false;
     }
 
     /**
