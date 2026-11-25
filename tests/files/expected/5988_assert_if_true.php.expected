@@ -8,9 +8,9 @@
 %s:90 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type non-empty-string(real=string)
 %s:92 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type string(real=string)
 %s:95 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type ?int(real=?int)
-%s:97 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type null
+%s:97 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type null(real=?int)
 %s:100 PhanDebugAnnotation @phan-debug-var requested for variable $w - it has union type int(real=int)
-%s:102 PhanDebugAnnotation @phan-debug-var requested for variable $w - it has union type null
+%s:102 PhanDebugAnnotation @phan-debug-var requested for variable $w - it has union type null(real=?int)
 %s:105 PhanDebugAnnotation @phan-debug-var requested for variable $u - it has union type string
 %s:107 PhanDebugAnnotation @phan-debug-var requested for variable $u - it has union type int
 %s:110 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type 'a'|'b'(real=string)
@@ -30,3 +30,9 @@
 %s:225 PhanDebugAnnotation @phan-debug-var requested for variable $u - it has union type array{id:int}|non-empty-string
 %s:228 PhanDebugAnnotation @phan-debug-var requested for variable $na - it has union type ?array(real=?array)
 %s:233 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type null(real=null)
+%s:274 PhanDebugAnnotation @phan-debug-var requested for variable $g - it has union type \NS5988\Generic<int>(real=\NS5988\Generic)
+%s:278 PhanDebugAnnotation @phan-debug-var requested for variable $nif - it has union type false|null
+%s:282 PhanDebugAnnotation @phan-debug-var requested for variable $ms - it has union type \NS5988\Err|string
+%s:286 PhanDebugAnnotation @phan-debug-var requested for variable $ai - it has union type \Closure|array
+%s:288 PhanDebugAnnotation @phan-debug-var requested for variable $ai - it has union type array|int
+%s:291 PhanDebugAnnotation @phan-debug-var requested for variable $list - it has union type array(real=array)

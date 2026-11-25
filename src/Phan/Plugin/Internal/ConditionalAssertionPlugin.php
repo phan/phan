@@ -86,7 +86,8 @@ final class ConditionalAssertionPlugin extends PluginV3 implements ConditionalCa
                 );
                 continue;
             }
-            if ($assertion->union_type->hasTemplateTypeRecursive() || $assertion->union_type->hasStaticType()) {
+            // (`static` can be nested, as in `static[]` or `Box<static>`)
+            if ($assertion->union_type->hasTemplateTypeRecursive() || \preg_match('/\bstatic\b/', $assertion->union_type->__toString())) {
                 // The type depends on the call: nothing is assumed.
                 continue;
             }

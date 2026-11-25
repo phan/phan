@@ -65,7 +65,8 @@ class NarrowsToTypeCondition extends HasTypeCondition
         $asserted_type_set = $asserted_type->getTypeSet();
         $is_class_assertion = true;
         foreach ($asserted_type_set as $type) {
-            if ($type->isNullable() || !$type->hasObjectWithKnownFQSEN()) {
+            // (`Box<int>` says more than `instanceof Box`: not narrowed as a class)
+            if ($type->isNullable() || !$type->hasObjectWithKnownFQSEN() || $type->hasTemplateParameterTypes()) {
                 $is_class_assertion = false;
                 break;
             }
@@ -83,7 +84,11 @@ class NarrowsToTypeCondition extends HasTypeCondition
                 }
                 continue;
             }
-            if (!$allows_null) {
+            if ($type->isNullable()) {
+                if ($allows_null) {
+                    // null is possible for both types, whatever happens to the rest of this type
+                    $new_type_set[] = NullType::instance(false);
+                }
                 $type = $type->withIsNullable(false);
             }
             if (self::isSubtypeOfAny($type, $asserted_type_set, $code_base)) {
@@ -93,9 +98,12 @@ class NarrowsToTypeCondition extends HasTypeCondition
             if ($type instanceof MixedType) {
                 return $asserted_type;
             }
+            $is_class = $type->hasObjectWithKnownFQSEN();
             foreach ($asserted_type_set as $asserted) {
-                if ($asserted->withIsNullable(false)->isSubtypeOf($type->withIsNullable(false), $code_base)) {
-                    // A value of this type may be of the asserted type, and nothing more is known about it.
+                $asserted = $asserted->withIsNullable(false);
+                // A value of this type may be of the asserted type, and nothing more is known about it:
+                // the asserted type is a subtype, or both are classes or interfaces (an object can be an instance of both).
+                if ($asserted->isSubtypeOf($type, $code_base) || ($is_class && $asserted->hasObjectWithKnownFQSEN())) {
                     $new_type_set[] = $asserted;
                 }
             }

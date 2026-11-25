@@ -235,3 +235,60 @@ function nullableAndUnions(?int $v, $u, ?array $na): void {
     }
     '@phan-debug-var $v';
 }
+
+/** @template T */
+class Generic {
+}
+
+/** @phpstan-assert-if-true Generic<int> $x */
+function isIntGeneric($x): bool {
+    return (bool)$x;
+}
+
+/** @phpstan-assert-if-true ?string|false $x */
+function isNullableStringOrFalse($x): bool {
+    return (bool)$x;
+}
+
+/** @phpstan-assert-if-true Err|string $x */
+function isErrOrString($x): bool {
+    return (bool)$x;
+}
+
+/** @phpstan-assert-if-true callable $x */
+function isCallable($x): bool {
+    return is_callable($x);
+}
+
+/** @phpstan-assert-if-true static[] $x */
+function isListOfStatic($x): bool {
+    return (bool)$x;
+}
+
+/**
+ * @param ?int|false $nif
+ * @param Marker|string $ms
+ * @param array|int|\Closure $ai
+ */
+function moreNarrowing(Generic $g, $nif, $ms, $ai, array $list): void {
+    if (isIntGeneric($g)) {
+        '@phan-debug-var $g';
+    }
+    // null is possible for both types
+    if (isNullableStringOrFalse($nif)) {
+        '@phan-debug-var $nif';
+    }
+    // An object can be a Marker and an Err
+    if (isErrOrString($ms)) {
+        '@phan-debug-var $ms';
+    }
+    // An array that is not callable is still an array
+    if (isCallable($ai)) {
+        '@phan-debug-var $ai';
+    } else {
+        '@phan-debug-var $ai';
+    }
+    if (isListOfStatic($list)) {
+        '@phan-debug-var $list';
+    }
+}

@@ -40,6 +40,8 @@ use Phan\Language\Type\LiteralTypeInterface;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NonEmptyStringType;
 use Phan\Language\Type\NonZeroIntType;
+use Phan\Language\Type\CallableInterface;
+use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\ScalarType;
@@ -1825,6 +1827,10 @@ trait ConditionVisitorUtil
             $is_excluded = false;
             $is_null_excluded = false;
             foreach ($excluded_type_set as $excluded) {
+                if ($excluded instanceof CallableInterface && !($non_nullable_type instanceof CallableInterface || $non_nullable_type instanceof ClosureType)) {
+                    // An array or a string is treated as a subtype of callable, but only some of their values are callable.
+                    continue;
+                }
                 if ($non_nullable_type->isSubtypeOf($excluded, $code_base)) {
                     $is_excluded = true;
                     if ($excluded->isNullable()) {
