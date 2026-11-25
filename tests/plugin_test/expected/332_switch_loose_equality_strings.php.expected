@@ -27,3 +27,6 @@ src/332_switch_loose_equality_strings.php:130 PhanPluginDuplicateMatchArmExpress
 src/332_switch_loose_equality_strings.php:135 PhanUnreferencedFunction Possibly zero references to function \NS332\sameFloats()
 src/332_switch_loose_equality_strings.php:139 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case(-INF) detected in switch statement - the later entry will be ignored in favor of case -INF at line 137.
 src/332_switch_loose_equality_strings.php:143 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case(1.0) detected in switch statement - the later entry will be ignored in favor of case 1.0 at line 141.
+src/332_switch_loose_equality_strings.php:154 PhanUnreferencedClass Possibly zero references to class \NS332\WithConstants
+src/332_switch_loose_equality_strings.php:158 PhanUnreferencedPublicMethod Possibly zero references to public method \NS332\WithConstants::f()
+src/332_switch_loose_equality_strings.php:168 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case(1) detected in switch statement - the later entry will be ignored in favor of case 1 at line 166.

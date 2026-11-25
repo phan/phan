@@ -149,3 +149,25 @@ function sameFloats($x): int {
     }
     return 0;
 }
+
+// A subclass can override the constant: static::HALF is not known to be 0.5
+class WithConstants {
+    const HALF = 0.5;
+    const ONE = 1;
+
+    public function f($x): int {
+        switch ($x) {
+            case static::HALF:
+                return 1;
+            case 0.5:
+                return 2;
+            case static::ONE:
+                return 3;
+            case 1:
+                return 4;
+            case self::ONE:
+                return 5;
+        }
+        return 0;
+    }
+}

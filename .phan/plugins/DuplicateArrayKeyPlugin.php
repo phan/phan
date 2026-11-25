@@ -111,6 +111,23 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
+     * @return bool whether $node contains `static::NAME`
+     */
+    private static function usesStaticClassConstant(Node $node): bool
+    {
+        if ($node->kind === ast\AST_CLASS_CONST) {
+            $class = $node->children['class'];
+            return $class instanceof Node && $class->kind === ast\AST_NAME && strcasecmp((string)$class->children['name'], 'static') === 0;
+        }
+        foreach ($node->children as $child) {
+            if ($child instanceof Node && self::usesStaticClassConstant($child)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * @return Node|bool|float|int|string|null the value of the expression if it is a single scalar or null (e.g. `-1.5`, `PHP_INT_MAX`), or $node.
      */
     private function scalarValueOrNode(Node $node): Node|bool|float|int|string|null
@@ -123,6 +140,10 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
             } elseif ($node->flags === ast\flags\UNARY_PLUS) {
                 return $node->children['expr'];
             }
+        }
+        if (self::usesStaticClassConstant($node)) {
+            // A subclass can give the constant another value.
+            return $node;
         }
         $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node);
         $value = $type->asSingleScalarValueOrNullOrSelf();
