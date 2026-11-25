@@ -18,6 +18,7 @@ use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Plugin\Internal\UseReturnValuePlugin;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use WeakMap;
 
 use function is_array;
 use function iterator_to_array;
@@ -203,18 +204,16 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * Is this `$var->method()` in a function that contains a label?
+     * Does what this calls depend on the inferred type of a variable or property, in a function that contains a label?
+     * (`$var->method()`, `$var?->method()`, `$var::method()`, `$var()`, but not `(new C())->method()`)
      *
-     * The inferred type of $var is then not reliable enough to mark the call as never returning:
+     * The inferred type is then not reliable enough to mark the call as never returning:
      * a `goto` may skip the assignment that the type comes from (`$x = new A(); if ($c) { goto done; } $x = new B(); done: $x->run();`).
      */
-    private function isMethodCallOnVariableInFunctionWithLabel(Node $node): bool
+    private function isCallOnVariableInFunctionWithLabel(Node $node): bool
     {
-        if ($node->kind !== ast\AST_METHOD_CALL) {
-            return false;
-        }
-        $expr = $node->children['expr'];
-        if (!($expr instanceof Node) || ($expr->kind === ast\AST_VAR && $expr->children['name'] === 'this')) {
+        $target = $node->children[$node->kind === ast\AST_STATIC_CALL ? 'class' : 'expr'] ?? null;
+        if (!($target instanceof Node) || !self::dependsOnVariable($target)) {
             return false;
         }
         $scope_node = $this->parent_node_list[0] ?? null;
@@ -225,7 +224,41 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
                 break;
             }
         }
-        return $scope_node instanceof Node && BlockExitStatusChecker::containsLabel($scope_node);
+        if (!($scope_node instanceof Node)) {
+            return false;
+        }
+        // (Cached: a visitor is created for each node)
+        self::$contains_label_cache ??= new WeakMap();
+        return self::$contains_label_cache[$scope_node] ??= BlockExitStatusChecker::containsLabel($scope_node);
+    }
+
+    /** @var ?WeakMap<Node,bool> whether the body of a function contains a label */
+    private static $contains_label_cache;
+
+    /**
+     * @return bool whether the value of $node depends on a variable other than $this, or on a property
+     */
+    private static function dependsOnVariable(Node $node): bool
+    {
+        switch ($node->kind) {
+            case ast\AST_VAR:
+                return $node->children['name'] !== 'this';
+            case ast\AST_PROP:
+            case ast\AST_NULLSAFE_PROP:
+            case ast\AST_STATIC_PROP:
+                return true;
+            case ast\AST_CLOSURE:
+            case ast\AST_ARROW_FUNC:
+            case ast\AST_CLASS:
+            case ast\AST_ARG_LIST:
+                return false;
+        }
+        foreach ($node->children as $child) {
+            if ($child instanceof Node && self::dependsOnVariable($child)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -245,7 +278,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
                 return;
             }
         }
-        if (Config::getValue('dead_code_detection_treat_never_type_as_unreachable') && !$this->isMethodCallOnVariableInFunctionWithLabel($node)) {
+        if (Config::getValue('dead_code_detection_treat_never_type_as_unreachable') && !$this->isCallOnVariableInFunctionWithLabel($node)) {
             // We now know that this is AST_CALL, AST_STATIC_CALL, or AST_METHOD_CALL
             // Mark this to affect BlockExitStatusChecker
             $node->flags = (($node->flags & ~BlockExitStatusChecker::STATUS_PROCEED) | BlockExitStatusChecker::STATUS_THROW);

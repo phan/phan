@@ -38,3 +38,9 @@ src/331_always_return_goto.php:120 PhanThrowTypeAbsent \NS331\neverWithGoto() ca
 src/331_always_return_goto.php:122 PhanPluginNeverReturnFunction Function \NS331\neverFallsOffAfterLabel has a return type of never, but may try to return a value
 src/331_always_return_goto.php:122 PhanTypeMissingReturnReal Method \NS331\neverFallsOffAfterLabel is declared to return never in its real type signature but has no return value
 src/331_always_return_goto.php:122 PhanUnreferencedFunction Possibly zero references to function \NS331\neverFallsOffAfterLabel()
+src/331_always_return_goto.php:130 PhanPluginAlwaysReturnFunction Function \NS331\labelBeforeNew has a return type of int, but may fail to return a value
+src/331_always_return_goto.php:130 PhanUnreferencedFunction Possibly zero references to function \NS331\labelBeforeNew()
+src/331_always_return_goto.php:135 PhanPluginAlwaysReturnFunction Function \NS331\labelAfterAssignmentNullsafe has a return type of int, but may fail to return a value
+src/331_always_return_goto.php:135 PhanTypeMissingReturnReal Method \NS331\labelAfterAssignmentNullsafe is declared to return int in its real type signature but has no return value
+src/331_always_return_goto.php:135 PhanUnreferencedFunction Possibly zero references to function \NS331\labelAfterAssignmentNullsafe()
+src/331_always_return_goto.php:136 PhanUnusedVariable Unused definition of variable $runner

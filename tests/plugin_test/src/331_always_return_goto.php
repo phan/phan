@@ -126,3 +126,18 @@ function neverFallsOffAfterLabel(bool $x): never {
     exit(1);
     done:
 }
+// The class of the object does not depend on a variable: the call never returns
+function labelBeforeNew(): int {
+    goto done;
+    done:
+    (new Stops())->run();
+}
+function labelAfterAssignmentNullsafe(bool $skip): int {
+    $runner = new Normal();
+    if ($skip) {
+        goto done;
+    }
+    $runner = new Stops();
+    done:
+    $runner?->run();
+}
