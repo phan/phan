@@ -73,7 +73,6 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
                 return [null, true];
             }
         }
-        // @phan-suppress-next-line PhanPluginUnreachableCode Phan can't analyze `break 2;`
         switch ($parent->kind) {
             case ast\AST_STMT_LIST:
                 return [$parent, false];
@@ -97,24 +96,11 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         if (!$parent) {
             return [null, true];
         }
-        while (true) {
-            switch ($parent->kind) {
-                case ast\AST_CONDITIONAL:
-                    return [$parent, $node === $parent->children['cond']];
-                case ast\AST_BINARY_OP:
-                    return [$parent, !\in_array($parent->flags, [ast\flags\BINARY_COALESCE, ast\flags\BINARY_BOOL_OR, ast\flags\BINARY_BOOL_AND], true) || $node !== $parent->children['right']];
-                default:
-                    break 2;
-            }
-
-            $node = $parent;
-            $parent = \prev($this->parent_node_list);
-            if (!$parent) {
-                return [null, true];
-            }
-        }
-        // @phan-suppress-next-line PhanPluginUnreachableCode Phan can't analyze `break 2;`
         switch ($parent->kind) {
+            case ast\AST_CONDITIONAL:
+                return [$parent, $node === $parent->children['cond']];
+            case ast\AST_BINARY_OP:
+                return [$parent, !\in_array($parent->flags, [ast\flags\BINARY_COALESCE, ast\flags\BINARY_BOOL_OR, ast\flags\BINARY_BOOL_AND], true) || $node !== $parent->children['right']];
             case ast\AST_STMT_LIST:
                 return [$parent, false];
             case ast\AST_EXPR_LIST:

@@ -1,0 +1,2 @@
+%s:6 PhanTypeMissingReturnReal Method \NS5984\break2 is declared to return int in its real type signature but has no return value
+%s:39 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type ?'found'(real=?'found')

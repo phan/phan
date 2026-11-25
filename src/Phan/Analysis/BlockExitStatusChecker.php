@@ -55,6 +55,21 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     public const STATUS_RETURN         = (1 << 25);       // At least one branch leads to a return statement
     public const STATUS_NORETURN       = (1 << 26);       // At least one branch leads to a exit() statement (or an infinite loop)
 
+    // `break N`/`continue N` with N of 2 or 3. A loop or switch turns these into the status for the next level when they leave it.
+    // (With N > 3, they are treated as `break`/`continue` without a depth.)
+    // (Only kept in the flags of statements: expressions use these bits for the flags of PhanAnnotationAdder)
+    public const STATUS_BREAK_2        = (1 << 27);       // At least one branch leads to `break 2`: it leaves the loop/switch around the innermost one
+    public const STATUS_CONTINUE_2     = (1 << 28);       // At least one branch leads to `continue 2`
+    public const STATUS_BREAK_3        = (1 << 29);       // At least one branch leads to `break 3`
+    public const STATUS_CONTINUE_3     = (1 << 30);       // At least one branch leads to `continue 3`
+
+    /** The statuses of `break N`/`continue N` with N > 1 */
+    public const STATUS_OUTER_EXIT_BITMASK =
+        self::STATUS_BREAK_2 |
+        self::STATUS_CONTINUE_2 |
+        self::STATUS_BREAK_3 |
+        self::STATUS_CONTINUE_3;
+
     public const STATUS_THROW_OR_RETURN_BITMASK =
         self::STATUS_THROW |
         self::STATUS_RETURN |
@@ -77,6 +92,11 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         self::STATUS_PROCEED |
         self::STATUS_NOT_PROCEED_BITMASK;
 
+    /** The bits of the status that is cached in the flags of a statement. (STATUS_BITMASK is used for expressions) */
+    private const STATUS_STATEMENT_BITMASK =
+        self::STATUS_BITMASK |
+        self::STATUS_OUTER_EXIT_BITMASK;
+
     public const STATUS_MAYBE_PROCEED =
         self::STATUS_PROCEED |
         self::STATUS_GOTO;
@@ -97,7 +117,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     private $current_block_index = -1;
 
     /** @var int the statuses of the code after a label for which statusFromLabels() gives up */
-    private $status_not_followed_after_label = self::STATUS_BREAK | self::STATUS_CONTINUE;
+    private $status_not_followed_after_label = self::STATUS_BREAK | self::STATUS_CONTINUE | self::STATUS_OUTER_EXIT_BITMASK;
 
     public function __construct(
         ?CodeBase $code_base = null,
@@ -153,17 +173,56 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     public function visitBreak(Node $node): int
     {
+        switch ($node->children['depth']) {
+            case 2:
+                return self::STATUS_BREAK_2;
+            case 3:
+                return self::STATUS_BREAK_3;
+        }
         return self::STATUS_BREAK;
     }
 
     /**
      * A continue statement unconditionally continues out of a loop/switch.
-     * TODO: Make this account for levels
      * @return int the corresponding status code
      */
     public function visitContinue(Node $node): int
     {
+        switch ($node->children['depth']) {
+            case 2:
+                return self::STATUS_CONTINUE_2;
+            case 3:
+                return self::STATUS_CONTINUE_3;
+        }
         return self::STATUS_CONTINUE;
+    }
+
+    /**
+     * Converts the status of a loop or switch to what the statements around it see:
+     * `break 2` in the loop is `break` for the loop around it.
+     *
+     * @param int $status the status of the loop/switch, in which `break`/`continue` for that loop/switch were already handled
+     */
+    private static function leaveLoopOrSwitch(int $status): int
+    {
+        $outer_status = $status & self::STATUS_OUTER_EXIT_BITMASK;
+        if ($outer_status === 0) {
+            return $status;
+        }
+        $status &= ~self::STATUS_OUTER_EXIT_BITMASK;
+        if (($outer_status & self::STATUS_BREAK_2) !== 0) {
+            $status |= self::STATUS_BREAK;
+        }
+        if (($outer_status & self::STATUS_CONTINUE_2) !== 0) {
+            $status |= self::STATUS_CONTINUE;
+        }
+        if (($outer_status & self::STATUS_BREAK_3) !== 0) {
+            $status |= self::STATUS_BREAK_2;
+        }
+        if (($outer_status & self::STATUS_CONTINUE_3) !== 0) {
+            $status |= self::STATUS_CONTINUE_2;
+        }
+        return $status;
     }
 
     /**
@@ -180,7 +239,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     public function visitTry(Node $node): int
     {
-        $status = $node->flags & self::STATUS_BITMASK;
+        $status = $node->flags & self::STATUS_STATEMENT_BITMASK;
         if ($status) {
             return $status;
         }
@@ -225,7 +284,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     public function visitCatchList(Node $node): int
     {
-        $status = $node->flags & self::STATUS_BITMASK;
+        $status = $node->flags & self::STATUS_STATEMENT_BITMASK;
         if ($status) {
             return $status;
         }
@@ -289,7 +348,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     public function visitSwitchList(Node $node): int
     {
-        $status = $node->flags & self::STATUS_BITMASK;
+        $status = $node->flags & self::STATUS_STATEMENT_BITMASK;
         if ($status) {
             return $status;
         }
@@ -323,7 +382,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         if (!$has_default) {
             $combined_statuses |= self::STATUS_PROCEED;
         }
-        return $combined_statuses;
+        return self::leaveLoopOrSwitch($combined_statuses);
     }
 
     /**
@@ -331,7 +390,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     private function getStatusOfSwitchCase(Node $case_node, int $index, array $siblings): int
     {
-        $status = $case_node->flags & self::STATUS_BITMASK;
+        $status = $case_node->flags & self::STATUS_STATEMENT_BITMASK;
         if ($status) {
             return $status;
         }
@@ -451,10 +510,10 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         // We assume foreach loops are over a finite sequence, and that it's possible for that sequence to have at least one element.
         $inner_status = $this->check($node->children['stmts']);
 
-        // 1. break/continue apply to the inside of a loop, not outside. Not going to analyze "break 2;", may emit an info level issue in the future.
+        // 1. break/continue apply to the inside of a loop, not outside. (`break 2;` is passed on to the loop around this one)
         // 2. We assume that it's possible that any given loop can have 0 iterations.
         //    A TODO exists above to check for special cases.
-        return ($inner_status & ~self::STATUS_CONTINUE_OR_BREAK) | self::STATUS_PROCEED;
+        return self::leaveLoopOrSwitch(($inner_status & ~self::STATUS_CONTINUE_OR_BREAK) | self::STATUS_PROCEED);
     }
 
     public function visitWhile(Node $node): int
@@ -464,15 +523,15 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         if (self::isTruthyLiteral($node->children['cond'])) {
             // Use a special case to analyze "while (1) {exprs}" or "for (; true; ) {exprs}"
             // TODO: identify infinite loops, mark those as STATUS_NO_PROCEED or STATUS_RETURN.
-            return self::computeDerivedStatusOfInfiniteLoop($inner_status);
+            return self::leaveLoopOrSwitch(self::computeDerivedStatusOfInfiniteLoop($inner_status));
         }
         // This is (to our awareness) **not** an infinite loop
 
 
-        // 1. break/continue apply to the inside of a loop, not outside. Not going to analyze "break 2;", may emit an info level issue in the future.
+        // 1. break/continue apply to the inside of a loop, not outside. (`break 2;` is passed on to the loop around this one)
         // 2. We assume that it's possible that any given loop can have 0 iterations.
         //    A TODO exists above to check for special cases.
-        return ($inner_status & ~self::STATUS_CONTINUE_OR_BREAK) | self::STATUS_PROCEED;
+        return self::leaveLoopOrSwitch(($inner_status & ~self::STATUS_CONTINUE_OR_BREAK) | self::STATUS_PROCEED);
     }
 
     /**
@@ -487,15 +546,15 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         if (count($cond_nodes) === 0 || self::isTruthyLiteral(\end($cond_nodes))) {
             // Use a special case to analyze "while (1) {exprs}" or "for (; true; ) {exprs}"
             // TODO: identify infinite loops, mark those as STATUS_NO_PROCEED or STATUS_RETURN.
-            return self::computeDerivedStatusOfInfiniteLoop($inner_status);
+            return self::leaveLoopOrSwitch(self::computeDerivedStatusOfInfiniteLoop($inner_status));
         }
         // This is (to our awareness) **not** an infinite loop
 
 
-        // 1. break/continue apply to the inside of a loop, not outside. Not going to analyze "break 2;", may emit an info level issue in the future.
+        // 1. break/continue apply to the inside of a loop, not outside. (`break 2;` is passed on to the loop around this one)
         // 2. We assume that it's possible that any given loop can have 0 iterations.
         //    A TODO exists above to check for special cases.
-        return ($inner_status & ~self::STATUS_CONTINUE_OR_BREAK) | self::STATUS_PROCEED;
+        return self::leaveLoopOrSwitch(($inner_status & ~self::STATUS_CONTINUE_OR_BREAK) | self::STATUS_PROCEED);
         // TODO: Improve this by checking for loops which almost definitely have at least one iteration,
         // such as "foreach ([$val] as $v)" or "for ($i = 0; $i < 10; $i++)"
 
@@ -1114,7 +1173,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     public function visitStmtList(Node $node): int
     {
-        $status = $node->flags & self::STATUS_BITMASK;
+        $status = $node->flags & self::STATUS_STATEMENT_BITMASK;
         if ($status) {
             return $status;
         }
@@ -1146,7 +1205,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     public function visitIf(Node $node): int
     {
-        $status = $node->flags & self::STATUS_BITMASK;
+        $status = $node->flags & self::STATUS_STATEMENT_BITMASK;
         if ($status) {
             return $status;
         }
@@ -1195,15 +1254,15 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         if (self::isTruthyLiteral($node->children['cond'])) {
             // Use a special case to analyze "while (1) {exprs}" or "for (; true; ) {exprs}"
             // TODO: identify infinite loops, mark those as STATUS_NO_PROCEED or STATUS_RETURN.
-            return $this->computeDerivedStatusOfInfiniteLoop($inner_status);
+            return self::leaveLoopOrSwitch(self::computeDerivedStatusOfInfiniteLoop($inner_status));
         }
         // This is (to our awareness) **not** an infinite loop
 
 
-        // 1. break/continue apply to the inside of a loop, not outside. Not going to analyze "break 2;", may emit an info level issue in the future.
+        // 1. break/continue apply to the inside of a loop, not outside. (`break 2;` is passed on to the loop around this one)
         // 2. We assume that it's possible that any given loop can have 0 iterations.
         //    A TODO exists above to check for special cases.
-        return ($inner_status & ~self::STATUS_CONTINUE_OR_BREAK) | self::STATUS_PROCEED;
+        return self::leaveLoopOrSwitch(($inner_status & ~self::STATUS_CONTINUE_OR_BREAK) | self::STATUS_PROCEED);
     }
 
     /**
@@ -1212,7 +1271,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     public function visitIfElem(Node $node): int
     {
-        $status = $node->flags & self::STATUS_BITMASK;
+        $status = $node->flags & self::STATUS_STATEMENT_BITMASK;
         if ($status) {
             return $status;
         }
@@ -1321,7 +1380,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             return false;
         }
         // Without the jumps, every path is left in an allowed way. Check the code that the jumps continue at.
-        $checker->status_not_followed_after_label = self::STATUS_BREAK | self::STATUS_CONTINUE | (self::STATUS_THROW_OR_RETURN_BITMASK & ~$allowed_status);
+        $checker->status_not_followed_after_label |= self::STATUS_THROW_OR_RETURN_BITMASK & ~$allowed_status;
         return $checker->statusFromLabels($stmts->children) === 0;
     }
 
