@@ -16,7 +16,7 @@ function ambiguoustest($x)
             echo "0\n";
             break;
     }
-    // For "foo", this hits case 0
+    // For "foo", this hit case 0 before php 8.0
     switch ($x) {
         case 0:
             echo "zero\n";

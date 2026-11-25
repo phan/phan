@@ -96,6 +96,9 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     /** @var int the index within $current_block of the statement currently being analyzed */
     private $current_block_index = -1;
 
+    /** @var int the statuses of the code after a label for which statusFromLabels() gives up */
+    private $status_not_followed_after_label = self::STATUS_BREAK | self::STATUS_CONTINUE;
+
     public function __construct(
         ?CodeBase $code_base = null,
         ?Context $context = null
@@ -865,6 +868,10 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             if (!($stmt instanceof Node)) {
                 continue;
             }
+            if (self::containsLabel($stmt)) {
+                // A `goto` to this label may skip the assignment.
+                return null;
+            }
             if ($stmt->kind === ast\AST_ASSIGN) {
                 $target = $stmt->children['var'];
                 if ($target instanceof Node && $target->kind === ast\AST_VAR && $target->children['name'] === $var_name) {
@@ -1272,6 +1279,147 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     public static function willUnconditionallyThrowOrReturn(Node $node, ?CodeBase $code_base = null, ?Context $context = null): bool
     {
         return ((new self($code_base, $context))->__invoke($node) & ~self::STATUS_THROW_OR_RETURN_BITMASK) === 0;
+    }
+
+    /**
+     * Will the body of a function unconditionally throw or return (or exit)?
+     *
+     * Unlike willUnconditionallyThrowOrReturn(), this is true for a body that contains `goto` if no path reaches the end of the body:
+     * a `goto` stays in the function, so it only matters where the code after each label can end up.
+     *
+     * @param Node $stmts the statement list of a function, method or closure
+     */
+    public static function willFunctionBodyUnconditionallyThrowOrReturn(Node $stmts, ?CodeBase $code_base = null, ?Context $context = null): bool
+    {
+        return self::willFunctionBodyOnlyExitWith($stmts, self::STATUS_THROW_OR_RETURN_BITMASK, $code_base, $context);
+    }
+
+    /**
+     * Will the body of a function unconditionally throw or exit (or infinitely loop)?
+     *
+     * Unlike willUnconditionallyNeverReturn(), this is true for a body that contains `goto`
+     * if no path reaches a `return` or the end of the body.
+     *
+     * @param Node $stmts the statement list of a function, method or closure
+     */
+    public static function willFunctionBodyUnconditionallyNeverReturn(Node $stmts, ?CodeBase $code_base = null, ?Context $context = null): bool
+    {
+        return self::willFunctionBodyOnlyExitWith($stmts, self::STATUS_NOT_RETURN_BITMASK, $code_base, $context);
+    }
+
+    /**
+     * @param int $allowed_status the ways in which the body may be left (STATUS_THROW_OR_RETURN_BITMASK or STATUS_NOT_RETURN_BITMASK)
+     */
+    private static function willFunctionBodyOnlyExitWith(Node $stmts, int $allowed_status, ?CodeBase $code_base, ?Context $context): bool
+    {
+        $checker = new self($code_base, $context);
+        $status = $checker->__invoke($stmts);
+        if (($status & ~$allowed_status) === 0) {
+            return true;
+        }
+        if (($status & ~($allowed_status | self::STATUS_GOTO)) !== 0 || $stmts->kind !== ast\AST_STMT_LIST) {
+            return false;
+        }
+        // Without the jumps, every path is left in an allowed way. Check the code that the jumps continue at.
+        $checker->status_not_followed_after_label = self::STATUS_BREAK | self::STATUS_CONTINUE | (self::STATUS_THROW_OR_RETURN_BITMASK & ~$allowed_status);
+        return $checker->statusFromLabels($stmts->children) === 0;
+    }
+
+    /**
+     * Where the code after a label may end up, for a label in $block or in a block nested in it:
+     *
+     * - 0: it always throws, returns or jumps again (or there is no label)
+     * - STATUS_PROCEED: it may reach the end of $block
+     * - STATUS_BREAK: it may leave an enclosing loop or switch with `break` or `continue`, or be in a `try` that catches what it throws.
+     *   Nothing is known about where that continues.
+     *   (Also if it may `return`, when checking that a function never returns)
+     *
+     * @param list<mixed> $block the statements of a block
+     */
+    private function statusFromLabels(array $block): int
+    {
+        $result = 0;
+        foreach ($block as $i => $child) {
+            if (!($child instanceof Node)) {
+                continue;
+            }
+            if ($child->kind !== ast\AST_LABEL) {
+                $nested_status = $this->statusFromLabelsInNode($child);
+                if ($nested_status === 0) {
+                    continue;
+                }
+                if ($nested_status !== self::STATUS_PROCEED) {
+                    return $nested_status;
+                }
+                // The code after a label in a nested block may reach the end of that block.
+                // Assume that the statement containing the block is then left normally.
+            }
+            $rest = new Node(ast\AST_STMT_LIST, 0, \array_slice($block, $i + 1), $child->lineno);
+            $status = $this->__invoke($rest);
+            if (($status & $this->status_not_followed_after_label) !== 0) {
+                return self::STATUS_BREAK;
+            }
+            if (($status & self::STATUS_PROCEED) !== 0) {
+                // Keep looking: the code after a later label may `break`.
+                $result = self::STATUS_PROCEED;
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * @return int statusFromLabels() for the statement lists in $node.
+     * (Not looking into functions and classes declared in $node: a `goto` cannot jump into or out of them)
+     */
+    private function statusFromLabelsInNode(Node $node): int
+    {
+        switch ($node->kind) {
+            case ast\AST_FUNC_DECL:
+            case ast\AST_CLOSURE:
+            case ast\AST_ARROW_FUNC:
+            case ast\AST_CLASS:
+            case ast\AST_METHOD:
+                return 0;
+            case ast\AST_STMT_LIST:
+                return $this->statusFromLabels($node->children);
+            case ast\AST_TRY:
+                // What the code after a label in `try` throws may be caught, and `finally` may return: not followed.
+                return self::containsLabel($node) ? self::STATUS_BREAK : 0;
+        }
+        $result = 0;
+        foreach ($node->children as $child) {
+            if ($child instanceof Node) {
+                $status = $this->statusFromLabelsInNode($child);
+                if ($status === self::STATUS_BREAK) {
+                    return $status;
+                }
+                $result |= $status;
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * @return bool whether $node contains a label, outside of the functions and classes declared in it
+     */
+    private static function containsLabel(Node $node): bool
+    {
+        switch ($node->kind) {
+            case ast\AST_LABEL:
+                return true;
+            case ast\AST_FUNC_DECL:
+            case ast\AST_CLOSURE:
+            case ast\AST_ARROW_FUNC:
+            case ast\AST_CLASS:
+            case ast\AST_METHOD:
+                return false;
+        }
+        foreach ($node->children as $child) {
+            if ($child instanceof Node && self::containsLabel($child)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

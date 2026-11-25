@@ -1,0 +1,41 @@
+src/331_always_return_goto.php:6 PhanUnreferencedFunction Possibly zero references to function \NS331\returnsAfterLabel()
+src/331_always_return_goto.php:12 PhanUnreferencedFunction Possibly zero references to function \NS331\loopsWithGoto()
+src/331_always_return_goto.php:15 PhanUnusedVariable Unused definition of variable $x
+src/331_always_return_goto.php:18 PhanPluginAlwaysReturnFunction Function \NS331\fallsOffAfterLabel has a return type of int, but may fail to return a value
+src/331_always_return_goto.php:18 PhanUnreferencedFunction Possibly zero references to function \NS331\fallsOffAfterLabel()
+src/331_always_return_goto.php:24 PhanPluginAlwaysReturnFunction Function \NS331\fallsOffAfterNestedLabel has a return type of int, but may fail to return a value
+src/331_always_return_goto.php:24 PhanUnreferencedFunction Possibly zero references to function \NS331\fallsOffAfterNestedLabel()
+src/331_always_return_goto.php:26 PhanPluginNonBoolBranch Non bool value of type int|positive-int evaluated in if clause
+src/331_always_return_goto.php:34 PhanUnreferencedFunction Possibly zero references to function \NS331\returnsAfterNestedLabel()
+src/331_always_return_goto.php:36 PhanPluginNonBoolBranch Non bool value of type int|positive-int evaluated in if clause
+src/331_always_return_goto.php:43 PhanPluginAlwaysReturnFunction Function \NS331\fallsOffAfterLabelInLoop has a return type of int, but may fail to return a value
+src/331_always_return_goto.php:43 PhanUnreferencedFunction Possibly zero references to function \NS331\fallsOffAfterLabelInLoop()
+src/331_always_return_goto.php:50 PhanUnreferencedFunction Possibly zero references to function \NS331\gotoInClosure()
+src/331_always_return_goto.php:51 PhanPluginPossiblyStaticClosure Closure() can be static
+src/331_always_return_goto.php:55 PhanPluginAlwaysReturnFunction Function \NS331\noGoto has a return type of int, but may fail to return a value
+src/331_always_return_goto.php:55 PhanUnreferencedFunction Possibly zero references to function \NS331\noGoto()
+src/331_always_return_goto.php:56 PhanPluginNonBoolBranch Non bool value of type int evaluated in if clause
+src/331_always_return_goto.php:58 PhanPluginAlwaysReturnFunction Function \NS331\breakAfterNestedLabel has a return type of int, but may fail to return a value
+src/331_always_return_goto.php:58 PhanUnreferencedFunction Possibly zero references to function \NS331\breakAfterNestedLabel()
+src/331_always_return_goto.php:61 PhanPluginNonBoolBranch Non bool value of type 0 evaluated in if clause
+src/331_always_return_goto.php:68 PhanPluginAlwaysReturnFunction Function \NS331\throwAfterLabelInTry has a return type of int, but may fail to return a value
+src/331_always_return_goto.php:68 PhanTypeMissingReturnReal Method \NS331\throwAfterLabelInTry is declared to return int in its real type signature but has no return value
+src/331_always_return_goto.php:68 PhanUnreferencedFunction Possibly zero references to function \NS331\throwAfterLabelInTry()
+src/331_always_return_goto.php:73 PhanUnusedVariableCaughtException Unused definition of variable $e as a caught exception
+src/331_always_return_goto.php:76 PhanUnreferencedFunction Possibly zero references to function \NS331\unreachableAfterLabel()
+src/331_always_return_goto.php:78 PhanUnusedGotoLabel Unused goto label done
+src/331_always_return_goto.php:80 PhanPluginUnreachableCode Unreachable statement detected
+src/331_always_return_goto.php:82 PhanPluginAlwaysReturnFunction Function \NS331\breakAfterSecondNestedLabel has a return type of int, but may fail to return a value
+src/331_always_return_goto.php:82 PhanUnreferencedFunction Possibly zero references to function \NS331\breakAfterSecondNestedLabel()
+src/331_always_return_goto.php:97 PhanPluginUseReturnValueNoopVoid The function/method \NS331\Normal::run() is declared to return void and it has no side effects
+src/331_always_return_goto.php:97 PhanUnreferencedPublicMethod Possibly zero references to public method \NS331\Normal::run()
+src/331_always_return_goto.php:105 PhanPluginAlwaysReturnFunction Function \NS331\labelAfterAssignment has a return type of int, but may fail to return a value
+src/331_always_return_goto.php:105 PhanTypeMissingReturnReal Method \NS331\labelAfterAssignment is declared to return int in its real type signature but has no return value
+src/331_always_return_goto.php:105 PhanUnreferencedFunction Possibly zero references to function \NS331\labelAfterAssignment()
+src/331_always_return_goto.php:106 PhanUnusedVariable Unused definition of variable $runner
+src/331_always_return_goto.php:114 PhanTypeMissingReturnReal Method \NS331\neverWithGoto is declared to return never in its real type signature but has no return value
+src/331_always_return_goto.php:114 PhanUnreferencedFunction Possibly zero references to function \NS331\neverWithGoto()
+src/331_always_return_goto.php:120 PhanThrowTypeAbsent \NS331\neverWithGoto() can throw new \RuntimeException() of type \RuntimeException here, but has no '@throws' declarations for that class
+src/331_always_return_goto.php:122 PhanPluginNeverReturnFunction Function \NS331\neverFallsOffAfterLabel has a return type of never, but may try to return a value
+src/331_always_return_goto.php:122 PhanTypeMissingReturnReal Method \NS331\neverFallsOffAfterLabel is declared to return never in its real type signature but has no return value
+src/331_always_return_goto.php:122 PhanUnreferencedFunction Possibly zero references to function \NS331\neverFallsOffAfterLabel()

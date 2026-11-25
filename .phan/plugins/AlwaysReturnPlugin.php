@@ -74,7 +74,7 @@ final class AlwaysReturnPlugin extends PluginV3 implements
 
         if (self::returnTypeOfFunctionLikeAllowsNull($method)) {
             // This has at least one return statement with an expression
-            if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_list, $code_base, $method->getContext())) {
+            if (!BlockExitStatusChecker::willFunctionBodyUnconditionallyThrowOrReturn($stmts_list, $code_base, $method->getContext())) {
                 if ($method->getUnionType()->isEmpty() && $method->hasReturn()) {
                     if (!$method->checkHasSuppressIssueAndIncrementCount('PhanPluginInconsistentReturnMethod')) {
                         self::emitIssue(
@@ -92,9 +92,7 @@ final class AlwaysReturnPlugin extends PluginV3 implements
         $returnUnion = $method->getUnionType();
         $unionTypes = $returnUnion->getTypeSet();
         $isNeverReturn = count($unionTypes) === 1 && $unionTypes[0] instanceof NeverType;
-        $blockExitStatusChecker = new BlockExitStatusChecker($code_base, $method->getContext());
-        $exitStatus = $blockExitStatusChecker->__invoke($stmts_list);
-        if ($isNeverReturn && (($exitStatus & ~BlockExitStatusChecker::STATUS_NOT_RETURN_BITMASK) !== 0)) {
+        if ($isNeverReturn && !BlockExitStatusChecker::willFunctionBodyUnconditionallyNeverReturn($stmts_list, $code_base, $method->getContext())) {
             if (!$method->checkHasSuppressIssueAndIncrementCount('PhanPluginNeverReturnMethod')) {
                 self::emitIssue(
                     $code_base,
@@ -105,7 +103,7 @@ final class AlwaysReturnPlugin extends PluginV3 implements
                 );
             }
         }
-        if (!$isNeverReturn && !BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_list, $code_base, $method->getContext())) {
+        if (!$isNeverReturn && !BlockExitStatusChecker::willFunctionBodyUnconditionallyThrowOrReturn($stmts_list, $code_base, $method->getContext())) {
             if (!$method->checkHasSuppressIssueAndIncrementCount('PhanPluginAlwaysReturnMethod')) {
                 self::emitIssue(
                     $code_base,
@@ -140,7 +138,7 @@ final class AlwaysReturnPlugin extends PluginV3 implements
         if (self::returnTypeOfFunctionLikeAllowsNull($function)) {
             if ($function->getUnionType()->isEmpty() && $function->hasReturn()) {
                 // This has at least one return statement with an expression
-                if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_list, $code_base, $function->getContext())) {
+                if (!BlockExitStatusChecker::willFunctionBodyUnconditionallyThrowOrReturn($stmts_list, $code_base, $function->getContext())) {
                     if (!$function->checkHasSuppressIssueAndIncrementCount('PhanPluginInconsistentReturnFunction')) {
                         self::emitIssue(
                             $code_base,
@@ -157,9 +155,7 @@ final class AlwaysReturnPlugin extends PluginV3 implements
         $returnUnion = $function->getUnionType();
         $unionTypes = $returnUnion->getTypeSet();
         $isNeverReturn = count($unionTypes) === 1 && $unionTypes[0] instanceof NeverType;
-        $blockExitStatusChecker = new BlockExitStatusChecker($code_base, $function->getContext());
-        $exitStatus = $blockExitStatusChecker->__invoke($stmts_list);
-        if ($isNeverReturn && (($exitStatus & ~BlockExitStatusChecker::STATUS_NOT_RETURN_BITMASK) !== 0)) {
+        if ($isNeverReturn && !BlockExitStatusChecker::willFunctionBodyUnconditionallyNeverReturn($stmts_list, $code_base, $function->getContext())) {
             if (!$function->checkHasSuppressIssueAndIncrementCount('PhanPluginNeverReturnFunction')) {
                 self::emitIssue(
                     $code_base,
@@ -170,7 +166,7 @@ final class AlwaysReturnPlugin extends PluginV3 implements
                 );
             }
         }
-        if (!$isNeverReturn && !BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_list, $code_base, $function->getContext())) {
+        if (!$isNeverReturn && !BlockExitStatusChecker::willFunctionBodyUnconditionallyThrowOrReturn($stmts_list, $code_base, $function->getContext())) {
             if (!$function->checkHasSuppressIssueAndIncrementCount('PhanPluginAlwaysReturnFunction')) {
                 self::emitIssue(
                     $code_base,
