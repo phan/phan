@@ -1,0 +1,5 @@
+%s:9 PhanTypeMismatchArgumentInternalProbablyReal Argument 2 ($values) is $arr of type array but \sprintf() takes \Stringable|bool|float|int|null|string
+%s:10 PhanTypeMismatchArgumentInternal Argument 2 ($values) is $o of type \stdClass but \sprintf() takes \Stringable|bool|float|int|null|string
+%s:28 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type non-empty-array<string,mixed>(real=array)
+%s:28 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type non-empty-array<string,array<string,mixed>>(real=array)
+%s:28 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type non-empty-array<string,mixed>(real=array)
