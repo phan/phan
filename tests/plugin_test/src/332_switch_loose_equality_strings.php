@@ -81,3 +81,38 @@ function infinity($x): int {
     }
     return 0;
 }
+
+const HALF = 0.5;
+
+// Floats that are not literals: a negative number, a constant
+function negativeAndConstantFloats($x): int {
+    switch ($x) {
+        case -1e999:
+            return 1;
+        case '-INF':
+            return 2;
+        case -1.5:
+            return 3;
+        case '-1.5':
+            return 4;
+        case HALF:
+            return 5;
+        case '0.5':
+            return 6;
+        case NAN:
+            return 7;
+        case 'NAN':
+            return 8;
+    }
+    return 0;
+}
+
+function matchFloats($x): int {
+    return match ($x) {
+        -1.5 => 1,
+        HALF => 2,
+        0.5 => 3,
+        -1.50 => 4,
+        default => 0,
+    };
+}

@@ -13,3 +13,11 @@ src/332_switch_loose_equality_strings.php:58 PhanPluginDuplicateSwitchCaseLooseE
 src/332_switch_loose_equality_strings.php:62 PhanPluginDuplicateSwitchCaseLooseEquality Switch case(1) is loosely equivalent (==) to an earlier case (1.0) in switch statement - the earlier entry may be chosen instead.
 src/332_switch_loose_equality_strings.php:69 PhanUnreferencedFunction Possibly zero references to function \NS332\infinity()
 src/332_switch_loose_equality_strings.php:73 PhanPluginDuplicateSwitchCaseLooseEquality Switch case(INF) is loosely equivalent (==) to an earlier case ('INF') in switch statement - the earlier entry may be chosen instead.
+src/332_switch_loose_equality_strings.php:77 PhanPluginDuplicateSwitchCaseLooseEquality Switch case('-INF') is loosely equivalent (==) to an earlier case (-INF) in switch statement - the earlier entry may be chosen instead.
+src/332_switch_loose_equality_strings.php:88 PhanUnreferencedFunction Possibly zero references to function \NS332\negativeAndConstantFloats()
+src/332_switch_loose_equality_strings.php:92 PhanPluginDuplicateSwitchCaseLooseEquality Switch case('-INF') is loosely equivalent (==) to an earlier case (-INF) in switch statement - the earlier entry may be chosen instead.
+src/332_switch_loose_equality_strings.php:96 PhanPluginDuplicateSwitchCaseLooseEquality Switch case('-1.5') is loosely equivalent (==) to an earlier case (-1.5) in switch statement - the earlier entry may be chosen instead.
+src/332_switch_loose_equality_strings.php:100 PhanPluginDuplicateSwitchCaseLooseEquality Switch case('0.5') is loosely equivalent (==) to an earlier case (0.5) in switch statement - the earlier entry may be chosen instead.
+src/332_switch_loose_equality_strings.php:110 PhanUnreferencedFunction Possibly zero references to function \NS332\matchFloats()
+src/332_switch_loose_equality_strings.php:114 PhanPluginDuplicateMatchArmExpression Duplicate match arm expression(0.5) detected in match expression - the later entry will be ignored in favor of expression 0.5 at line 113.
+src/332_switch_loose_equality_strings.php:115 PhanPluginDuplicateMatchArmExpression Duplicate match arm expression(-1.5) detected in match expression - the later entry will be ignored in favor of expression -1.5 at line 112.

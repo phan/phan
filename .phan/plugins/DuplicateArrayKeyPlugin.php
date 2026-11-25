@@ -69,11 +69,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
             }
             // Skip array entries without literal keys. (Do it before resolving the key value)
             if (!is_scalar($case_cond)) {
-                $original_case_cond = $case_cond;
-                $case_cond = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $case_cond)->asSingleScalarValueOrNullOrSelf();
-                if (is_object($case_cond)) {
-                    $case_cond = $original_case_cond;
-                }
+                $case_cond = $this->scalarValueOrNode($case_cond);
             }
             if (is_string($case_cond)) {
                 $cond_key = "s$case_cond";
@@ -112,6 +108,25 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
             // @phan-suppress-next-line PhanPartialTypeMismatchArgument array keys are integers for switch
             $this->extendedLooseEqualityCheck($values_to_check, $children);
         }
+    }
+
+    /**
+     * @return Node|bool|float|int|string|null the value of the expression if it is a single scalar or null (e.g. `-1.5`, `PHP_INT_MAX`), or $node.
+     */
+    private function scalarValueOrNode(Node $node): Node|bool|float|int|string|null
+    {
+        if ($node->kind === ast\AST_UNARY_OP && $node->flags === ast\flags\UNARY_MINUS && is_float($node->children['expr'])) {
+            // (Types don't represent an infinite float: `-1e999`)
+            return -$node->children['expr'];
+        }
+        $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node);
+        $value = $type->asSingleScalarValueOrNullOrSelf();
+        if (!is_object($value)) {
+            return $value;
+        }
+        // asSingleScalarValueOrNullOrSelf() does not return floats.
+        $value = $type->asSingleScalarValueOrNull();
+        return is_float($value) && !is_nan($value) ? $value : $node;
     }
 
     /**
@@ -270,11 +285,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
                 // Skip array entries without literal keys. (Do it before resolving the key value)
                 if (is_object($arm_expr_cond) && ParseVisitor::isConstExpr($arm_expr_cond, ParseVisitor::CONSTANT_EXPRESSION_FORBID_NEW_EXPRESSION)) {
                     // Only infer the value for values not affected by conditions - that will change after the expressions are analyzed
-                    $original_cond = $arm_expr_cond;
-                    $arm_expr_cond = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $arm_expr_cond)->asSingleScalarValueOrNullOrSelf();
-                    if (is_object($arm_expr_cond)) {
-                        $arm_expr_cond = $original_cond;
-                    }
+                    $arm_expr_cond = $this->scalarValueOrNode($arm_expr_cond);
                 }
                 if (is_string($arm_expr_cond)) {
                     $cond_key = "s$arm_expr_cond";
