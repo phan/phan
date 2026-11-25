@@ -50,3 +50,17 @@ function signedZero($x): int {
     }
     return 0;
 }
+
+function floats($x): int {
+    switch ($x) {
+        case 1e999:
+            return 1;
+        case '1e999':
+            return 2;
+        case 1.0:
+            return 3;
+        case 1:
+            return 4;
+    }
+    return 0;
+}

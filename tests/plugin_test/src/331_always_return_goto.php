@@ -111,3 +111,18 @@ function labelAfterAssignment(bool $skip): int {
     done:
     $runner->run();
 }
+function neverWithGoto(bool $x): never {
+    if ($x) {
+        goto done;
+    }
+    exit(1);
+    done:
+    throw new \RuntimeException();
+}
+function neverFallsOffAfterLabel(bool $x): never {
+    if ($x) {
+        goto done;
+    }
+    exit(1);
+    done:
+}

@@ -92,9 +92,7 @@ final class AlwaysReturnPlugin extends PluginV3 implements
         $returnUnion = $method->getUnionType();
         $unionTypes = $returnUnion->getTypeSet();
         $isNeverReturn = count($unionTypes) === 1 && $unionTypes[0] instanceof NeverType;
-        $blockExitStatusChecker = new BlockExitStatusChecker($code_base, $method->getContext());
-        $exitStatus = $blockExitStatusChecker->__invoke($stmts_list);
-        if ($isNeverReturn && (($exitStatus & ~BlockExitStatusChecker::STATUS_NOT_RETURN_BITMASK) !== 0)) {
+        if ($isNeverReturn && !BlockExitStatusChecker::willFunctionBodyUnconditionallyNeverReturn($stmts_list, $code_base, $method->getContext())) {
             if (!$method->checkHasSuppressIssueAndIncrementCount('PhanPluginNeverReturnMethod')) {
                 self::emitIssue(
                     $code_base,
@@ -157,9 +155,7 @@ final class AlwaysReturnPlugin extends PluginV3 implements
         $returnUnion = $function->getUnionType();
         $unionTypes = $returnUnion->getTypeSet();
         $isNeverReturn = count($unionTypes) === 1 && $unionTypes[0] instanceof NeverType;
-        $blockExitStatusChecker = new BlockExitStatusChecker($code_base, $function->getContext());
-        $exitStatus = $blockExitStatusChecker->__invoke($stmts_list);
-        if ($isNeverReturn && (($exitStatus & ~BlockExitStatusChecker::STATUS_NOT_RETURN_BITMASK) !== 0)) {
+        if ($isNeverReturn && !BlockExitStatusChecker::willFunctionBodyUnconditionallyNeverReturn($stmts_list, $code_base, $function->getContext())) {
             if (!$function->checkHasSuppressIssueAndIncrementCount('PhanPluginNeverReturnFunction')) {
                 self::emitIssue(
                     $code_base,

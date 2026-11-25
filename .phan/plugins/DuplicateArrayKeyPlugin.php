@@ -6,7 +6,6 @@ use ast\Node;
 use Phan\AST\ASTHasher;
 use Phan\AST\ASTReverter;
 use Phan\AST\UnionTypeVisitor;
-use Phan\Config;
 use Phan\Issue;
 use Phan\Parse\ParseVisitor;
 use Phan\PluginV3;
@@ -147,7 +146,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
      * Checks if any case is `==` to an earlier case.
      *
      * Two values can only be `==` without being the same value if both are numbers or numeric strings (`1 == '1.0'`, `'1' == '1e0'`),
-     * if one of them is a bool or null, or, before php 8.0, if one is a number and the other is a string that is not numeric (`0 == 'foo'`).
+     * or if one of them is a bool or null. (Since php 8.0, which is what this checks for: before, `0 == 'foo'`)
      * A string that is not numeric is never `==` to a different string: `'0' != 'hold'`.
      *
      * The numbers and numeric strings are grouped by their value as a float, so this is fast for a large switch.
@@ -157,13 +156,11 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
      */
     private function extendedLooseEqualityCheck(array $values_to_check, array $children): void
     {
-        $is_php7 = Config::get_closest_minimum_target_php_version_id() < 80000;
-        // The indexes of the cases that are int, float, numeric strings and (before php 8.0) other strings, by the value as a float.
+        // The indexes of the cases that are int, float and numeric strings, by the value as a float.
         // (A list: two different large integers can have the same value as a float)
         $int_set = [];
         $float_set = [];
         $numeric_string_set = [];
-        $other_string_set = [];
         // The indexes of the cases that are bool or null
         $bool_or_null_list = [];
         // The indexes of all cases seen so far, for the cases that are bool or null
@@ -172,7 +169,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
             $old_index = null;
             if (is_bool($value) || $value === null) {
                 foreach ($seen as $j) {
-                    if (self::looseEquals($value, $values_to_check[$j], $is_php7)) {
+                    if ($value == $values_to_check[$j]) {
                         $old_index = $j;
                         break;
                     }
@@ -180,32 +177,29 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
                 $bool_or_null_list[] = $i;
             } else {
                 foreach ($bool_or_null_list as $j) {
-                    if (self::looseEquals($value, $values_to_check[$j], $is_php7)) {
+                    if ($value == $values_to_check[$j]) {
                         $old_index = $j;
                         break;
                     }
                 }
-                $float_value = (float)$value;
-                // (-0.0 is '-0' as a string, and `0 == '-0'`)
-                $key = $float_value === 0.0 ? '0' : (string)$float_value;
-                if (is_string($value)) {
-                    if (is_numeric($value)) {
+                if (is_string($value) ? !is_numeric($value) : is_nan((float)$value)) {
+                    // Not == to a number or to a different string.
+                    $candidate_lists = [];
+                } else {
+                    $float_value = (float)$value;
+                    // (-0.0 is '-0' as a string, and `0 == '-0'`)
+                    $key = $float_value === 0.0 ? '0' : (string)$float_value;
+                    if (is_string($value)) {
                         $candidate_lists = [$int_set[$key] ?? [], $float_set[$key] ?? [], $numeric_string_set[$key] ?? []];
                         $numeric_string_set[$key][] = $i;
+                    } elseif (is_int($value)) {
+                        // Not compared with the other integers: they are different integers, or PhanPluginDuplicateSwitchCase was emitted instead.
+                        $candidate_lists = [$float_set[$key] ?? [], $numeric_string_set[$key] ?? []];
+                        $int_set[$key][] = $i;
                     } else {
-                        // Only a number can be == to this, and only before php 8.0
-                        $candidate_lists = $is_php7 ? [$int_set[$key] ?? [], $float_set[$key] ?? []] : [];
-                        if ($is_php7) {
-                            $other_string_set[$key][] = $i;
-                        }
+                        $candidate_lists = [$int_set[$key] ?? [], $float_set[$key] ?? [], $numeric_string_set[$key] ?? []];
+                        $float_set[$key][] = $i;
                     }
-                } elseif (is_int($value)) {
-                    // Not compared with the other integers: they are different integers, or PhanPluginDuplicateSwitchCase was emitted instead.
-                    $candidate_lists = [$float_set[$key] ?? [], $numeric_string_set[$key] ?? [], $other_string_set[$key] ?? []];
-                    $int_set[$key][] = $i;
-                } else {
-                    $candidate_lists = [$int_set[$key] ?? [], $float_set[$key] ?? [], $numeric_string_set[$key] ?? [], $other_string_set[$key] ?? []];
-                    $float_set[$key][] = $i;
                 }
                 foreach ($candidate_lists as $candidates) {
                     foreach ($candidates as $j) {
@@ -213,7 +207,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
                             break;
                         }
                         // (Checked again: two different large integers can have the same value as a float)
-                        if (self::looseEquals($value, $values_to_check[$j], $is_php7)) {
+                        if ($value == $values_to_check[$j]) {
                             $old_index = $j;
                             break;
                         }
@@ -227,30 +221,13 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
                     (clone $this->context)->withLineNumberStart($children[$i]->lineno),
                     'PhanPluginDuplicateSwitchCaseLooseEquality',
                     "Switch case({STRING_LITERAL}) is loosely equivalent (==) to an earlier case ({STRING_LITERAL}) in switch statement - the earlier entry may be chosen instead.",
-                    [self::describeSwitchValue($values_to_check[$i]), self::describeSwitchValue($values_to_check[$old_index])],
+                    [ASTReverter::toShortString($values_to_check[$i]), ASTReverter::toShortString($values_to_check[$old_index])],
                     Issue::SEVERITY_NORMAL,
                     Issue::REMEDIATION_A,
                     15072
                 );
             }
         }
-    }
-
-    /**
-     * @return bool whether $a == $b in the php versions that are analyzed for.
-     * Before php 8.0, a number was compared with a string that is not numeric as a number: `0 == 'foo'`, `1 == '1bar'`.
-     */
-    private static function looseEquals(bool|float|int|null|string $a, bool|float|int|null|string $b, bool $is_php7): bool
-    {
-        if ($is_php7) {
-            if ((is_int($a) || is_float($a)) && is_string($b) && !is_numeric($b)) {
-                return $a == (float)$b;
-            }
-            if ((is_int($b) || is_float($b)) && is_string($a) && !is_numeric($a)) {
-                return $b == (float)$a;
-            }
-        }
-        return $a == $b;
     }
 
     /**
@@ -395,13 +372,6 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
         );
     }
 
-    /**
-     * @return string the case as it is written: `'0'` for the string, `0` for the int
-     */
-    private static function describeSwitchValue(bool|float|int|null|string $value): string
-    {
-        return is_string($value) ? ASTReverter::toShortString($value) : (string)json_encode($value);
-    }
 
     /**
      * Converts a key to the value it would be if used as a case.

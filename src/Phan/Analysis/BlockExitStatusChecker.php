@@ -96,6 +96,9 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     /** @var int the index within $current_block of the statement currently being analyzed */
     private $current_block_index = -1;
 
+    /** @var int the statuses of the code after a label for which statusFromLabels() gives up */
+    private $status_not_followed_after_label = self::STATUS_BREAK | self::STATUS_CONTINUE;
+
     public function __construct(
         ?CodeBase $code_base = null,
         ?Context $context = null
@@ -1288,15 +1291,37 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     public static function willFunctionBodyUnconditionallyThrowOrReturn(Node $stmts, ?CodeBase $code_base = null, ?Context $context = null): bool
     {
+        return self::willFunctionBodyOnlyExitWith($stmts, self::STATUS_THROW_OR_RETURN_BITMASK, $code_base, $context);
+    }
+
+    /**
+     * Will the body of a function unconditionally throw or exit (or infinitely loop)?
+     *
+     * Unlike willUnconditionallyNeverReturn(), this is true for a body that contains `goto`
+     * if no path reaches a `return` or the end of the body.
+     *
+     * @param Node $stmts the statement list of a function, method or closure
+     */
+    public static function willFunctionBodyUnconditionallyNeverReturn(Node $stmts, ?CodeBase $code_base = null, ?Context $context = null): bool
+    {
+        return self::willFunctionBodyOnlyExitWith($stmts, self::STATUS_NOT_RETURN_BITMASK, $code_base, $context);
+    }
+
+    /**
+     * @param int $allowed_status the ways in which the body may be left (STATUS_THROW_OR_RETURN_BITMASK or STATUS_NOT_RETURN_BITMASK)
+     */
+    private static function willFunctionBodyOnlyExitWith(Node $stmts, int $allowed_status, ?CodeBase $code_base, ?Context $context): bool
+    {
         $checker = new self($code_base, $context);
         $status = $checker->__invoke($stmts);
-        if (($status & ~self::STATUS_THROW_OR_RETURN_BITMASK) === 0) {
+        if (($status & ~$allowed_status) === 0) {
             return true;
         }
-        if (($status & ~(self::STATUS_THROW_OR_RETURN_BITMASK | self::STATUS_GOTO)) !== 0 || $stmts->kind !== ast\AST_STMT_LIST) {
+        if (($status & ~($allowed_status | self::STATUS_GOTO)) !== 0 || $stmts->kind !== ast\AST_STMT_LIST) {
             return false;
         }
-        // Without the jumps, every path throws or returns. Check the code that the jumps continue at.
+        // Without the jumps, every path is left in an allowed way. Check the code that the jumps continue at.
+        $checker->status_not_followed_after_label = self::STATUS_BREAK | self::STATUS_CONTINUE | (self::STATUS_THROW_OR_RETURN_BITMASK & ~$allowed_status);
         return $checker->statusFromLabels($stmts->children) === 0;
     }
 
@@ -1307,6 +1332,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      * - STATUS_PROCEED: it may reach the end of $block
      * - STATUS_BREAK: it may leave an enclosing loop or switch with `break` or `continue`, or be in a `try` that catches what it throws.
      *   Nothing is known about where that continues.
+     *   (Also if it may `return`, when checking that a function never returns)
      *
      * @param list<mixed> $block the statements of a block
      */
@@ -1330,7 +1356,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             }
             $rest = new Node(ast\AST_STMT_LIST, 0, \array_slice($block, $i + 1), $child->lineno);
             $status = $this->__invoke($rest);
-            if (($status & (self::STATUS_BREAK | self::STATUS_CONTINUE)) !== 0) {
+            if (($status & $this->status_not_followed_after_label) !== 0) {
                 return self::STATUS_BREAK;
             }
             if (($status & self::STATUS_PROCEED) !== 0) {
