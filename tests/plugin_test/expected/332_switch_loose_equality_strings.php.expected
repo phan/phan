@@ -1,0 +1,6 @@
+src/332_switch_loose_equality_strings.php:6 PhanUnreferencedFunction Possibly zero references to function \NS332\status()
+src/332_switch_loose_equality_strings.php:14 PhanPluginDuplicateSwitchCaseLooseEquality Switch case('1.0') is loosely equivalent (==) to an earlier case ('1') in switch statement - the earlier entry may be chosen instead.
+src/332_switch_loose_equality_strings.php:16 PhanPluginDuplicateSwitchCaseLooseEquality Switch case(1) is loosely equivalent (==) to an earlier case ('1') in switch statement - the earlier entry may be chosen instead.
+src/332_switch_loose_equality_strings.php:18 PhanPluginDuplicateSwitchCaseLooseEquality Switch case(true) is loosely equivalent (==) to an earlier case ('hold') in switch statement - the earlier entry may be chosen instead.
+src/332_switch_loose_equality_strings.php:21 PhanPluginDuplicateSwitchCaseLooseEquality Switch case(null) is loosely equivalent (==) to an earlier case ('') in switch statement - the earlier entry may be chosen instead.
+src/332_switch_loose_equality_strings.php:23 PhanPluginDuplicateSwitchCaseLooseEquality Switch case('x') is loosely equivalent (==) to an earlier case (true) in switch statement - the earlier entry may be chosen instead.

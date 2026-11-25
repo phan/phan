@@ -1275,6 +1275,74 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     }
 
     /**
+     * Will the body of a function unconditionally throw or return (or exit)?
+     *
+     * Unlike willUnconditionallyThrowOrReturn(), this is true for a body that contains `goto` if no path reaches the end of the body:
+     * a `goto` stays in the function, so it only matters where the code after each label can end up.
+     *
+     * @param Node $stmts the statement list of a function, method or closure
+     */
+    public static function willFunctionBodyUnconditionallyThrowOrReturn(Node $stmts, ?CodeBase $code_base = null, ?Context $context = null): bool
+    {
+        $checker = new self($code_base, $context);
+        $status = $checker->__invoke($stmts);
+        if (($status & ~self::STATUS_THROW_OR_RETURN_BITMASK) === 0) {
+            return true;
+        }
+        if (($status & ~(self::STATUS_THROW_OR_RETURN_BITMASK | self::STATUS_GOTO)) !== 0 || $stmts->kind !== ast\AST_STMT_LIST) {
+            return false;
+        }
+        // Without the jumps, every path throws or returns. Check the code that the jumps continue at.
+        return !$checker->mayProceedPastEndFromLabel($stmts->children);
+    }
+
+    /**
+     * @param list<mixed> $block the statements of a block
+     * @return bool whether the code after a label in $block, or in a block nested in it, may reach the end of $block (or break or continue out of it)
+     */
+    private function mayProceedPastEndFromLabel(array $block): bool
+    {
+        foreach ($block as $i => $child) {
+            if (!($child instanceof Node)) {
+                continue;
+            }
+            // The code after a label in a nested block may reach the end of that block. Assume that the statement containing it is then left normally.
+            if ($child->kind !== ast\AST_LABEL && !$this->hasNestedBlockProceedingFromLabel($child)) {
+                continue;
+            }
+            $rest = new Node(ast\AST_STMT_LIST, 0, \array_slice($block, $i + 1), $child->lineno);
+            if (($this->__invoke($rest) & ~(self::STATUS_THROW_OR_RETURN_BITMASK | self::STATUS_GOTO)) !== 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return bool whether $node contains a statement list for which mayProceedPastEndFromLabel() is true.
+     * (Not looking into functions and classes declared in $node: a `goto` cannot jump into or out of them)
+     */
+    private function hasNestedBlockProceedingFromLabel(Node $node): bool
+    {
+        switch ($node->kind) {
+            case ast\AST_FUNC_DECL:
+            case ast\AST_CLOSURE:
+            case ast\AST_ARROW_FUNC:
+            case ast\AST_CLASS:
+            case ast\AST_METHOD:
+                return false;
+            case ast\AST_STMT_LIST:
+                return $this->mayProceedPastEndFromLabel($node->children);
+        }
+        foreach ($node->children as $child) {
+            if ($child instanceof Node && $this->hasNestedBlockProceedingFromLabel($child)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Will the node $node unconditionally throw or exit (or infinitely loop)
      */
     public static function willUnconditionallyNeverReturn(Node $node, ?CodeBase $code_base = null, ?Context $context = null): bool

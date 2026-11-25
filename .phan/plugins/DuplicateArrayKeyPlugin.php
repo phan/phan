@@ -6,6 +6,7 @@ use ast\Node;
 use Phan\AST\ASTHasher;
 use Phan\AST\ASTReverter;
 use Phan\AST\UnionTypeVisitor;
+use Phan\Config;
 use Phan\Issue;
 use Phan\Parse\ParseVisitor;
 use Phan\PluginV3;
@@ -143,55 +144,97 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * Perform a heuristic check if any element is `==` a previous element.
+     * Checks if any case is `==` to an earlier case.
      *
-     * This is intended to perform well for large arrays.
+     * Two values can only be `==` without being the same value if both are numbers or numeric strings (`1 == '1.0'`, `'1' == '1e0'`),
+     * if one of them is a bool or null, or, before php 8.0, if one is a number and the other is a string that is not numeric (`0 == 'foo'`).
+     * A string that is not numeric is never `==` to a different string: `'0' != 'hold'`.
      *
-     * TODO: Do a better job for small arrays.
+     * The numbers and numeric strings are grouped by their value as a float, so this is fast for a large switch.
+     *
      * @param array<mixed, mixed> $values_to_check
      * @param list<mixed> $children an array of scalars
      */
     private function extendedLooseEqualityCheck(array $values_to_check, array $children): void
     {
-        $numeric_set = [];
-        $fuzzy_numeric_set = [];
+        $is_php7 = Config::get_closest_minimum_target_php_version_id() < 80000;
+        // The indexes of the cases that are int|float, numeric strings and other strings, by the value as a float
+        $number_set = [];
+        $numeric_string_set = [];
+        $other_string_set = [];
+        // The indexes of the cases that are bool or null
+        $bool_or_null_list = [];
+        // The indexes of all cases seen so far, for the cases that are bool or null
+        $seen = [];
         foreach ($values_to_check as $i => $value) {
-            if (is_numeric($value)) {
-                if (is_int($value)) {
-                    $old_index = $numeric_set[$value] ?? $fuzzy_numeric_set[$value] ?? null;
-                    $numeric_set[$value] = $i;
-                } else {
-                    // For `"1"`, search for `"1foo"`, `"1bar"`, etc.
-                    $original_value = $value;
-                    $value = is_float($value) ? (string)$value : (string)filter_var($value, FILTER_VALIDATE_FLOAT);
-                    $old_index = $numeric_set[$value] ?? null;
-                    if ($value === (string)$original_value) {
-                        $old_index ??= $fuzzy_numeric_set[$value] ?? null;
-                        $numeric_set[$value] = $i;
-                    } else {
-                        $fuzzy_numeric_set[$value] = $i;
+            $old_index = null;
+            if (is_bool($value) || $value === null) {
+                foreach ($seen as $j) {
+                    if (self::looseEquals($value, $values_to_check[$j], $is_php7)) {
+                        $old_index = $j;
+                        break;
                     }
                 }
+                $bool_or_null_list[] = $i;
             } else {
-                $value = (float)$value;
-                // For `"1foo"`, search for `1` but not `"1bar"`
-                $old_index = $numeric_set[$value] ?? null;
-                // @phan-suppress-next-line PhanTypeMismatchDimAssignment
-                $fuzzy_numeric_set[$value] = $i;
+                foreach ($bool_or_null_list as $j) {
+                    if (self::looseEquals($value, $values_to_check[$j], $is_php7)) {
+                        $old_index = $j;
+                        break;
+                    }
+                }
+                $key = (string)(float)$value;
+                if (is_string($value)) {
+                    if (is_numeric($value)) {
+                        $candidates = [$number_set[$key] ?? null, $numeric_string_set[$key] ?? null];
+                        $numeric_string_set[$key] ??= $i;
+                    } else {
+                        // Only a number can be == to this, and only before php 8.0
+                        $candidates = $is_php7 ? [$number_set[$key] ?? null] : [];
+                        $other_string_set[$key] ??= $i;
+                    }
+                } else {
+                    $candidates = [$number_set[$key] ?? null, $numeric_string_set[$key] ?? null, $is_php7 ? ($other_string_set[$key] ?? null) : null];
+                    $number_set[$key] ??= $i;
+                }
+                foreach ($candidates as $j) {
+                    // (Checked again: two different large integers can have the same value as a float)
+                    if ($j !== null && ($old_index === null || $j < $old_index) && self::looseEquals($value, $values_to_check[$j], $is_php7)) {
+                        $old_index = $j;
+                    }
+                }
             }
+            $seen[] = $i;
             if ($old_index !== null) {
                 $this->emitPluginIssue(
                     $this->code_base,
                     (clone $this->context)->withLineNumberStart($children[$i]->lineno),
                     'PhanPluginDuplicateSwitchCaseLooseEquality',
                     "Switch case({STRING_LITERAL}) is loosely equivalent (==) to an earlier case ({STRING_LITERAL}) in switch statement - the earlier entry may be chosen instead.",
-                    [self::normalizeSwitchKey($values_to_check[$i]), self::normalizeSwitchKey($values_to_check[$old_index])],
+                    [self::describeSwitchValue($values_to_check[$i]), self::describeSwitchValue($values_to_check[$old_index])],
                     Issue::SEVERITY_NORMAL,
                     Issue::REMEDIATION_A,
                     15072
                 );
             }
         }
+    }
+
+    /**
+     * @return bool whether $a == $b in the php versions that are analyzed for.
+     * Before php 8.0, a number was compared with a string that is not numeric as a number: `0 == 'foo'`, `1 == '1bar'`.
+     */
+    private static function looseEquals(bool|float|int|null|string $a, bool|float|int|null|string $b, bool $is_php7): bool
+    {
+        if ($is_php7) {
+            if ((is_int($a) || is_float($a)) && is_string($b) && !is_numeric($b)) {
+                return $a == (float)$b;
+            }
+            if ((is_int($b) || is_float($b)) && is_string($a) && !is_numeric($a)) {
+                return $b == (float)$a;
+            }
+        }
+        return $a == $b;
     }
 
     /**
@@ -334,6 +377,14 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
             Issue::REMEDIATION_A,
             15071
         );
+    }
+
+    /**
+     * @return string the case as it is written: `'0'` for the string, `0` for the int
+     */
+    private static function describeSwitchValue(bool|float|int|null|string $value): string
+    {
+        return is_string($value) ? ASTReverter::toShortString($value) : (string)json_encode($value);
     }
 
     /**

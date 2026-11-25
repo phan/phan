@@ -88,6 +88,10 @@ final class UnreachableCodeVisitor extends PluginAwarePostAnalysisVisitor
                 if (!($next_node instanceof Node && $next_node->lineno > 0)) {
                     continue;
                 }
+                if ($next_node->kind === ast\AST_LABEL) {
+                    // A `goto` can jump to the label: this statement and the following ones can be reached.
+                    break;
+                }
                 if (array_key_exists($next_node->kind, self::DECL_KIND_SET)) {
                     if ($this->context->isInGlobalScope()) {
                         continue;
