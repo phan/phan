@@ -1,0 +1,25 @@
+%s:7 PhanReadOnlyPublicProperty Possibly zero write references to public property \GetOnlyWrite\Circle->radius
+%s:13 PhanWriteOnlyPublicProperty Possibly zero read references to public property \GetOnlyWrite\Circle->label
+%s:22 PhanPluginUnknownArrayPropertyType Property \GetOnlyWrite\Circle->list has an array type, but does not specify any key types or value types (Types inferred after analysis: array|array<int,int>|non-empty-array<int,int>)
+%s:22 PhanWriteOnlyPublicProperty Possibly zero read references to public property \GetOnlyWrite\Circle->list
+%s:26 PhanReadOnlyPrivateProperty Possibly zero write references to private property \GetOnlyWrite\Circle->store
+%s:28 PhanWriteOnlyPublicProperty Possibly zero read references to public property \GetOnlyWrite\Circle->both
+%s:36 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\Circle->area defined at %s:9
+%s:47 PhanUnreferencedFunction Possibly zero references to function \GetOnlyWrite\writes()
+%s:49 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\Circle->area defined at %s:9
+%s:50 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\Circle->area defined at %s:9
+%s:51 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\Circle->area defined at %s:9
+%s:52 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\Circle->area defined at %s:9
+%s:53 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\Circle->area defined at %s:9
+%s:54 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\Circle->area defined at %s:9
+%s:57 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\Circle->label defined at %s:13
+%s:58 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\Circle->list defined at %s:22
+%s:63 PhanRedundantCondition Redundant attempt to cast $c->area of type float to isset
+%s:69 PhanWriteOnlyPublicProperty Possibly zero read references to public property \GetOnlyWrite\Base->n
+%s:78 PhanUnreferencedClass Possibly zero references to class \GetOnlyWrite\Writable
+%s:89 PhanWriteOnlyPublicProperty Possibly zero read references to public property \GetOnlyWrite\HasN->n
+%s:94 PhanWriteOnlyPublicProperty Possibly zero read references to public property \GetOnlyWrite\RequiresN->n
+%s:99 PhanWriteOnlyPublicProperty Possibly zero read references to public property \GetOnlyWrite\VirtualN->n
+%s:111 PhanUnreferencedPublicProperty Possibly zero references to public property \GetOnlyWrite\Plain->n
+%s:119 PhanUnreferencedFunction Possibly zero references to function \GetOnlyWrite\writesOther()
+%s:125 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\UsesVirtualN->n defined at %s:99

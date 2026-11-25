@@ -663,6 +663,8 @@ class AssignmentVisitor extends AnalysisVisitor
                     $value_node
                 ))->getProperty(false, true);
 
+                $this->analyzeAssignmentToGetOnlyVirtualProperty($property, $value_node);
+
                 // Set the element type on each element of
                 // the list
                 $this->analyzeSetUnionType($property, $element_type, $value_node);
@@ -905,6 +907,8 @@ class AssignmentVisitor extends AnalysisVisitor
                         $this->context,
                         $value_node
                     ))->getProperty(false, true);
+
+                    $this->analyzeAssignmentToGetOnlyVirtualProperty($property, $value_node);
 
                     // Set the element type on each element of
                     // the list
@@ -1490,6 +1494,8 @@ class AssignmentVisitor extends AnalysisVisitor
             if (!$this->is_conditional_check && !$this->isInitializationByCloneWithProperties($property) && ($this->dim_depth === 0 || !self::shouldSkipReadOnlyDimAssignmentCheck($property))) {
                 $this->analyzeAssignmentToReadOnlyProperty($property, $node);
             }
+        } elseif ($this->dim_depth === 0 && !$this->is_conditional_check) {
+            $this->analyzeAssignmentToGetOnlyVirtualProperty($property, $node);
         }
         // TODO: Iterate over individual types, don't look at the whole type at once?
 
@@ -1891,6 +1897,32 @@ class AssignmentVisitor extends AnalysisVisitor
             return [$clazz->getParentClassFQSEN(), false];
         }
         return null;
+    }
+
+    /**
+     * Warns about an assignment to a virtual property without a set hook, which always throws,
+     * also in the class itself and for `clone($o, ['p' => $x])`.
+     */
+    private function analyzeAssignmentToGetOnlyVirtualProperty(Property $property, Node $node): void
+    {
+        if ($property->getGetHook() === null || !Clazz::isAssignmentToGetOnlyVirtualProperty($this->code_base, $property)) {
+            return;
+        }
+        if ($this->is_coalesce_assign) {
+            // `$o->p ??= $x` only assigns when the get hook returns null
+            $real_type = $property->getRealUnionType();
+            if (!$real_type->isEmpty() && !$real_type->containsNullable()) {
+                return;
+            }
+        }
+        $property_context = $property->getContext();
+        $this->emitIssue(
+            Issue::AccessGetOnlyVirtualProperty,
+            $node->lineno,
+            $property->asPropertyFQSENString(),
+            $property_context->getFile(),
+            $property_context->getLineNumberStart()
+        );
     }
 
     private function analyzeAssignmentToReadOnlyProperty(Property $property, Node $node): void

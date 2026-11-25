@@ -3481,14 +3481,71 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * @return bool whether an assignment to the property always throws because the property is virtual and has no set hook.
+     * False for an abstract property and a property of an interface: the class of the object can declare the set hook.
+     */
+    public static function isAssignmentToGetOnlyVirtualProperty(CodeBase $code_base, Property $property): bool
+    {
+        if ($property->getGetHook() === null || $property->getSetHook() !== null || ($property->getFlags() & \ast\flags\MODIFIER_ABSTRACT)) {
+            return false;
+        }
+        $class_fqsen = $property->getDefiningFQSEN()->getFullyQualifiedClassName();
+        if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+            return false;
+        }
+        $class = $code_base->getClassByFQSEN($class_fqsen);
+        if ($class->isInterface() || !self::isGetOnlyVirtualProperty($code_base, $class, $property, true)) {
+            return false;
+        }
+        return !self::isPropertyWritableInSubclass($code_base, $class, $property->getName());
+    }
+
+    /**
+     * @return bool whether a known subclass of $class redeclares the get-only virtual property with a set hook or with backing storage,
+     * so that an assignment to the property of an object declared as $class may succeed.
+     */
+    private static function isPropertyWritableInSubclass(CodeBase $code_base, Clazz $class, string $name): bool
+    {
+        $child_class_index = $code_base->getDirectChildClassIndex();
+        $seen = [];
+        $queue = [$class];
+        while ($queue) {
+            // (The keys of the index are the names of the classes themselves, not of their aliases)
+            $class_fqsen_string = \array_pop($queue)->getFQSEN()->__toString();
+            if (isset($seen[$class_fqsen_string])) {
+                continue;
+            }
+            $seen[$class_fqsen_string] = true;
+            foreach ($child_class_index[$class_fqsen_string] ?? [] as $child_fqsen) {
+                if (!$code_base->hasClassWithFQSEN($child_fqsen)) {
+                    continue;
+                }
+                $child_class = $code_base->getClassByFQSEN($child_fqsen);
+                if (!$child_class->hasPropertyWithName($code_base, $name)) {
+                    continue;
+                }
+                $child_property = $child_class->getPropertyByName($code_base, $name);
+                if ($child_property->getDefiningFQSEN()->getFullyQualifiedClassName() === $child_class->getFQSEN()
+                    && !self::isGetOnlyVirtualProperty($code_base, $child_class, $child_property, true)) {
+                    return true;
+                }
+                $queue[] = $child_class;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Checks whether code outside of the class cannot write to the property because it only has a get hook and no backing storage.
      *
      * A hook or the backing storage that a class does not redeclare is inherited: a property that redeclares
      * only `get` can still be written if a parent class declares `set` for it, or declares it without hooks.
      *
      * @param Clazz $class the class that declares $property
+     * @param bool $is_direct_write true to check an assignment to the property itself. A get hook that returns by reference
+     * only allows indirect writes (`$o->p[] = 1`, `$r = &$o->p`), which matters for variance, but not `$o->p = 1`.
      */
-    private static function isGetOnlyVirtualProperty(CodeBase $code_base, Clazz $class, Property $property): bool
+    private static function isGetOnlyVirtualProperty(CodeBase $code_base, Clazz $class, Property $property, bool $is_direct_write = false): bool
     {
         $name = $property->getName();
         for ($depth = 0; $depth < 50; $depth++) {
@@ -3496,7 +3553,7 @@ class Clazz extends AddressableElement
             if ($get_hook === null || $property->getSetHook() !== null) {
                 return false;
             }
-            if ($get_hook->getFlags() & \ast\flags\FUNC_RETURNS_REF) {
+            if (!$is_direct_write && ($get_hook->getFlags() & \ast\flags\FUNC_RETURNS_REF)) {
                 // A get hook that returns by reference lets the caller write: `&get => $this->stored;`
                 return false;
             }
