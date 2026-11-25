@@ -33,11 +33,24 @@ function createArray(&$value): void {
     $ref = 1;
 }
 
+/**
+ * The reference can also turn an offset that is null or missing into an array: $value['slot'] here
+ */
+function createNestedArray(&$value): void {
+    if (is_array($value)) {
+        $ref = &$value['slot']['k'];
+        $ref = 1;
+    }
+}
+
 class Holder {
     /** @var ?int */
     public $count;
+    /** @var ?int */
+    public $nested;
 
     public function run(): void {
         createArray($this->count);
+        createNestedArray($this->nested);
     }
 }

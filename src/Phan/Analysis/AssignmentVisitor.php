@@ -719,9 +719,10 @@ class AssignmentVisitor extends AnalysisVisitor
         }
 
         if ($this->assignment_node->flags & self::FLAG_CREATES_REFERENCE_TARGET) {
-            // The reference only assigns something if it turns null (or an undefined variable) into an array.
-            $is_assignment = $element->getUnionType()->containsNullableOrUndefined();
+            // The reference only assigns something if it turns null (or an undefined variable or offset) into an array:
+            // $var of `&$var['k']`, and also $var['k'] of `&$var['k']['j']`.
             $node = $this->assignment_node->children['var'];
+            $is_assignment = $element->getUnionType()->containsNullableOrUndefined() || !($node instanceof Node) || $this->hasNullableContainerOffset($node);
         } else {
             $is_assignment = true;
         }
@@ -730,6 +731,30 @@ class AssignmentVisitor extends AnalysisVisitor
             $assign_node = new Node(ast\AST_ASSIGN, 0, ['expr' => $node], $node->lineno ?? $this->assignment_node->lineno);
             self::analyzeSetUnionTypePassByRef($this->code_base, $this->context, $element, $element_type, $assign_node);
         }
+    }
+
+    /**
+     * @param Node $node a node of kind ast\AST_DIM
+     * @return bool whether one of the offsets that $node is an offset of can be null, undefined or of an unknown type:
+     * $var['k'] for $var['k']['j']. (False for $var['k']: the variable is not checked here)
+     */
+    private function hasNullableContainerOffset(Node $node): bool
+    {
+        $was_discarding_issues = Issue::$is_discarding_issues;
+        Issue::$is_discarding_issues = true;
+        try {
+            for ($container = $node->children['expr']; $container instanceof Node && $container->kind === ast\AST_DIM; $container = $container->children['expr']) {
+                $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $container);
+                if ($type->isEmpty() || $type->containsNullableOrUndefined()) {
+                    return true;
+                }
+            }
+        } catch (\Exception) {
+            return true;
+        } finally {
+            Issue::$is_discarding_issues = $was_discarding_issues;
+        }
+        return false;
     }
 
     /**
