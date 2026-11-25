@@ -2000,12 +2000,14 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @return bool whether $union_type consists of array shapes, none of which has the key $dim_value, and of generic arrays.
      * (resolveArrayShapeElementTypesForOffset() then gets the type of the element from the generic arrays of $union_type)
      */
-    private static function isOffsetMissingFromArrayShapes(UnionType $union_type, mixed $dim_value): bool
+    public static function isOffsetMissingFromArrayShapes(UnionType $union_type, mixed $dim_value): bool
     {
-        if (!\is_scalar($dim_value)) {
+        if ($dim_value === null) {
+            // PHP uses the key '' for null
+            $dim_value = '';
+        } elseif (!\is_scalar($dim_value)) {
             return false;
-        }
-        if (\is_float($dim_value)) {
+        } elseif (\is_float($dim_value)) {
             $dim_value = (int)$dim_value;
         }
         $has_array_shape = false;
@@ -2118,7 +2120,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                     try {
                         $dim_value = (new ContextNode($code_base, $context, $dim_value))->getEquivalentPHPScalarValue(false);
                     } catch (IssueException) {
-                        $dim_value = null;
+                        // Not a known value
+                        $dim_value = $node->children['dim'];
                     }
                 }
                 if (self::isOffsetMissingFromArrayShapes($union_type, $dim_value)) {

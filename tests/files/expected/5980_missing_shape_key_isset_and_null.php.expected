@@ -1,0 +1,4 @@
+%s:10 PhanTypeMismatchDimFetchNullable When fetching an array index from a value of type array{x:true}|non-empty-array<string,true>, found an array index of type null, but expected the index to be of the non-nullable type string
+%s:27 PhanDebugAnnotation @phan-debug-var requested for variable $blog - it has union type array{domain:'x'}|non-empty-array<mixed,string>(real=array{domain:'x'}|non-empty-array<mixed,mixed>)
+%s:59 PhanDebugAnnotation @phan-debug-var requested for variable $blog - it has union type array{email?:null|string,domain?:'x'}|non-empty-array<mixed,string>(real=array)
+%s:70 PhanDebugAnnotation @phan-debug-var requested for variable $blog - it has union type array{domain:'x'}|non-empty-array<mixed,string>(real=array{domain:'x'}|non-empty-array<mixed,mixed>)

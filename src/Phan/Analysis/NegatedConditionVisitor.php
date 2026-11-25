@@ -1022,6 +1022,11 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             return $union_type;
         }
         // At this point, $dim_union_type must be UnionType
+        if (UnionTypeVisitor::isOffsetMissingFromArrayShapes($union_type, $dim_value)) {
+            // $dim_union_type is the type of the elements of the generic arrays of $union_type, e.g. of array{a:int}|array<string,string>.
+            // No array shape has the field: there is nothing to remove, and adding the field as null would hide the type of the elements.
+            return $union_type;
+        }
         if ($remove_offset) {
             return $union_type->withoutArrayShapeField($dim_value);
         } else {
