@@ -865,6 +865,10 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             if (!($stmt instanceof Node)) {
                 continue;
             }
+            if (self::containsLabel($stmt)) {
+                // A `goto` to this label may skip the assignment.
+                return null;
+            }
             if ($stmt->kind === ast\AST_ASSIGN) {
                 $target = $stmt->children['var'];
                 if ($target instanceof Node && $target->kind === ast\AST_VAR && $target->children['name'] === $var_name) {
@@ -1308,6 +1312,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      */
     private function statusFromLabels(array $block): int
     {
+        $result = 0;
         foreach ($block as $i => $child) {
             if (!($child instanceof Node)) {
                 continue;
@@ -1329,10 +1334,11 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
                 return self::STATUS_BREAK;
             }
             if (($status & self::STATUS_PROCEED) !== 0) {
-                return self::STATUS_PROCEED;
+                // Keep looking: the code after a later label may `break`.
+                $result = self::STATUS_PROCEED;
             }
         }
-        return 0;
+        return $result;
     }
 
     /**

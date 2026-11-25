@@ -79,3 +79,35 @@ function unreachableAfterLabel(): int {
     return 2;
     echo 'unreachable';
 }
+function breakAfterSecondNestedLabel(bool $x): int {
+    while (true) {
+        goto a;
+        if ($x) {
+            a:
+            if ($x) {
+                goto b;
+                b:
+                break;
+            }
+        }
+        return 1;
+    }
+}
+class Normal {
+    public function run(): void {
+    }
+}
+class Stops {
+    public function run(): never {
+        exit(1);
+    }
+}
+function labelAfterAssignment(bool $skip): int {
+    $runner = new Normal();
+    if ($skip) {
+        goto done;
+    }
+    $runner = new Stops();
+    done:
+    $runner->run();
+}

@@ -158,9 +158,10 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
     private function extendedLooseEqualityCheck(array $values_to_check, array $children): void
     {
         $is_php7 = Config::get_closest_minimum_target_php_version_id() < 80000;
-        // The indexes of the cases that are int|float, numeric strings and (before php 8.0) other strings, by the value as a float.
+        // The indexes of the cases that are int, float, numeric strings and (before php 8.0) other strings, by the value as a float.
         // (A list: two different large integers can have the same value as a float)
-        $number_set = [];
+        $int_set = [];
+        $float_set = [];
         $numeric_string_set = [];
         $other_string_set = [];
         // The indexes of the cases that are bool or null
@@ -184,21 +185,27 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
                         break;
                     }
                 }
-                $key = (string)(float)$value;
+                $float_value = (float)$value;
+                // (-0.0 is '-0' as a string, and `0 == '-0'`)
+                $key = $float_value === 0.0 ? '0' : (string)$float_value;
                 if (is_string($value)) {
                     if (is_numeric($value)) {
-                        $candidate_lists = [$number_set[$key] ?? [], $numeric_string_set[$key] ?? []];
+                        $candidate_lists = [$int_set[$key] ?? [], $float_set[$key] ?? [], $numeric_string_set[$key] ?? []];
                         $numeric_string_set[$key][] = $i;
                     } else {
                         // Only a number can be == to this, and only before php 8.0
-                        $candidate_lists = $is_php7 ? [$number_set[$key] ?? []] : [];
+                        $candidate_lists = $is_php7 ? [$int_set[$key] ?? [], $float_set[$key] ?? []] : [];
                         if ($is_php7) {
                             $other_string_set[$key][] = $i;
                         }
                     }
+                } elseif (is_int($value)) {
+                    // Not compared with the other integers: they are different integers, or PhanPluginDuplicateSwitchCase was emitted instead.
+                    $candidate_lists = [$float_set[$key] ?? [], $numeric_string_set[$key] ?? [], $other_string_set[$key] ?? []];
+                    $int_set[$key][] = $i;
                 } else {
-                    $candidate_lists = [$number_set[$key] ?? [], $numeric_string_set[$key] ?? [], $other_string_set[$key] ?? []];
-                    $number_set[$key][] = $i;
+                    $candidate_lists = [$int_set[$key] ?? [], $float_set[$key] ?? [], $numeric_string_set[$key] ?? [], $other_string_set[$key] ?? []];
+                    $float_set[$key][] = $i;
                 }
                 foreach ($candidate_lists as $candidates) {
                     foreach ($candidates as $j) {

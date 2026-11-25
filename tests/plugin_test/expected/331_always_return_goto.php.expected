@@ -25,3 +25,11 @@ src/331_always_return_goto.php:73 PhanUnusedVariableCaughtException Unused defin
 src/331_always_return_goto.php:76 PhanUnreferencedFunction Possibly zero references to function \NS331\unreachableAfterLabel()
 src/331_always_return_goto.php:78 PhanUnusedGotoLabel Unused goto label done
 src/331_always_return_goto.php:80 PhanPluginUnreachableCode Unreachable statement detected
+src/331_always_return_goto.php:82 PhanPluginAlwaysReturnFunction Function \NS331\breakAfterSecondNestedLabel has a return type of int, but may fail to return a value
+src/331_always_return_goto.php:82 PhanUnreferencedFunction Possibly zero references to function \NS331\breakAfterSecondNestedLabel()
+src/331_always_return_goto.php:97 PhanPluginUseReturnValueNoopVoid The function/method \NS331\Normal::run() is declared to return void and it has no side effects
+src/331_always_return_goto.php:97 PhanUnreferencedPublicMethod Possibly zero references to public method \NS331\Normal::run()
+src/331_always_return_goto.php:105 PhanPluginAlwaysReturnFunction Function \NS331\labelAfterAssignment has a return type of int, but may fail to return a value
+src/331_always_return_goto.php:105 PhanTypeMissingReturnReal Method \NS331\labelAfterAssignment is declared to return int in its real type signature but has no return value
+src/331_always_return_goto.php:105 PhanUnreferencedFunction Possibly zero references to function \NS331\labelAfterAssignment()
+src/331_always_return_goto.php:106 PhanUnusedVariable Unused definition of variable $runner

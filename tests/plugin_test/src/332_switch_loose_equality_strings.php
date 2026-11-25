@@ -38,3 +38,15 @@ function bigInts($x): int {
     }
     return 0;
 }
+
+function signedZero($x): int {
+    switch ($x) {
+        case 0:
+            return 1;
+        case '-0':
+            return 2;
+        case 'a':
+            return 3;
+    }
+    return 0;
+}

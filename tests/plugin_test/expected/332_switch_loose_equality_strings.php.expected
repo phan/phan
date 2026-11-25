@@ -6,3 +6,5 @@ src/332_switch_loose_equality_strings.php:21 PhanPluginDuplicateSwitchCaseLooseE
 src/332_switch_loose_equality_strings.php:23 PhanPluginDuplicateSwitchCaseLooseEquality Switch case('x') is loosely equivalent (==) to an earlier case (true) in switch statement - the earlier entry may be chosen instead.
 src/332_switch_loose_equality_strings.php:30 PhanUnreferencedFunction Possibly zero references to function \NS332\bigInts()
 src/332_switch_loose_equality_strings.php:36 PhanPluginDuplicateSwitchCaseLooseEquality Switch case('9007199254740993') is loosely equivalent (==) to an earlier case (9007199254740993) in switch statement - the earlier entry may be chosen instead.
+src/332_switch_loose_equality_strings.php:42 PhanUnreferencedFunction Possibly zero references to function \NS332\signedZero()
+src/332_switch_loose_equality_strings.php:46 PhanPluginDuplicateSwitchCaseLooseEquality Switch case('-0') is loosely equivalent (==) to an earlier case (0) in switch statement - the earlier entry may be chosen instead.
