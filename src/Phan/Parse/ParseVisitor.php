@@ -1675,7 +1675,7 @@ class ParseVisitor extends ScopeVisitor
     }
 
     /**
-     * @var ?WeakMap<Node,true> the declarations of functions and classes that cannot redefine anything (see visitIf)
+     * @var ?WeakMap<Node,true> the declarations of functions and classes that cannot redefine anything (see markGuardedDeclarations)
      */
     private static $guarded_declarations = null;
 
