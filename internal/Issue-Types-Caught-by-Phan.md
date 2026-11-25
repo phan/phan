@@ -74,6 +74,14 @@ This will be emitted for the following code.
 class A extends Closure {}
 ```
 
+## PhanAccessGetOnlyVirtualProperty
+
+```
+Cannot write to get-only virtual property {PROPERTY} defined at {FILE}:{LINE}
+```
+
+e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/php85_files/expected/012_clone_with_get_only_virtual_property.php.expected#L3) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/php85_files/src/012_clone_with_get_only_virtual_property.php#L19).
+
 ## PhanAccessMethodPrivate
 
 This issue comes up when there is an attempt to invoke a private method outside of the scope in which it's defined.

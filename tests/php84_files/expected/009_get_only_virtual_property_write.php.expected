@@ -1,0 +1,44 @@
+%s:7 PhanReadOnlyPublicProperty Possibly zero write references to public property \GetOnlyWrite\Circle->radius
+%s:13 PhanWriteOnlyPublicProperty Possibly zero read references to public property \GetOnlyWrite\Circle->label
+%s:22 PhanPluginUnknownArrayPropertyType Property \GetOnlyWrite\Circle->list has an array type, but does not specify any key types or value types (Types inferred after analysis: array|array<int,int>|non-empty-array<int,int>)
+%s:22 PhanWriteOnlyPublicProperty Possibly zero read references to public property \GetOnlyWrite\Circle->list
+%s:26 PhanReadOnlyPrivateProperty Possibly zero write references to private property \GetOnlyWrite\Circle->store
+%s:28 PhanWriteOnlyPublicProperty Possibly zero read references to public property \GetOnlyWrite\Circle->both
+%s:36 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\Circle->area defined at %s:9
+%s:47 PhanUnreferencedFunction Possibly zero references to function \GetOnlyWrite\writes()
+%s:49 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\Circle->area defined at %s:9
+%s:50 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\Circle->area defined at %s:9
+%s:51 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\Circle->area defined at %s:9
+%s:52 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\Circle->area defined at %s:9
+%s:53 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\Circle->area defined at %s:9
+%s:54 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\Circle->area defined at %s:9
+%s:58 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\Circle->label defined at %s:13
+%s:59 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\Circle->list defined at %s:22
+%s:64 PhanRedundantCondition Redundant attempt to cast $c->area of type float to isset
+%s:70 PhanWriteOnlyPublicProperty Possibly zero read references to public property \GetOnlyWrite\Base->n
+%s:79 PhanUnreferencedClass Possibly zero references to class \GetOnlyWrite\Writable
+%s:90 PhanWriteOnlyPublicProperty Possibly zero read references to public property \GetOnlyWrite\HasN->n
+%s:95 PhanWriteOnlyPublicProperty Possibly zero read references to public property \GetOnlyWrite\RequiresN->n
+%s:100 PhanWriteOnlyPublicProperty Possibly zero read references to public property \GetOnlyWrite\VirtualN->n
+%s:112 PhanWriteOnlyPublicProperty Possibly zero read references to public property \GetOnlyWrite\Plain->n
+%s:120 PhanUnreferencedFunction Possibly zero references to function \GetOnlyWrite\writesOther()
+%s:126 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\UsesVirtualN->n defined at %s:100
+%s:136 PhanWriteOnlyPublicProperty Possibly zero read references to public property \GetOnlyWrite\VirtualOnly->n
+%s:141 PhanUnreferencedClass Possibly zero references to class \GetOnlyWrite\AnnotatedReadOnly
+%s:144 PhanWriteOnlyPublicProperty Possibly zero read references to public property \GetOnlyWrite\AnnotatedReadOnly->n
+%s:150 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\AnnotatedReadOnly->n defined at %s:144
+%s:156 PhanWriteOnlyPrivateProperty Possibly zero read references to private property \GetOnlyWrite\PrivateVirtual->n
+%s:162 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\PrivateVirtual->n defined at %s:156
+%s:166 PhanUnreferencedClass Possibly zero references to class \GetOnlyWrite\PrivateVirtualChild
+%s:171 PhanUnreferencedFunction Possibly zero references to function \GetOnlyWrite\writesMore()
+%s:173 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\GetOnlySibling->n defined at %s:70
+%s:177 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\VirtualOnly->n defined at %s:136
+%s:178 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\VirtualOnly->n defined at %s:136
+%s:182 PhanUnreferencedClass Possibly zero references to class \GetOnlyWrite\MixinWithOwnProperty
+%s:184 PhanUnreferencedPublicProperty Possibly zero references to public property \GetOnlyWrite\MixinWithOwnProperty->n
+%s:196 PhanUnreferencedClass Possibly zero references to class \GetOnlyWrite\NullableVirtual
+%s:198 PhanUnreferencedPublicProperty Possibly zero references to public property \GetOnlyWrite\NullableVirtual->n
+%s:206 PhanUnreferencedFunction Possibly zero references to function \GetOnlyWrite\writesMixed()
+%s:208 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\VirtualOnly->n defined at %s:136
+%s:212 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\NullableVirtual->n defined at %s:198
+%s:214 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\VirtualOnly->n defined at %s:136

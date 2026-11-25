@@ -16,6 +16,7 @@
 %s:22 PhanAccessPropertyProtected Cannot access protected property \CloneWithProperties\O->q defined at %s:10
 %s:23 PhanAccessSetPropertyWrongContext Cannot modify private(set) property \CloneWithProperties\O->s defined at %s:11 from %s:23
 %s:24 PhanUndeclaredProperty Reference to undeclared property \CloneWithProperties\O->nope
+%s:26 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \CloneWithProperties\O->h defined at %s:12
 %s:27 PhanTypeMismatchArgumentInternal Argument 2 ($withProperties) is $str of type string but \clone() takes array
 %s:28 PhanTypeMismatchArgumentInternal Argument 2 ($withProperties) is null of type null but \clone() takes array
 %s:33 PhanTypeMismatchPropertyReal Assigning (clone($o)) of type \CloneWithProperties\O to property but \CloneWithProperties\O->a is int

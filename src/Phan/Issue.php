@@ -574,6 +574,7 @@ class Issue
     public const AccessReadOnlyPropertyMultipleTimes = 'PhanAccessReadOnlyPropertyMultipleTimes';
     public const AccessWriteOnlyProperty      = 'PhanAccessWriteOnlyProperty';
     public const AccessReadOnlyMagicProperty  = 'PhanAccessReadOnlyMagicProperty';
+    public const AccessGetOnlyVirtualProperty = 'PhanAccessGetOnlyVirtualProperty';
     public const AccessWriteOnlyMagicProperty = 'PhanAccessWriteOnlyMagicProperty';
 
     public const AccessMethodPrivate       = 'PhanAccessMethodPrivate';
@@ -5054,6 +5055,14 @@ class Issue
                 "Cannot modify readonly property {PROPERTY} after initialization",
                 self::REMEDIATION_B,
                 1038
+            ),
+            new Issue(
+                self::AccessGetOnlyVirtualProperty,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Cannot write to get-only virtual property {PROPERTY} defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                1040
             ),
             new Issue(
                 self::AccessWriteOnlyProperty,
