@@ -67,6 +67,9 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
         $int_union_type = IntType::instance(false)->asPHPDocUnionType();
         $hrtime_array_union_type = ArrayShapeType::fromFieldTypes([0 => $int_union_type, 1 => $int_union_type], false)->asPHPDocUnionType();
         $int_or_hrtime_array_union_type = $int_union_type->withUnionType($hrtime_array_union_type);
+        // get_defined_constants(true) groups the constants by extension.
+        $constants_union_type = UnionType::fromFullyQualifiedPHPDocAndRealString('non-empty-array<string,mixed>', 'array');
+        $categorized_constants_union_type = UnionType::fromFullyQualifiedPHPDocAndRealString('non-empty-array<string,array<string,mixed>>', 'array');
 
         /**
          * @phan-return Closure(CodeBase,Context,Func,array):UnionType
@@ -552,6 +555,7 @@ final class DependentReturnTypeOverridePlugin extends PluginV3 implements
             'substr_replace'              => $make_subject_string_or_array_handler(0),
             'mb_convert_encoding'         => $mb_convert_encoding_handler,
             'microtime'                   => $make_dependent_type_method(0, $float_union_type, $string_union_type, $string_or_float_union_type),
+            'get_defined_constants'       => $make_dependent_type_method(0, $categorized_constants_union_type, $constants_union_type, $constants_union_type),
             'hrtime'                      => $make_dependent_type_method(0, $int_union_type, $hrtime_array_union_type, $int_or_hrtime_array_union_type),
             // misc
             'getenv'                      => $getenv_handler,
