@@ -116,3 +116,36 @@ function matchFloats($x): int {
         default => 0,
     };
 }
+
+// -0.0 === 0.0
+function negativeZero($x): int {
+    switch ($x) {
+        case 0.0:
+            return 1;
+        case -0.0:
+            return 2;
+    }
+    return match ($x) {
+        0.0 => 3,
+        -0.0 => 4,
+        default => 0,
+    };
+}
+
+function sameFloats($x): int {
+    switch ($x) {
+        case -1e999:
+            return 1;
+        case -2e999:
+            return 2;
+        case 1.0:
+            return 3;
+        case 1.00:
+            return 4;
+        case +1e999:
+            return 5;
+        case 'INF':
+            return 6;
+    }
+    return 0;
+}

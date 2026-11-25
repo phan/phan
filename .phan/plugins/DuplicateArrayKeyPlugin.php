@@ -115,9 +115,14 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
      */
     private function scalarValueOrNode(Node $node): Node|bool|float|int|string|null
     {
-        if ($node->kind === ast\AST_UNARY_OP && $node->flags === ast\flags\UNARY_MINUS && is_float($node->children['expr'])) {
+        if ($node->kind === ast\AST_UNARY_OP && is_float($node->children['expr'])) {
             // (Types don't represent an infinite float: `-1e999`)
-            return -$node->children['expr'];
+            if ($node->flags === ast\flags\UNARY_MINUS) {
+                // (`-0.0 === 0.0`, but they are different as a key for the cases seen so far)
+                return $node->children['expr'] === 0.0 ? 0.0 : -$node->children['expr'];
+            } elseif ($node->flags === ast\flags\UNARY_PLUS) {
+                return $node->children['expr'];
+            }
         }
         $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node);
         $value = $type->asSingleScalarValueOrNullOrSelf();
@@ -126,7 +131,10 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
         }
         // asSingleScalarValueOrNullOrSelf() does not return floats.
         $value = $type->asSingleScalarValueOrNull();
-        return is_float($value) && !is_nan($value) ? $value : $node;
+        if (!is_float($value) || is_nan($value)) {
+            return $node;
+        }
+        return $value === 0.0 ? 0.0 : $value;
     }
 
     /**
@@ -412,7 +420,8 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
         if (is_int($key)) {
             return (string)$key;
         } elseif (!is_string($key)) {
-            return (string)json_encode($key);
+            // (Not json_encode(): that is false for INF, and '1' for 1.0)
+            return ASTReverter::toShortString($key);
         }
         $tmp = [$key => true];
         return ASTReverter::toShortString(key($tmp));

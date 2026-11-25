@@ -21,3 +21,9 @@ src/332_switch_loose_equality_strings.php:100 PhanPluginDuplicateSwitchCaseLoose
 src/332_switch_loose_equality_strings.php:110 PhanUnreferencedFunction Possibly zero references to function \NS332\matchFloats()
 src/332_switch_loose_equality_strings.php:114 PhanPluginDuplicateMatchArmExpression Duplicate match arm expression(0.5) detected in match expression - the later entry will be ignored in favor of expression 0.5 at line 113.
 src/332_switch_loose_equality_strings.php:115 PhanPluginDuplicateMatchArmExpression Duplicate match arm expression(-1.5) detected in match expression - the later entry will be ignored in favor of expression -1.5 at line 112.
+src/332_switch_loose_equality_strings.php:121 PhanUnreferencedFunction Possibly zero references to function \NS332\negativeZero()
+src/332_switch_loose_equality_strings.php:125 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case(0.0) detected in switch statement - the later entry will be ignored in favor of case 0.0 at line 123.
+src/332_switch_loose_equality_strings.php:130 PhanPluginDuplicateMatchArmExpression Duplicate match arm expression(0.0) detected in match expression - the later entry will be ignored in favor of expression 0.0 at line 129.
+src/332_switch_loose_equality_strings.php:135 PhanUnreferencedFunction Possibly zero references to function \NS332\sameFloats()
+src/332_switch_loose_equality_strings.php:139 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case(-INF) detected in switch statement - the later entry will be ignored in favor of case -INF at line 137.
+src/332_switch_loose_equality_strings.php:143 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case(1.0) detected in switch statement - the later entry will be ignored in favor of case 1.0 at line 141.
