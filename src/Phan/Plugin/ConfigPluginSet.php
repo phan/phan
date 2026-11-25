@@ -43,6 +43,7 @@ use Phan\Plugin\Internal\BaselineLoadingPlugin;
 use Phan\Plugin\Internal\BaselineSavingPlugin;
 use Phan\Plugin\Internal\BuiltinSuppressionPlugin;
 use Phan\Plugin\Internal\CallableParamPlugin;
+use Phan\Plugin\Internal\ConditionalAssertionPlugin;
 use Phan\Plugin\Internal\ClosureReturnTypeOverridePlugin;
 use Phan\Plugin\Internal\CompactPlugin;
 use Phan\Plugin\Internal\DependentReturnTypeOverridePlugin;
@@ -1155,6 +1156,7 @@ final class ConfigPluginSet extends PluginV3 implements
                 new ArrayReturnTypeOverridePlugin(),
                 new CallableParamPlugin(),
                 new CompactPlugin(),
+                new ConditionalAssertionPlugin(),
                 new ClosureReturnTypeOverridePlugin(),
                 new DependentReturnTypeOverridePlugin(),
                 new StringFunctionPlugin(),

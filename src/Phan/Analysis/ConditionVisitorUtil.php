@@ -1782,6 +1782,10 @@ trait ConditionVisitorUtil
                 $affected_type = $affected_type->nonFalseClone();
             } elseif ($type instanceof TrueType) {
                 $affected_type = $affected_type->nonTrueClone();
+            } elseif (!$type->isNullable() && $type->hasObjectWithKnownFQSEN()) {
+                // As for `!($x instanceof C)`: only the types that are C or a subclass of C are excluded.
+                // (`object` or an interface can be cast to C, but a value of that type may be something else)
+                $affected_type = $affected_type->withoutSubclassesOf($code_base, $type);
             } else {
                 continue;
             }

@@ -1,0 +1,18 @@
+%s:38 PhanDebugAnnotation @phan-debug-var requested for variable $r - it has union type array{id:int}
+%s:55 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type array|object
+%s:55 PhanDebugAnnotation @phan-debug-var requested for variable $i - it has union type \NS5988\Marker|false
+%s:55 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type mixed
+%s:55 PhanDebugAnnotation @phan-debug-var requested for variable $n - it has union type null
+%s:55 PhanDebugAnnotation @phan-debug-var requested for variable $o - it has union type object(real=object)
+%s:55 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type \stdClass
+%s:90 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type non-empty-string
+%s:92 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type string(real=string)
+%s:95 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type ?int(real=?int)
+%s:97 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type null
+%s:100 PhanDebugAnnotation @phan-debug-var requested for variable $w - it has union type int(real=int)
+%s:102 PhanDebugAnnotation @phan-debug-var requested for variable $w - it has union type null
+%s:105 PhanDebugAnnotation @phan-debug-var requested for variable $u - it has union type string
+%s:107 PhanDebugAnnotation @phan-debug-var requested for variable $u - it has union type int
+%s:110 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type 'a'|'b'
+%s:119 PhanCommentParamAssertionWithoutRealParam Saw an @phan-assert annotation for $missing, but it was not found in the param list of badAnnotations()
+%s:123 PhanInvalidCommentForDeclarationType The phpdoc comment for @phan-assert-if-true cannot occur on a class
