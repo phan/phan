@@ -18,6 +18,7 @@ use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Plugin\Internal\UseReturnValuePlugin;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
+use WeakMap;
 
 use function is_array;
 use function iterator_to_array;
@@ -203,6 +204,64 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
+     * Does what this calls depend on a variable or property, in a function that contains `goto`?
+     * (`$var->method()`, `$this->method()`, `$var?->method()`, `$var::method()`, `$var()`, `f($var)->method()`,
+     * but not `f()`, `C::method()` or `(new C())->method()`)
+     *
+     * The inferred type is then not reliable enough to mark the call as never returning: types are inferred as if `goto` did not jump,
+     * and the jump may skip the assignment or the check that the type comes from.
+     * (`$x = new A(); if ($c) { goto done; } $x = new B(); done: $x->run();`)
+     */
+    private function isCallOnVariableInFunctionWithGoto(Node $node): bool
+    {
+        $target = $node->children[$node->kind === ast\AST_STATIC_CALL ? 'class' : 'expr'] ?? null;
+        if (!($target instanceof Node) || !self::dependsOnVariable($target)) {
+            return false;
+        }
+        $scope_node = $this->parent_node_list[0] ?? null;
+        for ($i = \count($this->parent_node_list) - 1; $i >= 0; $i--) {
+            $parent = $this->parent_node_list[$i];
+            if (\in_array($parent->kind, [ast\AST_FUNC_DECL, ast\AST_METHOD, ast\AST_CLOSURE, ast\AST_ARROW_FUNC], true)) {
+                $scope_node = $parent->children['stmts'];
+                break;
+            }
+        }
+        if (!($scope_node instanceof Node)) {
+            return false;
+        }
+        // (Cached: a visitor is created for each node)
+        self::$contains_goto_cache ??= new WeakMap();
+        return self::$contains_goto_cache[$scope_node] ??= BlockExitStatusChecker::containsGoto($scope_node);
+    }
+
+    /** @var ?WeakMap<Node,bool> whether the body of a function contains `goto` */
+    private static $contains_goto_cache;
+
+    /**
+     * @return bool whether the value of $node depends on a variable (including $this and the variables used by a closure) or on a property
+     */
+    private static function dependsOnVariable(Node $node): bool
+    {
+        switch ($node->kind) {
+            case ast\AST_VAR:
+            case ast\AST_PROP:
+            case ast\AST_NULLSAFE_PROP:
+            case ast\AST_STATIC_PROP:
+                return true;
+            case ast\AST_NEW:
+                // The arguments don't change the class of the object.
+                $class = $node->children['class'];
+                return $class instanceof Node && $class->kind !== ast\AST_CLASS && self::dependsOnVariable($class);
+        }
+        foreach ($node->children as $child) {
+            if ($child instanceof Node && self::dependsOnVariable($child)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * @param list<FunctionInterface> $function_list
      */
     private function checkIfUsingFunctionThatNeverReturns(array $function_list, Node $node): void
@@ -219,7 +278,7 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
                 return;
             }
         }
-        if (Config::getValue('dead_code_detection_treat_never_type_as_unreachable')) {
+        if (Config::getValue('dead_code_detection_treat_never_type_as_unreachable') && !$this->isCallOnVariableInFunctionWithGoto($node)) {
             // We now know that this is AST_CALL, AST_STATIC_CALL, or AST_METHOD_CALL
             // Mark this to affect BlockExitStatusChecker
             $node->flags = (($node->flags & ~BlockExitStatusChecker::STATUS_PROCEED) | BlockExitStatusChecker::STATUS_THROW);

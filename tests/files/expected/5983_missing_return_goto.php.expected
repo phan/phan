@@ -1,0 +1,2 @@
+%s:45 PhanTypeMissingReturnReal Method \NS5983\fallsOffAfterLabel is declared to return int in its real type signature but has no return value
+%s:54 PhanTypeMissingReturnReal Method \NS5983\neverFallsOffAfterLabel is declared to return never in its real type signature but has no return value
