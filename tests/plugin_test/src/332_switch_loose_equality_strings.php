@@ -81,3 +81,93 @@ function infinity($x): int {
     }
     return 0;
 }
+
+const HALF = 0.5;
+
+// Floats that are not literals: a negative number, a constant
+function negativeAndConstantFloats($x): int {
+    switch ($x) {
+        case -1e999:
+            return 1;
+        case '-INF':
+            return 2;
+        case -1.5:
+            return 3;
+        case '-1.5':
+            return 4;
+        case HALF:
+            return 5;
+        case '0.5':
+            return 6;
+        case NAN:
+            return 7;
+        case 'NAN':
+            return 8;
+    }
+    return 0;
+}
+
+function matchFloats($x): int {
+    return match ($x) {
+        -1.5 => 1,
+        HALF => 2,
+        0.5 => 3,
+        -1.50 => 4,
+        default => 0,
+    };
+}
+
+// -0.0 === 0.0
+function negativeZero($x): int {
+    switch ($x) {
+        case 0.0:
+            return 1;
+        case -0.0:
+            return 2;
+    }
+    return match ($x) {
+        0.0 => 3,
+        -0.0 => 4,
+        default => 0,
+    };
+}
+
+function sameFloats($x): int {
+    switch ($x) {
+        case -1e999:
+            return 1;
+        case -2e999:
+            return 2;
+        case 1.0:
+            return 3;
+        case 1.00:
+            return 4;
+        case +1e999:
+            return 5;
+        case 'INF':
+            return 6;
+    }
+    return 0;
+}
+
+// A subclass can override the constant: static::HALF is not known to be 0.5
+class WithConstants {
+    const HALF = 0.5;
+    const ONE = 1;
+
+    public function f($x): int {
+        switch ($x) {
+            case static::HALF:
+                return 1;
+            case 0.5:
+                return 2;
+            case static::ONE:
+                return 3;
+            case 1:
+                return 4;
+            case self::ONE:
+                return 5;
+        }
+        return 0;
+    }
+}

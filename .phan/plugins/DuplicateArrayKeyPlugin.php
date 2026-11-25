@@ -69,11 +69,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
             }
             // Skip array entries without literal keys. (Do it before resolving the key value)
             if (!is_scalar($case_cond)) {
-                $original_case_cond = $case_cond;
-                $case_cond = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $case_cond)->asSingleScalarValueOrNullOrSelf();
-                if (is_object($case_cond)) {
-                    $case_cond = $original_case_cond;
-                }
+                $case_cond = $this->scalarValueOrNode($case_cond);
             }
             if (is_string($case_cond)) {
                 $cond_key = "s$case_cond";
@@ -112,6 +108,54 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
             // @phan-suppress-next-line PhanPartialTypeMismatchArgument array keys are integers for switch
             $this->extendedLooseEqualityCheck($values_to_check, $children);
         }
+    }
+
+    /**
+     * @return bool whether $node contains `static::NAME`
+     */
+    private static function usesStaticClassConstant(Node $node): bool
+    {
+        if ($node->kind === ast\AST_CLASS_CONST) {
+            $class = $node->children['class'];
+            return $class instanceof Node && $class->kind === ast\AST_NAME && strcasecmp((string)$class->children['name'], 'static') === 0;
+        }
+        foreach ($node->children as $child) {
+            if ($child instanceof Node && self::usesStaticClassConstant($child)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return Node|bool|float|int|string|null the value of the expression if it is a single scalar or null (e.g. `-1.5`, `PHP_INT_MAX`), or $node.
+     */
+    private function scalarValueOrNode(Node $node): Node|bool|float|int|string|null
+    {
+        if ($node->kind === ast\AST_UNARY_OP && is_float($node->children['expr'])) {
+            // (Types don't represent an infinite float: `-1e999`)
+            if ($node->flags === ast\flags\UNARY_MINUS) {
+                // (`-0.0 === 0.0`, but they are different as a key for the cases seen so far)
+                return $node->children['expr'] === 0.0 ? 0.0 : -$node->children['expr'];
+            } elseif ($node->flags === ast\flags\UNARY_PLUS) {
+                return $node->children['expr'];
+            }
+        }
+        if (self::usesStaticClassConstant($node)) {
+            // A subclass can give the constant another value.
+            return $node;
+        }
+        $type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node);
+        $value = $type->asSingleScalarValueOrNullOrSelf();
+        if (!is_object($value)) {
+            return $value;
+        }
+        // asSingleScalarValueOrNullOrSelf() does not return floats.
+        $value = $type->asSingleScalarValueOrNull();
+        if (!is_float($value) || is_nan($value)) {
+            return $node;
+        }
+        return $value === 0.0 ? 0.0 : $value;
     }
 
     /**
@@ -270,11 +314,7 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
                 // Skip array entries without literal keys. (Do it before resolving the key value)
                 if (is_object($arm_expr_cond) && ParseVisitor::isConstExpr($arm_expr_cond, ParseVisitor::CONSTANT_EXPRESSION_FORBID_NEW_EXPRESSION)) {
                     // Only infer the value for values not affected by conditions - that will change after the expressions are analyzed
-                    $original_cond = $arm_expr_cond;
-                    $arm_expr_cond = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $arm_expr_cond)->asSingleScalarValueOrNullOrSelf();
-                    if (is_object($arm_expr_cond)) {
-                        $arm_expr_cond = $original_cond;
-                    }
+                    $arm_expr_cond = $this->scalarValueOrNode($arm_expr_cond);
                 }
                 if (is_string($arm_expr_cond)) {
                     $cond_key = "s$arm_expr_cond";
@@ -401,7 +441,8 @@ class DuplicateArrayKeyVisitor extends PluginAwarePostAnalysisVisitor
         if (is_int($key)) {
             return (string)$key;
         } elseif (!is_string($key)) {
-            return (string)json_encode($key);
+            // (Not json_encode(): that is false for INF, and '1' for 1.0)
+            return ASTReverter::toShortString($key);
         }
         $tmp = [$key => true];
         return ASTReverter::toShortString(key($tmp));
