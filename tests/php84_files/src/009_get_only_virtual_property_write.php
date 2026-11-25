@@ -176,3 +176,40 @@ function writesMore(GetOnlySibling $s, Plain|VirtualOnly $u, VirtualOnly|Plain $
     $v->n = 1;
     $nv->n = 1;
 }
+
+/** @mixin VirtualOnly */
+class MixinWithOwnProperty
+{
+    public int $n = 0;
+}
+
+/** @mixin VirtualOnly */
+class MixinProxy
+{
+    public function __set(string $name, mixed $value): void
+    {
+        var_dump($name, $value);
+    }
+}
+
+final class NullableVirtual
+{
+    public ?int $n {
+        get => null;
+    }
+}
+
+/**
+ * @param VirtualOnly|object $unknown
+ */
+function writesMixed(VirtualOnly $v, MixinProxy $proxy, $unknown, VirtualOnly|NullableVirtual $either, object $o): void
+{
+    $v->n = 1; // a class with `@mixin VirtualOnly` is not a subclass
+    $proxy->n = 1; // handled by __set
+    $unknown->n = 1; // may be an object of another class
+    $either->n ??= 1; // never assigns for a VirtualOnly
+    $either->n = 1;
+    if ($o instanceof VirtualOnly) {
+        $o->n = 1;
+    }
+}

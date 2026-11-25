@@ -34,3 +34,11 @@
 %s:172 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\GetOnlySibling->n defined at %s:69
 %s:176 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\VirtualOnly->n defined at %s:135
 %s:177 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\VirtualOnly->n defined at %s:135
+%s:181 PhanUnreferencedClass Possibly zero references to class \GetOnlyWrite\MixinWithOwnProperty
+%s:183 PhanUnreferencedPublicProperty Possibly zero references to public property \GetOnlyWrite\MixinWithOwnProperty->n
+%s:195 PhanUnreferencedClass Possibly zero references to class \GetOnlyWrite\NullableVirtual
+%s:197 PhanUnreferencedPublicProperty Possibly zero references to public property \GetOnlyWrite\NullableVirtual->n
+%s:205 PhanUnreferencedFunction Possibly zero references to function \GetOnlyWrite\writesMixed()
+%s:207 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\VirtualOnly->n defined at %s:135
+%s:211 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\NullableVirtual->n defined at %s:197
+%s:213 PhanAccessGetOnlyVirtualProperty Cannot write to get-only virtual property \GetOnlyWrite\VirtualOnly->n defined at %s:135

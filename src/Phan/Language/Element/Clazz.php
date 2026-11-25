@@ -3489,6 +3489,10 @@ class Clazz extends AddressableElement
         if ($property->getGetHook() === null || $property->getSetHook() !== null || ($property->getFlags() & \ast\flags\MODIFIER_ABSTRACT)) {
             return false;
         }
+        if ($property->isFromPHPDoc()) {
+            // The copy of a property of a `@mixin` class: the class may handle the assignment with `__set`
+            return false;
+        }
         $class_fqsen = $property->getDefiningFQSEN()->getFullyQualifiedClassName();
         if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
             return false;
@@ -3520,8 +3524,9 @@ class Clazz extends AddressableElement
         $seen = [];
         $queue = [$class];
         while ($queue) {
+            $parent_fqsen = \array_pop($queue)->getFQSEN();
             // (The keys of the index are the names of the classes themselves, not of their aliases)
-            $class_fqsen_string = \array_pop($queue)->getFQSEN()->__toString();
+            $class_fqsen_string = $parent_fqsen->__toString();
             if (isset($seen[$class_fqsen_string])) {
                 continue;
             }
@@ -3531,6 +3536,10 @@ class Clazz extends AddressableElement
                     continue;
                 }
                 $child_class = $code_base->getClassByFQSEN($child_fqsen);
+                if (!self::isDirectParentOrTrait($code_base, $child_class, $parent_fqsen)) {
+                    // The index also has the classes with `@mixin`, which are not subclasses
+                    continue;
+                }
                 if (!$child_class->hasPropertyWithName($code_base, $name)) {
                     continue;
                 }
@@ -3540,6 +3549,23 @@ class Clazz extends AddressableElement
                     return true;
                 }
                 $queue[] = $child_class;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return bool whether $class extends, implements or uses $parent_fqsen (or an alias of it)
+     */
+    private static function isDirectParentOrTrait(CodeBase $code_base, Clazz $class, FullyQualifiedClassName $parent_fqsen): bool
+    {
+        $fqsen_list = \array_merge($class->getInterfaceFQSENList(), $class->getTraitFQSENList());
+        if ($class->hasParentType()) {
+            $fqsen_list[] = $class->getParentClassFQSEN();
+        }
+        foreach ($fqsen_list as $fqsen) {
+            if ($fqsen === $parent_fqsen || ($code_base->hasClassWithFQSEN($fqsen) && $code_base->getClassByFQSEN($fqsen)->getFQSEN() === $parent_fqsen)) {
+                return true;
             }
         }
         return false;

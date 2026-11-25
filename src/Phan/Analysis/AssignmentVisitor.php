@@ -1912,12 +1912,9 @@ class AssignmentVisitor extends AnalysisVisitor
         if ($property->getGetHook() === null || !Clazz::isAssignmentToGetOnlyVirtualProperty($this->code_base, $property)) {
             return false;
         }
-        if ($this->is_coalesce_assign) {
+        if ($this->is_coalesce_assign && self::isPropertyNeverNull($property)) {
             // `$o->p ??= $x` only assigns when the get hook returns null
-            $real_type = $property->getRealUnionType();
-            if (!$real_type->isEmpty() && !$real_type->containsNullable()) {
-                return false;
-            }
+            return false;
         }
         if ($this->mayOtherReceiverAllowWrite($property, $node)) {
             return false;
@@ -1931,6 +1928,15 @@ class AssignmentVisitor extends AnalysisVisitor
             $property_context->getLineNumberStart()
         );
         return true;
+    }
+
+    /**
+     * @return bool whether the real type of the property rules out null, so that `$o->p ??= $x` never assigns
+     */
+    private static function isPropertyNeverNull(Property $property): bool
+    {
+        $real_type = $property->getRealUnionType();
+        return !$real_type->isEmpty() && !$real_type->containsNullable();
     }
 
     /**
@@ -1948,13 +1954,23 @@ class AssignmentVisitor extends AnalysisVisitor
         } catch (\Exception) {
             return false;
         }
+        // An object of a class that is not known: `VirtualOnly|object`, `mixed`
+        foreach (UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $expr_node)->getTypeSet() as $type) {
+            if (!$type->isObjectWithKnownFQSEN() && $type->isPossiblyObject()) {
+                return true;
+            }
+        }
         $name = $property->getName();
         foreach ($class_list as $clazz) {
             if (!$clazz->hasPropertyWithName($this->code_base, $name)) {
                 // A dynamic property, `__set`, or an undeclared property that is reported elsewhere
                 return true;
             }
-            if (!Clazz::isAssignmentToGetOnlyVirtualProperty($this->code_base, $clazz->getPropertyByName($this->code_base, $name))) {
+            $other_property = $clazz->getPropertyByName($this->code_base, $name);
+            if (!Clazz::isAssignmentToGetOnlyVirtualProperty($this->code_base, $other_property)) {
+                return true;
+            }
+            if ($this->is_coalesce_assign && self::isPropertyNeverNull($other_property)) {
                 return true;
             }
         }
