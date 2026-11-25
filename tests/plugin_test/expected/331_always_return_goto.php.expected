@@ -44,3 +44,9 @@ src/331_always_return_goto.php:135 PhanPluginAlwaysReturnFunction Function \NS33
 src/331_always_return_goto.php:135 PhanTypeMissingReturnReal Method \NS331\labelAfterAssignmentNullsafe is declared to return int in its real type signature but has no return value
 src/331_always_return_goto.php:135 PhanUnreferencedFunction Possibly zero references to function \NS331\labelAfterAssignmentNullsafe()
 src/331_always_return_goto.php:136 PhanUnusedVariable Unused definition of variable $runner
+src/331_always_return_goto.php:145 PhanPluginAlwaysReturnFunction Function \NS331\labelBeforeCallOnParameter has a return type of int, but may fail to return a value
+src/331_always_return_goto.php:145 PhanUnreferencedFunction Possibly zero references to function \NS331\labelBeforeCallOnParameter()
+src/331_always_return_goto.php:158 PhanPluginAlwaysReturnFunction Function \NS331\labelAfterAssignmentOfArgument has a return type of int, but may fail to return a value
+src/331_always_return_goto.php:158 PhanTypeMissingReturnReal Method \NS331\labelAfterAssignmentOfArgument is declared to return int in its real type signature but has no return value
+src/331_always_return_goto.php:158 PhanUnreferencedFunction Possibly zero references to function \NS331\labelAfterAssignmentOfArgument()
+src/331_always_return_goto.php:159 PhanUnusedVariable Unused definition of variable $runner

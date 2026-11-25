@@ -141,3 +141,26 @@ function labelAfterAssignmentNullsafe(bool $skip): int {
     done:
     $runner?->run();
 }
+// The parameter is not modified: the call never returns
+function labelBeforeCallOnParameter(Stops $runner): int {
+    goto done;
+    done:
+    $runner->run();
+}
+/**
+ * @template T
+ * @param T $x
+ * @return T
+ */
+function identity($x) {
+    return $x;
+}
+function labelAfterAssignmentOfArgument(bool $skip): int {
+    $runner = new Normal();
+    if ($skip) {
+        goto done;
+    }
+    $runner = new Stops();
+    done:
+    identity($runner)->run();
+}

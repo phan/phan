@@ -204,16 +204,22 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
     }
 
     /**
-     * Does what this calls depend on the inferred type of a variable or property, in a function that contains a label?
-     * (`$var->method()`, `$var?->method()`, `$var::method()`, `$var()`, but not `(new C())->method()`)
+     * Does what this calls depend on the inferred type of a variable or property that a `goto` may invalidate?
+     * (`$var->method()`, `$var?->method()`, `$var::method()`, `$var()`, `f($var)->method()`, but not `(new C())->method()`)
      *
-     * The inferred type is then not reliable enough to mark the call as never returning:
+     * In a function that contains a label, the inferred type is not reliable enough to mark the call as never returning:
      * a `goto` may skip the assignment that the type comes from (`$x = new A(); if ($c) { goto done; } $x = new B(); done: $x->run();`).
+     * A variable that is not modified in the function (e.g. a parameter) is not affected.
      */
     private function isCallOnVariableInFunctionWithLabel(Node $node): bool
     {
         $target = $node->children[$node->kind === ast\AST_STATIC_CALL ? 'class' : 'expr'] ?? null;
-        if (!($target instanceof Node) || !self::dependsOnVariable($target)) {
+        if (!($target instanceof Node)) {
+            return false;
+        }
+        $variable_names = [];
+        $is_trackable = self::collectVariableNames($target, $variable_names);
+        if ($is_trackable && !$variable_names) {
             return false;
         }
         $scope_node = $this->parent_node_list[0] ?? null;
@@ -229,36 +235,60 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
         }
         // (Cached: a visitor is created for each node)
         self::$contains_label_cache ??= new WeakMap();
-        return self::$contains_label_cache[$scope_node] ??= BlockExitStatusChecker::containsLabel($scope_node);
+        if (!(self::$contains_label_cache[$scope_node] ??= BlockExitStatusChecker::containsLabel($scope_node))) {
+            return false;
+        }
+        if (!$is_trackable) {
+            return true;
+        }
+        foreach ($variable_names as $name => $_) {
+            if (BlockExitStatusChecker::statementMayModifyVariable($scope_node, (string)$name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** @var ?WeakMap<Node,bool> whether the body of a function contains a label */
     private static $contains_label_cache;
 
     /**
-     * @return bool whether the value of $node depends on a variable other than $this, or on a property
+     * Collects the names of the variables (other than $this) that the value of $node depends on.
+     *
+     * @param array<string|int,true> $variable_names
+     * @return bool false if the value also depends on a property or on a variable with a dynamic name
      */
-    private static function dependsOnVariable(Node $node): bool
+    private static function collectVariableNames(Node $node, array &$variable_names): bool
     {
         switch ($node->kind) {
             case ast\AST_VAR:
-                return $node->children['name'] !== 'this';
+                $name = $node->children['name'];
+                if (!\is_string($name)) {
+                    return false;
+                }
+                if ($name !== 'this') {
+                    $variable_names[$name] = true;
+                }
+                return true;
             case ast\AST_PROP:
             case ast\AST_NULLSAFE_PROP:
             case ast\AST_STATIC_PROP:
-                return true;
+                return false;
+            case ast\AST_NEW:
+                // The arguments don't change the class of the object.
+                $class = $node->children['class'];
+                return !($class instanceof Node) || self::collectVariableNames($class, $variable_names);
             case ast\AST_CLOSURE:
             case ast\AST_ARROW_FUNC:
             case ast\AST_CLASS:
-            case ast\AST_ARG_LIST:
-                return false;
+                return true;
         }
         foreach ($node->children as $child) {
-            if ($child instanceof Node && self::dependsOnVariable($child)) {
-                return true;
+            if ($child instanceof Node && !self::collectVariableNames($child, $variable_names)) {
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     /**

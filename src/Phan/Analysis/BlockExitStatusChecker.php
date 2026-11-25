@@ -924,7 +924,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      * Conservatively checks whether executing $node may reassign the variable $var_name.
      * (does not attempt to account for functions modifying variables by reference)
      */
-    private static function statementMayModifyVariable(Node $node, string $var_name): bool
+    public static function statementMayModifyVariable(Node $node, string $var_name): bool
     {
         switch ($node->kind) {
             case ast\AST_ASSIGN_REF:
