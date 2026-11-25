@@ -552,8 +552,50 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
                 $context = $context->withScopeVariable($variable);
             }
         }
+        if ($parent_node !== $node && $node->kind === ast\AST_DIM && self::hasOnlyLiteralOffsets($node)) {
+            // isset($x['a']['b']): the element $x['a']['b'] exists and is not null.
+            // (Only done if the type of the element is known. $x['a'] was handled above.)
+            // Not done for isset($x['a'][$i]): that would make every element of $x['a'] non-null.
+            // isset() reports nothing about its operand, so nothing found while computing the type of the element is reported.
+            $was_discarding_issues = Issue::$is_discarding_issues;
+            Issue::$is_discarding_issues = true;
+            try {
+                $context = $this->updateDimExpressionWithConditionalFilter(
+                    $node,
+                    $context,
+                    static function (UnionType $type): bool {
+                        return !$type->isEmpty() && !$type->hasMixedOrNonEmptyMixedType() && $type->containsNullableOrUndefined();
+                    },
+                    static function (UnionType $type): UnionType {
+                        return $type->nonNullableClone();
+                    },
+                    true,
+                    false
+                );
+            } finally {
+                Issue::$is_discarding_issues = $was_discarding_issues;
+            }
+        }
         $this->context = $context;
         return $context;
+    }
+
+    /**
+     * @param Node $node a node of kind ast\AST_DIM
+     * @return bool whether $node is $var['a'][0]...: every offset is a literal
+     */
+    private static function hasOnlyLiteralOffsets(Node $node): bool
+    {
+        while ($node->kind === ast\AST_DIM) {
+            if (!\is_int($node->children['dim']) && !\is_string($node->children['dim'])) {
+                return false;
+            }
+            $node = $node->children['expr'];
+            if (!$node instanceof Node) {
+                return false;
+            }
+        }
+        return $node->kind === ast\AST_VAR;
     }
 
     /**

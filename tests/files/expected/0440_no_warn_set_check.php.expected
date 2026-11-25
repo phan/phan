@@ -1,1 +1,0 @@
-%s:7 PhanTypeMismatchReturn Returning $data['key'] of type array{} but test() is declared to return string

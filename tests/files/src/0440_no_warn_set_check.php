@@ -4,6 +4,6 @@ function test(array $data = []) : string {
     if (!isset($data['key'])) {
         $data['key'] = [];
     }
-    return $data['key'];  // The real type is unknown, but the phpdoc type is array, so emit PhanTypeMismatchReturn
+    return $data['key'];  // $data['key'] can be anything that was passed in: no warning
 }
 test();

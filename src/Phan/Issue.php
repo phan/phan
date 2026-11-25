@@ -6268,12 +6268,21 @@ class Issue
     public static $emit_attempt_count = 0;
 
     /**
+     * @var bool whether issues are discarded: they are not reported, not passed to plugins, and use no suppression.
+     * Set while computing a type in a place where php reports nothing, e.g. the operand of isset().
+     */
+    public static $is_discarding_issues = false;
+
+    /**
      * @param IssueInstance $issue_instance
      * An issue instance to emit
      */
     public static function emitInstance(
         IssueInstance $issue_instance
     ): void {
+        if (self::$is_discarding_issues) {
+            return;
+        }
         ++self::$emit_attempt_count;
         if (Phan::isExcludedAnalysisFile($issue_instance->getFile())) {
             return;
@@ -6426,6 +6435,10 @@ class Issue
         array $parameters,
         ?Suggestion $suggestion = null
     ): bool {
+        if (self::$is_discarding_issues) {
+            // Before the suppressions are looked at: a suppression is not used by an issue that is discarded
+            return true;
+        }
         ++self::$emit_attempt_count;
         if (Config::getValue('disable_suppression')) {
             return false;
