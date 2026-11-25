@@ -1488,14 +1488,16 @@ class AssignmentVisitor extends AnalysisVisitor
     private function analyzePropAssignment(Clazz $clazz, Property $property, Node $node): Context
     {
         $code_base = $this->code_base;
-        if ($property->isReadOnly()) {
+        // A virtual property without a set hook cannot be assigned to, whatever else is declared for it
+        // (`@phan-read-only` allows the assignment in the constructor)
+        if ($this->dim_depth === 0 && !$this->is_conditional_check && $this->analyzeAssignmentToGetOnlyVirtualProperty($property, $node)) {
+            // Already reported
+        } elseif ($property->isReadOnly()) {
             // Skip read-only checks if this is a conditional check (isset/array_key_exists)
             // We're only inferring that the field exists, not actually modifying it
             if (!$this->is_conditional_check && !$this->isInitializationByCloneWithProperties($property) && ($this->dim_depth === 0 || !self::shouldSkipReadOnlyDimAssignmentCheck($property))) {
                 $this->analyzeAssignmentToReadOnlyProperty($property, $node);
             }
-        } elseif ($this->dim_depth === 0 && !$this->is_conditional_check) {
-            $this->analyzeAssignmentToGetOnlyVirtualProperty($property, $node);
         }
         // TODO: Iterate over individual types, don't look at the whole type at once?
 
@@ -1902,18 +1904,23 @@ class AssignmentVisitor extends AnalysisVisitor
     /**
      * Warns about an assignment to a virtual property without a set hook, which always throws,
      * also in the class itself and for `clone($o, ['p' => $x])`.
+     *
+     * @return bool whether the issue was emitted
      */
-    private function analyzeAssignmentToGetOnlyVirtualProperty(Property $property, Node $node): void
+    private function analyzeAssignmentToGetOnlyVirtualProperty(Property $property, Node $node): bool
     {
         if ($property->getGetHook() === null || !Clazz::isAssignmentToGetOnlyVirtualProperty($this->code_base, $property)) {
-            return;
+            return false;
         }
         if ($this->is_coalesce_assign) {
             // `$o->p ??= $x` only assigns when the get hook returns null
             $real_type = $property->getRealUnionType();
             if (!$real_type->isEmpty() && !$real_type->containsNullable()) {
-                return;
+                return false;
             }
+        }
+        if ($this->mayOtherReceiverAllowWrite($property, $node)) {
+            return false;
         }
         $property_context = $property->getContext();
         $this->emitIssue(
@@ -1923,6 +1930,35 @@ class AssignmentVisitor extends AnalysisVisitor
             $property_context->getFile(),
             $property_context->getLineNumberStart()
         );
+        return true;
+    }
+
+    /**
+     * @return bool whether the object can be an instance of another class for which the assignment may succeed:
+     * for `Plain|VirtualOnly`, only the property of one of the classes was checked.
+     */
+    private function mayOtherReceiverAllowWrite(Property $property, Node $node): bool
+    {
+        $expr_node = $node->kind === ast\AST_PROP ? $node->children['expr'] : null;
+        if (!($expr_node instanceof Node)) {
+            return false;
+        }
+        try {
+            $class_list = (new ContextNode($this->code_base, $this->context, $expr_node))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT);
+        } catch (\Exception) {
+            return false;
+        }
+        $name = $property->getName();
+        foreach ($class_list as $clazz) {
+            if (!$clazz->hasPropertyWithName($this->code_base, $name)) {
+                // A dynamic property, `__set`, or an undeclared property that is reported elsewhere
+                return true;
+            }
+            if (!Clazz::isAssignmentToGetOnlyVirtualProperty($this->code_base, $clazz->getPropertyByName($this->code_base, $name))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private function analyzeAssignmentToReadOnlyProperty(Property $property, Node $node): void

@@ -125,3 +125,54 @@ function writesOther(Base $b, Middle $m, HasN $i, RequiresN $r, UsesVirtualN $u,
     $u->n = 1;
     $p->n = 1; // the backing storage of Plain is inherited
 }
+
+final class GetOnlySibling extends Middle
+{
+}
+
+final class VirtualOnly
+{
+    public int $n {
+        get => 1;
+    }
+}
+
+class AnnotatedReadOnly
+{
+    /** @phan-read-only */
+    public int $n {
+        get => 1;
+    }
+
+    public function __construct()
+    {
+        $this->n = 1; // `@phan-read-only` allows this, php does not
+    }
+}
+
+class PrivateVirtual
+{
+    private int $n {
+        get => 1;
+    }
+
+    public function __construct()
+    {
+        $this->n = 1; // the property of PrivateVirtualChild is another property
+    }
+}
+
+class PrivateVirtualChild extends PrivateVirtual
+{
+    public int $n = 0;
+}
+
+function writesMore(GetOnlySibling $s, Plain|VirtualOnly $u, VirtualOnly|Plain $u2, VirtualOnly $v, ?VirtualOnly $nv): void
+{
+    $s->n = 1; // Writable is not a subclass of the final GetOnlySibling
+    $u->n = 1; // the object may be a Plain
+    $u2->n = 1;
+    [$u2->n] = [1];
+    $v->n = 1;
+    $nv->n = 1;
+}

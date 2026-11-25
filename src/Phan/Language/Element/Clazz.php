@@ -3497,6 +3497,16 @@ class Clazz extends AddressableElement
         if ($class->isInterface() || !self::isGetOnlyVirtualProperty($code_base, $class, $property, true)) {
             return false;
         }
+        if ($property->isPrivate()) {
+            // A property that a subclass declares with this name is another property
+            return true;
+        }
+        // The subclasses of the class of the object: $property is the copy of the class that the property was fetched from,
+        // which may inherit it. (A sibling class with a set hook does not make it writable.)
+        $receiver_class_fqsen = $property->getClassFQSEN();
+        if ($code_base->hasClassWithFQSEN($receiver_class_fqsen)) {
+            $class = $code_base->getClassByFQSEN($receiver_class_fqsen);
+        }
         return !self::isPropertyWritableInSubclass($code_base, $class, $property->getName());
     }
 
