@@ -1,0 +1,1 @@
+%s:23 PhanTypeMismatchPropertyByRef $category['term_id'] of type array{term_id:mixed,cat_ID:mixed}|non-empty-array<mixed,mixed> may end up assigned to property \NS5982\Query->obj of type ?\stdClass by reference at %s:13

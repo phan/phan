@@ -6056,7 +6056,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         (new AssignmentVisitor(
             $code_base,
             $context,
-            new Node(ast\AST_ASSIGN, 0, ['var' => $node, 'expr' => null], $node->lineno),
+            new Node(ast\AST_ASSIGN, AssignmentVisitor::FLAG_CREATES_REFERENCE_TARGET, ['var' => $node, 'expr' => null], $node->lineno),
             $type
         ))->__invoke($node);
         // The types of the variable and of the offset may have been computed and cached for these nodes already.
