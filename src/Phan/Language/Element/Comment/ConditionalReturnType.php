@@ -160,7 +160,8 @@ final class ConditionalReturnType
             return $this;
         }
         return $this->mapLeafTypes(static function (UnionType $type) use ($extra_types): UnionType {
-            return $type->withUnionType($extra_types);
+            // (Not for a branch that is `never`: there the call does not return, whatever the plain annotation says)
+            return $type->isNeverType() ? $type : $type->withUnionType($extra_types);
         });
     }
 
@@ -376,11 +377,7 @@ final class ConditionalReturnType
         if ($arg_type->isStrictSubtypeOf($code_base, $condition)) {
             return true;
         }
-        if (self::isEmptyArrayAgainstShapeWithRequiredField($arg_type, $condition)) {
-            // `[]` is not an `array{exit: false}`. (The types overlap, since both are arrays)
-            return false;
-        }
-        if ($arg_type->hasAnyTypeOverlap($code_base, $condition)) {
+        if ($arg_type->hasAnyTypeOverlap($code_base, $condition) && self::hasOverlapBeyondEmptyArray($code_base, $arg_type, $condition)) {
             return null;
         }
         // The types are disjoint as declared. Two object types can still be satisfied at runtime by a
@@ -392,31 +389,34 @@ final class ConditionalReturnType
     }
 
     /**
-     * True if $arg_type is the empty array (`array{}`) and every type of $condition is an array shape with a field that is not optional.
+     * @return bool whether a type of $arg_type overlaps with a type of $condition,
+     * not counting the empty array (`array{}`) against an array shape with a field that is not optional:
+     * `[]` is not an `array{exit: false}`, although both are arrays.
      */
-    private static function isEmptyArrayAgainstShapeWithRequiredField(UnionType $arg_type, UnionType $condition): bool
+    private static function hasOverlapBeyondEmptyArray(CodeBase $code_base, UnionType $arg_type, UnionType $condition): bool
     {
         foreach ($arg_type->getTypeSet() as $type) {
-            if (!($type instanceof ArrayShapeType) || $type->isNullable() || $type->getFieldTypes()) {
-                return false;
-            }
-        }
-        foreach ($condition->getTypeSet() as $type) {
-            if (!($type instanceof ArrayShapeType) || $type->isNullable()) {
-                return false;
-            }
-            $has_required_field = false;
-            foreach ($type->getFieldTypes() as $field_type) {
-                if (!$field_type->isPossiblyUndefined()) {
-                    $has_required_field = true;
-                    break;
+            $is_empty_array = $type instanceof ArrayShapeType && !$type->isNullable() && !$type->getFieldTypes();
+            foreach ($condition->getTypeSet() as $condition_type) {
+                if ($is_empty_array && $condition_type instanceof ArrayShapeType && self::hasRequiredField($condition_type)) {
+                    continue;
+                }
+                if ($type->asPHPDocUnionType()->hasAnyTypeOverlap($code_base, $condition_type->asPHPDocUnionType())) {
+                    return true;
                 }
             }
-            if (!$has_required_field) {
-                return false;
+        }
+        return false;
+    }
+
+    private static function hasRequiredField(ArrayShapeType $type): bool
+    {
+        foreach ($type->getFieldTypes() as $field_type) {
+            if (!$field_type->isPossiblyUndefined()) {
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     /**

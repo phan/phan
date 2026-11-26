@@ -7,12 +7,15 @@ namespace Phan\Analysis;
 use AssertionError;
 use ast;
 use ast\Node;
+use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\KindVisitorImplementation;
 use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\FQSENException;
+use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
+use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
@@ -767,7 +770,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
                 $returnUnion = $function->getUnionType();
                 $unionTypes = $returnUnion->getTypeSet();
                 $isNeverReturn = count($unionTypes) === 1 && $unionTypes[0] instanceof NeverType;
-                if ($isNeverReturn || $this->callNeverReturnsByConditionalReturnType($function, $node)) {
+                if ($isNeverReturn || $this->callNeverReturnsByConditionalReturnType($function, $node, true)) {
                     return self::STATUS_NOT_RETURN_BITMASK;
                 }
             }
@@ -781,15 +784,22 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      * Does this call never return according to the conditional return type of the function?
      * (`(at)return ($args is array{exit: false} ? void : never)`)
      *
-     * This is only decided when the arguments that the conditions look at are constant expressions (or are left out):
-     * the status of a call is cached and does not depend on the types that variables have where the call is made.
+     * This is only decided when it does not depend on anything that is unknown here:
+     *
+     * - The arguments that the conditions look at are constant expressions (or are left out):
+     *   the status of a call is cached and does not depend on the types that variables have where the call is made.
+     * - An argument is not converted to the declared type of the parameter (`f('1')` for `int $x`).
+     * - For `$this->method()` and `static::method()`, the arguments that the conditions look at are passed:
+     *   a method that overrides this one can have other defaults. (Unless the method cannot be overridden)
+     * - The conditional return type does not use template types.
      *
      * @param Node $node the node of the call
+     * @param bool $is_exact_dispatch false if a method of a subclass may be called instead
      */
-    private function callNeverReturnsByConditionalReturnType(FunctionInterface $function, Node $node): bool
+    private function callNeverReturnsByConditionalReturnType(FunctionInterface $function, Node $node, bool $is_exact_dispatch): bool
     {
         $conditional = $function->getConditionalReturnType();
-        if ($conditional === null || $this->code_base === null || $this->context === null) {
+        if ($conditional === null || $this->code_base === null || $this->context === null || $conditional->hasTemplateTypeRecursive()) {
             return false;
         }
         $args = [];
@@ -799,18 +809,40 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             }
             $args[] = $arg;
         }
+        if (!$is_exact_dispatch && $function instanceof Method && ($function->isFinal() || $function->isPrivate() || $function->getClass($this->code_base)->isFinal())) {
+            $is_exact_dispatch = true;
+        }
         // @phan-suppress-next-line PhanPartialTypeMismatchArgument the arguments of a call are a list
         $args = ArgumentType::normalizeNamedArgs($args, $function);
-        foreach ($function->getParameterList() as $i => $parameter) {
-            $arg = $args[$i] ?? null;
-            if ($arg instanceof Node
-                && $conditional->usesParameter($parameter->getName())
-                && !ParseVisitor::isConstExpr($arg, ParseVisitor::CONSTANT_EXPRESSION_FORBID_NEW_EXPRESSION)
-            ) {
-                return false;
+        // The call is analyzed elsewhere: nothing is reported for its arguments here.
+        $old_is_discarding_issues = Issue::$is_discarding_issues;
+        Issue::$is_discarding_issues = true;
+        try {
+            foreach ($function->getParameterList() as $i => $parameter) {
+                if (!$conditional->usesParameter($parameter->getName())) {
+                    continue;
+                }
+                if (!\array_key_exists($i, $args)) {
+                    if (!$is_exact_dispatch) {
+                        return false;
+                    }
+                    continue;
+                }
+                $arg = $args[$i];
+                if ($arg instanceof Node && !ParseVisitor::isConstExpr($arg, ParseVisitor::CONSTANT_EXPRESSION_FORBID_NEW_EXPRESSION)) {
+                    return false;
+                }
+                $real_parameter_type = $parameter->getNonVariadicUnionType()->getRealUnionType();
+                if (!$real_parameter_type->isEmpty()
+                    && !UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $arg)->isStrictSubtypeOf($this->code_base, $real_parameter_type)
+                ) {
+                    return false;
+                }
             }
+            $type = $function->resolveConditionalReturnType($this->code_base, $this->context, $args);
+        } finally {
+            Issue::$is_discarding_issues = $old_is_discarding_issues;
         }
-        $type = $function->resolveConditionalReturnType($this->code_base, $this->context, $args);
         return $type !== null && $type->isNeverType();
     }
 
@@ -899,7 +931,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             $returnUnion = $method->getUnionType();
             $unionTypes = $returnUnion->getTypeSet();
             $isNeverReturn = count($unionTypes) === 1 && $unionTypes[0] instanceof NeverType;
-            if ($isNeverReturn || $this->callNeverReturnsByConditionalReturnType($method, $node)) {
+            if ($isNeverReturn || $this->callNeverReturnsByConditionalReturnType($method, $node, $normalized_class_name !== 'static')) {
                 return self::STATUS_NOT_RETURN_BITMASK;
             }
         }
@@ -973,7 +1005,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             $returnUnion = $method->getUnionType();
             $unionTypes = $returnUnion->getTypeSet();
             $isNeverReturn = count($unionTypes) === 1 && $unionTypes[0] instanceof NeverType;
-            if ($isNeverReturn || $this->callNeverReturnsByConditionalReturnType($method, $node)) {
+            if ($isNeverReturn || $this->callNeverReturnsByConditionalReturnType($method, $node, $var_name !== 'this')) {
                 return self::STATUS_NOT_RETURN_BITMASK;
             }
         }

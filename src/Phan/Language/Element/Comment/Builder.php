@@ -329,7 +329,7 @@ final class Builder
      * ordinary (at)return annotations fail at the lookahead.
      * @internal
      */
-    public const CONDITIONAL_RETURN_START_REGEX = '/^[\s\/*]*@(?:phan-|psalm-|phpstan-)?return\s+(?=\(\s*\$)/';
+    public const CONDITIONAL_RETURN_START_REGEX = '/^[\s\/*]*@(?i:phan-|psalm-|phpstan-)?(?i:return)\s+(?=\(\s*\$)/';
 
     private const CONDITIONAL_HEAD_REGEX = '/\G\(\s*\$' . self::WORD_REGEX . '\s+is\s+(not\s+)?(' . UnionType::union_type_regex_or_this . ')\s*\?\s*/';
     private const CONDITIONAL_LEAF_REGEX = '/\G(' . UnionType::union_type_regex_or_this . ')/';
@@ -1301,13 +1301,15 @@ final class Builder
      */
     private function maybeParsePHPStanReturn(int $i, string $line): void
     {
-        if (!\preg_match(self::CONDITIONAL_RETURN_START_REGEX, $line)) {
+        if (!\in_array($this->comment_type, Comment::FUNCTION_LIKE, true) || !\preg_match(self::CONDITIONAL_RETURN_START_REGEX, $line)) {
             return;
         }
         $issues = $this->issues;
         $conditional = $this->parseConditionalReturnFromCommentLine($line, $i);
+        // (An issue means that a part of the annotation was not understood, such as the `|null` of `($x is int ? A : B)|null`)
+        $is_understood = $conditional !== null && \count($this->issues) === \count($issues);
         $this->issues = $issues;
-        if ($conditional) {
+        if ($is_understood) {
             $this->maybeParseReturn($i, $line);
         }
     }
