@@ -1,0 +1,12 @@
+%s:16 PhanTypeAliasInternalTypeConflict Saw attempt to use int as a type alias for string but internal types cannot be redefined.
+%s:17 PhanCommentUnextractableTypeAlias Saw a line * @phpstan-type with a type alias that could not be extracted
+%s:18 PhanInvalidCommentForDeclarationType The phpdoc comment for @param cannot occur on a class
+%s:27 PhanDebugAnnotation @phan-debug-var requested for variable $cb - it has union type callable(int,array<string,mixed>):bool(real=callable)
+%s:27 PhanDebugAnnotation @phan-debug-var requested for variable $id - it has union type int|string
+%s:27 PhanDebugAnnotation @phan-debug-var requested for variable $o - it has union type array{a:string,b?:int}(real=array)
+%s:39 PhanCommentUnextractableTypeAlias Saw a line * @phpstan-import-type Missing from File with a type alias that could not be extracted
+%s:40 PhanCommentUnextractableTypeAlias Saw a line * @phpstan-import-type Gone from \NS5989\NoSuchClass with a type alias that could not be extracted
+%s:51 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type array{name:string,mime?:\NS5989\Other\Mime,third:false|int}(real=array)
+%s:51 PhanDebugAnnotation @phan-debug-var requested for variable $l - it has union type array<string,array{name:string,mime?:\NS5989\Other\Mime,third:false|int}>(real=array)
+%s:51 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type non-null-mixed
+%s:51 PhanDebugAnnotation @phan-debug-var requested for variable $t - it has union type false|int

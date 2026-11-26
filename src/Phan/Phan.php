@@ -15,6 +15,7 @@ use Phan\Analysis\LazyInheritedMethodsEligibility;
 use Phan\AST\TolerantASTConverter\Shim;
 use Phan\Daemon\Request;
 use Phan\ForkPool\Writer;
+use Phan\Language\Element\Comment\TypeAliasImporter;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Type;
 use Phan\LanguageServer\LanguageServer;
@@ -317,6 +318,9 @@ class Phan implements IgnoredFilesFilterInterface
         }
 
         $file_path_list = $file_path_lister();
+        // (To find the file of a class that type aliases are imported from: `@phpstan-import-type Name from ClassName`)
+        $code_base->setFilePathListForTypeAliases($file_path_list);
+        TypeAliasImporter::reset();
 
         // === INCREMENTAL ANALYSIS: Integration Point 1 - Load manifest and determine files to analyze ===
         $incremental_manifest = null;
