@@ -120,6 +120,12 @@ final class Builder
 
     /** @var ?ReturnComment the type of an (at)phpstan-return annotation that is not conditional and that Phan could parse. */
     private $phpstan_return_comment = null;
+
+    /** @var bool whether an (at)phpstan-param, (at)phpstan-var or (at)phpstan-return annotation was ignored because Phan could not parse all of it */
+    private $has_ignored_phpstan_annotation = false;
+
+    /** @var array<string,true> the names of the template types that were declared with (at)phpstan-template */
+    private $phpstan_template_names = [];
     /** @var UnionType the union type of the set of (at)throws annotations */
     public $throw_union_type;
     /** @var array<string,Assertion> assertions about each parameter */
@@ -1064,6 +1070,9 @@ final class Builder
                         );
                     }
                     $this->template_type_list[$template_type->getName()] = $template_type;
+                    if (\stripos($line, '@phpstan-template') !== false) {
+                        $this->phpstan_template_names[$template_type->getName()] = true;
+                    }
                 }
             }
         }
@@ -1372,6 +1381,8 @@ final class Builder
             });
             if ($type && !$type->isEmpty()) {
                 $this->phpstan_return_comment = new ReturnComment($type, $this->guessActualLineLocation($i));
+            } else {
+                $this->has_ignored_phpstan_annotation = true;
             }
             return;
         }
@@ -1423,7 +1434,11 @@ final class Builder
         $result = $parse();
         $is_understood = \count($this->issues) === \count($issues);
         $this->issues = $issues;
-        return $is_understood ? $result : null;
+        if (!$is_understood) {
+            $this->has_ignored_phpstan_annotation = true;
+            return null;
+        }
+        return $result;
     }
 
     /**
@@ -1469,6 +1484,8 @@ final class Builder
         // (Without a name, the type was not followed by the variable: `callable(T): bool $predicate`)
         if ($param && $param->getName() !== '' && !$param->getUnionType()->isEmpty()) {
             $this->phpstan_param_list[] = $param;
+        } else {
+            $this->has_ignored_phpstan_annotation = true;
         }
     }
 
@@ -1503,6 +1520,17 @@ final class Builder
      */
     private function applyPHPStanAnnotations(): void
     {
+        if ($this->phpstan_template_names && $this->has_ignored_phpstan_annotation) {
+            // e.g. `@phpstan-template T`, `@phpstan-param T $value` and `@phpstan-return (T is string ? string : T)`,
+            // of which Phan does not read the last one: the parameter would be a T that the return type does not have.
+            // The annotations of the comment depend on each other, so none of them is used.
+            foreach ($this->phpstan_template_names as $name => $_) {
+                unset($this->template_type_list[$name]);
+            }
+            $this->phpstan_param_list = [];
+            $this->phpstan_var_list = [];
+            $this->phpstan_return_comment = null;
+        }
         if ($this->phpstan_param_list) {
             $this->phan_overrides['param'] = \array_merge($this->phpstan_param_list, $this->phan_overrides['param'] ?? []);
         }
