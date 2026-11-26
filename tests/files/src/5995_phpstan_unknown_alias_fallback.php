@@ -76,3 +76,67 @@ function test(Model $m) {
     $f = $m->f([], [], 1); $ty = $m->typed([]); $g = g([1]);
     '@phan-debug-var $u, $ul, $np, $k, $p, $f, $ty, $g';
 }
+
+// Promoted properties, defaults, several properties, a later (at)psalm-param, variadics, templates, generic arguments, closures and conditional types.
+class Box {}
+class Promoted {
+    /**
+     * @param array $rows
+     * @phpstan-param GlobalAlias $rows
+     */
+    public function __construct(public array $rows) {}
+    /**
+     * @var int
+     * @phpstan-var GlobalAlias
+     */
+    public $nullDefault = null;
+    /** @phpstan-var GlobalAlias */
+    public $stringDefault = 'x';
+    /**
+     * @var object
+     * @phpstan-var Box
+     */
+    public MissingNative $native;
+    /**
+     * @var int
+     * @var string
+     * @phpstan-var AliasA
+     * @phpstan-var AliasB
+     */
+    public $a = 1, $b = 'x';
+}
+/**
+ * @param array $x
+ * @phpstan-param GlobalAlias $x
+ * @psalm-param PsalmAlias $x
+ */
+function psalmWins($x) { '@phan-debug-var $x'; }
+/** @phpstan-param GlobalAlias ...$xs */
+function variadic(int ...$xs) { '@phan-debug-var $xs'; }
+/**
+ * @param mixed $x
+ * @return array
+ * @phpstan-template T
+ * @phpstan-param T $x
+ * @phpstan-return GlobalAlias<T>
+ */
+function templateWithUnknown($x) { return [$x]; }
+/**
+ * @param array $x
+ * @return array
+ * @phpstan-param Box<GlobalAlias> $x
+ * @phpstan-return array{a: \Closure(GlobalAlias): int}
+ */
+function generic($x) { '@phan-debug-var $x'; return $x; }
+/**
+ * @return mixed
+ * @phpstan-return ($x is int ? GlobalAlias : Box)
+ */
+function cond($x) { return $x; }
+function testMore(Promoted $p) {
+    $rows = $p->rows; $nd = $p->nullDefault; $sd = $p->stringDefault; $n = $p->native; $a = $p->a; $b = $p->b;
+    variadic(1);
+    $f = array_map(/** @phpstan-return GlobalAlias */ function ($v) { return $v; }, [1]);
+    $g = generic([]); $c = cond(1);
+    '@phan-debug-var $rows, $nd, $sd, $n, $a, $b, $f, $g, $c';
+}

@@ -28,7 +28,6 @@ use Phan\Language\Element\Attribute;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Comment;
-use Phan\Language\Element\Comment\VendorTypeFallback;
 use Phan\Language\Element\Comment\Builder;
 use Phan\Language\Element\EnumCase;
 use Phan\Language\Element\Flags;
@@ -793,11 +792,6 @@ class ParseVisitor extends ScopeVisitor
                     $this->handlePropertyCustomAnnotations($class, $phpdoc_property, $comment);
                 }
                 continue;
-            }
-            if ($variable) {
-                // For a `@phpstan-var` that names a class that does not exist
-                // @phan-suppress-next-line PhanAccessMethodInternal
-                VendorTypeFallback::registerProperty($property, $comment, $variable->getName());
             }
             // Parse property hooks (PHP 8.4+)
             if ($hooks_node instanceof Node) {

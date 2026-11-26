@@ -680,26 +680,6 @@ class Comment
     }
 
     /**
-     * Replaces the type of the `(at)param` of $name and of the `(at)return` of this comment
-     * (null to keep it; an empty type to remove the annotation).
-     * Used when an `(at)phpstan-` annotation names a class that does not exist (VendorTypeFallback).
-     */
-    public function restorePlainTypes(?string $name, ?UnionType $param_type, ?UnionType $return_type): void
-    {
-        if ($name !== null && $param_type !== null && isset($this->parameter_map[$name])) {
-            if ($param_type->isEmpty()) {
-                unset($this->parameter_map[$name]);
-            } else {
-                // @phan-suppress-next-line PhanAccessMethodInternal
-                $this->parameter_map[$name]->setUnionType($param_type);
-            }
-        }
-        if ($return_type !== null && $this->return_comment !== null) {
-            $this->return_comment = $return_type->isEmpty() ? null : $this->return_comment->withType($return_type);
-        }
-    }
-
-    /**
      * @return bool
      * True if this doc block contains a (at)return
      * directive specifying a type.

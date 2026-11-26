@@ -21,3 +21,26 @@
 %s:76 PhanUnusedVariable Unused definition of variable $f
 %s:76 PhanUnusedVariable Unused definition of variable $g
 %s:76 PhanUnusedVariable Unused definition of variable $ty
+%s:99 PhanUndeclaredTypeProperty Property \NS5995\Promoted->native has undeclared type \NS5995\MissingNative
+%s:113 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \NS5995\PsalmAlias
+%s:113 PhanUndeclaredTypeParameter Parameter $x has undeclared type \NS5995\PsalmAlias
+%s:115 PhanDebugAnnotation @phan-debug-var requested for variable $xs - it has union type int[](real=int[])
+%s:130 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type array
+%s:137 PhanUnusedVariable Unused definition of variable $a
+%s:137 PhanUnusedVariable Unused definition of variable $b
+%s:137 PhanUnusedVariable Unused definition of variable $n
+%s:137 PhanUnusedVariable Unused definition of variable $nd
+%s:137 PhanUnusedVariable Unused definition of variable $rows
+%s:137 PhanUnusedVariable Unused definition of variable $sd
+%s:139 PhanUnusedVariable Unused definition of variable $f
+%s:140 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type int
+%s:140 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type string
+%s:140 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type mixed
+%s:140 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type non-empty-array<int,1>(real=?array)
+%s:140 PhanDebugAnnotation @phan-debug-var requested for variable $g - it has union type array
+%s:140 PhanDebugAnnotation @phan-debug-var requested for variable $n - it has union type \NS5995\Box|\NS5995\MissingNative(real=\NS5995\MissingNative)
+%s:140 PhanDebugAnnotation @phan-debug-var requested for variable $nd - it has union type int
+%s:140 PhanDebugAnnotation @phan-debug-var requested for variable $rows - it has union type array(real=array)
+%s:140 PhanDebugAnnotation @phan-debug-var requested for variable $sd - it has union type string
+%s:140 PhanUnusedVariable Unused definition of variable $c
+%s:140 PhanUnusedVariable Unused definition of variable $g

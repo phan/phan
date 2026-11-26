@@ -15,7 +15,6 @@ use Phan\Analysis\LazyInheritedMethodsEligibility;
 use Phan\AST\TolerantASTConverter\Shim;
 use Phan\Daemon\Request;
 use Phan\ForkPool\Writer;
-use Phan\Language\Element\Comment\VendorTypeFallback;
 use Phan\Language\Element\Comment\TypeAliasImporter;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Type;
@@ -574,9 +573,6 @@ class Phan implements IgnoredFilesFilterInterface
             // See https://github.com/phan/phan/issues/3771
             $function_or_method->ensureScopeInitialized($code_base);
         };
-        // (Before the scopes of the functions get the types of the parameters)
-        // @phan-suppress-next-line PhanAccessMethodInternal
-        VendorTypeFallback::resolveAll($code_base);
         $function_map = $code_base->getFunctionMap();
         foreach ($function_map as $function) {  // iterate, ignoring $fqsen
             $preload_function_state($function);
@@ -655,11 +651,6 @@ class Phan implements IgnoredFilesFilterInterface
             if (Config::getValue('enable_class_alias_support')) {
                 $code_base->resolveClassAliases();
             }
-
-            // The plain type is used for a `@phpstan-param`, `@phpstan-var` or `@phpstan-return` with a class that does not exist
-            // (all classes are known now, and nothing has used the types yet)
-            // @phan-suppress-next-line PhanAccessMethodInternal
-            VendorTypeFallback::resolveAll($code_base);
 
             // Take a pass over all classes verifying
             // various states now that we have the whole
