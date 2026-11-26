@@ -11,6 +11,7 @@ use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Comment\Assertion;
+use Phan\Language\Element\Comment\ConditionalAssertion;
 use Phan\Language\Element\Comment\Builder;
 use Phan\Language\Element\Comment\ConditionalReturnType;
 use Phan\Language\Element\Comment\CustomAnnotation;
@@ -193,6 +194,11 @@ class Comment
      * An optional assertion on a parameter's type
      */
     protected $param_assertion_map = [];
+
+    /**
+     * @var list<ConditionalAssertion> the (at)phan-assert-if-true/(at)phan-assert-if-false annotations (also phpstan-, psalm-)
+     */
+    protected $conditional_assertion_list = [];
 
     /**
      * @var list<Type>
@@ -895,6 +901,25 @@ class Comment
     public function getVariableList(): array
     {
         return $this->variable_list;
+    }
+
+    /**
+     * @return list<ConditionalAssertion> the (at)phan-assert-if-true/(at)phan-assert-if-false annotations (also phpstan-, psalm-)
+     */
+    public function getConditionalAssertionList(): array
+    {
+        return $this->conditional_assertion_list;
+    }
+
+    /**
+     * Sets the (at)phan-assert-if-true/(at)phan-assert-if-false annotations (called by the Builder)
+     *
+     * @param list<ConditionalAssertion> $conditional_assertion_list
+     * @internal
+     */
+    public function setConditionalAssertionList(array $conditional_assertion_list): void
+    {
+        $this->conditional_assertion_list = $conditional_assertion_list;
     }
 
     /**

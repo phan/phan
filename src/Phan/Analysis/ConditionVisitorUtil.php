@@ -40,6 +40,8 @@ use Phan\Language\Type\LiteralTypeInterface;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NonEmptyStringType;
 use Phan\Language\Type\NonZeroIntType;
+use Phan\Language\Type\CallableInterface;
+use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\ScalarType;
@@ -1782,6 +1784,13 @@ trait ConditionVisitorUtil
                 $affected_type = $affected_type->nonFalseClone();
             } elseif ($type instanceof TrueType) {
                 $affected_type = $affected_type->nonTrueClone();
+            } elseif ($type->hasObjectWithKnownFQSEN()) {
+                // As for `!($x instanceof C)`: only the types that are C or a subclass of C are excluded.
+                // (`object` or an interface can be cast to C, but a value of that type may be something else)
+                if ($type->isNullable()) {
+                    $affected_type = $affected_type->nonNullableClone();
+                }
+                $affected_type = $affected_type->withoutSubclassesOf($code_base, $type->withIsNullable(false));
             } else {
                 continue;
             }
@@ -1791,9 +1800,62 @@ trait ConditionVisitorUtil
         if ($excluded_type->isEmpty()) {
             return $affected_type;
         }
-        return $affected_type->makeFromFilter(static function (Type $type) use ($code_base, $excluded_type): bool {
-            return $type instanceof MixedType || !$type->asPHPDocUnionType()->canCastToUnionType($excluded_type, $code_base);
-        });
+        // Only the types that are subtypes of an excluded type are removed:
+        // a `string` that is not a `non-empty-string` is still a `string`.
+        $excluded_type_set = $excluded_type->getTypeSet();
+        return UnionType::of(
+            self::typesWithoutSubtypesOf($code_base, $affected_type->getTypeSet(), $excluded_type_set),
+            self::typesWithoutSubtypesOf($code_base, $affected_type->getRealTypeSet(), $excluded_type_set)
+        );
+    }
+
+    /**
+     * @param list<Type> $type_set
+     * @param list<Type> $excluded_type_set
+     * @return list<Type> $type_set without the types that are subtypes of a type in $excluded_type_set.
+     * (`?int` without `int` is `null`)
+     */
+    private static function typesWithoutSubtypesOf(CodeBase $code_base, array $type_set, array $excluded_type_set): array
+    {
+        // Excluding `?int` also excludes null, from every type.
+        $is_null_excluded = false;
+        foreach ($excluded_type_set as $excluded) {
+            if ($excluded->isNullable()) {
+                $is_null_excluded = true;
+                break;
+            }
+        }
+        $result = [];
+        foreach ($type_set as $type) {
+            if ($type instanceof MixedType) {
+                $result[] = $type;
+                continue;
+            }
+            if ($type instanceof NullType) {
+                if (!$is_null_excluded) {
+                    $result[] = $type;
+                }
+                continue;
+            }
+            $non_nullable_type = $type->withIsNullable(false);
+            $is_excluded = false;
+            foreach ($excluded_type_set as $excluded) {
+                if ($excluded instanceof CallableInterface && !($non_nullable_type instanceof CallableInterface || $non_nullable_type instanceof ClosureType)) {
+                    // An array or a string is treated as a subtype of callable, but only some of their values are callable.
+                    continue;
+                }
+                if ($non_nullable_type->isSubtypeOf($excluded, $code_base)) {
+                    $is_excluded = true;
+                    break;
+                }
+            }
+            if (!$is_excluded) {
+                $result[] = $is_null_excluded ? $non_nullable_type : $type;
+            } elseif ($type->isNullable() && !$is_null_excluded) {
+                $result[] = NullType::instance(false);
+            }
+        }
+        return $result;
     }
 
     /**

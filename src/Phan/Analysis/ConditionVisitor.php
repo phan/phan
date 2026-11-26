@@ -9,6 +9,7 @@ use ast\flags;
 use ast\Node;
 use Closure;
 use Phan\Analysis\ConditionVisitor\HasTypeCondition;
+use Phan\Analysis\ConditionVisitor\NarrowsToTypeCondition;
 use Phan\Analysis\ConditionVisitor\NotHasTypeCondition;
 use Phan\AST\ASTReverter;
 use Phan\AST\ContextNode;
@@ -1596,6 +1597,20 @@ class ConditionVisitor extends KindVisitorImplementation implements ConditionVis
             $expression,
             0,
             new HasTypeCondition($type)
+        );
+    }
+
+    /**
+     * Returns a context where $expression has the type $type, keeping the types that it already has if they are subtypes of $type.
+     * (updateToHaveType() replaces the type)
+     */
+    public static function updateToHaveNarrowedType(CodeBase $code_base, Context $context, Node $expression, UnionType $type): Context
+    {
+        $cv = new ConditionVisitor($code_base, $context);
+        return $cv->analyzeBinaryConditionPattern(
+            $expression,
+            0,
+            new NarrowsToTypeCondition($type)
         );
     }
 

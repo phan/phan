@@ -73,6 +73,10 @@ final class Builder
         'psalm-require-extends' => 'require-extends',
         'psalm-require-implements' => 'require-implements',
         'psalm-immutable' => 'immutable',
+        'phpstan-assert-if-true' => 'phan-assert-if-true',
+        'phpstan-assert-if-false' => 'phan-assert-if-false',
+        'psalm-assert-if-true' => 'phan-assert-if-true',
+        'psalm-assert-if-false' => 'phan-assert-if-false',
     ];
     /** @var list<Type> the list of (at)use annotations with template parameters for traits */
     public $used_trait_types = [];
@@ -97,6 +101,9 @@ final class Builder
     public $throw_union_type;
     /** @var array<string,Assertion> assertions about each parameter */
     public $param_assertion_map = [];
+
+    /** @var list<ConditionalAssertion> the (at)phan-assert-if-true/(at)phan-assert-if-false annotations (also phpstan-, psalm-) */
+    public $conditional_assertion_list = [];
 
     /** @var list<Type> */
     private $required_extends_types = [];
@@ -504,6 +511,7 @@ final class Builder
             $this->closure_scope instanceof None &&
             $this->throw_union_type->isEmpty() &&
             !$this->param_assertion_map &&
+            !$this->conditional_assertion_list &&
             !$this->custom_annotations
         ) {
             // Don't create an extra object if the string contained `@` but nothing of use was actually extracted.
@@ -536,6 +544,9 @@ final class Builder
         if ($comment instanceof CommentWithCustomAnnotations && $this->custom_annotations) {
             $comment->setCustomAnnotations($this->custom_annotations);
         }
+        if ($this->conditional_assertion_list) {
+            $comment->setConditionalAssertionList($this->conditional_assertion_list);
+        }
         return $comment;
     }
 
@@ -561,7 +572,7 @@ final class Builder
         // (?i) makes this case-sensitive, (?-1) makes it case-insensitive
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
         // Support both regular tags ("@something") and inline versions of tags ("optional_prefix {@something}").
-        if (\preg_match('/(?:^|{)@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|implements|use|require-extends|require-implements|suppress|unused-param|no-named-arguments|phan-[a-z0-9_-]*|psalm-(?:template(?:-(?:co|contra)variant)?|param|var|return|require-extends|require-implements|immutable)(?-i)|method|property|property-read|property-write|abstract|template(?:-(?:co|contra)variant)?|PhanClosureScope|readonly|immutable|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $trimmed, $matches)) {
+        if (\preg_match('/(?:^|{)@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|implements|use|require-extends|require-implements|suppress|unused-param|no-named-arguments|phan-[a-z0-9_-]*|(?:phpstan|psalm)-assert-if-(?:true|false)|psalm-(?:template(?:-(?:co|contra)variant)?|param|var|return|require-extends|require-implements|immutable)(?-i)|method|property|property-read|property-write|abstract|template(?:-(?:co|contra)variant)?|PhanClosureScope|readonly|immutable|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $trimmed, $matches)) {
             $case_sensitive_type = $matches[1];
             $type = \strtolower($case_sensitive_type);
             $type = self::TAG_ALIAS_MAP[$type] ?? $type;
@@ -1039,6 +1050,48 @@ final class Builder
         }
     }
 
+    /**
+     * @internal
+     */
+    public const CONDITIONAL_ASSERT_REGEX = '/@(phan|phpstan|psalm)-assert-if-(true|false)\s+(=?!?|!=)(' . UnionType::union_type_regex . ')\s+\$(' . self::WORD_REGEX . ')(?=\s|$)/i';
+
+    /**
+     * Parses `(at)phan-assert-if-true T $param`, `(at)phpstan-assert-if-false !T $param`, etc.
+     *
+     * As for PHPStan, the opposite is assumed when the function returns the other value, unless the type is written as `=T`.
+     * For the psalm- form, nothing is assumed for the other value.
+     *
+     * Only assertions about a parameter are supported, not about `$this->prop` or `$this->method()`.
+     */
+    private function maybeParseConditionalAssert(int $i, string $line): void
+    {
+        // (`$this->prop`, `$param->method()` etc. are not matched: only a parameter can be asserted)
+        if (!\preg_match(self::CONDITIONAL_ASSERT_REGEX, $line, $match)) {
+            $this->checkCompatible('@phan-assert-if-true', Comment::FUNCTION_LIKE, $i);
+            return;
+        }
+        $if_true = \strtolower($match[2]) === 'true';
+        if (!$this->checkCompatible('@' . \strtolower($match[1]) . '-assert-if-' . ($if_true ? 'true' : 'false'), Comment::FUNCTION_LIKE, $i)) {
+            return;
+        }
+        $union_type = UnionType::fromStringInContext(
+            $match[4],
+            $this->context,
+            Type::FROM_PHPDOC,
+            $this->code_base
+        );
+        if ($union_type->isEmpty()) {
+            return;
+        }
+        $this->conditional_assertion_list[] = new ConditionalAssertion(
+            $union_type,
+            $match[\count($match) - 1],
+            $if_true,
+            \str_contains($match[3], '!'),
+            !\str_contains($match[3], '=') && \strtolower($match[1]) !== 'psalm'
+        );
+    }
+
     private function setPhanAccessFlag(int $i, bool $write_only, string $name): void
     {
         // Make sure support for generic types is enabled
@@ -1284,6 +1337,10 @@ final class Builder
             case 'phan-assert-false-condition':
                 $this->maybeParsePhanAssert($i, $line);
                 return;
+            case 'phan-assert-if-true':
+            case 'phan-assert-if-false':
+                $this->maybeParseConditionalAssert($i, $line);
+                return;
             case 'phan-constructor-used-for-side-effects':
                 if ($this->checkCompatible('@' . $type, [Comment::ON_CLASS], $i)) {
                     $this->comment_flags |= Flags::IS_CONSTRUCTOR_USED_FOR_SIDE_EFFECTS;
@@ -1372,6 +1429,8 @@ final class Builder
      */
     public const SUPPORTED_ANNOTATIONS = [
         '@phan-assert' => '',
+        '@phan-assert-if-true' => '',
+        '@phan-assert-if-false' => '',
         '@phan-assert-true-condition' => '',
         '@phan-assert-false-condition' => '',
         '@phan-closure-scope' => '',
