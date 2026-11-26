@@ -313,8 +313,13 @@ class Positional {
      * @phan-var positive-int $e
      */
     public $e = 1, $f = 'x';
+    /**
+     * @psalm-var int $g
+     * @phan-var string $h
+     */
+    public $g = 1, $h = 'x';
 }
-function testPositional(Positional $p) { $a = $p->a; $b = $p->b; $c = $p->c; $d = $p->d; $e = $p->e; $f = $p->f; '@phan-debug-var $a, $b, $c, $d, $e, $f'; }
+function testPositional(Positional $p) { $a = $p->a; $b = $p->b; $c = $p->c; $d = $p->d; $e = $p->e; $f = $p->f; $g = $p->g; $h = $p->h; '@phan-debug-var $a, $b, $c, $d, $e, $f, $g, $h'; }
 
 /**
  * Not on a function: ignored without an issue.

@@ -1573,7 +1573,17 @@ final class Builder
         }
         $plain_name = $this->variable_list ? \reset($this->variable_list)->getName() : '';
         $name = $this->phpstan_var_list[0]->getName();
-        return $plain_name === '' || $name === '' || $plain_name === $name;
+        if ($plain_name !== '' && $name !== '' && $plain_name !== $name) {
+            return false;
+        }
+        // (`@psalm-var int $a` and `@phan-var string $b` for `public $a, $b;` are for different elements, too)
+        foreach (self::parametersOf($this->phan_overrides['var'] ?? []) as $phan_var) {
+            $phan_name = $phan_var->getName();
+            if ($phan_name !== '' && $name !== '' && $phan_name !== $name) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -1673,15 +1683,20 @@ final class Builder
                 $this->variable_list = $this->phpstan_var_list;
             }
         } elseif ($this->phpstan_var_list) {
+            $phan_vars = self::parametersOf($this->phan_overrides['var'] ?? []);
             $phan_names = [];
-            foreach (self::parametersOf($this->phan_overrides['var'] ?? []) as $phan_var) {
+            foreach ($phan_vars as $phan_var) {
                 $phan_names[$phan_var->getName()] = true;
             }
+            // Before the `@phan-var` annotations: an annotation that replaces no `@var` is added in this order,
+            // and `@phpstan-var int $a` is like a `@var` (the annotations of `public $a, $b;` are matched by position).
+            $vars = [];
             foreach ($this->phpstan_var_list as $phpstan_var) {
                 if (!isset($phan_names[$phpstan_var->getName()])) {
-                    $this->phan_overrides['var'][] = $phpstan_var;
+                    $vars[] = $phpstan_var;
                 }
             }
+            $this->phan_overrides['var'] = \array_merge($vars, $phan_vars);
         }
         if ($this->phpstan_return_comment && !isset($this->phan_overrides['return'])) {
             // (A conditional return type of `@return` or `@psalm-return` is kept: it says more than a plain type)

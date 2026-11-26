@@ -52,15 +52,19 @@
 %s:293 PhanDebugAnnotation @phan-debug-var requested for variable $r - it has union type mixed
 %s:293 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type mixed
 %s:293 PhanUnusedVariable Unused definition of variable $r
-%s:317 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type int
-%s:317 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type string
-%s:317 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type int
-%s:317 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type string
-%s:317 PhanDebugAnnotation @phan-debug-var requested for variable $e - it has union type positive-int
-%s:317 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type non-empty-string
-%s:317 PhanUnusedVariable Unused definition of variable $a
-%s:317 PhanUnusedVariable Unused definition of variable $b
-%s:317 PhanUnusedVariable Unused definition of variable $c
-%s:317 PhanUnusedVariable Unused definition of variable $d
-%s:317 PhanUnusedVariable Unused definition of variable $e
-%s:317 PhanUnusedVariable Unused definition of variable $f
+%s:322 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type int
+%s:322 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type string
+%s:322 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type int
+%s:322 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type string
+%s:322 PhanDebugAnnotation @phan-debug-var requested for variable $e - it has union type positive-int
+%s:322 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type non-empty-string
+%s:322 PhanDebugAnnotation @phan-debug-var requested for variable $g - it has union type int
+%s:322 PhanDebugAnnotation @phan-debug-var requested for variable $h - it has union type string
+%s:322 PhanUnusedVariable Unused definition of variable $a
+%s:322 PhanUnusedVariable Unused definition of variable $b
+%s:322 PhanUnusedVariable Unused definition of variable $c
+%s:322 PhanUnusedVariable Unused definition of variable $d
+%s:322 PhanUnusedVariable Unused definition of variable $e
+%s:322 PhanUnusedVariable Unused definition of variable $f
+%s:322 PhanUnusedVariable Unused definition of variable $g
+%s:322 PhanUnusedVariable Unused definition of variable $h
