@@ -65,3 +65,16 @@ function calls(int $n): void {
     literals('UTF-8', 'a');
     literals('latin1', 'c');
 }
+
+/**
+ * A class constant in a shape without keys, and a comma in a literal in double quotes
+ *
+ * @param array{Kind::A, Kind::TYPE_FEED} $r
+ * @param array{k: Kind::A, self::A} $s
+ * @param array{0: "a,b", 1: "c"} $t
+ * @param array<string, "x,y"> $u
+ * @param 'say "hi", ok'|"plain" $v
+ */
+function inShapes($r, $s, $t, $u, $v): void {
+    '@phan-debug-var $r, $s, $t, $u, $v';
+}

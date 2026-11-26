@@ -886,6 +886,7 @@ final class TypeTest extends CodeBaseAwareTestBase
             ['Foo::'],  // a class constant type needs the name of the constant
             ['::BAR'],
             ['"unterminated'],
+            ['"a&b"'],  // `&` separates the types of an intersection type
             ["\"it's\""],  // a double-quoted literal cannot contain a single quote
             ['array{::int}'],
             ["-'a'"],
