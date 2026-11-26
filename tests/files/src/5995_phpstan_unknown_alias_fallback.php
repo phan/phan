@@ -166,3 +166,18 @@ $not_classes = notClasses('Vendor\\Thing', new AfterAttribute(), new AfterDocCom
 
 #[\Attribute] class AfterAttribute {}
 /** A doc comment */ final class AfterDocComment {}
+
+/**
+ * A class in a nested generic argument, and a class that has a comment between `class` and its name.
+ * @param array $xs
+ * @param array $ys
+ * @param object $c
+ * @phpstan-param list<class-string<GlobalAlias>> $xs
+ * @phpstan-param array{a: callable(list<class-string<GlobalAlias>>): void} $ys
+ * @phpstan-param list<class-string<AfterComment>> $c
+ */
+function nested($xs, $ys, $c) {
+    '@phan-debug-var $xs, $ys, $c';
+}
+
+class /* generated */ AfterComment {}

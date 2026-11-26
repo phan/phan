@@ -49,3 +49,6 @@
 %s:160 PhanDebugAnnotation @phan-debug-var requested for variable $doc - it has union type \NS5995\AfterDocComment
 %s:160 PhanDebugAnnotation @phan-debug-var requested for variable $name - it has union type 'Vendor\\Thing'
 %s:164 PhanDebugAnnotation @phan-debug-var requested for variable $not_classes - it has union type mixed
+%s:179 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type list<class-string<\NS5995\AfterComment>>
+%s:179 PhanDebugAnnotation @phan-debug-var requested for variable $xs - it has union type array
+%s:179 PhanDebugAnnotation @phan-debug-var requested for variable $ys - it has union type array
