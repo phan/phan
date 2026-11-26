@@ -1045,12 +1045,16 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                     }
                     if (!$field_type->isEmpty() && !$field_type->isPossiblyUndefined() && !$field_type->containsNullableOrMixed() && !$field_type->hasTemplateTypeRecursive()) {
                         // The field of this array shape is set: the value is not one of these.
+                        // (It can still be the null of `?array{field: string}`)
+                        if ($type->isNullable()) {
+                            $type_set[] = NullType::instance(false);
+                        }
                         continue;
                     }
                     $type = ArrayShapeType::combineWithPrecedence(
-                        ArrayShapeType::fromFieldTypes([$dim_value => $null_and_possibly_undefined], $type->isNullable()),
+                        ArrayShapeType::fromFieldTypes([$dim_value => $null_and_possibly_undefined], false),
                         $type
-                    );
+                    )->withIsNullable($type->isNullable());
                 }
             }
             $type_set[] = $type;
