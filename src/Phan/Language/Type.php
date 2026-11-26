@@ -1101,13 +1101,6 @@ class Type implements Stringable
         if (str_contains($fully_qualified_string, '"')) {
             $fully_qualified_string = self::normalizeDoubleQuotedLiterals($fully_qualified_string);
         }
-        $foreign_type = self::typeFromForeignDocSyntax(ltrim($fully_qualified_string, '?'), $fully_qualified_string[0] === '?');
-        if ($foreign_type instanceof Type) {
-            return $foreign_type;
-        }
-        if (\is_string($foreign_type)) {
-            $fully_qualified_string = ($fully_qualified_string[0] === '?' ? '?' : '') . $foreign_type;
-        }
         while (str_ends_with($fully_qualified_string, ')')) {
             if ($fully_qualified_string[0] === '?') {
                 $fully_qualified_string = '?' . substr($fully_qualified_string, 2, -1);
@@ -1128,6 +1121,14 @@ class Type implements Stringable
                 $is_nullable,
                 GenericArrayType::KEY_MIXED
             );
+        }
+        // (After the brackets were removed, as in fromStringInContext(): `(non-negative-int)`)
+        $foreign_type = self::typeFromForeignDocSyntax(ltrim($fully_qualified_string, '?'), $fully_qualified_string[0] === '?');
+        if ($foreign_type instanceof Type) {
+            return $foreign_type;
+        }
+        if (\is_string($foreign_type)) {
+            $fully_qualified_string = ($fully_qualified_string[0] === '?' ? '?' : '') . $foreign_type;
         }
 
         $tuple = self::typeStringComponents($fully_qualified_string);
