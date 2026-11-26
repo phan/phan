@@ -188,7 +188,12 @@ class /* generated */ AfterComment {}
  * @param object $y
  * @phpstan-param Known&Box<GlobalAlias> $x
  * @phpstan-param Known&Box<Later> $y
+ * @phpstan-param AfterLineComment $z
+ * @param object $z
  */
-function intersection($x, $y) {
-    '@phan-debug-var $x, $y';
+function intersection($x, $y, $z) {
+    '@phan-debug-var $x, $y, $z';
 }
+
+class // a line comment
+    AfterLineComment {}

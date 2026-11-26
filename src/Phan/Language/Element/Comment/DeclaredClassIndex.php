@@ -131,10 +131,10 @@ final class DeclaredClassIndex
 
     /**
      * The declaration of a class, interface, trait or enum, wherever it is on a line
-     * (`#[Attribute] class Foo`, `<?php namespace NS; class Foo {}`), also with a block comment before the name.
+     * (`#[Attribute] class Foo`, `<?php namespace NS; class Foo {}`), also with comments before the name.
      * Not `Foo::class`, `$class`, `->class`, and not `new class extends Foo`.
      */
-    private const DECLARATION_REGEX = '/(?<![a-zA-Z0-9_\x7f-\xff$>:\\\\])(?:class|interface|trait|enum)(?>\s+|\/\*[^*]*+(?:\*(?!\/)[^*]*+)*+\*\/)++(?!(?:extends|implements|class|interface|trait|enum)\b)(' . self::NAME_REGEX . ')/i';
+    private const DECLARATION_REGEX = '/(?<![a-zA-Z0-9_\x7f-\xff$>:\\\\])(?:class|interface|trait|enum)(?>\s+|\/\*[^*]*+(?:\*(?!\/)[^*]*+)*+\*\/|(?:\/\/|#)[^\n]*+)++(?!(?:extends|implements|class|interface|trait|enum)\b)(' . self::NAME_REGEX . ')/i';
 
     /**
      * @param list<string> $file_path_list
