@@ -128,6 +128,31 @@ function test(Model $model): void {
 }
 
 /**
+ * The same for (at)psalm-: the type is replaced, and no duplicate parameter is reported.
+ *
+ * @param array $x
+ * @psalm-param list<int> $x
+ * @return array
+ * @psalm-return list<int>
+ */
+function psalm(array $x): array {
+    '@phan-debug-var $x';
+    return $x;
+}
+
+/**
+ * @psalm-template T
+ * @psalm-param T $value
+ * @psalm-return (T is string ? string : T)
+ * @param mixed $value
+ * @return mixed
+ */
+function psalmTemplate($value) {
+    '@phan-debug-var $value';
+    return $value;
+}
+
+/**
  * Not on a function: ignored without an issue.
  * @phpstan-param int $x
  * @phpstan-return int

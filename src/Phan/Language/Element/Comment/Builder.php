@@ -74,9 +74,6 @@ final class Builder
         'phpstan-template' => 'template',
         'phpstan-template-covariant' => 'template-covariant',
         'phpstan-template-contravariant' => 'template-contravariant',
-        'psalm-param' => 'param',
-        'psalm-return' => 'return',
-        'psalm-var' => 'var',
         'psalm-require-extends' => 'require-extends',
         'psalm-require-implements' => 'require-implements',
         'psalm-immutable' => 'immutable',
@@ -110,21 +107,21 @@ final class Builder
     public $phan_overrides = [];
 
     /**
-     * @var list<Parameter> the parameters of (at)phpstan-param annotations that Phan could parse.
+     * @var list<Parameter> the parameters of (at)phpstan-param and (at)psalm-param annotations that Phan could parse.
      * These replace the types of (at)param, and are replaced by (at)phan-param.
      */
     private $phpstan_param_list = [];
 
-    /** @var list<Parameter> the variables of (at)phpstan-var annotations that Phan could parse. */
+    /** @var list<Parameter> the variables of (at)phpstan-var and (at)psalm-var annotations that Phan could parse. */
     private $phpstan_var_list = [];
 
-    /** @var ?ReturnComment the type of an (at)phpstan-return annotation that is not conditional and that Phan could parse. */
+    /** @var ?ReturnComment the type of an (at)phpstan-return or (at)psalm-return annotation that is not conditional and that Phan could parse. */
     private $phpstan_return_comment = null;
 
     /** @var bool whether an (at)phpstan-param, (at)phpstan-var or (at)phpstan-return annotation was ignored because Phan could not parse all of it */
     private $has_ignored_phpstan_annotation = false;
 
-    /** @var array<string,true> the names of the template types that were declared with (at)phpstan-template */
+    /** @var array<string,true> the names of the template types that were declared with (at)phpstan-template or (at)psalm-template */
     private $phpstan_template_names = [];
     /** @var UnionType the union type of the set of (at)throws annotations */
     public $throw_union_type;
@@ -691,10 +688,20 @@ final class Builder
                 case 'phpstan-return':
                     $this->maybeParsePHPStanReturn($i, $line);
                     break;
+                case 'psalm-return':
+                    // A conditional type is read like one of `@return`, and reported if Phan cannot parse it.
+                    if (\preg_match(self::CONDITIONAL_RETURN_START_REGEX, $line)) {
+                        $this->maybeParseReturn($i, $line);
+                    } else {
+                        $this->maybeParsePHPStanReturn($i, $line);
+                    }
+                    break;
                 case 'phpstan-param':
+                case 'psalm-param':
                     $this->maybeParsePHPStanParam($i, $line);
                     break;
                 case 'phpstan-var':
+                case 'psalm-var':
                     $this->maybeParsePHPStanVar($i, $line);
                     break;
                 case 'returns':
@@ -1070,7 +1077,7 @@ final class Builder
                         );
                     }
                     $this->template_type_list[$template_type->getName()] = $template_type;
-                    if (\stripos($line, '@phpstan-template') !== false) {
+                    if (\stripos($line, '@phpstan-template') !== false || \stripos($line, '@psalm-template') !== false) {
                         $this->phpstan_template_names[$template_type->getName()] = true;
                     }
                 }
@@ -1362,7 +1369,7 @@ final class Builder
 
     /**
      * `(at)phpstan-return` is only used if Phan can parse all of it.
-     * A plain type replaces the type of `(at)return`.
+     * A plain type replaces the type of `(at)return` (also for `(at)psalm-return`).
      * A conditional type (`(at)phpstan-return ($args is array{exit: false} ? void : never)`) is read like one of `(at)return`.
      *
      * Anything else is ignored without an issue: the annotation is written for another tool,
@@ -1379,7 +1386,7 @@ final class Builder
             $type = $this->parseOnlyIfUnderstood(function () use ($line, $i): UnionType {
                 return $this->returnOrThrowsTypeFromCommentLine($line, $i);
             });
-            if ($type && !$type->isEmpty()) {
+            if ($type instanceof UnionType && !$type->isEmpty()) {
                 $this->phpstan_return_comment = new ReturnComment($type, $this->guessActualLineLocation($i));
             } else {
                 $this->has_ignored_phpstan_annotation = true;
@@ -1417,18 +1424,17 @@ final class Builder
     }
 
     /**
-     * Parses the part of an `(at)phpstan-param`, `(at)phpstan-var` or non-conditional `(at)phpstan-return` annotation
+     * Parses the part of an `(at)phpstan-param`, `(at)phpstan-var` or non-conditional `(at)phpstan-return` annotation (also psalm-)
      * with the given parser, and discards the result unless Phan understood all of it.
      *
      * These annotations are written for another tool, in a syntax that Phan only knows in part
      * (`key-of<T>`, `int-mask<1, 2>`, `($x is int ? A : B) $param`, ...), and the element still has its plain annotation.
      * Nothing is reported for the part that is not understood.
      *
-     * @template T
-     * @param Closure():T $parse
-     * @return ?T null if a part of the annotation was not understood
+     * @param Closure():(Parameter|UnionType) $parse
+     * @return Parameter|UnionType|null null if a part of the annotation was not understood
      */
-    private function parseOnlyIfUnderstood(Closure $parse)
+    private function parseOnlyIfUnderstood(Closure $parse): Parameter|UnionType|null
     {
         $issues = $this->issues;
         $result = $parse();
@@ -1469,7 +1475,7 @@ final class Builder
     }
 
     /**
-     * `(at)phpstan-param T $x` replaces the type of `(at)param`, like `(at)phan-param` (which is preferred to it).
+     * `(at)phpstan-param T $x` and `(at)psalm-param T $x` replace the type of `(at)param`, like `(at)phan-param` (which is preferred to them).
      * It is ignored if Phan does not understand all of it.
      */
     private function maybeParsePHPStanParam(int $i, string $line): void
@@ -1482,7 +1488,7 @@ final class Builder
             return $this->parameterFromCommentLine($line, false, $i);
         });
         // (Without a name, the type was not followed by the variable: `callable(T): bool $predicate`)
-        if ($param && $param->getName() !== '' && !$param->getUnionType()->isEmpty()) {
+        if ($param instanceof Parameter && $param->getName() !== '' && !$param->getUnionType()->isEmpty()) {
             $this->phpstan_param_list[] = $param;
         } else {
             $this->has_ignored_phpstan_annotation = true;
@@ -1490,7 +1496,7 @@ final class Builder
     }
 
     /**
-     * `(at)phpstan-var T` and `(at)phpstan-var T $x` replace the type of `(at)var`, like `(at)phan-var` (which is preferred to it).
+     * `(at)phpstan-var T` and `(at)phpstan-var T $x` (also psalm-) replace the type of `(at)var`, like `(at)phan-var` (which is preferred to them).
      * It is ignored if Phan does not understand all of it.
      */
     private function maybeParsePHPStanVar(int $i, string $line): void
@@ -1502,7 +1508,7 @@ final class Builder
         $comment_var = $this->parseOnlyIfUnderstood(function () use ($line, $i): Parameter {
             return $this->parameterFromCommentLine($line, true, $i);
         });
-        if (!$comment_var || $comment_var->getUnionType()->isEmpty()) {
+        if (!($comment_var instanceof Parameter) || $comment_var->getUnionType()->isEmpty()) {
             return;
         }
         if ($comment_var->getName() === '') {
@@ -1532,11 +1538,16 @@ final class Builder
             $this->phpstan_return_comment = null;
         }
         if ($this->phpstan_param_list) {
-            $this->phan_overrides['param'] = \array_merge($this->phpstan_param_list, $this->phan_overrides['param'] ?? []);
+            // (The last one of a name is used)
+            $phan_params = $this->phan_overrides['param'] ?? [];
+            '@phan-var list<Parameter> $phan_params';
+            $this->phan_overrides['param'] = \array_merge($this->phpstan_param_list, $phan_params);
         }
         if ($this->phpstan_var_list) {
+            $phan_vars = $this->phan_overrides['var'] ?? [];
+            '@phan-var list<Parameter> $phan_vars';
             $phan_names = [];
-            foreach ($this->phan_overrides['var'] ?? [] as $var) {
+            foreach ($phan_vars as $var) {
                 $phan_names[$var->getName()] = true;
             }
             foreach ($this->phpstan_var_list as $var) {

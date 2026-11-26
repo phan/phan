@@ -25,3 +25,5 @@
 %s:124 PhanUnusedVariable Unused definition of variable $upload
 %s:127 PhanTypeMismatchArgumentProbablyReal Argument 2 ($kind) is 'c' of type string but \NS5994\Model::all() takes string|string (real type string) defined at %s:40 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
 %s:127 PhanTypeMismatchArgument Argument 1 ($row) is ['id'=>1] of type array{id:1} but \NS5994\Model::all() takes array{id:int,name:string} defined at %s:40
+%s:138 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type list<int>(real=array)
+%s:150 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type mixed
