@@ -1521,6 +1521,23 @@ final class Builder
     }
 
     /**
+     * @param mixed $list an entry of $this->phan_overrides
+     * @return list<Parameter>
+     */
+    private static function parametersOf(mixed $list): array
+    {
+        $result = [];
+        if (\is_array($list)) {
+            foreach ($list as $parameter) {
+                if ($parameter instanceof Parameter) {
+                    $result[] = $parameter;
+                }
+            }
+        }
+        return $result;
+    }
+
+    /**
      * Adds what was read from `(at)phpstan-param`, `(at)phpstan-var` and `(at)phpstan-return` to the overrides,
      * of which the `(at)phan-` annotations are applied last.
      */
@@ -1533,26 +1550,21 @@ final class Builder
             foreach ($this->phpstan_template_names as $name => $_) {
                 unset($this->template_type_list[$name]);
             }
-            $this->phpstan_param_list = [];
-            $this->phpstan_var_list = [];
-            $this->phpstan_return_comment = null;
+            return;
         }
         if ($this->phpstan_param_list) {
             // (The last one of a name is used)
-            $phan_params = $this->phan_overrides['param'] ?? [];
-            '@phan-var list<Parameter> $phan_params';
-            $this->phan_overrides['param'] = \array_merge($this->phpstan_param_list, $phan_params);
+            // (The last one of a name is used)
+            $this->phan_overrides['param'] = \array_merge($this->phpstan_param_list, self::parametersOf($this->phan_overrides['param'] ?? []));
         }
         if ($this->phpstan_var_list) {
-            $phan_vars = $this->phan_overrides['var'] ?? [];
-            '@phan-var list<Parameter> $phan_vars';
             $phan_names = [];
-            foreach ($phan_vars as $var) {
-                $phan_names[$var->getName()] = true;
+            foreach (self::parametersOf($this->phan_overrides['var'] ?? []) as $phan_var) {
+                $phan_names[$phan_var->getName()] = true;
             }
-            foreach ($this->phpstan_var_list as $var) {
-                if (!isset($phan_names[$var->getName()])) {
-                    $this->phan_overrides['var'][] = $var;
+            foreach ($this->phpstan_var_list as $phpstan_var) {
+                if (!isset($phan_names[$phpstan_var->getName()])) {
+                    $this->phan_overrides['var'][] = $phpstan_var;
                 }
             }
         }
