@@ -908,6 +908,10 @@ final class Builder
             if (\stripos($line, '-type') === false) {
                 continue;
             }
+            // As in build(): a tag starts the line. (`Example: @phpstan-type Token int` in the text is not a declaration)
+            if ((\preg_replace('/^\/?[*\s]+/', '', \trim($line))[0] ?? '') !== '@') {
+                continue;
+            }
             if (\preg_match(self::PHAN_TYPE_ALIAS_REGEX, $line, $matches) || \preg_match(self::FOREIGN_TYPE_ALIAS_REGEX, $line, $matches)) {
                 self::addTypeAliasMapping($code_base, $context, $matches[1], $matches[2], $line);
                 $type = $context->getTypeAlias($matches[1]);
@@ -924,6 +928,9 @@ final class Builder
                     $type = $context->getTypeAlias($local_name);
                     if ($type !== null) {
                         $result[$local_name] = $type;
+                        if ($class_fqsen !== null) {
+                            $code_base->setTypeAliasesOfClass($class_fqsen, $result);
+                        }
                     }
                 }
             }
@@ -2249,7 +2256,7 @@ final class Builder
         return \implode('@', \array_map(
             static function (string $annotation): string {
                 if (!str_contains($annotation, "\n")
-                    || !\preg_match('/^((?:(?:phan-|phpstan-|psalm-)?(?:param|var|return|real-return|property(?:-read|-write)?|assert|type|implements|extends|inherits|use))\s[^$\n]+[\[(<{])\n/', $annotation, $match)
+                    || !\preg_match('/^((?:(?:phan-|(?i:phpstan-|psalm-))?(?:param|var|return|real-return|property(?:-read|-write)?|assert|(?i:type)|implements|extends|inherits|use))\s[^$\n]+[\[(<{])\n/', $annotation, $match)
                 ) {
                     return $annotation;
                 }

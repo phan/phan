@@ -147,6 +147,10 @@ final class TypeAliasImporter
      */
     private static function loadAliasesFromFile(CodeBase $code_base, string $file_path): void
     {
+        if (isset(self::$scanned_files[$file_path])) {
+            // (A file can be in the list of candidates twice, or be scanned for an import of a class that is scanned)
+            return;
+        }
         self::$scanned_files[$file_path] = true;
         $old_is_discarding_issues = Issue::$is_discarding_issues;
         // Whatever is wrong with this file is reported when it is parsed.
@@ -201,6 +205,14 @@ final class TypeAliasImporter
     {
         foreach ($stmts->children as $stmt) {
             if (!($stmt instanceof Node)) {
+                // `'@phan-type Id = int';` as a statement declares an alias for the code that follows.
+                if (\is_string($stmt) && \str_contains($stmt, '@phan-type')
+                    && \preg_match_all(Builder::PHAN_TYPE_ALIAS_REGEX, $stmt, $matches, \PREG_SET_ORDER) > 0
+                ) {
+                    foreach ($matches as $group) {
+                        Builder::addTypeAliasMapping($code_base, $context, $group[1], $group[2]);
+                    }
+                }
                 continue;
             }
             switch ($stmt->kind) {
