@@ -981,7 +981,8 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
                 $var_node_union_type = $variable->getUnionType();
 
                 if ($var_node_union_type->hasTopLevelArrayShapeTypeInstances()) {
-                    $new_union_type = $this->withNullOrUnsetArrayShapeTypes($var_node_union_type, $parent_node->children['dim'], $context, false);
+                    // (For `!isset($x['a']['b'])`, $x['a'] may be set: no array shape of $x can be excluded)
+                    $new_union_type = $this->withNullOrUnsetArrayShapeTypes($var_node_union_type, $parent_node->children['dim'], $context, false, $parent_node === $var_node);
                     if ($new_union_type !== $var_node_union_type) {
                         $variable = clone($variable);
                         $variable->setUnionType($new_union_type);
@@ -1009,9 +1010,10 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * an array shape without the field stays as it is, an array shape in which the field is always set and not null is removed,
      * and in the others the field is null or not set.
      *
+     * @param bool $is_whole_check false for `!isset($x['field']['other'])`, which says nothing about `$x['field']`
      * @return ?UnionType null if no array shape, or every array shape, has the field
      */
-    private static function withoutArrayShapesWithFieldThatIsSet(UnionType $union_type, bool|float|int|string $dim_value): ?UnionType
+    private static function withoutArrayShapesWithFieldThatIsSet(UnionType $union_type, bool|float|int|string $dim_value, bool $is_whole_check): ?UnionType
     {
         $has_shape_with_field = false;
         $has_shape_without_field = false;
@@ -1036,6 +1038,11 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
             if ($type instanceof ArrayShapeType) {
                 $field_type = $type->getFieldTypes()[$dim_value] ?? null;
                 if ($field_type !== null) {
+                    if (!$is_whole_check) {
+                        // `!isset($x['field']['other'])`: the field of this array shape may be set, and is not known to be null.
+                        $type_set[] = $type;
+                        continue;
+                    }
                     if (!$field_type->isEmpty() && !$field_type->isPossiblyUndefined() && !$field_type->containsNullableOrMixed() && !$field_type->hasTemplateTypeRecursive()) {
                         // The field of this array shape is set: the value is not one of these.
                         continue;
@@ -1056,7 +1063,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
      * @param Node|string|float|int|bool $dim_node represents the dimension being accessed. (E.g. can be a literal or an AST_CONST, etc.
      * @param Context $context the context with inferences made prior to this condition
      */
-    private function withNullOrUnsetArrayShapeTypes(UnionType $union_type, Node|bool|float|int|string $dim_node, Context $context, bool $remove_offset): UnionType
+    private function withNullOrUnsetArrayShapeTypes(UnionType $union_type, Node|bool|float|int|string $dim_node, Context $context, bool $remove_offset, bool $is_whole_check = false): UnionType
     {
         $dim_value = $dim_node instanceof Node ? (new ContextNode($this->code_base, $context, $dim_node))->getEquivalentPHPScalarValue() : $dim_node;
         // TODO: detect and warn about null
@@ -1079,7 +1086,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation implements Condi
         if ($remove_offset) {
             return $union_type->withoutArrayShapeField($dim_value);
         } else {
-            $narrowed_type = self::withoutArrayShapesWithFieldThatIsSet($union_type, $dim_value);
+            $narrowed_type = self::withoutArrayShapesWithFieldThatIsSet($union_type, $dim_value, $is_whole_check);
             if ($narrowed_type !== null) {
                 return $narrowed_type;
             }

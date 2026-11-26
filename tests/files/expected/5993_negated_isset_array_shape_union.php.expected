@@ -5,3 +5,4 @@
 %s:50 PhanDebugAnnotation @phan-debug-var requested for variable $empty - it has union type array{}(real=array)
 %s:52 PhanTypeInvalidDimOffset Invalid offset "f" of $empty of array type array{}
 %s:52 PhanTypeSuspiciousEcho Suspicious argument $empty['f'] of type null for an echo/print statement
+%s:58 PhanDebugAnnotation @phan-debug-var requested for variable $nested - it has union type array{a:array{b?:int},file:string}|array{error:string}(real=array)
