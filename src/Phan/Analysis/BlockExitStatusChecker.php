@@ -800,7 +800,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     private function callNeverReturnsByConditionalReturnType(FunctionInterface $function, Node $node, bool $is_exact_dispatch): bool
     {
         $conditional = $function->getConditionalReturnType();
-        if ($conditional === null || $this->code_base === null || $this->context === null || $conditional->hasTemplateTypeRecursive()) {
+        if ($conditional === null || $this->code_base === null || $this->context === null || $conditional->hasTemplateTypeRecursive() || $conditional->hasApproximatedCondition()) {
             return false;
         }
         $args = [];
@@ -831,7 +831,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
                     $arg_type = $parameter->getDefaultValueLiteralType();
                 } else {
                     $arg = $args[$i];
-                    if ($arg instanceof Node && !ParseVisitor::isConstExpr($arg, ParseVisitor::CONSTANT_EXPRESSION_FORBID_NEW_EXPRESSION)) {
+                    if ($arg instanceof Node && (!ParseVisitor::isConstExpr($arg, ParseVisitor::CONSTANT_EXPRESSION_FORBID_NEW_EXPRESSION) || self::dependsOnCallingClass($arg))) {
                         return false;
                     }
                     $arg_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $arg);
@@ -847,6 +847,31 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             Issue::$is_discarding_issues = $old_is_discarding_issues;
         }
         return $type !== null && $type->isNeverType();
+    }
+
+    /**
+     * @return bool whether the value of this constant expression depends on the class that the code runs in:
+     * `__CLASS__` in a trait, `static::NAME`, `static::class`.
+     */
+    private static function dependsOnCallingClass(Node $node): bool
+    {
+        switch ($node->kind) {
+            case ast\AST_MAGIC_CONST:
+                return true;
+            case ast\AST_CLASS_CONST:
+            case ast\AST_CLASS_NAME:
+                $class = $node->children['class'];
+                if ($class instanceof Node && $class->kind === ast\AST_NAME && \strcasecmp((string)$class->children['name'], 'static') === 0) {
+                    return true;
+                }
+                break;
+        }
+        foreach ($node->children as $child) {
+            if ($child instanceof Node && self::dependsOnCallingClass($child)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private function computeStatusOfStaticCall(Node $node): int

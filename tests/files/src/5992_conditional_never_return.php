@@ -193,3 +193,26 @@ class B {
     public function t6(?string $s): string { if ($s === null) { $this->stop(true); } return $s; }  // ok
     public static function make(): static { return new static(); }
 }
+
+namespace NS5992\Approximated;
+
+/** @phpstan-return ($x is lowercase-string ? never : void) */
+function low($x) {}
+function t1(?string $s): string { if ($s === null) { low('UPPER'); } return $s; }   // reported
+/** @return ($x is numeric-string ? never : void) */
+function num($x) {}
+function t2(?string $s): string { if ($s === null) { num('abc'); } return $s; }   // reported
+/**
+ * @phpstan-return ($x is int ? never : string)
+ * @psalm-return ($x is int ? never : string)
+ */
+function both($x) { return 'a'; }
+function t3(?string $s): string { if ($s === null) { both(1); } return $s; }   // ok
+/** @return ($n is int ? never : void) */
+function byValue($n) {}
+trait T {
+    // A magic constant or `static::` depends on the class that uses the trait: not decided
+    public function t4(?string $s): string { if ($s === null) { byValue(__LINE__); } return $s; }   // reported
+    public function t5(?string $s): string { if ($s === null) { byValue(static::class); } return $s; }   // reported
+}
+function t6(?string $s): string { if ($s === null) { byValue(3); } return $s; }   // ok

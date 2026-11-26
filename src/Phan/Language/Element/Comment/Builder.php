@@ -370,6 +370,12 @@ final class Builder
     }
 
     /**
+     * Matches the types in a type string that Phan reads as a wider type.
+     * @internal
+     */
+    public const APPROXIMATED_TYPE_REGEX = '/::|\bint(?:-range)?\s*<|\b(?:non-empty-)?(?:numeric|literal|lowercase)-string\b/i';
+
+    /**
      * Parses `($name is [not] Type ? Branch : Branch)` starting at $offset.
      * @param int $offset the offset of the opening parenthesis. On success, this is advanced past the closing parenthesis.
      * @param int $lineno the line of the annotation, recorded on the result
@@ -382,6 +388,8 @@ final class Builder
         $param_name = $match[1];
         $negated = ($match[2] ?? '') !== '';
         $condition = $this->unionTypeFromConditionalPart($match[3]);
+        // (`numeric-string` and `lowercase-string` are read as `string`, `int<1, max>` as `int`, `Foo::BAR` as `mixed`)
+        $is_condition_approximated = \preg_match(self::APPROXIMATED_TYPE_REGEX, $match[3]) > 0;
         $offset += \strlen($match[0]);
 
         $if_true = $this->parseConditionalBranchAt($line, $offset, $lineno);
@@ -400,7 +408,7 @@ final class Builder
             return null;
         }
         $offset += \strlen($match[0]);
-        return new ConditionalReturnType($param_name, $condition, $negated, $if_true, $if_false, $lineno);
+        return new ConditionalReturnType($param_name, $condition, $negated, $if_true, $if_false, $lineno, $is_condition_approximated);
     }
 
     /**
@@ -1285,7 +1293,11 @@ final class Builder
                 $return_comment->setConditional($old_conditional->withPlainAnnotationTypes($new_type));
             } elseif ($conditional && $old_conditional) {
                 // Two conditionals: keep the first one's structure, and treat the second one's types as always possible.
-                $return_comment->setConditional($old_conditional->withTypesAddedToLeaves($new_type));
+                // (Not if they are the same, e.g. one conditional as `@psalm-return` and as `@phpstan-return`:
+                // that would add the types of one branch to the other, and to a branch that is `never`)
+                if (!$conditional->isSameAs($old_conditional)) {
+                    $return_comment->setConditional($old_conditional->withTypesAddedToLeaves($new_type));
+                }
             }
         } else {
             $this->return_comment = new ReturnComment($new_type, $this->guessActualLineLocation($i), $conditional);
@@ -1311,8 +1323,8 @@ final class Builder
         }
         // Not used if it has something that Phan does not parse or only approximates, since a branch may decide that a call does not return:
         // - a type after the closing bracket (`(...) | null`; without the whitespace, the parser reports it);
-        // - a type that Phan reads as a wider one: `numeric-string` and `literal-string` (string), `int<1, max>` (int), `Foo::BAR` (mixed).
-        if (\preg_match('/\)\s*[|&]|::|\bint\s*<|\b(?:numeric|literal)-string\b/i', $line)) {
+        // - a type that Phan reads as a wider one (APPROXIMATED_TYPE_REGEX).
+        if (\preg_match('/\)\s*[|&]/', $line) || \preg_match(self::APPROXIMATED_TYPE_REGEX, $line)) {
             return;
         }
         $issues = $this->issues;
