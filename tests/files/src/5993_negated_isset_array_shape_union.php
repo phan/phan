@@ -60,3 +60,17 @@ function testNested(array $nested): void {
         '@phan-debug-var $nested';
     }
 }
+
+/**
+ * @param ?array{e: string}|array{b: int} $removed
+ * @param ?array{e?: string}|array{b: int} $kept
+ */
+function testNullable($removed, $kept): void {
+    if (!isset($removed['e'])) {
+        // null is still possible.
+        '@phan-debug-var $removed';
+    }
+    if (!isset($kept['e'])) {
+        '@phan-debug-var $kept';
+    }
+}
