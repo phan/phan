@@ -236,6 +236,18 @@ class Checks {
         return is_numeric($x);
     }
 
+    /** @phpstan-assert-if-true !'Num' $x The literal string, not the type alias */
+    public static function isNotTheWord($x): bool {
+        return $x !== 'Num';
+    }
+
+    /** @param 'Num'|'Other' $word */
+    public static function testLiteral(string $word): void {
+        if (self::isNotTheWord($word)) {
+            '@phan-debug-var $word';
+        }
+    }
+
     /**
      * @param array{b: int}|null $array
      */

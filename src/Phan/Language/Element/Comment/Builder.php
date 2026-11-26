@@ -402,7 +402,8 @@ final class Builder
      */
     private function usesTypeAlias(string $type_string): bool
     {
-        if (\preg_match_all('/[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*/', $type_string, $matches) > 0) {
+        // (Not a name in a literal string: `'Num'`)
+        if (\preg_match_all('/[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*/', self::withoutQuotedLiterals($type_string), $matches) > 0) {
             foreach ($matches[0] as $name) {
                 if ($this->context->getTypeAlias($name) !== null) {
                     return true;
