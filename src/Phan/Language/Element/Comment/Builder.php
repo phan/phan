@@ -1321,12 +1321,19 @@ final class Builder
         if ($union_type->isEmpty()) {
             return;
         }
+        // A type that Phan reads as a wider one (`numeric` and `numeric-string` are any string) can be asserted,
+        // but its opposite cannot: a value that is not numeric can still be a string.
+        $is_approximated = \preg_match(self::APPROXIMATED_TYPE_REGEX, self::withoutQuotedLiterals($match[4])) > 0;
+        $is_negated = \str_contains($match[3], '!');
+        if ($is_approximated && $is_negated) {
+            return;
+        }
         $this->conditional_assertion_list[] = new ConditionalAssertion(
             $union_type,
             $match[\count($match) - 1],
             $if_true,
-            \str_contains($match[3], '!'),
-            !\str_contains($match[3], '=') && \strtolower($match[1]) !== 'psalm'
+            $is_negated,
+            !$is_approximated && !\str_contains($match[3], '=') && \strtolower($match[1]) !== 'psalm'
         );
     }
 
@@ -2734,7 +2741,19 @@ final class Builder
         if (!str_contains($comment, "\n") || \strpbrk($comment, '<{[(') === false) {
             return $comment;
         }
-        return \implode('@', \array_map(
+        // An `@` in a key in quotes does not start an annotation: `array{'user@example.com': string}`
+        $has_quoted_at = (str_contains($comment, "'") || str_contains($comment, '"')) && \preg_match('/([\'"])[^\'"\n@]*@[^\'"\n]*\1\s*\??\s*:/', $comment) > 0;
+        if ($has_quoted_at) {
+            $comment = \preg_replace_callback(
+                '/([\'"])[^\'"\n@]*@[^\'"\n]*\1(?=\s*\??\s*:)/',
+                /** @param array{0:string} $match */
+                static function (array $match): string {
+                    return \str_replace('@', "\0", $match[0]);
+                },
+                $comment
+            ) ?? $comment;
+        }
+        $result = \implode('@', \array_map(
             static function (string $annotation): string {
                 if (!str_contains($annotation, "\n") || !\preg_match(self::MULTILINE_TAG_REGEX, $annotation, $match)) {
                     return $annotation;
@@ -2757,6 +2776,7 @@ final class Builder
             },
             \explode('@', $comment)
         ));
+        return $has_quoted_at ? \str_replace("\0", '@', $result) : $result;
     }
 
     /**
@@ -2833,7 +2853,8 @@ final class Builder
                 case "'":
                 case '"':
                     // (At the top level only where a type is expected: `array{...}|'a b'`, not the apostrophe of a description)
-                    if ($depth > 0 || \in_array(\substr(\rtrim($buffer), -1), ['|', '&'], true)) {
+                    // (Also for `|?'a b'`)
+                    if ($depth > 0 || \in_array(\substr(\rtrim($buffer, " \t?"), -1), ['|', '&'], true)) {
                         $quote = $char;
                     }
                     break;

@@ -186,6 +186,43 @@ function notTheType($x) {
 $more = [(new Fluent())->more('intval'), notTheType(['numeric' => 1])];
 '@phan-debug-var $more';
 
+/**
+ * An `(at)` in a key in quotes, and a nullable literal string, in types on several lines.
+ *
+ * @param array{
+ *     'user@example.com': string,
+ *     id: int,
+ * } $row
+ * @return array{
+ *     a: int,
+ * }|?'a b'|array{
+ *     b: int,
+ * }
+ */
+function atInKey($row) {
+    '@phan-debug-var $row';
+    return null;
+}
+
+/**
+ * `numeric` is any string for Phan: when the function returns false, the value can still be a string.
+ * @phpstan-assert-if-true numeric $x
+ */
+function isNumber($x): bool {
+    return is_numeric($x);
+}
+
+function testAssertNumeric(?string $s): void {
+    if (isNumber($s)) {
+        '@phan-debug-var $s';
+    } else {
+        '@phan-debug-var $s';
+    }
+}
+
+$at = atInKey(['user@example.com' => 'x', 'id' => 1]);
+'@phan-debug-var $at';
+
 $after = [afterTheType([], [], [], function (int $i, string $s): bool { return $i > 0 && $s !== ''; }), questionMarks([], '...')];
 '@phan-debug-var $after';
 
