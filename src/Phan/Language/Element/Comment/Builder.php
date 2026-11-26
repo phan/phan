@@ -1563,6 +1563,20 @@ final class Builder
     }
 
     /**
+     * @return bool whether this comment of a property or constant has one `(at)phpstan-var` (or psalm-) and at most one `(at)var`,
+     * which do not name different elements (`@var int $a` and `@phpstan-var string $b` for `public $a, $b;`)
+     */
+    private function isOneVarAnnotationForTheSameElement(): bool
+    {
+        if (\count($this->phpstan_var_list) !== 1 || \count($this->variable_list) > 1 || \in_array($this->comment_type, Comment::FUNCTION_LIKE, true)) {
+            return false;
+        }
+        $plain_name = $this->variable_list ? \reset($this->variable_list)->getName() : '';
+        $name = $this->phpstan_var_list[0]->getName();
+        return $plain_name === '' || $name === '' || $plain_name === $name;
+    }
+
+    /**
      * @return bool whether an `(at)param`, `(at)var` or `(at)return` annotation of this comment has a template type
      */
     private function hasTemplateTypeInPlainAnnotations(): bool
@@ -1652,7 +1666,7 @@ final class Builder
             // (The last one of a name is used)
             $this->phan_overrides['param'] = \array_merge($params, self::parametersOf($this->phan_overrides['param'] ?? []));
         }
-        if ($this->phpstan_var_list && !\in_array($this->comment_type, Comment::FUNCTION_LIKE, true) && \count($this->phpstan_var_list) === 1 && \count($this->variable_list) <= 1) {
+        if ($this->isOneVarAnnotationForTheSameElement()) {
             // The annotations of a property or constant are for the same element, whether or not they name it:
             // `@var array` and `@phpstan-var list<int> $rows`.
             if (!self::parametersOf($this->phan_overrides['var'] ?? [])) {

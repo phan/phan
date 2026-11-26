@@ -294,6 +294,28 @@ function testReview(Two $two): void {
     '@phan-debug-var $a, $b, $s, $n, $r';
 }
 
+// Several properties in a declaration: annotations without a name are matched by position, and annotations for different names are kept.
+class Positional {
+    /**
+     * @phan-var int
+     * @phan-var string
+     */
+    public $a = 1, $b = 'x';
+    /**
+     * @var int $c
+     * @phpstan-var string $d
+     */
+    public $c = 1, $d = 'x';
+    /**
+     * @var int $e
+     * @var string $f
+     * @phpstan-var non-empty-string $f
+     * @phan-var positive-int $e
+     */
+    public $e = 1, $f = 'x';
+}
+function testPositional(Positional $p) { $a = $p->a; $b = $p->b; $c = $p->c; $d = $p->d; $e = $p->e; $f = $p->f; '@phan-debug-var $a, $b, $c, $d, $e, $f'; }
+
 /**
  * Not on a function: ignored without an issue.
  * @phpstan-param int $x
