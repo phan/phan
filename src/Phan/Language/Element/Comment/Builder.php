@@ -427,6 +427,11 @@ final class Builder
         }
         $param_name = $match[1];
         $negated = ($match[2] ?? '') !== '';
+        if (str_contains($match[3], '...')) {
+            // `$args is array{fields: 'ids', ...}`: an array shape that can have other keys is read as the array shape or any array,
+            // which every array is. The condition is not one that Phan can check.
+            return null;
+        }
         $condition = $this->unionTypeFromConditionalPart($match[3]);
         // (`numeric-string` and `lowercase-string` are read as `string`, `int<1, max>` as `int`, `Foo::BAR` as `mixed`)
         $is_condition_approximated = \preg_match(self::APPROXIMATED_TYPE_REGEX, $match[3]) > 0 || $this->usesTypeAlias($match[3]);
@@ -2670,54 +2675,38 @@ final class Builder
         $this->issues = [];
     }
 
+    /**
+     * Matches the tag of an annotation that has a type, at the start of the text after an `(at)`.
+     */
+    private const MULTILINE_TAG_REGEX = '/^(?:phan-|(?i:phpstan-|psalm-))?(?:param|var|return|real-return|property(?:-read|-write)?|assert|(?i:type)|implements|extends|inherits|use)\s/';
+
+    /**
+     * Joins the lines of a type that is written on several lines, so that the annotation can be parsed as one line:
+     *
+     *     (at)return array<string, array{
+     *          id: int,
+     *          name: string,
+     *      }>
+     *
+     * A type goes on in the next line while a bracket is open at the end of a line,
+     * whether the line ends with the bracket or with something else (`array{id: int,` and then `name: string}`).
+     */
     private static function reduceMultiline(string $comment): string
     {
         $comment = \str_replace("\r", '', $comment);
-        // The closure below only changes an annotation if it contains an opening bracket followed by a newline.
-        if (!str_contains($comment, "(\n") && !str_contains($comment, "[\n") && !str_contains($comment, "<\n") && !str_contains($comment, "{\n")) {
+        // The closure below only changes an annotation that has an opening bracket and more than one line.
+        if (!str_contains($comment, "\n") || \strpbrk($comment, '<{[(') === false) {
             return $comment;
         }
         return \implode('@', \array_map(
             static function (string $annotation): string {
-                if (!str_contains($annotation, "\n")
-                    || !\preg_match('/^((?:(?:phan-|(?i:phpstan-|psalm-))?(?:param|var|return|real-return|property(?:-read|-write)?|assert|(?i:type)|implements|extends|inherits|use))\s[^$\n]*[\[(<{])\n/', $annotation, $match)
-                ) {
+                if (!str_contains($annotation, "\n") || !\preg_match(self::MULTILINE_TAG_REGEX, $annotation, $match)) {
                     return $annotation;
                 }
-
-                $buffer = $match[1];
-                $remaining = \substr($annotation, \strlen($match[0]));
-                $level = 1;
-
-                while ($remaining !== '') {
-                    if (!\preg_match('/^[^\[(<{\])>}]*([\[(<{\])>}])/', $remaining, $match)) {
-                        $buffer .= $remaining;
-                        break;
-                    }
-
-                    if (\in_array($match[1], ['{', '<', '[', '('], true)) {
-                        $level++;
-                        $buffer .= $level
-                            ? \ltrim(\preg_replace('/\n\s+\*\s+/', ' ', "\n" . $match[0]))
-                            : $match[0];
-                        $remaining = \substr($remaining, \strlen($match[0]));
-                        continue;
-                    }
-
-                    if ((--$level) < 0) {
-                        return $annotation;
-                    }
-
-                    $inner = \substr($match[0], 0, -1);
-                    $inner = \rtrim(\preg_replace('/\n\s+\*\s+/', ' ', "\n" . $inner), "\n ,");
-                    $buffer .= \ltrim($inner) . $match[1];
-                    $remaining = \substr($remaining, \strlen($match[0]));
-                }
-
-                if ($level !== 0) {
+                $buffer = self::joinLinesOfType($annotation, \strlen($match[0]));
+                if ($buffer === null) {
                     return $annotation;
                 }
-
                 // Keep the number of lines, so that the lines of the other annotations can still be found in the file
                 // (guessActualLineLocation() counts from the end of the comment).
                 $missing_lines = \substr_count($annotation, "\n") - \substr_count($buffer, "\n");
@@ -2732,5 +2721,100 @@ final class Builder
             },
             \explode('@', $comment)
         ));
+    }
+
+    /**
+     * @param int $offset the offset of the type in $annotation
+     * @return ?string $annotation with the line breaks inside of brackets replaced,
+     * or null if the first line of the type has no bracket that is still open at its end, or if the brackets do not match.
+     */
+    private static function joinLinesOfType(string $annotation, int $offset): ?string
+    {
+        $length = \strlen($annotation);
+        $depth = 0;
+        $quote = '';
+        $has_joined = false;
+        $buffer = \substr($annotation, 0, $offset);
+        for ($i = $offset; $i < $length; $i++) {
+            $char = $annotation[$i];
+            if ($quote !== '') {
+                // A literal string in a type: `'('` is not a bracket.
+                if ($char === "\n") {
+                    return null;
+                }
+                if ($char === '\\' && $i + 1 < $length) {
+                    $buffer .= $char . $annotation[++$i];
+                    continue;
+                }
+                if ($char === $quote) {
+                    $quote = '';
+                }
+                $buffer .= $char;
+                continue;
+            }
+            switch ($char) {
+                case '{':
+                case '<':
+                case '[':
+                case '(':
+                    $depth++;
+                    break;
+                case '}':
+                case '>':
+                case ']':
+                case ')':
+                    if ($char === '>' && $i > 0 && ($annotation[$i - 1] === '-' || $annotation[$i - 1] === '=')) {
+                        // `->` and `=>` in a description
+                        break;
+                    }
+                    if (--$depth < 0) {
+                        return null;
+                    }
+                    if ($has_joined) {
+                        // `name: string,` and then `}`
+                        $buffer = \rtrim($buffer, ' ,');
+                    }
+                    break;
+                case "'":
+                case '"':
+                    if ($depth > 0) {
+                        $quote = $char;
+                    }
+                    break;
+                case '$':
+                    if ($depth === 0 && !$has_joined) {
+                        // The type ended on its first line.
+                        return null;
+                    }
+                    break;
+                case "\n":
+                    if ($depth === 0) {
+                        if (!$has_joined) {
+                            // No bracket is open at the end of the first line.
+                            return null;
+                        }
+                        break;
+                    }
+                    // Skip the ` * ` of the next line.
+                    while ($i + 1 < $length && ($annotation[$i + 1] === ' ' || $annotation[$i + 1] === "\t")) {
+                        $i++;
+                    }
+                    if ($i + 1 < $length && $annotation[$i + 1] === '*' && ($annotation[$i + 2] ?? '') !== '/') {
+                        $i++;
+                        while ($i + 1 < $length && ($annotation[$i + 1] === ' ' || $annotation[$i + 1] === "\t")) {
+                            $i++;
+                        }
+                    }
+                    $has_joined = true;
+                    $buffer = \rtrim($buffer, ' ');
+                    // (No space after an opening bracket)
+                    if ($buffer !== '' && !\in_array($buffer[\strlen($buffer) - 1], ['{', '<', '[', '('], true)) {
+                        $buffer .= ' ';
+                    }
+                    continue 2;
+            }
+            $buffer .= $char;
+        }
+        return $has_joined && $depth === 0 && $quote === '' ? $buffer : null;
     }
 }

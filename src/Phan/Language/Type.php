@@ -135,7 +135,20 @@ class Type implements Stringable
         '(\??)(callable-(?:string|object|array)|array-key|associative-array|class-string|int-range|key-of|lowercase-string|literal-string|truthy-string|negative-int|numeric-string|phan-intersection-type|positive-int|value-of|no-return|never-returns?|non-(?:zero-int|negative-int|positive-int|null-mixed|falsy-string|empty-(?:associative-array|array|list|string|lowercase-string|literal-string|numeric-string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*(?:::[a-zA-Z_*\x7f-\xff][a-zA-Z0-9_*\x7f-\xff]*)?|\$this)';
 
     public const shape_key_regex =
-        '(?:[-.\/^;$%*+_a-zA-Z0-9\x7f-\xff]|\\\\(?:[nrt\\\\]|x[0-9a-fA-F]{2}))+\??';
+        '(?:(?:[-.\/^;$%*+_a-zA-Z0-9\x7f-\xff]|\\\\(?:[nrt\\\\]|x[0-9a-fA-F]{2}))+|' . self::quoted_shape_key_regex . ')\??';
+
+    /**
+     * A key of an array shape in quotes, as PHPStan and Psalm write a key that is not an identifier: `array{'bot-name': string, "a b"?: int}`.
+     * (Without the characters that separate the parts of a type)
+     * @internal
+     */
+    public const quoted_shape_key_regex = '(?:\'[^\'"\\\\\n,{}<>()|&]*\'|"[^\'"\\\\\n,{}<>()|&]*")';
+
+    /**
+     * `, ...` at the end of an array shape that can have other keys (`array{a: int, ...}`, `array{a: int, ...<string, mixed>}`)
+     * @internal
+     */
+    public const unsealed_shape_suffix_regex = '(?:\s*,\s*\.\.\.(?:\s*<[^<>{}]*>)?)?';
 
     /**
      * A literal integer or string.
@@ -191,6 +204,7 @@ class Type implements Stringable
           . '\{\s*('  // Expect either '{' or '<', after a word token.
             . '(?:' . self::shape_key_regex . '\s*:(?!:))?\s*(?-6)(?:\s*[|&]\s*(?-6))*=?'  // {shape_key_regex:<type_regex>}
             . '(?:,(?:\s*' . self::shape_key_regex . '\s*:(?!:))?\s*(?-6)(?:\s*[|&]\s*(?-6))*=?)*'  // {shape_key_regex:<type_regex>}
+            . self::unsealed_shape_suffix_regex
           . ')?\s*\})?'
         . ')'
         . '(?:\[\])*'
@@ -232,6 +246,7 @@ class Type implements Stringable
               . '(\{)\s*('  // Expect either '{' or '<', after a word token. Match '{' to disambiguate 'array{}'
                 . '(?:' . self::shape_key_regex . '\s*:(?!:))?\s*(?-8)(?:\s*[|&]\s*(?-8))*=?'  // {shape_key_regex:<type_regex>}
                 . '(?:,(?:\s*' . self::shape_key_regex . '\s*:(?!:))?\s*(?-8)(?:\s*[|&]\s*(?-8))*=?)*'  // {shape_key_regex:<type_regex>}
+                . self::unsealed_shape_suffix_regex
               . ')?\s*\})?'
             . ')'
           . '(?:\[\])*'
@@ -1143,10 +1158,14 @@ class Type implements Stringable
         }
         if (\is_array($shape_components)) {
             if (\strcasecmp($type_name, 'array') === 0) {
-                return ArrayShapeType::fromFieldTypes(
-                    self::shapeComponentStringsToTypes($shape_components, new Context(), Type::FROM_NODE),
+                $is_unsealed = isset($shape_components[self::UNSEALED_SHAPE_KEY]);
+                $field_components = $shape_components;
+                unset($field_components[self::UNSEALED_SHAPE_KEY]);
+                $shape_type = ArrayShapeType::fromFieldTypes(
+                    self::shapeComponentStringsToTypes($field_components, new Context(), Type::FROM_NODE),
                     $is_nullable
                 );
+                return $is_unsealed ? self::unsealedArrayShapeType($shape_type, $is_nullable) : $shape_type;
             }
             if (\strcasecmp($type_name, 'stdClass') === 0) {
                 return StdClassShapeType::fromFieldTypes(
@@ -1246,7 +1265,20 @@ class Type implements Stringable
                 : null;
         }
         if (!str_contains($type_string, '-')) {
-            return null;
+            // (In lower case only: `Number` can be a class)
+            if ($type_string === 'number') {
+                // An int or a float, of PHPDoc
+                $types = [IntType::instance(false), FloatType::instance(false)];
+            } elseif ($type_string === 'numeric') {
+                // An int, a float or a numeric string, of PHPStan and Psalm
+                $types = [IntType::instance(false), FloatType::instance(false), StringType::instance(false)];
+            } else {
+                return null;
+            }
+            if ($is_nullable) {
+                $types[] = NullType::instance(false);
+            }
+            return GenericMultiType::fromTypeSet($types);
         }
         switch (\strtolower($type_string)) {
             case 'non-negative-int':
@@ -1643,10 +1675,14 @@ class Type implements Stringable
 
         if (\is_array($shape_components)) {
             if (\strcasecmp($type_name, 'array') === 0) {
-                return ArrayShapeType::fromFieldTypes(
-                    self::shapeComponentStringsToTypes($shape_components, $context, $source, $code_base),
+                $is_unsealed = isset($shape_components[self::UNSEALED_SHAPE_KEY]);
+                $field_components = $shape_components;
+                unset($field_components[self::UNSEALED_SHAPE_KEY]);
+                $shape_type = ArrayShapeType::fromFieldTypes(
+                    self::shapeComponentStringsToTypes($field_components, $context, $source, $code_base),
                     $is_nullable
                 );
+                return $is_unsealed ? self::unsealedArrayShapeType($shape_type, $is_nullable) : $shape_type;
             }
             if (\strcasecmp($type_name, 'stdClass') === 0) {
                 return StdClassShapeType::fromFieldTypes(
@@ -4084,16 +4120,44 @@ class Type implements Stringable
     }
 
     /**
+     * The key of extractShapeComponents() for an array shape that can have other keys (`array{a: int, ...}`).
+     * (Not a key that can be written in a doc comment)
+     */
+    private const UNSEALED_SHAPE_KEY = "\0unsealed";
+
+    /**
+     * An array shape that can have other keys is the array shape or any array: the fields that are listed have their types,
+     * and any other offset is not an invalid one.
+     */
+    private static function unsealedArrayShapeType(ArrayShapeType $shape_type, bool $is_nullable): Type
+    {
+        return GenericMultiType::fromTypeSet([
+            $shape_type,
+            GenericArrayType::fromElementType(MixedType::instance(false), $is_nullable, GenericArrayType::KEY_MIXED),
+        ]);
+    }
+
+    /**
      * @return array<string|int,string> maps field name to field type.
      */
     private static function extractShapeComponents(string $shape_component_string): array
     {
         $result = [];
+        // `array{a: int, ...}` and `array{a: int, ...<string, mixed>}`: the array can have other keys.
+        if (str_contains($shape_component_string, '...') && preg_match('/^(.*?)\s*,\s*\.\.\.(?:\s*<[^<>{}]*>)?\s*$/sD', $shape_component_string, $parts)) {
+            $shape_component_string = $parts[1];
+            $result[self::UNSEALED_SHAPE_KEY] = 'mixed';
+        }
         foreach (self::extractNameList($shape_component_string) as $shape_component) {
             // Because these can be nested, there may be more than one ':'. Only consider the first.
             // (Not the `::` of a class constant in a shape without keys: `array{Kind::A, Kind::B}`)
             if (preg_match('/^(' . self::shape_key_regex . ')\s*:(?!:)\s*(.*)$/D', $shape_component, $parts)) {
                 $field_name = $parts[1];
+                if ($field_name[0] === "'" || $field_name[0] === '"') {
+                    // `'bot-name'?: string`: the key as Phan writes it, with the characters that are not allowed in a key escaped.
+                    $is_optional = \substr($field_name, -1) === '?';
+                    $field_name = ArrayShapeType::escapeKey(\substr($field_name, 1, $is_optional ? -2 : -1)) . ($is_optional ? '?' : '');
+                }
                 $field_value = \trim($parts[2]);
                 if ($field_value === '') {
                     continue;

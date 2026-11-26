@@ -1,0 +1,16 @@
+%s:36 PhanDebugAnnotation @phan-debug-var requested for variable $after - it has union type int
+%s:36 PhanDebugAnnotation @phan-debug-var requested for variable $multi - it has union type array{first-key:int,second:array{inner:string}}|mixed[]
+%s:47 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type array
+%s:60 PhanDebugAnnotation @phan-debug-var requested for variable $nested - it has union type list<array{id:int}>|list<mixed[]>
+%s:60 PhanDebugAnnotation @phan-debug-var requested for variable $quoted - it has union type array{Content-Type:string,a\x20b?:int,x\x3ay:bool,plain:int}
+%s:60 PhanDebugAnnotation @phan-debug-var requested for variable $typed - it has union type array{a:int}|mixed[]|null
+%s:60 PhanDebugAnnotation @phan-debug-var requested for variable $unsealed - it has union type array{message:string,line:int}|mixed[]
+%s:62 PhanTypeSuspiciousEcho Suspicious argument $quoted['x:y'] of type bool for an echo/print statement
+%s:65 PhanTypeInvalidDimOffset Invalid offset "missing" of $quoted of array type array{Content-Type:string,a\x20b?:int,x\x3ay:bool,plain:int}
+%s:65 PhanTypeSuspiciousEcho Suspicious argument $quoted['missing'] of type null for an echo/print statement
+%s:87 PhanDebugAnnotation @phan-debug-var requested for variable $class - it has union type \NS5996\Number
+%s:87 PhanDebugAnnotation @phan-debug-var requested for variable $map - it has union type array<string,float>|array<string,int>|array<string,string>
+%s:87 PhanDebugAnnotation @phan-debug-var requested for variable $nullable - it has union type float|int|null
+%s:87 PhanDebugAnnotation @phan-debug-var requested for variable $number - it has union type float|int
+%s:87 PhanDebugAnnotation @phan-debug-var requested for variable $numeric - it has union type float|int|string
+%s:94 PhanDebugAnnotation @phan-debug-var requested for variable $results - it has union type array{0:array<string,array{requiredValue:mixed,policyTitle:string}>,1:iterable<array{idsite:int|string,name:string,ts_archived:string}>,2:array{a:int},3:int[]|string[],4:float|int}(real=array{0:array<string,array{requiredValue:mixed,policyTitle:string}>,1:iterable<array{idsite:int|string,name:string,ts_archived:string}>,2:array{a:int},3:int[]|string[],4:float|int})
