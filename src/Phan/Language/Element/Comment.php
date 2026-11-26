@@ -439,16 +439,30 @@ class Comment
      */
     private function mergeVariableList(array $override_comment_vars): void
     {
-        $known_names = [];
+        // The last override of a name is used.
+        $overrides_by_name = [];
         foreach ($override_comment_vars as $override_var) {
-            $known_names[$override_var->getName()] = true;
+            $overrides_by_name[$override_var->getName()] = $override_var;
         }
-        foreach ($this->variable_list as $i => $var) {
-            if (isset($known_names[$var->getName()])) {
-                unset($this->variable_list[$i]);
+        // An override takes the place of the annotation it replaces:
+        // the annotations of `public $a, $b;` are matched with the properties by position.
+        $variable_list = [];
+        $replaced_names = [];
+        foreach ($this->variable_list as $var) {
+            $name = $var->getName();
+            if (!isset($overrides_by_name[$name])) {
+                $variable_list[] = $var;
+            } elseif (!isset($replaced_names[$name])) {
+                $variable_list[] = $overrides_by_name[$name];
+                $replaced_names[$name] = true;
             }
         }
-        $this->variable_list = \array_merge($this->variable_list, $override_comment_vars);
+        foreach ($overrides_by_name as $name => $override_var) {
+            if (!isset($replaced_names[$name])) {
+                $variable_list[] = $override_var;
+            }
+        }
+        $this->variable_list = $variable_list;
     }
 
 

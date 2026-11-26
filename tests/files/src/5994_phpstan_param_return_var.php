@@ -255,6 +255,45 @@ function closureParams($cb, $closure, Named $named): void {
     '@phan-debug-var $cb, $closure, $rows, $name, $both';
 }
 
+// Several properties in a declaration, a type that goes on after whitespace, the flags of (at)param,
+// and a conditional (at)phpstan-return in a comment of which another annotation is not read.
+class Two {
+    /**
+     * @var int $a
+     * @var string $b
+     * @phpstan-var positive-int $a
+     */
+    public $a = 1, $b = 'x';
+}
+/**
+ * @return mixed
+ * @phpstan-return int | ($flag is true ? string : false)
+ */
+function unionSuffix($flag) { return $flag ? 's' : 1; }
+/**
+ * @param string &$y @phan-output-reference
+ * @phpstan-param non-empty-string $y
+ */
+function outputReference(&$y): void { $y = 'a'; }
+/**
+ * @param mixed $v
+ * @param mixed $w
+ * @return mixed
+ * @phpstan-template T
+ * @phpstan-param int-mask<1, 2> $w
+ * @phpstan-param T $v
+ * @phpstan-return ($w is int ? T : null)
+ */
+function templateWithConditional($v, $w) { return $v; }
+function testReview(Two $two): void {
+    $a = $two->a; $b = $two->b;
+    $s = unionSuffix(true);
+    $n = null;
+    outputReference($n);
+    $r = templateWithConditional('x', 1);
+    '@phan-debug-var $a, $b, $s, $n, $r';
+}
+
 /**
  * Not on a function: ignored without an issue.
  * @phpstan-param int $x

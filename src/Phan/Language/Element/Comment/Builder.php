@@ -118,6 +118,9 @@ final class Builder
     /** @var ?ReturnComment the type of an (at)phpstan-return or (at)psalm-return annotation that is not conditional and that Phan could parse. */
     private $phpstan_return_comment = null;
 
+    /** @var list<array{0:int,1:string}> the line numbers and lines of the conditional (at)phpstan-return annotations */
+    private $phpstan_conditional_return_lines = [];
+
     /** @var bool whether an (at)phpstan-param, (at)phpstan-var or (at)phpstan-return annotation was ignored because Phan could not parse all of it */
     private $has_ignored_phpstan_annotation = false;
 
@@ -1397,13 +1400,39 @@ final class Builder
             $type = $this->parseOnlyIfUnderstood(function () use ($line, $i): UnionType {
                 return $this->returnOrThrowsTypeFromCommentLine($line, $i);
             }, $line);
-            if ($type instanceof UnionType && !$type->isEmpty()) {
+            if ($type instanceof UnionType && !$type->isEmpty() && self::isTypeFollowedByWhitespace(self::RETURN_OR_THROWS_COMMENT_REGEX, $line)) {
                 $this->phpstan_return_comment = new ReturnComment($type, $this->guessActualLineLocation($i));
             } else {
                 $this->has_ignored_phpstan_annotation = true;
             }
             return;
         }
+        // Applied after the other annotations of the comment were read (applyPHPStanAnnotations()):
+        // with `@phpstan-template`, it is only used if all of the `@phpstan-` annotations are.
+        $this->phpstan_conditional_return_lines[] = [$i, $line];
+    }
+
+    /**
+     * @return bool whether Phan parses all of this conditional `(at)phpstan-return`, without approximating a type.
+     * Not if it has something that Phan does not parse or only approximates, since a branch may decide that a call does not return:
+     * - a type after the closing bracket (`(...) | null`; without the whitespace, the parser reports it);
+     * - a type that Phan reads as a wider one (APPROXIMATED_TYPE_REGEX).
+     */
+    private function isPHPStanConditionalReturnUnderstood(int $i, string $line): bool
+    {
+        if (\preg_match('/\)\s*[|&]/', $line) || \preg_match(self::APPROXIMATED_TYPE_REGEX, $line)) {
+            return false;
+        }
+        $issues = $this->issues;
+        $conditional = $this->parseConditionalReturnFromCommentLine($line, $i);
+        // (An issue means that a part of the annotation was not understood, such as the `|null` of `($x is int ? A : B)|null`)
+        $is_understood = $conditional !== null && \count($this->issues) === \count($issues);
+        $this->issues = $issues;
+        return $is_understood;
+    }
+
+    private function applyPHPStanConditionalReturn(int $i, string $line, bool $is_understood): void
+    {
         $return_comment = $this->return_comment;
         $old_conditional = $return_comment ? $return_comment->getConditional() : null;
         if ($return_comment && $old_conditional) {
@@ -1418,22 +1447,8 @@ final class Builder
             }
             return;
         }
-        // Not used if it has something that Phan does not parse or only approximates, since a branch may decide that a call does not return:
-        // - a type after the closing bracket (`(...) | null`; without the whitespace, the parser reports it);
-        // - a type that Phan reads as a wider one (APPROXIMATED_TYPE_REGEX).
-        if (\preg_match('/\)\s*[|&]/', $line) || \preg_match(self::APPROXIMATED_TYPE_REGEX, $line)) {
-            $this->has_ignored_phpstan_annotation = true;
-            return;
-        }
-        $issues = $this->issues;
-        $conditional = $this->parseConditionalReturnFromCommentLine($line, $i);
-        // (An issue means that a part of the annotation was not understood, such as the `|null` of `($x is int ? A : B)|null`)
-        $is_understood = $conditional !== null && \count($this->issues) === \count($issues);
-        $this->issues = $issues;
         if ($is_understood) {
             $this->maybeParseReturn($i, $line);
-        } else {
-            $this->has_ignored_phpstan_annotation = true;
         }
     }
 
@@ -1470,8 +1485,8 @@ final class Builder
     }
 
     /**
-     * @return bool whether the type that $regex matches in $line is followed by whitespace or by the end of the line.
-     * (Not for `key-of<Foo>`, of which only `key` is a type that Phan knows)
+     * @return bool whether the type that $regex matches in $line is followed by whitespace or by the end of the line, and not by more of a type.
+     * (Not for `key-of<Foo>`, of which only `key` is a type that Phan knows, and not for `int | (...)`)
      */
     private static function isTypeFollowedByWhitespace(string $regex, string $line): bool
     {
@@ -1479,6 +1494,10 @@ final class Builder
             return false;
         }
         $rest = \substr($line, $match[0][1] + \strlen($match[0][0]));
+        if (\preg_match('/^\s*[|&]/', $rest)) {
+            // The type goes on: `int | ($x is null ? null : string)`
+            return false;
+        }
         return $rest === '' || \ord($rest[0]) <= 32 || \preg_match('@^\*+/$@D', $rest) > 0;
     }
 
@@ -1536,6 +1555,7 @@ final class Builder
         if ($comment_var->getName() === '') {
             // In a function, a variable is needed. Elsewhere, the type has to be all of the annotation.
             if (\in_array($this->comment_type, Comment::FUNCTION_LIKE, true) || !self::isTypeFollowedByWhitespace(self::PARAM_COMMENT_REGEX, $line)) {
+                $this->has_ignored_phpstan_annotation = true;
                 return;
             }
         }
@@ -1583,6 +1603,14 @@ final class Builder
      */
     private function applyPHPStanAnnotations(): void
     {
+        $understood_conditional_returns = [];
+        foreach ($this->phpstan_conditional_return_lines as [$i, $line]) {
+            $is_understood = $this->isPHPStanConditionalReturnUnderstood($i, $line);
+            $understood_conditional_returns[] = $is_understood;
+            if (!$is_understood) {
+                $this->has_ignored_phpstan_annotation = true;
+            }
+        }
         if ($this->phpstan_template_names && $this->has_ignored_phpstan_annotation) {
             // e.g. `@phpstan-template T`, `@phpstan-param T $value` and `@phpstan-return (T is string ? string : T)`,
             // of which Phan does not read the last one: the parameter would be a T that the return type does not have.
@@ -1595,10 +1623,34 @@ final class Builder
             }
             return;
         }
+        foreach ($this->phpstan_conditional_return_lines as $index => [$i, $line]) {
+            $this->applyPHPStanConditionalReturn($i, $line, $understood_conditional_returns[$index]);
+        }
         if ($this->phpstan_param_list) {
+            // The flags of the `@param` are kept: `@param string &$x @phan-output-reference` and `@phpstan-param non-empty-string $x`.
+            $plain_params = [];
+            foreach ($this->parameter_list as $plain_param) {
+                $plain_params[$plain_param->getName()] = $plain_param;
+            }
+            $params = [];
+            foreach ($this->phpstan_param_list as $param) {
+                $plain_param = $plain_params[$param->getName()] ?? null;
+                if ($plain_param && ($plain_param->isOutputReference() || $plain_param->isIgnoredReference() || $plain_param->isMandatoryInPHPDoc())) {
+                    $param = new Parameter(
+                        $param->getName(),
+                        $param->getUnionType(),
+                        $param->getLineno(),
+                        $param->isVariadic(),
+                        false,
+                        $param->isOutputReference() || $plain_param->isOutputReference(),
+                        $param->isIgnoredReference() || $plain_param->isIgnoredReference(),
+                        $param->isMandatoryInPHPDoc() || $plain_param->isMandatoryInPHPDoc()
+                    );
+                }
+                $params[] = $param;
+            }
             // (The last one of a name is used)
-            // (The last one of a name is used)
-            $this->phan_overrides['param'] = \array_merge($this->phpstan_param_list, self::parametersOf($this->phan_overrides['param'] ?? []));
+            $this->phan_overrides['param'] = \array_merge($params, self::parametersOf($this->phan_overrides['param'] ?? []));
         }
         if ($this->phpstan_var_list && !\in_array($this->comment_type, Comment::FUNCTION_LIKE, true) && \count($this->phpstan_var_list) === 1 && \count($this->variable_list) <= 1) {
             // The annotations of a property or constant are for the same element, whether or not they name it:

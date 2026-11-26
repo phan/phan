@@ -43,3 +43,12 @@
 %s:254 PhanDebugAnnotation @phan-debug-var requested for variable $name - it has union type list<int>
 %s:254 PhanDebugAnnotation @phan-debug-var requested for variable $rows - it has union type list<int>
 %s:254 PhanUnusedVariable Unused definition of variable $both
+%s:289 PhanUnusedVariable Unused definition of variable $a
+%s:289 PhanUnusedVariable Unused definition of variable $b
+%s:290 PhanUnusedVariable Unused definition of variable $s
+%s:293 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type positive-int
+%s:293 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type string
+%s:293 PhanDebugAnnotation @phan-debug-var requested for variable $n - it has union type 'a'|non-empty-string
+%s:293 PhanDebugAnnotation @phan-debug-var requested for variable $r - it has union type mixed
+%s:293 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type mixed
+%s:293 PhanUnusedVariable Unused definition of variable $r
