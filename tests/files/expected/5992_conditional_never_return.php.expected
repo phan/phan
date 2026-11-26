@@ -16,3 +16,9 @@
 %s:204 PhanTypeMismatchReturnNullable Returning $s of type ?string but t2() is declared to return string (expected returned value to be non-nullable)
 %s:215 PhanTypeMismatchReturnNullable Returning $s of type ?string but t4() is declared to return string (expected returned value to be non-nullable)
 %s:216 PhanTypeMismatchReturnNullable Returning $s of type ?string but t5() is declared to return string (expected returned value to be non-nullable)
+%s:223 PhanTypeMismatchReturnProbablyReal Returning null of type null but spaced() is declared to return int|never (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)
+%s:224 PhanTypeMismatchReturnNullable Returning $s of type ?string but t1() is declared to return string (expected returned value to be non-nullable)
+%s:225 PhanUnextractableAnnotationSuffix Saw a token Phan may have failed to parse after '/** @psalm-return ($fatal is true ? never : int)|null */': after ($fatal is true ? never : int), saw '|'
+%s:226 PhanTypeMismatchReturnProbablyReal Returning null of type null but unspaced() is declared to return int|never (no real type) (the inferred real return type has nothing in common with the declared phpdoc return type)
+%s:227 PhanTypeMismatchReturnNullable Returning $s of type ?string but t2() is declared to return string (expected returned value to be non-nullable)
+%s:231 PhanTypeMismatchReturnNullable Returning $s of type ?string but t3() is declared to return string (expected returned value to be non-nullable)

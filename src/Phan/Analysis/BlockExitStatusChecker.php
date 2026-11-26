@@ -851,7 +851,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
 
     /**
      * @return bool whether the value of this constant expression depends on the class that the code runs in:
-     * `__CLASS__` in a trait, `static::NAME`, `static::class`.
+     * `__CLASS__` in a trait, `static::NAME`, `static::class`, and `self::`/`parent::` (which depend on the class that uses a trait).
      */
     private static function dependsOnCallingClass(Node $node): bool
     {
@@ -861,7 +861,8 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             case ast\AST_CLASS_CONST:
             case ast\AST_CLASS_NAME:
                 $class = $node->children['class'];
-                if ($class instanceof Node && $class->kind === ast\AST_NAME && \strcasecmp((string)$class->children['name'], 'static') === 0) {
+                // (`self` and `parent` are other classes for each class that uses a trait)
+                if ($class instanceof Node && $class->kind === ast\AST_NAME && \in_array(\strtolower((string)$class->children['name']), ['static', 'self', 'parent'], true)) {
                     return true;
                 }
                 break;

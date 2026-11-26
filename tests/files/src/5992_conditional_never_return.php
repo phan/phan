@@ -216,3 +216,18 @@ trait T {
     public function t5(?string $s): string { if ($s === null) { byValue(static::class); } return $s; }   // reported
 }
 function t6(?string $s): string { if ($s === null) { byValue(3); } return $s; }   // ok
+
+namespace NS5992\Suffix;
+
+/** @return ($fatal is true ? never : int) | null */
+function spaced(bool $fatal) { return $fatal ? null : 1; }
+function t1(?string $s): string { if ($s === null) { spaced(true); } return $s; }   // reported
+/** @psalm-return ($fatal is true ? never : int)|null */
+function unspaced(bool $fatal) { return $fatal ? null : 1; }
+function t2(?string $s): string { if ($s === null) { unspaced(true); } return $s; }   // reported
+/** @return ($n is 'x' ? void : never) */
+function byName($n) {}
+trait T {
+    public function t3(?string $s): string { if ($s === null) { byName(self::class); } return $s; }   // reported
+}
+function t4(?string $s): string { if ($s === null) { byName('y'); } return $s; }   // ok

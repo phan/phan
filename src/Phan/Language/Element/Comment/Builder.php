@@ -1275,8 +1275,14 @@ final class Builder
             return;
         }
         $return_comment = $this->return_comment;
+        $issue_count = \count($this->issues);
         $conditional = $this->parseConditionalReturnFromCommentLine($line, $i);
         if ($conditional) {
+            if (\count($this->issues) !== $issue_count || \preg_match('/\)\s*[|&]/', $line)) {
+                // A part of the annotation was not understood, such as the `|null` of `($x is int ? A : B)|null`:
+                // the branches are still used for the type of a call, but not to decide that a call does not return.
+                $conditional = $conditional->asApproximated();
+            }
             $new_type = $conditional->asFlattenedUnionType();
         } else {
             $new_type = $this->returnOrThrowsTypeFromCommentLine($line, $i);

@@ -100,6 +100,15 @@ final class ConditionalReturnType
     }
 
     /**
+     * @return self a copy that is marked as not exact (see hasApproximatedCondition()),
+     * for an annotation of which a part was not understood.
+     */
+    public function asApproximated(): self
+    {
+        return new self($this->param_name, $this->condition, $this->negated, $this->if_true, $this->if_false, $this->lineno, true);
+    }
+
+    /**
      * @return bool whether a condition of this type, or of a branch of it, was written with a type that Phan reads as a wider one.
      * The branch that is chosen for a call is then not certain to be the right one.
      */
