@@ -414,7 +414,7 @@ final class Builder
      * `numeric` is read as `int|float|string`, which every string is.
      * @internal
      */
-    public const APPROXIMATED_TYPE_REGEX = '/::|\bint(?:-range)?\s*<|\b(?:non-empty-)?(?:numeric|literal|lowercase)-string\b|\b(?:class|interface|trait|enum)-string\b|(?<![-\\\\$\'"a-zA-Z0-9_])(?-i:numeric)(?![-a-zA-Z0-9_\\\\])/i';
+    public const APPROXIMATED_TYPE_REGEX = '/::|\bint(?:-range)?\s*<|\b(?:non-empty-)?(?:numeric|literal|lowercase)-string\b|\b(?:class|interface|trait|enum)-string\b|(?<![-\\\\$\'"a-zA-Z0-9_])(?-i:numeric)(?![-a-zA-Z0-9_\\\\]|\s*\??:(?!:))/i';
 
     /**
      * Parses `($name is [not] Type ? Branch : Branch)` starting at $offset.
@@ -435,7 +435,7 @@ final class Builder
         }
         $condition = $this->unionTypeFromConditionalPart($match[3]);
         // (`numeric-string` and `lowercase-string` are read as `string`, `int<1, max>` as `int`, `Foo::BAR` as `mixed`)
-        $is_condition_approximated = \preg_match(self::APPROXIMATED_TYPE_REGEX, $match[3]) > 0 || $this->usesTypeAlias($match[3]);
+        $is_condition_approximated = \preg_match(self::APPROXIMATED_TYPE_REGEX, self::withoutQuotedLiterals($match[3])) > 0 || $this->usesTypeAlias($match[3]);
         $offset += \strlen($match[0]);
 
         $if_true = $this->parseConditionalBranchAt($line, $offset, $lineno);
@@ -1426,7 +1426,8 @@ final class Builder
      */
     private function isPHPStanConditionalReturnUnderstood(int $i, string $line): bool
     {
-        if (\preg_match('/\)\s*[|&]/', $line) || \preg_match(self::APPROXIMATED_TYPE_REGEX, $line)) {
+        // (The types are looked for in the conditional type, not in the literal strings of it or in the description after it)
+        if (\preg_match('/\)\s*[|&]/', $line) || \preg_match(self::APPROXIMATED_TYPE_REGEX, self::conditionalTypeTextOf($line))) {
             return false;
         }
         $issues = $this->issues;
@@ -1436,6 +1437,40 @@ final class Builder
         $this->issues = $issues;
         // (A name that Phan does not know as a type alias is read as a class)
         return $is_understood && !DeclaredClassIndex::conditionalHasUndeclaredClass($this->code_base, $conditional);
+    }
+
+    /**
+     * @return string $type_string with every literal string replaced by `''`
+     */
+    private static function withoutQuotedLiterals(string $type_string): string
+    {
+        if (!str_contains($type_string, "'") && !str_contains($type_string, '"')) {
+            return $type_string;
+        }
+        return \preg_replace('/\'(?:[^\'\\\\]|\\\\.)*\'|"[^"]*"/', "''", $type_string) ?? $type_string;
+    }
+
+    /**
+     * @return string the conditional type of an annotation line, from its first `(` to the matching `)`, without its literal strings.
+     * (All of the line from the `(` if the brackets do not match)
+     */
+    private static function conditionalTypeTextOf(string $line): string
+    {
+        $start = \strpos($line, '(');
+        if ($start === false) {
+            return $line;
+        }
+        $text = self::withoutQuotedLiterals(\substr($line, $start));
+        $depth = 0;
+        $length = \strlen($text);
+        for ($i = 0; $i < $length; $i++) {
+            if ($text[$i] === '(') {
+                $depth++;
+            } elseif ($text[$i] === ')' && --$depth === 0) {
+                return \substr($text, 0, $i + 1);
+            }
+        }
+        return $text;
     }
 
     private function applyPHPStanConditionalReturn(int $i, string $line, bool $is_understood): void
@@ -2739,7 +2774,8 @@ final class Builder
         if (!\preg_match('/\G(?:[ \t]+|\n[ \t]*\*?(?!\/))*+(.)/', $annotation, $match, 0, $i)) {
             return false;
         }
-        return $match[1] === '|' || $match[1] === '&';
+        // (`) : int` of a closure type, not the colon of a description)
+        return $match[1] === '|' || $match[1] === '&' || ($match[1] === ':' && $last === ')');
     }
 
     /**
@@ -2796,11 +2832,17 @@ final class Builder
                     break;
                 case "'":
                 case '"':
-                    if ($depth > 0) {
+                    // (At the top level only where a type is expected: `array{...}|'a b'`, not the apostrophe of a description)
+                    if ($depth > 0 || \in_array(\substr(\rtrim($buffer), -1), ['|', '&'], true)) {
                         $quote = $char;
                     }
                     break;
                 case '$':
+                    if ($depth === 0 && $has_joined && \preg_match('/\G\$this(?![a-zA-Z0-9_\x7f-\xff])/', $annotation, $this_match, 0, $i)
+                        && (\in_array(\substr(\rtrim($buffer), -1), ['|', '&'], true) || \preg_match('/\G\$this\s*[|&]/', $annotation, $this_match, 0, $i))) {
+                        // The type `$this` in a union: `array{...}|$this|array{...}`
+                        break;
+                    }
                     if ($depth === 0) {
                         // The type ended: on its first line, or before the variable of `@param array{...} $x`.
                         return $has_joined ? $buffer . \substr($annotation, $i) : null;

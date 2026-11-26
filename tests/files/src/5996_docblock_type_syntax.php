@@ -152,6 +152,40 @@ function testNumeric(?string $s): string {
     return $s;
 }
 
+class Fluent {
+    /**
+     * A literal string with a space and `$this` between types on several lines, and whitespace before the colon of a closure type.
+     *
+     * @param callable(
+     *     int
+     * ) : (int|
+     *     string) $callback
+     * @return array{
+     *     a: int,
+     * }|'a b'|$this|array{
+     *     b: int,
+     * }
+     */
+    public function more($callback) {
+        '@phan-debug-var $callback';
+        return $this;
+    }
+}
+
+/**
+ * `numeric` as a key, in a literal string and in a description is not the type.
+ *
+ * @param array{numeric: int} $x
+ * @return int|string
+ * @phpstan-return ($x is array{numeric: int} ? int : 'not numeric') Returns a numeric result
+ */
+function notTheType($x) {
+    return 1;
+}
+
+$more = [(new Fluent())->more('intval'), notTheType(['numeric' => 1])];
+'@phan-debug-var $more';
+
 $after = [afterTheType([], [], [], function (int $i, string $s): bool { return $i > 0 && $s !== ''; }), questionMarks([], '...')];
 '@phan-debug-var $after';
 
