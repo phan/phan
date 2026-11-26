@@ -1428,7 +1428,8 @@ final class Builder
         // (An issue means that a part of the annotation was not understood, such as the `|null` of `($x is int ? A : B)|null`)
         $is_understood = $conditional !== null && \count($this->issues) === \count($issues);
         $this->issues = $issues;
-        return $is_understood;
+        // (A name that Phan does not know as a type alias is read as a class)
+        return $is_understood && !DeclaredClassIndex::conditionalHasUndeclaredClass($this->code_base, $conditional);
     }
 
     private function applyPHPStanConditionalReturn(int $i, string $line, bool $is_understood): void
@@ -1459,6 +1460,7 @@ final class Builder
      * These annotations are written for another tool, in a syntax that Phan only knows in part
      * (`key-of<T>`, `int-mask<1, 2>`, `($x is int ? A : B) $param`, ...), and the element still has its plain annotation.
      * Nothing is reported for the part of an `(at)phpstan-` annotation that is not understood.
+     * An `(at)phpstan-` annotation with a class that is not declared in the files that Phan parses is not understood either.
      * It is reported for `(at)psalm-`, which Phan has always read.
      *
      * @param Closure():(Parameter|UnionType) $parse
@@ -1476,6 +1478,11 @@ final class Builder
         // (Reported for `@psalm-`, as it was before these annotations replaced the plain type)
         if (\stripos($line, '@psalm-') === false) {
             $this->issues = $issues;
+        }
+        if ($is_understood && \stripos($line, '@phpstan-') !== false) {
+            // A name that Phan does not know as a type alias (e.g. one of `typeAliases` in phpstan.neon) is read as a class.
+            // (For `@psalm-`, the class is reported as undeclared, as before)
+            $is_understood = !DeclaredClassIndex::hasUndeclaredClass($this->code_base, $result instanceof Parameter ? $result->getUnionType() : $result);
         }
         if (!$is_understood) {
             $this->has_ignored_phpstan_annotation = true;
