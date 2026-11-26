@@ -1950,6 +1950,14 @@ class Type implements Stringable
     }
 
     /**
+     * @var int the number of parameters of closure types in doc comments that were left out because Phan could not parse them,
+     * e.g. the parameter of `callable(int-mask<1, 2>): void`.
+     * Used to tell whether all of a type was understood.
+     * @internal
+     */
+    public static $unparsed_closure_param_count = 0;
+
+    /**
      * @param list<string> $param_components Maps field keys (integers or strings) to the corresponding type representations
      * @param Context $context
      * @param int $source
@@ -1986,7 +1994,10 @@ class Type implements Stringable
                 }
                 $var_name = $param_match[17];
                 $result[] = new ClosureDeclarationParameter($union_type, $is_variadic, $is_reference, $has_default_value, $var_name);
-            }  // TODO: Otherwise, warn
+            } else {
+                // TODO: warn
+                self::$unparsed_closure_param_count++;
+            }
         }
         return $result;
     }

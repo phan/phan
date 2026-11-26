@@ -1,0 +1,70 @@
+%s:40 PhanDebugAnnotation @phan-debug-var requested for variable $cb - it has union type callable(array{id:int,name:string}):bool(real=callable)
+%s:40 PhanDebugAnnotation @phan-debug-var requested for variable $kind - it has union type 'a'|'b'(real=string)
+%s:40 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type mixed
+%s:40 PhanDebugAnnotation @phan-debug-var requested for variable $row - it has union type array{id:int,name:string}(real=array)
+%s:63 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type list<string>(real=array)
+%s:89 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type array|string
+%s:110 PhanDebugAnnotation @phan-debug-var requested for variable $id - it has union type int|list<int>
+%s:116 PhanUnusedVariable Unused definition of variable $all
+%s:117 PhanUnusedVariable Unused definition of variable $unparsed_return
+%s:118 PhanUnusedVariable Unused definition of variable $phan
+%s:119 PhanUnusedVariable Unused definition of variable $made
+%s:120 PhanUnusedVariable Unused definition of variable $rows
+%s:121 PhanUnusedVariable Unused definition of variable $order
+%s:122 PhanUnusedVariable Unused definition of variable $unparsed
+%s:123 PhanUnusedVariable Unused definition of variable $slashed
+%s:124 PhanDebugAnnotation @phan-debug-var requested for variable $all - it has union type list<array{id:int,name:string}>(real=array)
+%s:124 PhanDebugAnnotation @phan-debug-var requested for variable $made - it has union type \NS5994\Model
+%s:124 PhanDebugAnnotation @phan-debug-var requested for variable $order - it has union type 'asc'|'desc'
+%s:124 PhanDebugAnnotation @phan-debug-var requested for variable $phan - it has union type list<string>(real=array)
+%s:124 PhanDebugAnnotation @phan-debug-var requested for variable $rows - it has union type list<array{id:int,name:string}>|null
+%s:124 PhanDebugAnnotation @phan-debug-var requested for variable $slashed - it has union type array|string
+%s:124 PhanDebugAnnotation @phan-debug-var requested for variable $unparsed - it has union type array
+%s:124 PhanDebugAnnotation @phan-debug-var requested for variable $unparsed_return - it has union type int(real=int)
+%s:124 PhanDebugAnnotation @phan-debug-var requested for variable $upload - it has union type array{error:non-empty-string}|array{file:non-empty-string}(real=array)
+%s:124 PhanUnusedVariable Unused definition of variable $upload
+%s:127 PhanTypeMismatchArgumentProbablyReal Argument 2 ($kind) is 'c' of type string but \NS5994\Model::all() takes string|string (real type string) defined at %s:40 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:127 PhanTypeMismatchArgument Argument 1 ($row) is ['id'=>1] of type array{id:1} but \NS5994\Model::all() takes array{id:int,name:string} defined at %s:40
+%s:138 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type list<int>(real=array)
+%s:146 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @psalm-return (T is string ? string : T)'
+%s:150 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type T
+%s:150 PhanTemplateTypeNotUsedInFunctionReturn Template type T not used in return value of function/method psalmTemplate()
+%s:160 PhanUnextractableAnnotationElementName Saw possibly unextractable annotation for a fragment of comment '* @psalm-param int-mask<1, 2> $x': after int, did not see an element name (will guess based on comment order)
+%s:160 PhanUnextractableAnnotationSuffix Saw a token Phan may have failed to parse after '* @psalm-param int-mask<1, 2> $x': after int, saw '-'
+%s:163 PhanUnextractableAnnotationSuffix Saw a token Phan may have failed to parse after '* @psalm-return list<int>|int-mask<1, 2>': after list<int>|int, saw '-'
+%s:165 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type array
+%s:165 PhanDebugAnnotation @phan-debug-var requested for variable $y - it has union type array
+%s:218 PhanDebugAnnotation @phan-debug-var requested for variable $templates - it has union type array{0:mixed,1:\stdClass,2:1.5,3:\ArrayObject}(real=array{0:mixed,1:\stdClass,2:1.5,3:\ArrayObject})
+%s:252 PhanUnusedVariable Unused definition of variable $rows
+%s:253 PhanUnusedVariable Unused definition of variable $name (Did you mean $named)
+%s:254 PhanDebugAnnotation @phan-debug-var requested for variable $both - it has union type list<string>
+%s:254 PhanDebugAnnotation @phan-debug-var requested for variable $cb - it has union type callable
+%s:254 PhanDebugAnnotation @phan-debug-var requested for variable $closure - it has union type \Closure
+%s:254 PhanDebugAnnotation @phan-debug-var requested for variable $name - it has union type list<int>
+%s:254 PhanDebugAnnotation @phan-debug-var requested for variable $rows - it has union type list<int>
+%s:254 PhanUnusedVariable Unused definition of variable $both
+%s:289 PhanUnusedVariable Unused definition of variable $a
+%s:289 PhanUnusedVariable Unused definition of variable $b
+%s:290 PhanUnusedVariable Unused definition of variable $s
+%s:293 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type positive-int
+%s:293 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type string
+%s:293 PhanDebugAnnotation @phan-debug-var requested for variable $n - it has union type 'a'|non-empty-string
+%s:293 PhanDebugAnnotation @phan-debug-var requested for variable $r - it has union type mixed
+%s:293 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type mixed
+%s:293 PhanUnusedVariable Unused definition of variable $r
+%s:322 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type int
+%s:322 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type string
+%s:322 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type int
+%s:322 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type string
+%s:322 PhanDebugAnnotation @phan-debug-var requested for variable $e - it has union type positive-int
+%s:322 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type non-empty-string
+%s:322 PhanDebugAnnotation @phan-debug-var requested for variable $g - it has union type int
+%s:322 PhanDebugAnnotation @phan-debug-var requested for variable $h - it has union type string
+%s:322 PhanUnusedVariable Unused definition of variable $a
+%s:322 PhanUnusedVariable Unused definition of variable $b
+%s:322 PhanUnusedVariable Unused definition of variable $c
+%s:322 PhanUnusedVariable Unused definition of variable $d
+%s:322 PhanUnusedVariable Unused definition of variable $e
+%s:322 PhanUnusedVariable Unused definition of variable $f
+%s:322 PhanUnusedVariable Unused definition of variable $g
+%s:322 PhanUnusedVariable Unused definition of variable $h

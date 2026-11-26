@@ -439,16 +439,47 @@ class Comment
      */
     private function mergeVariableList(array $override_comment_vars): void
     {
-        $known_names = [];
+        // The number of annotations of each name that an override can still replace.
+        // (Several annotations can have no name: `@phan-var int` and `@phan-var string` for `public $a, $b;`)
+        $remaining_counts = [];
         foreach ($override_comment_vars as $override_var) {
-            $known_names[$override_var->getName()] = true;
+            $name = $override_var->getName();
+            $remaining_counts[$name] = ($remaining_counts[$name] ?? 0) + 1;
         }
-        foreach ($this->variable_list as $i => $var) {
-            if (isset($known_names[$var->getName()])) {
-                unset($this->variable_list[$i]);
+        // An override takes the place of the annotation it replaces:
+        // the annotations of `public $a, $b;` are matched with the properties by position.
+        // null is a place for the next override of that name.
+        $variable_list = [];
+        foreach ($this->variable_list as $var) {
+            $name = $var->getName();
+            if (!isset($remaining_counts[$name])) {
+                $variable_list[] = $var;
+            } elseif ($remaining_counts[$name] > 0) {
+                $remaining_counts[$name]--;
+                $variable_list[] = $name;
             }
         }
-        $this->variable_list = \array_merge($this->variable_list, $override_comment_vars);
+        $result = [];
+        $unplaced_overrides = $override_comment_vars;
+        foreach ($variable_list as $var_or_name) {
+            if ($var_or_name instanceof CommentParameter) {
+                $result[] = $var_or_name;
+                continue;
+            }
+            foreach ($unplaced_overrides as $i => $override_var) {
+                if ($override_var->getName() === $var_or_name) {
+                    $result[] = $override_var;
+                    unset($unplaced_overrides[$i]);
+                    break;
+                }
+            }
+        }
+        // The overrides that did not replace an annotation, in their order.
+        foreach ($unplaced_overrides as $override_var) {
+            $result[] = $override_var;
+        }
+        $variable_list = $result;
+        $this->variable_list = $variable_list;
     }
 
 
