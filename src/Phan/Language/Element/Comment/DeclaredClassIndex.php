@@ -7,7 +7,9 @@ namespace Phan\Language\Element\Comment;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\Type;
 use Phan\Language\Type\FunctionLikeDeclarationType;
+use Phan\Language\Type\IntersectionType;
 use Phan\Language\Type\StaticOrSelfType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
@@ -63,15 +65,34 @@ final class DeclaredClassIndex
     public static function hasUndeclaredClass(CodeBase $code_base, UnionType $union_type): bool
     {
         foreach ($union_type->getTypesRecursively() as $type) {
-            // (A closure or callable type is not a class; its parameters and return type are other types of this loop)
-            if ($type instanceof TemplateType || $type instanceof StaticOrSelfType || $type instanceof FunctionLikeDeclarationType || !$type->isObjectWithKnownFQSEN()) {
-                continue;
-            }
-            if (!self::isDeclared($code_base, FullyQualifiedClassName::fromType($type))) {
+            if (self::typeHasUndeclaredClass($code_base, $type)) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * @param Type $type a type that UnionType::getTypesRecursively() yields
+     */
+    private static function typeHasUndeclaredClass(CodeBase $code_base, Type $type): bool
+    {
+        if ($type instanceof IntersectionType) {
+            // (Of an intersection type, getTypesRecursively() yields the parts but not what the parts are made of: `Known&Box<Foo>`)
+            foreach ($type->getTypeParts() as $part) {
+                foreach ($part->getTypesRecursively() as $inner_type) {
+                    if (self::typeHasUndeclaredClass($code_base, $inner_type)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        // (A closure or callable type is not a class; its parameters and return type are yielded as well)
+        if ($type instanceof TemplateType || $type instanceof StaticOrSelfType || $type instanceof FunctionLikeDeclarationType || !$type->isObjectWithKnownFQSEN()) {
+            return false;
+        }
+        return !self::isDeclared($code_base, FullyQualifiedClassName::fromType($type));
     }
 
     /**
@@ -151,10 +172,14 @@ final class DeclaredClassIndex
         if (\stripos($contents, 'namespace') === false) {
             return '';
         }
-        $count = \preg_match_all(self::NAMESPACE_REGEX, $contents, $matches, \PREG_OFFSET_CAPTURE);
-        if ($count === 0) {
+        // The word `namespace` where it can be the keyword of a declaration: not `$namespace`, `->namespace`, `'namespace'`,
+        // and not the operator `namespace\foo()`.
+        $word_count = \preg_match_all('/(?<![a-zA-Z0-9_\x7f-\xff$>:\\\\\'"])namespace(?![a-zA-Z0-9_\x7f-\xff]|\s*\\\\)/i', $contents);
+        if ($word_count === 0) {
             return '';
         }
+        // (With another such word, e.g. in a comment or as `namespace /* comment */ Foo;`, the tokens say what is declared)
+        $count = $word_count === 1 ? \preg_match_all(self::NAMESPACE_REGEX, $contents, $matches, \PREG_OFFSET_CAPTURE) : false;
         if ($count !== 1 || !isset($matches[1][0]) || !\is_array($matches[1][0]) || $matches[1][0][1] < 0) {
             return null;
         }

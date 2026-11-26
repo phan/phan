@@ -52,3 +52,6 @@
 %s:179 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type list<class-string<\NS5995\AfterComment>>
 %s:179 PhanDebugAnnotation @phan-debug-var requested for variable $xs - it has union type array
 %s:179 PhanDebugAnnotation @phan-debug-var requested for variable $ys - it has union type array
+%s:192 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type object
+%s:192 PhanDebugAnnotation @phan-debug-var requested for variable $y - it has union type \NS5995\Box<\NS5995\Later>&\NS5995\Known
+%s:192 PhanImpossibleIntersectionType Intersection type \NS5995\Box<\NS5995\Later>&\NS5995\Known contains part \NS5995\Box<\NS5995\Later> which cannot cast to the declared type \NS5995\Known

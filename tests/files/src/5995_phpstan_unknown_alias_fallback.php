@@ -181,3 +181,14 @@ function nested($xs, $ys, $c) {
 }
 
 class /* generated */ AfterComment {}
+
+/**
+ * An intersection type with a class in a generic argument of a part.
+ * @param object $x
+ * @param object $y
+ * @phpstan-param Known&Box<GlobalAlias> $x
+ * @phpstan-param Known&Box<Later> $y
+ */
+function intersection($x, $y) {
+    '@phan-debug-var $x, $y';
+}
