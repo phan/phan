@@ -1340,9 +1340,18 @@ final class Builder
         if (!\in_array($this->comment_type, Comment::FUNCTION_LIKE, true) || !\preg_match(self::CONDITIONAL_RETURN_START_REGEX, $line)) {
             return;
         }
-        if ($this->return_comment && $this->return_comment->getConditional()) {
+        $return_comment = $this->return_comment;
+        $old_conditional = $return_comment ? $return_comment->getConditional() : null;
+        if ($return_comment && $old_conditional) {
             // e.g. the same conditional as `@psalm-return` and as `@phpstan-return`: the first one is used.
             // (A second conditional would add its types to every branch of the first one)
+            $issues = $this->issues;
+            $conditional = $this->parseConditionalReturnFromCommentLine($line, $i);
+            $this->issues = $issues;
+            if (!$conditional || !$conditional->isSameAs($old_conditional)) {
+                // The two annotations say different things: the first one is not relied on to decide that a call does not return.
+                $return_comment->setConditional($old_conditional->asApproximated());
+            }
             return;
         }
         // Not used if it has something that Phan does not parse or only approximates, since a branch may decide that a call does not return:

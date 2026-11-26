@@ -804,8 +804,13 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             return false;
         }
         $args = [];
-        if (!$is_exact_dispatch && $function instanceof Method && ($function->isFinal() || $function->isPrivate() || $function->getClass($this->code_base)->isFinal())) {
-            $is_exact_dispatch = true;
+        if (!$is_exact_dispatch && $function instanceof Method) {
+            if ($function->isFinal() || $function->isPrivate() || $function->getClass($this->code_base)->isFinal()) {
+                $is_exact_dispatch = true;
+            } elseif ($function->isOverriddenByAnother()) {
+                // A method that overrides this one may be called, and nothing makes it keep the conditional return type.
+                return false;
+            }
         }
         foreach ($node->children['args']->children as $arg) {
             if ($arg instanceof Node && ($arg->kind === ast\AST_UNPACK || (!$is_exact_dispatch && $arg->kind === ast\AST_NAMED_ARG))) {
@@ -826,6 +831,11 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
                 }
                 if (!\array_key_exists($i, $args)) {
                     if (!$is_exact_dispatch || !$parameter->hasDefaultValue()) {
+                        return false;
+                    }
+                    $default_value = $parameter->getDefaultValue();
+                    if ($default_value instanceof Node && self::dependsOnCallingClass($default_value)) {
+                        // e.g. `$name = __CLASS__` or `$mode = self::MODE` in a method of a trait
                         return false;
                     }
                     $arg_type = $parameter->getDefaultValueLiteralType();

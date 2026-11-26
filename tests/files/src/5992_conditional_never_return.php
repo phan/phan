@@ -266,3 +266,55 @@ function t6(?string $s): string { if ($s === null) { cs(Bar::class); } return $s
 function t7(?string $s): string { if ($s === null) { cs(Other::class); } return $s; }
 function t8(?string $s): string { if ($s === null) { cs('NoSuchClass'); } return $s; }
 function t12(?string $s): string { if ($s === null) { notcs(Other::class); } return $s; }
+
+// Methods that are overridden, defaults that depend on the class, and two annotations that differ
+namespace NS5992\Dispatch;
+
+class Base {
+    const MODE = 1;
+    /** @return ($mode is 1 ? never : void) */
+    public static function st(int $mode = self::MODE): void {}
+    /** @return ($mode is 1 ? never : void) */
+    public static function lsb(int $mode = 1): void {}
+    /** @return ($fatal is true ? never : void) */
+    public function stop(bool $fatal = true): void {}
+    public function viaStatic(?string $s): string { if ($s === null) { static::lsb(); } return $s; }
+    public function viaStaticArg(?string $s): string { if ($s === null) { static::lsb(1); } return $s; }
+    public function viaSelf(?string $s): string { if ($s === null) { self::lsb(); } return $s; }
+    public function viaThisArg(?string $s): string { if ($s === null) { $this->stop(true); } return $s; }
+}
+class Child extends Base {
+    const MODE = 2;
+    /** @return void */
+    public function stop(bool $fatal = true): void {}
+    /** @return void */
+    public static function lsb(int $mode = 1): void {}
+}
+function t1(?string $s): string { if ($s === null) { UsesA::byDefault(); } return $s; }
+/**
+ * @return void
+ * @psalm-return ($a is true ? never : void)
+ * @phpstan-return ($b is true ? never : int)
+ */
+function twoDifferent($a, $b) {}
+function t6(?string $s): string { if ($s === null) { twoDifferent(true, false); } return $s; }
+/**
+ * @psalm-return ($a is true ? never : void)
+ * @return string
+ */
+function plainAfter($a) {}
+function t7(?string $s): string { if ($s === null) { plainAfter(true); } return $s; }
+trait Stops {
+    /** @return ($name is 'Stops' ? never : void) */
+    public static function byDefault(string $name = __CLASS__): void {}
+    /** @return ($name is 'Stops' ? never : void) */
+    public static function byArg(string $name): void {}
+}
+final class UsesA { use Stops; }
+function e1(?string $s): string { if ($s === null) { UsesA::byDefault(); } return $s; }
+function e2(?string $s): string { if ($s === null) { UsesA::byArg('Stops'); } return $s; }
+class Solo {
+    /** @return ($fatal is true ? never : void) */
+    public function stop(bool $fatal = true): void {}
+    public function a(?string $s): string { if ($s === null) { $this->stop(true); } return $s; }
+}
