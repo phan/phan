@@ -57,6 +57,8 @@ trait IssueEmitter
      * @param ?Suggestion $suggestion
      * If this plugin has suggestions on how to fix the issue,
      * this can be added separately from the issue text.
+     *
+     * @return IssueInstance The plugin issue instance created by this method.
      */
     public static function emitPluginIssue(
         CodeBase $code_base,
@@ -68,7 +70,7 @@ trait IssueEmitter
         int $remediation_difficulty = Issue::REMEDIATION_B,
         int $issue_type_id = Issue::TYPE_ID_UNKNOWN,
         ?Suggestion $suggestion = null
-    ): void {
+    ): IssueInstance {
         $issue = new Issue(
             $issue_type,
             Issue::CATEGORY_PLUGIN,
@@ -91,5 +93,7 @@ trait IssueEmitter
             $context,
             $issue_instance
         );
+
+        return $issue_instance;
     }
 }
