@@ -1385,7 +1385,7 @@ final class Builder
             $line = $this->withTypeContinuationLines($i, $line);
             $type = $this->parseOnlyIfUnderstood(function () use ($line, $i): UnionType {
                 return $this->returnOrThrowsTypeFromCommentLine($line, $i);
-            });
+            }, $line);
             if ($type instanceof UnionType && !$type->isEmpty()) {
                 $this->phpstan_return_comment = new ReturnComment($type, $this->guessActualLineLocation($i));
             } else {
@@ -1429,17 +1429,21 @@ final class Builder
      *
      * These annotations are written for another tool, in a syntax that Phan only knows in part
      * (`key-of<T>`, `int-mask<1, 2>`, `($x is int ? A : B) $param`, ...), and the element still has its plain annotation.
-     * Nothing is reported for the part that is not understood.
+     * Nothing is reported for the part of an `(at)phpstan-` annotation that is not understood.
+     * It is reported for `(at)psalm-`, which Phan has always read.
      *
      * @param Closure():(Parameter|UnionType) $parse
      * @return Parameter|UnionType|null null if a part of the annotation was not understood
      */
-    private function parseOnlyIfUnderstood(Closure $parse): Parameter|UnionType|null
+    private function parseOnlyIfUnderstood(Closure $parse, string $line): Parameter|UnionType|null
     {
         $issues = $this->issues;
         $result = $parse();
         $is_understood = \count($this->issues) === \count($issues);
-        $this->issues = $issues;
+        // (Reported for `@psalm-`, as it was before these annotations replaced the plain type)
+        if (\stripos($line, '@psalm-') === false) {
+            $this->issues = $issues;
+        }
         if (!$is_understood) {
             $this->has_ignored_phpstan_annotation = true;
             return null;
@@ -1486,7 +1490,7 @@ final class Builder
         $line = $this->withTypeContinuationLines($i, $line);
         $param = $this->parseOnlyIfUnderstood(function () use ($line, $i): Parameter {
             return $this->parameterFromCommentLine($line, false, $i);
-        });
+        }, $line);
         // (Without a name, the type was not followed by the variable: `callable(T): bool $predicate`)
         if ($param instanceof Parameter && $param->getName() !== '' && !$param->getUnionType()->isEmpty()) {
             $this->phpstan_param_list[] = $param;
@@ -1507,7 +1511,7 @@ final class Builder
         $line = $this->withTypeContinuationLines($i, $line);
         $comment_var = $this->parseOnlyIfUnderstood(function () use ($line, $i): Parameter {
             return $this->parameterFromCommentLine($line, true, $i);
-        });
+        }, $line);
         if (!($comment_var instanceof Parameter) || $comment_var->getUnionType()->isEmpty()) {
             return;
         }

@@ -153,6 +153,21 @@ function psalmTemplate($value) {
 }
 
 /**
+ * An (at)psalm- annotation that Phan cannot parse is reported (and the plain type is used); an (at)phpstan- annotation is not.
+ *
+ * @param array $x
+ * @param array $y
+ * @psalm-param int-mask<1, 2> $x
+ * @phpstan-param int-mask<1, 2> $y
+ * @return array
+ * @psalm-return list<int>|int-mask<1, 2>
+ */
+function unreadable($x, $y) {
+    '@phan-debug-var $x, $y';
+    return [];
+}
+
+/**
  * Not on a function: ignored without an issue.
  * @phpstan-param int $x
  * @phpstan-return int
