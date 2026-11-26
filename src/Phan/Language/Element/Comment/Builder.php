@@ -274,9 +274,9 @@ final class Builder
     }
 
     /** @internal */
-    public const RETURN_COMMENT_REGEX = '/@(?:phan-|psalm-)?(?:real-)?return\s+(&\s*)?(' . UnionType::union_type_regex_or_this . ')/';
+    public const RETURN_COMMENT_REGEX = '/@(?:phan-|psalm-|phpstan-)?(?:real-)?return\s+(&\s*)?(' . UnionType::union_type_regex_or_this . ')/';
     /** @internal */
-    public const RETURN_OR_THROWS_COMMENT_REGEX = '/@(?:phan-|psalm-)?(?:real-)?(?:return|throws)\s+(&\s*)?(' . UnionType::union_type_regex_or_this . ')/';
+    public const RETURN_OR_THROWS_COMMENT_REGEX = '/@(?:phan-|psalm-|phpstan-)?(?:real-)?(?:return|throws)\s+(&\s*)?(' . UnionType::union_type_regex_or_this . ')/';
 
     /**
      * @param string $line
@@ -329,7 +329,7 @@ final class Builder
      * ordinary (at)return annotations fail at the lookahead.
      * @internal
      */
-    public const CONDITIONAL_RETURN_START_REGEX = '/^[\s\/*]*@(?:phan-|psalm-)?return\s+(?=\(\s*\$)/';
+    public const CONDITIONAL_RETURN_START_REGEX = '/^[\s\/*]*@(?:phan-|psalm-|phpstan-)?return\s+(?=\(\s*\$)/';
 
     private const CONDITIONAL_HEAD_REGEX = '/\G\(\s*\$' . self::WORD_REGEX . '\s+is\s+(not\s+)?(' . UnionType::union_type_regex_or_this . ')\s*\?\s*/';
     private const CONDITIONAL_LEAF_REGEX = '/\G(' . UnionType::union_type_regex_or_this . ')/';
@@ -600,7 +600,7 @@ final class Builder
         // (?i) makes this case-sensitive, (?-1) makes it case-insensitive
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
         // Support both regular tags ("@something") and inline versions of tags ("optional_prefix {@something}").
-        if (\preg_match('/(?:^|{)@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|implements|use|require-extends|require-implements|suppress|unused-param|no-named-arguments|phan-[a-z0-9_-]*|(?:phpstan|psalm)-assert-if-(?:true|false)|(?:phpstan|psalm)-(?:import-)?type|psalm-(?:template(?:-(?:co|contra)variant)?|param|var|return|require-extends|require-implements|immutable)(?-i)|method|property|property-read|property-write|abstract|template(?:-(?:co|contra)variant)?|PhanClosureScope|readonly|immutable|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $trimmed, $matches)) {
+        if (\preg_match('/(?:^|{)@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|implements|use|require-extends|require-implements|suppress|unused-param|no-named-arguments|phan-[a-z0-9_-]*|(?:phpstan|psalm)-assert-if-(?:true|false)|(?:phpstan|psalm)-(?:import-)?type|phpstan-return|psalm-(?:template(?:-(?:co|contra)variant)?|param|var|return|require-extends|require-implements|immutable)(?-i)|method|property|property-read|property-write|abstract|template(?:-(?:co|contra)variant)?|PhanClosureScope|readonly|immutable|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $trimmed, $matches)) {
             $case_sensitive_type = $matches[1];
             $type = \strtolower($case_sensitive_type);
             $type = self::TAG_ALIAS_MAP[$type] ?? $type;
@@ -638,6 +638,9 @@ final class Builder
                     break;
                 case 'return':
                     $this->maybeParseReturn($i, $line);
+                    break;
+                case 'phpstan-return':
+                    $this->maybeParsePHPStanReturn($i, $line);
                     break;
                 case 'returns':
                     $this->emitIssue(
@@ -1286,6 +1289,26 @@ final class Builder
             }
         } else {
             $this->return_comment = new ReturnComment($new_type, $this->guessActualLineLocation($i), $conditional);
+        }
+    }
+
+    /**
+     * `(at)phpstan-return` is only used for a conditional return type that Phan can parse:
+     * `(at)phpstan-return ($args is array{exit: false} ? void : never)`.
+     *
+     * Anything else is ignored without an issue: the annotation is written for another tool,
+     * in a syntax that Phan only knows in part, and the function still has its `(at)return`.
+     */
+    private function maybeParsePHPStanReturn(int $i, string $line): void
+    {
+        if (!\preg_match(self::CONDITIONAL_RETURN_START_REGEX, $line)) {
+            return;
+        }
+        $issues = $this->issues;
+        $conditional = $this->parseConditionalReturnFromCommentLine($line, $i);
+        $this->issues = $issues;
+        if ($conditional) {
+            $this->maybeParseReturn($i, $line);
         }
     }
 
@@ -2256,7 +2279,7 @@ final class Builder
         return \implode('@', \array_map(
             static function (string $annotation): string {
                 if (!str_contains($annotation, "\n")
-                    || !\preg_match('/^((?:(?:phan-|(?i:phpstan-|psalm-))?(?:param|var|return|real-return|property(?:-read|-write)?|assert|(?i:type)|implements|extends|inherits|use))\s[^$\n]+[\[(<{])\n/', $annotation, $match)
+                    || !\preg_match('/^((?:(?:phan-|(?i:phpstan-|psalm-))?(?:param|var|return|real-return|property(?:-read|-write)?|assert|(?i:type)|implements|extends|inherits|use))\s[^$\n]*[\[(<{])\n/', $annotation, $match)
                 ) {
                     return $annotation;
                 }

@@ -8,6 +8,7 @@ use Closure;
 use Phan\Analysis\ConditionVisitor;
 use Phan\CodeBase;
 use Phan\Language\Type;
+use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\CallableArrayType;
 use Phan\Language\Type\CallableObjectType;
 use Phan\Language\Type\CallableStringType;
@@ -72,6 +73,22 @@ final class ConditionalReturnType
     public function getParamName(): string
     {
         return $this->param_name;
+    }
+
+    /**
+     * @return bool whether a condition of this type, or of a branch of it, tests the parameter $param_name (without the leading '$')
+     */
+    public function usesParameter(string $param_name): bool
+    {
+        if ($this->param_name === $param_name) {
+            return true;
+        }
+        foreach ([$this->if_true, $this->if_false] as $branch) {
+            if ($branch instanceof self && $branch->usesParameter($param_name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** The type the parameter is compared against */
@@ -359,6 +376,10 @@ final class ConditionalReturnType
         if ($arg_type->isStrictSubtypeOf($code_base, $condition)) {
             return true;
         }
+        if (self::isEmptyArrayAgainstShapeWithRequiredField($arg_type, $condition)) {
+            // `[]` is not an `array{exit: false}`. (The types overlap, since both are arrays)
+            return false;
+        }
         if ($arg_type->hasAnyTypeOverlap($code_base, $condition)) {
             return null;
         }
@@ -368,6 +389,34 @@ final class ConditionalReturnType
             return null;
         }
         return false;
+    }
+
+    /**
+     * True if $arg_type is the empty array (`array{}`) and every type of $condition is an array shape with a field that is not optional.
+     */
+    private static function isEmptyArrayAgainstShapeWithRequiredField(UnionType $arg_type, UnionType $condition): bool
+    {
+        foreach ($arg_type->getTypeSet() as $type) {
+            if (!($type instanceof ArrayShapeType) || $type->isNullable() || $type->getFieldTypes()) {
+                return false;
+            }
+        }
+        foreach ($condition->getTypeSet() as $type) {
+            if (!($type instanceof ArrayShapeType) || $type->isNullable()) {
+                return false;
+            }
+            $has_required_field = false;
+            foreach ($type->getFieldTypes() as $field_type) {
+                if (!$field_type->isPossiblyUndefined()) {
+                    $has_required_field = true;
+                    break;
+                }
+            }
+            if (!$has_required_field) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

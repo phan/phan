@@ -12,10 +12,12 @@ use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\FQSENException;
 use Phan\Language\Context;
+use Phan\Language\Element\FunctionInterface;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Type\NeverType;
+use Phan\Parse\ParseVisitor;
 
 use function count;
 
@@ -742,12 +744,30 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
                 // Cannot find, cannot infer
                 return self::STATUS_PROCEED;
             }
+            // An unqualified name in a namespace is the function of the namespace if there is one, and the global function otherwise.
+            // (fromStringInContext() gives the global function for a name that is not imported)
+            if ($expression instanceof Node && $expression->flags === ast\flags\NAME_NOT_FQ
+                && !\str_contains($function_name, '\\')
+                && $this->context->getNamespace() !== '\\'
+                && !$this->context->hasNamespaceMapFor(ast\flags\USE_FUNCTION, $function_name)
+            ) {
+                try {
+                    $namespaced_function_fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString(
+                        \rtrim($this->context->getNamespace(), '\\') . '\\' . $function_name
+                    );
+                    if ($this->code_base->hasFunctionWithFQSEN($namespaced_function_fqsen)) {
+                        $function_fqsen = $namespaced_function_fqsen;
+                    }
+                } catch (FQSENException) {
+                    // Keep the global function
+                }
+            }
             if ($this->code_base->hasFunctionWithFQSEN($function_fqsen)) {
                 $function = $this->code_base->getFunctionByFQSEN($function_fqsen);
                 $returnUnion = $function->getUnionType();
                 $unionTypes = $returnUnion->getTypeSet();
                 $isNeverReturn = count($unionTypes) === 1 && $unionTypes[0] instanceof NeverType;
-                if ($isNeverReturn) {
+                if ($isNeverReturn || $this->callNeverReturnsByConditionalReturnType($function, $node)) {
                     return self::STATUS_NOT_RETURN_BITMASK;
                 }
             }
@@ -755,6 +775,43 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         // TODO: Could allow .phan/config.php or plugins to define additional behaviors, e.g. for methods.
         // E.g. if (!$var) {HttpFramework::generate_302_and_die(); }
         return self::STATUS_PROCEED;
+    }
+
+    /**
+     * Does this call never return according to the conditional return type of the function?
+     * (`(at)return ($args is array{exit: false} ? void : never)`)
+     *
+     * This is only decided when the arguments that the conditions look at are constant expressions (or are left out):
+     * the status of a call is cached and does not depend on the types that variables have where the call is made.
+     *
+     * @param Node $node the node of the call
+     */
+    private function callNeverReturnsByConditionalReturnType(FunctionInterface $function, Node $node): bool
+    {
+        $conditional = $function->getConditionalReturnType();
+        if ($conditional === null || $this->code_base === null || $this->context === null) {
+            return false;
+        }
+        $args = [];
+        foreach ($node->children['args']->children as $arg) {
+            if ($arg instanceof Node && $arg->kind === ast\AST_UNPACK) {
+                return false;
+            }
+            $args[] = $arg;
+        }
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgument the arguments of a call are a list
+        $args = ArgumentType::normalizeNamedArgs($args, $function);
+        foreach ($function->getParameterList() as $i => $parameter) {
+            $arg = $args[$i] ?? null;
+            if ($arg instanceof Node
+                && $conditional->usesParameter($parameter->getName())
+                && !ParseVisitor::isConstExpr($arg, ParseVisitor::CONSTANT_EXPRESSION_FORBID_NEW_EXPRESSION)
+            ) {
+                return false;
+            }
+        }
+        $type = $function->resolveConditionalReturnType($this->code_base, $this->context, $args);
+        return $type !== null && $type->isNeverType();
     }
 
     private function computeStatusOfStaticCall(Node $node): int
@@ -842,7 +899,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             $returnUnion = $method->getUnionType();
             $unionTypes = $returnUnion->getTypeSet();
             $isNeverReturn = count($unionTypes) === 1 && $unionTypes[0] instanceof NeverType;
-            if ($isNeverReturn) {
+            if ($isNeverReturn || $this->callNeverReturnsByConditionalReturnType($method, $node)) {
                 return self::STATUS_NOT_RETURN_BITMASK;
             }
         }
@@ -916,7 +973,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             $returnUnion = $method->getUnionType();
             $unionTypes = $returnUnion->getTypeSet();
             $isNeverReturn = count($unionTypes) === 1 && $unionTypes[0] instanceof NeverType;
-            if ($isNeverReturn) {
+            if ($isNeverReturn || $this->callNeverReturnsByConditionalReturnType($method, $node)) {
                 return self::STATUS_NOT_RETURN_BITMASK;
             }
         }

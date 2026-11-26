@@ -1,0 +1,6 @@
+%s:54 PhanTypeMismatchReturnNullable Returning $s of type ?string but afterStopThatReturns() is declared to return string (expected returned value to be non-nullable)
+%s:62 PhanTypeMismatchReturnNullable Returning $s of type ?string but afterStopWithVariable() is declared to return string (expected returned value to be non-nullable)
+%s:80 PhanTypeMismatchReturnNullable Returning $s of type ?string but afterRespondThatReturns() is declared to return string (expected returned value to be non-nullable)
+%s:94 PhanTypeMismatchReturnNullable Returning $s of type ?string but afterStaticCallThatReturns() is declared to return string (expected returned value to be non-nullable)
+%s:128 PhanDebugAnnotation @phan-debug-var requested for variable $i - it has union type array(real=array)
+%s:128 PhanDebugAnnotation @phan-debug-var requested for variable $j - it has union type int|string
