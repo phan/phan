@@ -220,6 +220,35 @@ function testAssertNumeric(?string $s): void {
     }
 }
 
+/**
+ * The same for an array shape that can have other keys, and for a type alias (which can stand for such a type).
+ *
+ * @phpstan-type Num numeric-string
+ */
+class Checks {
+    /** @phpstan-assert-if-true array{a: int, ...} $x */
+    public static function hasA($x): bool {
+        return is_array($x) && isset($x['a']);
+    }
+
+    /** @phpstan-assert-if-true Num $x */
+    public static function isNum($x): bool {
+        return is_numeric($x);
+    }
+
+    /**
+     * @param array{b: int}|null $array
+     */
+    public static function test($array, ?string $s): void {
+        if (!self::hasA($array)) {
+            '@phan-debug-var $array';
+        }
+        if (!self::isNum($s)) {
+            '@phan-debug-var $s';
+        }
+    }
+}
+
 $at = atInKey(['user@example.com' => 'x', 'id' => 1]);
 '@phan-debug-var $at';
 

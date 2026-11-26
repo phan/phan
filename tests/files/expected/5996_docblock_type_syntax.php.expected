@@ -24,10 +24,12 @@
 %s:202 PhanDebugAnnotation @phan-debug-var requested for variable $row - it has union type array{user\x40example.com:string,id:int}
 %s:216 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type string(real=?string)
 %s:218 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type ?string(real=?string)
-%s:223 PhanDebugAnnotation @phan-debug-var requested for variable $at - it has union type ?'a b'|array{a:int}|array{b:int}
-%s:226 PhanDebugAnnotation @phan-debug-var requested for variable $after - it has union type array{0:array{a:int}|array{b:string},1:int}(real=array{0:array{a:int}|array{b:string},1:int})
-%s:226 PhanTypeMismatchArgument Argument 1 ($keys) is [] of type array{} but \NS5996\questionMarks() takes array{why\x3f:int,maybe?:int} defined at %s:130
-%s:226 PhanTypeMismatchArgument Argument 1 ($opts) is [] of type array{} but \NS5996\afterTheType() takes array{a:int,b:string} defined at %s:119
-%s:226 PhanTypeMismatchArgument Argument 2 ($opts2) is [] of type array{} but \NS5996\afterTheType() takes array{x:int} defined at %s:119
-%s:226 PhanTypeMismatchArgument Argument 3 ($opts3) is [] of type array{} but \NS5996\afterTheType() takes array{y:int} defined at %s:119
-%s:229 PhanDebugAnnotation @phan-debug-var requested for variable $results - it has union type array{0:array<string,array{requiredValue:mixed,policyTitle:string}>,1:iterable<array{idsite:int|string,name:string,ts_archived:string}>,2:array{a:int},3:int[]|string[],4:float|int}(real=array{0:array<string,array{requiredValue:mixed,policyTitle:string}>,1:iterable<array{idsite:int|string,name:string,ts_archived:string}>,2:array{a:int},3:int[]|string[],4:float|int})
+%s:243 PhanDebugAnnotation @phan-debug-var requested for variable $array - it has union type array{b:int}|null
+%s:246 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type ?string(real=?string)
+%s:252 PhanDebugAnnotation @phan-debug-var requested for variable $at - it has union type ?'a b'|array{a:int}|array{b:int}
+%s:255 PhanDebugAnnotation @phan-debug-var requested for variable $after - it has union type array{0:array{a:int}|array{b:string},1:int}(real=array{0:array{a:int}|array{b:string},1:int})
+%s:255 PhanTypeMismatchArgument Argument 1 ($keys) is [] of type array{} but \NS5996\questionMarks() takes array{why\x3f:int,maybe?:int} defined at %s:130
+%s:255 PhanTypeMismatchArgument Argument 1 ($opts) is [] of type array{} but \NS5996\afterTheType() takes array{a:int,b:string} defined at %s:119
+%s:255 PhanTypeMismatchArgument Argument 2 ($opts2) is [] of type array{} but \NS5996\afterTheType() takes array{x:int} defined at %s:119
+%s:255 PhanTypeMismatchArgument Argument 3 ($opts3) is [] of type array{} but \NS5996\afterTheType() takes array{y:int} defined at %s:119
+%s:258 PhanDebugAnnotation @phan-debug-var requested for variable $results - it has union type array{0:array<string,array{requiredValue:mixed,policyTitle:string}>,1:iterable<array{idsite:int|string,name:string,ts_archived:string}>,2:array{a:int},3:int[]|string[],4:float|int}(real=array{0:array<string,array{requiredValue:mixed,policyTitle:string}>,1:iterable<array{idsite:int|string,name:string,ts_archived:string}>,2:array{a:int},3:int[]|string[],4:float|int})

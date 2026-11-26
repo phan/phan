@@ -392,6 +392,11 @@ final class Builder
     }
 
     /**
+     * The end of an array shape that can have other keys: `array{a: int, ...}`, `array{a: int, ...<string, mixed>}`
+     */
+    private const OPEN_SHAPE_REGEX = '/,\s*\.\.\.(?:\s*<[^<>{}]*>)?\s*\}/';
+
+    /**
      * @return bool whether a name in $type_string is a type alias of this file.
      * (What the alias stands for may be a type that Phan reads as a wider one: `@phpstan-type Num numeric-string`)
      */
@@ -428,7 +433,7 @@ final class Builder
         }
         $param_name = $match[1];
         $negated = ($match[2] ?? '') !== '';
-        if (str_contains($match[3], '...') && \preg_match('/,\s*\.\.\.(?:\s*<[^<>{}]*>)?\s*\}/', $match[3])) {
+        if (str_contains($match[3], '...') && \preg_match(self::OPEN_SHAPE_REGEX, $match[3])) {
             // `$args is array{fields: 'ids', ...}`: an array shape that can have other keys is read as the array shape or any array,
             // which every array is. The condition is not one that Phan can check.
             return null;
@@ -1323,7 +1328,11 @@ final class Builder
         }
         // A type that Phan reads as a wider one (`numeric` and `numeric-string` are any string) can be asserted,
         // but its opposite cannot: a value that is not numeric can still be a string.
-        $is_approximated = \preg_match(self::APPROXIMATED_TYPE_REGEX, self::withoutQuotedLiterals($match[4])) > 0;
+        // (Also an array shape that can have other keys, which is read as the array shape or any array,
+        // and a type alias, which can stand for any of these)
+        $is_approximated = \preg_match(self::APPROXIMATED_TYPE_REGEX, self::withoutQuotedLiterals($match[4])) > 0
+            || (str_contains($match[4], '...') && \preg_match(self::OPEN_SHAPE_REGEX, $match[4]))
+            || $this->usesTypeAlias($match[4]);
         $is_negated = \str_contains($match[3], '!');
         if ($is_approximated && $is_negated) {
             return;
