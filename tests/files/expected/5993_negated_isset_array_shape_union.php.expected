@@ -1,0 +1,10 @@
+%s:12 PhanDebugAnnotation @phan-debug-var requested for variable $upload - it has union type array{file:non-empty-string,url:string}
+%s:22 PhanDebugAnnotation @phan-debug-var requested for variable $upload - it has union type array{file:non-empty-string,url:string}
+%s:35 PhanDebugAnnotation @phan-debug-var requested for variable $many - it has union type array{b:int}|array{e:?string|null,c:int}|array{e?:null|string,a:int}|false
+%s:47 PhanDebugAnnotation @phan-debug-var requested for variable $generic - it has union type array<string,int>|array{e:null|string}(real=array)
+%s:50 PhanDebugAnnotation @phan-debug-var requested for variable $empty - it has union type array{}(real=array)
+%s:52 PhanTypeInvalidDimOffset Invalid offset "f" of $empty of array type array{}
+%s:52 PhanTypeSuspiciousEcho Suspicious argument $empty['f'] of type null for an echo/print statement
+%s:58 PhanDebugAnnotation @phan-debug-var requested for variable $nested - it has union type array{a:array{b?:int},file:string}|array{error:string}(real=array)
+%s:69 PhanDebugAnnotation @phan-debug-var requested for variable $removed - it has union type array{b:int}|null
+%s:73 PhanDebugAnnotation @phan-debug-var requested for variable $kept - it has union type ?array{e?:null|string}|array{b:int}
