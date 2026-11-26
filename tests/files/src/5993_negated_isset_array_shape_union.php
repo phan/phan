@@ -52,3 +52,11 @@ function testOthers(array $generic, array $empty): void {
         echo $empty['f'];
     }
 }
+
+/** @param array{a: array{b?: int}, file: string}|array{error: string} $nested */
+function testNested(array $nested): void {
+    if (!isset($nested['a']['b'])) {
+        // ['a' => [], 'file' => 'x'] is possible here.
+        '@phan-debug-var $nested';
+    }
+}
