@@ -7,15 +7,20 @@ namespace Phan\Analysis;
 use AssertionError;
 use ast;
 use ast\Node;
+use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\KindVisitorImplementation;
 use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\FQSENException;
+use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Language\Element\FunctionInterface;
+use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Type\NeverType;
+use Phan\Parse\ParseVisitor;
 
 use function count;
 
@@ -742,12 +747,30 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
                 // Cannot find, cannot infer
                 return self::STATUS_PROCEED;
             }
+            // An unqualified name in a namespace is the function of the namespace if there is one, and the global function otherwise.
+            // (fromStringInContext() gives the global function for a name that is not imported)
+            if ($expression instanceof Node && $expression->flags === ast\flags\NAME_NOT_FQ
+                && !\str_contains($function_name, '\\')
+                && $this->context->getNamespace() !== '\\'
+                && !$this->context->hasNamespaceMapFor(ast\flags\USE_FUNCTION, $function_name)
+            ) {
+                try {
+                    $namespaced_function_fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString(
+                        \rtrim($this->context->getNamespace(), '\\') . '\\' . $function_name
+                    );
+                    if ($this->code_base->hasFunctionWithFQSEN($namespaced_function_fqsen)) {
+                        $function_fqsen = $namespaced_function_fqsen;
+                    }
+                } catch (FQSENException) {
+                    // Keep the global function
+                }
+            }
             if ($this->code_base->hasFunctionWithFQSEN($function_fqsen)) {
                 $function = $this->code_base->getFunctionByFQSEN($function_fqsen);
                 $returnUnion = $function->getUnionType();
                 $unionTypes = $returnUnion->getTypeSet();
                 $isNeverReturn = count($unionTypes) === 1 && $unionTypes[0] instanceof NeverType;
-                if ($isNeverReturn) {
+                if ($isNeverReturn || $this->callNeverReturnsByConditionalReturnType($function, $node, true)) {
                     return self::STATUS_NOT_RETURN_BITMASK;
                 }
             }
@@ -755,6 +778,111 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         // TODO: Could allow .phan/config.php or plugins to define additional behaviors, e.g. for methods.
         // E.g. if (!$var) {HttpFramework::generate_302_and_die(); }
         return self::STATUS_PROCEED;
+    }
+
+    /**
+     * Does this call never return according to the conditional return type of the function?
+     * (`(at)return ($args is array{exit: false} ? void : never)`)
+     *
+     * This is only decided when it does not depend on anything that is unknown here:
+     *
+     * - The arguments that the conditions look at are constant expressions (or are left out):
+     *   the status of a call is cached and does not depend on the types that variables have where the call is made.
+     * - An argument is not converted to the declared type of the parameter (`f('1')` for `int $x`).
+     * - For a call of a method on an object and for `static::method()`, the arguments that the conditions look at are passed,
+     *   and by position: a method that overrides this one can have other defaults and other parameter names.
+     *   (Unless the method cannot be overridden)
+     * - The conditional return type does not use template types.
+     *
+     * @param Node $node the node of the call
+     * @param bool $is_exact_dispatch false if a method of a subclass may be called instead
+     */
+    private function callNeverReturnsByConditionalReturnType(FunctionInterface $function, Node $node, bool $is_exact_dispatch): bool
+    {
+        $conditional = $function->getConditionalReturnType();
+        if ($conditional === null || $this->code_base === null || $this->context === null || $conditional->hasTemplateTypeRecursive() || $conditional->hasApproximatedCondition()) {
+            return false;
+        }
+        $args = [];
+        if (!$is_exact_dispatch && $function instanceof Method) {
+            if ($function->isFinal() || $function->isPrivate() || $function->getClass($this->code_base)->isFinal()) {
+                $is_exact_dispatch = true;
+            } elseif ($function->isOverriddenByAnother()) {
+                // A method that overrides this one may be called, and nothing makes it keep the conditional return type.
+                return false;
+            }
+        }
+        foreach ($node->children['args']->children as $arg) {
+            if ($arg instanceof Node && ($arg->kind === ast\AST_UNPACK || (!$is_exact_dispatch && $arg->kind === ast\AST_NAMED_ARG))) {
+                // (A method that overrides this one can give its parameters other names)
+                return false;
+            }
+            $args[] = $arg;
+        }
+        // @phan-suppress-next-line PhanPartialTypeMismatchArgument the arguments of a call are a list
+        $args = ArgumentType::normalizeNamedArgs($args, $function);
+        // The call is analyzed elsewhere: nothing is reported for its arguments here.
+        $old_is_discarding_issues = Issue::$is_discarding_issues;
+        Issue::$is_discarding_issues = true;
+        try {
+            foreach ($function->getParameterList() as $i => $parameter) {
+                if (!$conditional->usesParameter($parameter->getName())) {
+                    continue;
+                }
+                if (!\array_key_exists($i, $args)) {
+                    if (!$is_exact_dispatch || !$parameter->hasDefaultValue()) {
+                        return false;
+                    }
+                    $default_value = $parameter->getDefaultValue();
+                    if ($default_value instanceof Node && self::dependsOnCallingClass($default_value)) {
+                        // e.g. `$name = __CLASS__` or `$mode = self::MODE` in a method of a trait
+                        return false;
+                    }
+                    $arg_type = $parameter->getDefaultValueLiteralType();
+                } else {
+                    $arg = $args[$i];
+                    if ($arg instanceof Node && (!ParseVisitor::isConstExpr($arg, ParseVisitor::CONSTANT_EXPRESSION_FORBID_NEW_EXPRESSION) || self::dependsOnCallingClass($arg))) {
+                        return false;
+                    }
+                    $arg_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $arg);
+                }
+                // (Also for a default: `float $x = 1` is 1.0 in the function)
+                $real_parameter_type = $parameter->getNonVariadicUnionType()->getRealUnionType();
+                if (!$real_parameter_type->isEmpty() && !$arg_type->isStrictSubtypeOf($this->code_base, $real_parameter_type)) {
+                    return false;
+                }
+            }
+            $type = $function->resolveConditionalReturnType($this->code_base, $this->context, $args);
+        } finally {
+            Issue::$is_discarding_issues = $old_is_discarding_issues;
+        }
+        return $type !== null && $type->isNeverType();
+    }
+
+    /**
+     * @return bool whether the value of this constant expression depends on the class that the code runs in:
+     * `__CLASS__` in a trait, `static::NAME`, `static::class`, and `self::`/`parent::` (which depend on the class that uses a trait).
+     */
+    private static function dependsOnCallingClass(Node $node): bool
+    {
+        switch ($node->kind) {
+            case ast\AST_MAGIC_CONST:
+                return true;
+            case ast\AST_CLASS_CONST:
+            case ast\AST_CLASS_NAME:
+                $class = $node->children['class'];
+                // (`self` and `parent` are other classes for each class that uses a trait)
+                if ($class instanceof Node && $class->kind === ast\AST_NAME && \in_array(\strtolower((string)$class->children['name']), ['static', 'self', 'parent'], true)) {
+                    return true;
+                }
+                break;
+        }
+        foreach ($node->children as $child) {
+            if ($child instanceof Node && self::dependsOnCallingClass($child)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private function computeStatusOfStaticCall(Node $node): int
@@ -842,7 +970,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             $returnUnion = $method->getUnionType();
             $unionTypes = $returnUnion->getTypeSet();
             $isNeverReturn = count($unionTypes) === 1 && $unionTypes[0] instanceof NeverType;
-            if ($isNeverReturn) {
+            if ($isNeverReturn || $this->callNeverReturnsByConditionalReturnType($method, $node, $normalized_class_name !== 'static')) {
                 return self::STATUS_NOT_RETURN_BITMASK;
             }
         }
@@ -916,7 +1044,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             $returnUnion = $method->getUnionType();
             $unionTypes = $returnUnion->getTypeSet();
             $isNeverReturn = count($unionTypes) === 1 && $unionTypes[0] instanceof NeverType;
-            if ($isNeverReturn) {
+            if ($isNeverReturn || $this->callNeverReturnsByConditionalReturnType($method, $node, false)) {
                 return self::STATUS_NOT_RETURN_BITMASK;
             }
         }

@@ -8,6 +8,7 @@ use Closure;
 use Phan\Analysis\ConditionVisitor;
 use Phan\CodeBase;
 use Phan\Language\Type;
+use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\CallableArrayType;
 use Phan\Language\Type\CallableObjectType;
 use Phan\Language\Type\CallableStringType;
@@ -46,14 +47,22 @@ final class ConditionalReturnType
     /** @var int the line of the annotation this was parsed from (0 if unknown) */
     private $lineno;
 
+    /**
+     * @var bool whether the condition was written with a type that Phan reads as a wider one
+     * (`numeric-string` is a `string`, `int<1, max>` an `int`, `Foo::BAR` is `mixed`)
+     */
+    private $is_condition_approximated;
+
     public function __construct(
         string $param_name,
         UnionType $condition,
         bool $negated,
         UnionType|ConditionalReturnType $if_true,
         UnionType|ConditionalReturnType $if_false,
-        int $lineno = 0
+        int $lineno = 0,
+        bool $is_condition_approximated = false
     ) {
+        $this->is_condition_approximated = $is_condition_approximated;
         $this->param_name = $param_name;
         $this->condition = $condition;
         $this->negated = $negated;
@@ -72,6 +81,68 @@ final class ConditionalReturnType
     public function getParamName(): string
     {
         return $this->param_name;
+    }
+
+    /**
+     * @return bool whether a condition of this type, or of a branch of it, tests the parameter $param_name (without the leading '$')
+     */
+    public function usesParameter(string $param_name): bool
+    {
+        if ($this->param_name === $param_name) {
+            return true;
+        }
+        foreach ([$this->if_true, $this->if_false] as $branch) {
+            if ($branch instanceof self && $branch->usesParameter($param_name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return self a copy that is marked as not exact (see hasApproximatedCondition()),
+     * for an annotation of which a part was not understood.
+     */
+    public function asApproximated(): self
+    {
+        return new self($this->param_name, $this->condition, $this->negated, $this->if_true, $this->if_false, $this->lineno, true);
+    }
+
+    /**
+     * @return bool whether a condition of this type, or of a branch of it, was written with a type that Phan reads as a wider one.
+     * The branch that is chosen for a call is then not certain to be the right one.
+     */
+    public function hasApproximatedCondition(): bool
+    {
+        if ($this->is_condition_approximated) {
+            return true;
+        }
+        foreach ([$this->if_true, $this->if_false] as $branch) {
+            if ($branch instanceof self && $branch->hasApproximatedCondition()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return bool whether $other tests the same parameters for the same types, with the same types in every branch
+     */
+    public function isSameAs(self $other): bool
+    {
+        if ($this->param_name !== $other->param_name || $this->negated !== $other->negated || !$this->condition->isEqualTo($other->condition)) {
+            return false;
+        }
+        foreach ([[$this->if_true, $other->if_true], [$this->if_false, $other->if_false]] as [$branch, $other_branch]) {
+            if ($branch instanceof self) {
+                if (!($other_branch instanceof self) || !$branch->isSameAs($other_branch)) {
+                    return false;
+                }
+            } elseif ($other_branch instanceof self || !$branch->isEqualTo($other_branch)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** The type the parameter is compared against */
@@ -126,7 +197,7 @@ final class ConditionalReturnType
         if ($new_condition === $this->condition && $new_if_true === $this->if_true && $new_if_false === $this->if_false) {
             return $this;
         }
-        return new self($this->param_name, $new_condition, $this->negated, $new_if_true, $new_if_false, $this->lineno);
+        return new self($this->param_name, $new_condition, $this->negated, $new_if_true, $new_if_false, $this->lineno, $this->is_condition_approximated);
     }
 
     /**
@@ -143,7 +214,8 @@ final class ConditionalReturnType
             return $this;
         }
         return $this->mapLeafTypes(static function (UnionType $type) use ($extra_types): UnionType {
-            return $type->withUnionType($extra_types);
+            // (Not for a branch that is `never`: there the call does not return, whatever the plain annotation says)
+            return $type->isNeverType() ? $type : $type->withUnionType($extra_types);
         });
     }
 
@@ -169,7 +241,7 @@ final class ConditionalReturnType
     {
         $new_if_true = $this->if_true instanceof self ? $this->if_true->mapLeafTypes($mapper) : $mapper($this->if_true);
         $new_if_false = $this->if_false instanceof self ? $this->if_false->mapLeafTypes($mapper) : $mapper($this->if_false);
-        return new self($this->param_name, $this->condition, $this->negated, $new_if_true, $new_if_false, $this->lineno);
+        return new self($this->param_name, $this->condition, $this->negated, $new_if_true, $new_if_false, $this->lineno, $this->is_condition_approximated);
     }
 
     /**
@@ -186,7 +258,7 @@ final class ConditionalReturnType
         if ($new_name === $this->param_name && $new_if_true === $this->if_true && $new_if_false === $this->if_false) {
             return $this;
         }
-        return new self($new_name, $this->condition, $this->negated, $new_if_true, $new_if_false, $this->lineno);
+        return new self($new_name, $this->condition, $this->negated, $new_if_true, $new_if_false, $this->lineno, $this->is_condition_approximated);
     }
 
     /**
@@ -359,13 +431,44 @@ final class ConditionalReturnType
         if ($arg_type->isStrictSubtypeOf($code_base, $condition)) {
             return true;
         }
-        if ($arg_type->hasAnyTypeOverlap($code_base, $condition)) {
+        if ($arg_type->hasAnyTypeOverlap($code_base, $condition) && self::hasOverlapBeyondEmptyArray($code_base, $arg_type, $condition)) {
             return null;
         }
         // The types are disjoint as declared. Two object types can still be satisfied at runtime by a
         // subclass implementing both (e.g. an unrelated interface), so only treat that as ambiguous.
         if ($arg_type->hasObjectTypes() && $condition->hasObjectTypes()) {
             return null;
+        }
+        return false;
+    }
+
+    /**
+     * @return bool whether a type of $arg_type overlaps with a type of $condition,
+     * not counting the empty array (`array{}`) against an array shape with a field that is not optional:
+     * `[]` is not an `array{exit: false}`, although both are arrays.
+     */
+    private static function hasOverlapBeyondEmptyArray(CodeBase $code_base, UnionType $arg_type, UnionType $condition): bool
+    {
+        foreach ($arg_type->getTypeSet() as $type) {
+            $is_empty_array = $type instanceof ArrayShapeType && !$type->isNullable() && !$type->getFieldTypes();
+            foreach ($condition->getTypeSet() as $condition_type) {
+                if ($is_empty_array && $condition_type instanceof ArrayShapeType && self::hasRequiredField($condition_type)) {
+                    continue;
+                }
+                if ($type->asPHPDocUnionType()->hasAnyTypeOverlap($code_base, $condition_type->asPHPDocUnionType())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static function hasRequiredField(ArrayShapeType $type): bool
+    {
+        foreach ($type->getFieldTypes() as $field_type) {
+            if (!$field_type->isPossiblyUndefined()) {
+                return true;
+            }
         }
         return false;
     }

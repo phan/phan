@@ -4,6 +4,8 @@ Phan 6.0.12-dev
 --------------
 
 New features:
+- A call does not return when the conditional return type of the function resolves to `never` for its arguments: with `@return ($args is array{exit: false} ? void : never)` on `wp_die()`, the code after `if ($x === null) { wp_die('...'); }` knows that `$x` is not null, and a function that ends in `wp_die('...')` is not missing a return. This is only decided when the arguments that the conditions look at are constant expressions or are left out.
+- Read `@phpstan-return` when it is a conditional return type that Phan can parse (`@phpstan-return ($x is int ? A : B)`), like `@psalm-return`. Other uses of `@phpstan-return` are ignored without an issue, as before.
 - Parse more of the type syntax that PHPStan and Psalm use in doc comments. Each of these made Phan give up on the annotation (`PhanUnextractableAnnotation`, `PhanUnextractableAnnotationSuffix`) or read the first word as the name of a class:
   - whitespace after `{` and before `}` of an array shape: `array{ a: int, b?: string }`;
   - `non-negative-int` (`0|positive-int`), `non-positive-int` (`0|negative-int`), `numeric-string` in `@param`/`@var`/`@property` (it is a `string`), `literal-string` (`string`), `non-empty-literal-string` (`non-empty-string`) and `truthy-string` (`non-falsy-string`);
@@ -91,6 +93,9 @@ Bug fixes:
 - `@phan-assert !T $x` only removes the types that are subtypes of `T` from the type of the argument: for `!ClassName`, the class and its subclasses. It removed every type that can be cast to `T` (`object` for a class, `string` for `non-empty-string`), and did not remove a nullable `?ClassName`.
 - Report an issue in a doc comment at its own line when an annotation before or after it spans several lines (`@return array{` ... `}`). The lines of such an annotation were joined before the lines were counted, so the issue was reported at the line of the declaration.
 - A type alias for a nullable type keeps its nullability: with `@phan-type MaybeInt = ?int`, `@param MaybeInt $x` was an `int`.
+- A function that is declared to return `never` and is called by its unqualified name inside a namespace (`namespace NS; function halt(): never {...} ... halt();`) is now known not to return. Only the global function of that name was looked up.
+- A conditional return type that tests for an array shape with a required field is not satisfied by an empty array: with `($args is array{exit: false} ? A : B)`, `f([])` and a default of `[]` give `B`, not `A|B`.
+- A multi-line annotation whose type starts with the bracket (`@return (` followed by the lines of a conditional type) is joined like other multi-line annotations.
 - `UnreachableCodePlugin`: don't report a label after `return`, `throw`, etc. as `PhanPluginUnreachableCode`: a `goto` can jump to it.
 - `DuplicateArrayKeyPlugin`: fix false positives and negatives of `PhanPluginDuplicateSwitchCaseLooseEquality`. A string that is not numeric was compared as the number 0, so `case '0':` was reported as equal to `case 'hold':`. The comparison now follows PHP 8: `0 == 'foo'` and `1 == '1bar'` are no longer reported, and cases that are `==` to an earlier `true`, `false` or `null` case are reported (`case true: ... case 'x':`). The message prints the string `'0'` as `'0'`, not `0`.
 - `isset($x['a']['b'])` with literal offsets now records that the element exists and is not null when the type of the element is known, as `isset($x['a'])` did. Reading `$x['a']['b']` inside of the condition was reported as `PhanTypePossiblyInvalidDimOffset` when `$x['a']` was `array{b?:int}`.

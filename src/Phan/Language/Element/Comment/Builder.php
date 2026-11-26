@@ -274,9 +274,9 @@ final class Builder
     }
 
     /** @internal */
-    public const RETURN_COMMENT_REGEX = '/@(?:phan-|psalm-)?(?:real-)?return\s+(&\s*)?(' . UnionType::union_type_regex_or_this . ')/';
+    public const RETURN_COMMENT_REGEX = '/@(?:phan-|psalm-|phpstan-)?(?:real-)?return\s+(&\s*)?(' . UnionType::union_type_regex_or_this . ')/';
     /** @internal */
-    public const RETURN_OR_THROWS_COMMENT_REGEX = '/@(?:phan-|psalm-)?(?:real-)?(?:return|throws)\s+(&\s*)?(' . UnionType::union_type_regex_or_this . ')/';
+    public const RETURN_OR_THROWS_COMMENT_REGEX = '/@(?:phan-|psalm-|phpstan-)?(?:real-)?(?:return|throws)\s+(&\s*)?(' . UnionType::union_type_regex_or_this . ')/';
 
     /**
      * @param string $line
@@ -329,7 +329,7 @@ final class Builder
      * ordinary (at)return annotations fail at the lookahead.
      * @internal
      */
-    public const CONDITIONAL_RETURN_START_REGEX = '/^[\s\/*]*@(?:phan-|psalm-)?return\s+(?=\(\s*\$)/';
+    public const CONDITIONAL_RETURN_START_REGEX = '/^[\s\/*]*@(?i:phan-|psalm-|phpstan-)?(?i:return)\s+(?=\(\s*\$)/';
 
     private const CONDITIONAL_HEAD_REGEX = '/\G\(\s*\$' . self::WORD_REGEX . '\s+is\s+(not\s+)?(' . UnionType::union_type_regex_or_this . ')\s*\?\s*/';
     private const CONDITIONAL_LEAF_REGEX = '/\G(' . UnionType::union_type_regex_or_this . ')/';
@@ -370,6 +370,30 @@ final class Builder
     }
 
     /**
+     * @return bool whether a name in $type_string is a type alias of this file.
+     * (What the alias stands for may be a type that Phan reads as a wider one: `@phpstan-type Num numeric-string`)
+     */
+    private function usesTypeAlias(string $type_string): bool
+    {
+        if (\preg_match_all('/[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*/', $type_string, $matches) > 0) {
+            foreach ($matches[0] as $name) {
+                if ($this->context->getTypeAlias($name) !== null) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Matches the types in a type string that Phan reads as a wider type, or does not check completely as a condition:
+     * `numeric-string`, `literal-string` and `lowercase-string` (string), `int<1, 10>` (int), `Foo::BAR` (mixed),
+     * and `class-string<Foo>` (the class that a string names is not compared with `Foo`).
+     * @internal
+     */
+    public const APPROXIMATED_TYPE_REGEX = '/::|\bint(?:-range)?\s*<|\b(?:non-empty-)?(?:numeric|literal|lowercase)-string\b|\b(?:class|interface|trait|enum)-string\b/i';
+
+    /**
      * Parses `($name is [not] Type ? Branch : Branch)` starting at $offset.
      * @param int $offset the offset of the opening parenthesis. On success, this is advanced past the closing parenthesis.
      * @param int $lineno the line of the annotation, recorded on the result
@@ -382,6 +406,8 @@ final class Builder
         $param_name = $match[1];
         $negated = ($match[2] ?? '') !== '';
         $condition = $this->unionTypeFromConditionalPart($match[3]);
+        // (`numeric-string` and `lowercase-string` are read as `string`, `int<1, max>` as `int`, `Foo::BAR` as `mixed`)
+        $is_condition_approximated = \preg_match(self::APPROXIMATED_TYPE_REGEX, $match[3]) > 0 || $this->usesTypeAlias($match[3]);
         $offset += \strlen($match[0]);
 
         $if_true = $this->parseConditionalBranchAt($line, $offset, $lineno);
@@ -400,7 +426,7 @@ final class Builder
             return null;
         }
         $offset += \strlen($match[0]);
-        return new ConditionalReturnType($param_name, $condition, $negated, $if_true, $if_false, $lineno);
+        return new ConditionalReturnType($param_name, $condition, $negated, $if_true, $if_false, $lineno, $is_condition_approximated);
     }
 
     /**
@@ -600,7 +626,7 @@ final class Builder
         // (?i) makes this case-sensitive, (?-1) makes it case-insensitive
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
         // Support both regular tags ("@something") and inline versions of tags ("optional_prefix {@something}").
-        if (\preg_match('/(?:^|{)@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|implements|use|require-extends|require-implements|suppress|unused-param|no-named-arguments|phan-[a-z0-9_-]*|(?:phpstan|psalm)-assert-if-(?:true|false)|(?:phpstan|psalm)-(?:import-)?type|psalm-(?:template(?:-(?:co|contra)variant)?|param|var|return|require-extends|require-implements|immutable)(?-i)|method|property|property-read|property-write|abstract|template(?:-(?:co|contra)variant)?|PhanClosureScope|readonly|immutable|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $trimmed, $matches)) {
+        if (\preg_match('/(?:^|{)@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|implements|use|require-extends|require-implements|suppress|unused-param|no-named-arguments|phan-[a-z0-9_-]*|(?:phpstan|psalm)-assert-if-(?:true|false)|(?:phpstan|psalm)-(?:import-)?type|phpstan-return|psalm-(?:template(?:-(?:co|contra)variant)?|param|var|return|require-extends|require-implements|immutable)(?-i)|method|property|property-read|property-write|abstract|template(?:-(?:co|contra)variant)?|PhanClosureScope|readonly|immutable|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $trimmed, $matches)) {
             $case_sensitive_type = $matches[1];
             $type = \strtolower($case_sensitive_type);
             $type = self::TAG_ALIAS_MAP[$type] ?? $type;
@@ -638,6 +664,9 @@ final class Builder
                     break;
                 case 'return':
                     $this->maybeParseReturn($i, $line);
+                    break;
+                case 'phpstan-return':
+                    $this->maybeParsePHPStanReturn($i, $line);
                     break;
                 case 'returns':
                     $this->emitIssue(
@@ -1264,8 +1293,14 @@ final class Builder
             return;
         }
         $return_comment = $this->return_comment;
+        $issue_count = \count($this->issues);
         $conditional = $this->parseConditionalReturnFromCommentLine($line, $i);
         if ($conditional) {
+            if (\count($this->issues) !== $issue_count || \preg_match('/\)\s*[|&]/', $line)) {
+                // A part of the annotation was not understood, such as the `|null` of `($x is int ? A : B)|null`:
+                // the branches are still used for the type of a call, but not to decide that a call does not return.
+                $conditional = $conditional->asApproximated();
+            }
             $new_type = $conditional->asFlattenedUnionType();
         } else {
             $new_type = $this->returnOrThrowsTypeFromCommentLine($line, $i);
@@ -1282,10 +1317,56 @@ final class Builder
                 $return_comment->setConditional($old_conditional->withPlainAnnotationTypes($new_type));
             } elseif ($conditional && $old_conditional) {
                 // Two conditionals: keep the first one's structure, and treat the second one's types as always possible.
-                $return_comment->setConditional($old_conditional->withTypesAddedToLeaves($new_type));
+                // (Not if they are the same, e.g. one conditional as `@psalm-return` and as `@phpstan-return`:
+                // that would add the types of one branch to the other, and to a branch that is `never`)
+                if (!$conditional->isSameAs($old_conditional)) {
+                    $return_comment->setConditional($old_conditional->withTypesAddedToLeaves($new_type));
+                }
             }
         } else {
             $this->return_comment = new ReturnComment($new_type, $this->guessActualLineLocation($i), $conditional);
+        }
+    }
+
+    /**
+     * `(at)phpstan-return` is only used for a conditional return type that Phan can parse:
+     * `(at)phpstan-return ($args is array{exit: false} ? void : never)`.
+     *
+     * Anything else is ignored without an issue: the annotation is written for another tool,
+     * in a syntax that Phan only knows in part, and the function still has its `(at)return`.
+     */
+    private function maybeParsePHPStanReturn(int $i, string $line): void
+    {
+        if (!\in_array($this->comment_type, Comment::FUNCTION_LIKE, true) || !\preg_match(self::CONDITIONAL_RETURN_START_REGEX, $line)) {
+            return;
+        }
+        $return_comment = $this->return_comment;
+        $old_conditional = $return_comment ? $return_comment->getConditional() : null;
+        if ($return_comment && $old_conditional) {
+            // e.g. the same conditional as `@psalm-return` and as `@phpstan-return`: the first one is used.
+            // (A second conditional would add its types to every branch of the first one)
+            $issues = $this->issues;
+            $conditional = $this->parseConditionalReturnFromCommentLine($line, $i);
+            $this->issues = $issues;
+            if (!$conditional || !$conditional->isSameAs($old_conditional)) {
+                // The two annotations say different things: the first one is not relied on to decide that a call does not return.
+                $return_comment->setConditional($old_conditional->asApproximated());
+            }
+            return;
+        }
+        // Not used if it has something that Phan does not parse or only approximates, since a branch may decide that a call does not return:
+        // - a type after the closing bracket (`(...) | null`; without the whitespace, the parser reports it);
+        // - a type that Phan reads as a wider one (APPROXIMATED_TYPE_REGEX).
+        if (\preg_match('/\)\s*[|&]/', $line) || \preg_match(self::APPROXIMATED_TYPE_REGEX, $line)) {
+            return;
+        }
+        $issues = $this->issues;
+        $conditional = $this->parseConditionalReturnFromCommentLine($line, $i);
+        // (An issue means that a part of the annotation was not understood, such as the `|null` of `($x is int ? A : B)|null`)
+        $is_understood = $conditional !== null && \count($this->issues) === \count($issues);
+        $this->issues = $issues;
+        if ($is_understood) {
+            $this->maybeParseReturn($i, $line);
         }
     }
 
@@ -2256,7 +2337,7 @@ final class Builder
         return \implode('@', \array_map(
             static function (string $annotation): string {
                 if (!str_contains($annotation, "\n")
-                    || !\preg_match('/^((?:(?:phan-|(?i:phpstan-|psalm-))?(?:param|var|return|real-return|property(?:-read|-write)?|assert|(?i:type)|implements|extends|inherits|use))\s[^$\n]+[\[(<{])\n/', $annotation, $match)
+                    || !\preg_match('/^((?:(?:phan-|(?i:phpstan-|psalm-))?(?:param|var|return|real-return|property(?:-read|-write)?|assert|(?i:type)|implements|extends|inherits|use))\s[^$\n]*[\[(<{])\n/', $annotation, $match)
                 ) {
                     return $annotation;
                 }
