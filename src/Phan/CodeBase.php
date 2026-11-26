@@ -523,6 +523,62 @@ class CodeBase
     }
 
     /**
+     * @var array<string,array<string,Type>> maps the lowercase FQSEN of a class to the type aliases that its doc comment declares
+     * (`(at)phpstan-type Name Type`), for `(at)phpstan-import-type Name from ClassName`
+     */
+    private $type_aliases_of_class = [];
+
+    /** @var list<string> the files that are parsed (to find the file of a class that type aliases are imported from) */
+    private $file_path_list_for_type_aliases = [];
+
+    /**
+     * Records the type aliases that the doc comment of a class declares.
+     *
+     * @param array<string,Type> $type_alias_map
+     */
+    public function setTypeAliasesOfClass(FullyQualifiedClassName $class_fqsen, array $type_alias_map): void
+    {
+        $this->type_aliases_of_class[\strtolower($class_fqsen->getCanonicalFQSEN()->__toString())] = $type_alias_map;
+    }
+
+    /**
+     * @return bool whether the type aliases of the doc comment of this class were recorded (also if there are none)
+     */
+    public function hasTypeAliasesOfClass(FullyQualifiedClassName $class_fqsen): bool
+    {
+        return isset($this->type_aliases_of_class[\strtolower($class_fqsen->getCanonicalFQSEN()->__toString())]);
+    }
+
+    /**
+     * @return ?Type the type alias with this name that the doc comment of the class declares
+     */
+    public function getTypeAliasOfClass(FullyQualifiedClassName $class_fqsen, string $alias_name): ?Type
+    {
+        return $this->type_aliases_of_class[\strtolower($class_fqsen->getCanonicalFQSEN()->__toString())][$alias_name] ?? null;
+    }
+
+    /**
+     * Sets the files that are parsed, and forgets the type aliases of the classes: they are recorded again
+     * when the files are parsed, or when an alias is imported.
+     * (Called before the files are parsed, and for each request of the daemon or language server, where files can change)
+     *
+     * @param list<string> $file_path_list the files that are parsed
+     */
+    public function setFilePathListForTypeAliases(array $file_path_list): void
+    {
+        $this->file_path_list_for_type_aliases = $file_path_list;
+        $this->type_aliases_of_class = [];
+    }
+
+    /**
+     * @return list<string> the files that are parsed
+     */
+    public function getFilePathListForTypeAliases(): array
+    {
+        return $this->file_path_list_for_type_aliases;
+    }
+
+    /**
      * @return list<string> - The list of files which are successfully parsed.
      * This changes whenever the file list is reloaded from disk.
      * This also includes files which don't declare classes or functions or globals,

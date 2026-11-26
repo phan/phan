@@ -6,6 +6,7 @@ namespace Phan\Language\Element\Comment;
 
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Exception\FQSENException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
@@ -13,9 +14,11 @@ use Phan\Language\Element\AddressableElementInterface;
 use Phan\Language\Element\Comment;
 use Phan\Language\Element\Flags;
 use Phan\Language\FQSEN;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Scope\TemplateScope;
 use Phan\Language\Type;
 use Phan\Language\Type\GenericMultiType;
+use Phan\Language\Type\MixedType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\VoidType;
@@ -77,6 +80,10 @@ final class Builder
         'phpstan-assert-if-false' => 'phan-assert-if-false',
         'psalm-assert-if-true' => 'phan-assert-if-true',
         'psalm-assert-if-false' => 'phan-assert-if-false',
+        'phpstan-type' => 'phan-type',
+        'psalm-type' => 'phan-type',
+        'phpstan-import-type' => 'phan-import-type',
+        'psalm-import-type' => 'phan-import-type',
     ];
     /** @var list<Type> the list of (at)use annotations with template parameters for traits */
     public $used_trait_types = [];
@@ -104,6 +111,9 @@ final class Builder
 
     /** @var list<ConditionalAssertion> the (at)phan-assert-if-true/(at)phan-assert-if-false annotations (also phpstan-, psalm-) */
     public $conditional_assertion_list = [];
+
+    /** @var list<string> the names of the type aliases that this comment declares ((at)phan-type, (at)phpstan-type, (at)psalm-type) */
+    private $declared_type_alias_names = [];
 
     /** @var list<Type> */
     private $required_extends_types = [];
@@ -470,6 +480,24 @@ final class Builder
      */
     public function build(): Comment
     {
+        $comment = $this->buildInner();
+        // (Also when there are none: in the daemon, a file that changed must not keep the aliases it had)
+        if ($this->comment_type === Comment::ON_CLASS && $this->context->isInClassScope() && ($this->declared_type_alias_names || $this->code_base->hasTypeAliasesOfClass($this->context->getClassFQSEN()))) {
+            // For `@phpstan-import-type Name from ThisClass` in other files
+            $type_alias_map = [];
+            foreach ($this->declared_type_alias_names as $alias_name) {
+                $type = $this->context->getTypeAlias($alias_name);
+                if ($type !== null) {
+                    $type_alias_map[$alias_name] = $type;
+                }
+            }
+            $this->code_base->setTypeAliasesOfClass($this->context->getClassFQSEN(), $type_alias_map);
+        }
+        return $comment;
+    }
+
+    private function buildInner(): Comment
+    {
         foreach ($this->lines as $i => $line) {
             if (!str_contains($line, '@')) {
                 continue;
@@ -572,7 +600,7 @@ final class Builder
         // (?i) makes this case-sensitive, (?-1) makes it case-insensitive
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
         // Support both regular tags ("@something") and inline versions of tags ("optional_prefix {@something}").
-        if (\preg_match('/(?:^|{)@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|implements|use|require-extends|require-implements|suppress|unused-param|no-named-arguments|phan-[a-z0-9_-]*|(?:phpstan|psalm)-assert-if-(?:true|false)|psalm-(?:template(?:-(?:co|contra)variant)?|param|var|return|require-extends|require-implements|immutable)(?-i)|method|property|property-read|property-write|abstract|template(?:-(?:co|contra)variant)?|PhanClosureScope|readonly|immutable|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $trimmed, $matches)) {
+        if (\preg_match('/(?:^|{)@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|implements|use|require-extends|require-implements|suppress|unused-param|no-named-arguments|phan-[a-z0-9_-]*|(?:phpstan|psalm)-assert-if-(?:true|false)|(?:phpstan|psalm)-(?:import-)?type|psalm-(?:template(?:-(?:co|contra)variant)?|param|var|return|require-extends|require-implements|immutable)(?-i)|method|property|property-read|property-write|abstract|template(?:-(?:co|contra)variant)?|PhanClosureScope|readonly|immutable|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $trimmed, $matches)) {
             $case_sensitive_type = $matches[1];
             $type = \strtolower($case_sensitive_type);
             $type = self::TAG_ALIAS_MAP[$type] ?? $type;
@@ -771,10 +799,17 @@ final class Builder
      */
     public const PHAN_TYPE_ALIAS_REGEX = '/@phan-type\s+' . self::WORD_REGEX . '\s*=\s*(' . UnionType::union_type_regex . ')/';
 
+    /**
+     * `(at)phpstan-type Name Type`, `(at)phpstan-type Name = Type` and `(at)psalm-type Name = Type` (the `=` is optional for both)
+     * @internal
+     */
+    public const FOREIGN_TYPE_ALIAS_REGEX = '/@(?:phpstan|psalm)-type\s+' . self::WORD_REGEX . '(?:\s*=\s*|\s+)(' . UnionType::union_type_regex . ')/i';
+
+
     private function parsePhanType(int $i, string $line): void
     {
         $lineno = $this->guessActualLineLocation($i);
-        if (!\preg_match(self::PHAN_TYPE_ALIAS_REGEX, $line, $matches)) {
+        if (!\preg_match(self::PHAN_TYPE_ALIAS_REGEX, $line, $matches) && !\preg_match(self::FOREIGN_TYPE_ALIAS_REGEX, $line, $matches)) {
             $this->emitIssue(
                 Issue::CommentUnextractableTypeAlias,
                 $lineno,
@@ -786,6 +821,121 @@ final class Builder
         $alias_name = $matches[1];
         $union_type_string = $matches[2];
         self::addTypeAliasMapping($this->code_base, (clone $this->context)->withLineNumberStart($lineno), $alias_name, $union_type_string, $line);
+        $this->declared_type_alias_names[] = $alias_name;
+    }
+
+    /**
+     * `(at)phpstan-import-type Name from ClassName` and `(at)phpstan-import-type Name from ClassName as OtherName` (also phan-, psalm-)
+     * @internal
+     */
+    public const IMPORT_TYPE_ALIAS_REGEX = '/@(?:phan|phpstan|psalm)-import-type\s+([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)\s+from\s+(\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\\]*)(?:\s+as\s+([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*))?/i';
+
+    private function parseImportType(int $i, string $line): void
+    {
+        $lineno = $this->guessActualLineLocation($i);
+        $local_name = self::importTypeAlias($this->code_base, (clone $this->context)->withLineNumberStart($lineno), $line);
+        if ($local_name === null) {
+            $this->emitIssue(
+                Issue::CommentUnextractableTypeAlias,
+                $lineno,
+                $line
+            );
+        } elseif ($local_name !== '') {
+            // The class also passes the alias on to the classes that import it from this class.
+            $this->declared_type_alias_names[] = $local_name;
+        }
+    }
+
+    /**
+     * Adds the type alias that $line imports from another class to $context.
+     *
+     * If the alias cannot be found (e.g. the file of the class is not found), the name becomes an alias of `mixed`,
+     * so that it is not taken for the name of a class.
+     *
+     * @return ?string the name of the alias in this file, '' if the name cannot be used (an issue was emitted),
+     * or null if the alias was not found
+     */
+    private static function importTypeAlias(CodeBase $code_base, Context $context, string $line): ?string
+    {
+        if (!\preg_match(self::IMPORT_TYPE_ALIAS_REGEX, $line, $parts)) {
+            return null;
+        }
+        $alias_name = $parts[1];
+        $local_name = $parts[3] ?? $alias_name;
+        if (Type::isInternalTypeString($local_name, Type::FROM_PHPDOC)) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::TypeAliasInternalTypeConflict,
+                $context->getLineNumberStart(),
+                $local_name,
+                $alias_name . ' from ' . $parts[2]
+            );
+            return '';
+        }
+        // (Looked up also when the file already has an alias of this name: a comment of a class with templates is parsed twice,
+        // and the first time adds the fallback for an import that is not found)
+        $type = null;
+        try {
+            // The name of the class is resolved like a name in the code: `DTO\Provider` is relative to the namespace.
+            $class_fqsen = $parts[2][0] === '\\'
+                ? FullyQualifiedClassName::fromFullyQualifiedString($parts[2])
+                : FullyQualifiedClassName::fromNameInContext($parts[2], $context);
+            $type = TypeAliasImporter::getTypeAliasOfClass($code_base, $class_fqsen, $alias_name, $context->getFile());
+        } catch (FQSENException) {
+            // Not the name of a class
+        }
+        // (Does nothing if the file already has an alias of this name)
+        $context->addTypeAlias($local_name, $type ?? MixedType::instance(false));
+        return $type !== null ? $local_name : null;
+    }
+
+    /**
+     * Returns the type aliases that a doc comment of a class declares, without parsing the rest of the comment.
+     * (For TypeAliasImporter. The aliases are also added to $context)
+     *
+     * @param ?FullyQualifiedClassName $class_fqsen if set, the aliases are also recorded for this class in $code_base as they are found
+     * @return array<string,Type>
+     * @internal
+     */
+    public static function extractTypeAliases(CodeBase $code_base, Context $context, string $doc_comment, ?FullyQualifiedClassName $class_fqsen = null): array
+    {
+        if (\stripos($doc_comment, '-type') === false) {
+            return [];
+        }
+        $result = [];
+        foreach (\explode("\n", self::reduceMultiline($doc_comment)) as $line) {
+            if (\stripos($line, '-type') === false) {
+                continue;
+            }
+            // As in build(): a tag starts the line. (`Example: @phpstan-type Token int` in the text is not a declaration)
+            if ((\preg_replace('/^\/?[*\s]+/', '', \trim($line))[0] ?? '') !== '@') {
+                continue;
+            }
+            if (\preg_match(self::PHAN_TYPE_ALIAS_REGEX, $line, $matches) || \preg_match(self::FOREIGN_TYPE_ALIAS_REGEX, $line, $matches)) {
+                self::addTypeAliasMapping($code_base, $context, $matches[1], $matches[2], $line);
+                $type = $context->getTypeAlias($matches[1]);
+                if ($type !== null) {
+                    $result[$matches[1]] = $type;
+                    if ($class_fqsen !== null) {
+                        // Recorded as soon as it is known: an import further down can lead to a class that imports this alias.
+                        $code_base->setTypeAliasesOfClass($class_fqsen, $result);
+                    }
+                }
+            } elseif (\stripos($line, '-import-type') !== false) {
+                $local_name = self::importTypeAlias($code_base, $context, $line);
+                if (\is_string($local_name) && $local_name !== '') {
+                    $type = $context->getTypeAlias($local_name);
+                    if ($type !== null) {
+                        $result[$local_name] = $type;
+                        if ($class_fqsen !== null) {
+                            $code_base->setTypeAliasesOfClass($class_fqsen, $result);
+                        }
+                    }
+                }
+            }
+        }
+        return $result;
     }
 
     private function parseParamLine(int $i, string $line): void
@@ -1352,6 +1502,9 @@ final class Builder
             case 'phan-type':
                 $this->parsePhanType($i, $line);
                 return;
+            case 'phan-import-type':
+                $this->parseImportType($i, $line);
+                return;
             default:
                 // This is only reached for a tag that Phan does not know, so plugins are only loaded here for such a tag.
                 $plugin_annotations = ConfigPluginSet::instance()->getCustomAnnotationPluginMap();
@@ -1459,6 +1612,7 @@ final class Builder
         '@phan-suppress-next-next-line' => '',
         '@phan-suppress-previous-line' => '',
         '@phan-template' => '',
+        '@phan-import-type' => '',
         '@phan-type' => '',
         '@phan-use' => '',
         '@phan-var' => '',
@@ -2102,7 +2256,7 @@ final class Builder
         return \implode('@', \array_map(
             static function (string $annotation): string {
                 if (!str_contains($annotation, "\n")
-                    || !\preg_match('/^((?:(?:phan-)?(?:param|var|return|real-return|property(?:-read|-write)?|assert|type|implements|extends|inherits|use))\s[^$\n]+[\[(<{])\n/', $annotation, $match)
+                    || !\preg_match('/^((?:(?:phan-|(?i:phpstan-|psalm-))?(?:param|var|return|real-return|property(?:-read|-write)?|assert|(?i:type)|implements|extends|inherits|use))\s[^$\n]+[\[(<{])\n/', $annotation, $match)
                 ) {
                     return $annotation;
                 }
@@ -2140,7 +2294,17 @@ final class Builder
                     return $annotation;
                 }
 
-                return $buffer;
+                // Keep the number of lines, so that the lines of the other annotations can still be found in the file
+                // (guessActualLineLocation() counts from the end of the comment).
+                $missing_lines = \substr_count($annotation, "\n") - \substr_count($buffer, "\n");
+                if ($missing_lines <= 0) {
+                    return $buffer;
+                }
+                // (Before the last line break, so that the start of the next annotation (` * `) stays on the line of that annotation)
+                $pos = \strrpos($buffer, "\n");
+                return $pos === false
+                    ? $buffer . \str_repeat("\n", $missing_lines)
+                    : \substr_replace($buffer, \str_repeat("\n", $missing_lines), $pos, 0);
             },
             \explode('@', $comment)
         ));

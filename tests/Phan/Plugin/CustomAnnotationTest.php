@@ -371,9 +371,9 @@ PHP);
             '\custom_annotation_one_line: @phan-x-a on one line (8)',
             '\custom_annotation_tag_on_last_line: @phan-x-a last (12)',
             '\custom_annotation_tag_on_last_line: @phan-x-a last (13)',
-            // reduceMultiline() merged the lines of the (at)param, so the lines of the comment are not those of the source:
-            // the lines are the guesses of guessActualLineLocation(), as for the annotations of Phan.
-            '\custom_annotation_merged: @phan-x-a merged (18)',
+            // reduceMultiline() merges the lines of the (at)param and keeps the number of lines of the comment,
+            // so the lines of the other annotations are still those of the source.
+            '\custom_annotation_merged: @phan-x-a merged (17)',
             '\custom_annotation_merged: @phan-x-a merged (18)',
         ], $this->takeCalls());
     }
