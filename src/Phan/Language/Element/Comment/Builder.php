@@ -1429,7 +1429,7 @@ final class Builder
         $is_understood = $conditional !== null && \count($this->issues) === \count($issues);
         $this->issues = $issues;
         // (A name that Phan does not know as a type alias is read as a class)
-        return $is_understood && !DeclaredClassIndex::hasUndeclaredClass($this->code_base, $conditional->asFlattenedUnionType());
+        return $is_understood && !DeclaredClassIndex::conditionalHasUndeclaredClass($this->code_base, $conditional);
     }
 
     private function applyPHPStanConditionalReturn(int $i, string $line, bool $is_understood): void

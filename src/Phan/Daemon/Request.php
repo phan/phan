@@ -11,6 +11,7 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Daemon;
 use Phan\Daemon\Transport\Responder;
+use Phan\Language\Element\Comment\DeclaredClassIndex;
 use Phan\Language\Element\Comment\TypeAliasImporter;
 use Phan\Language\FileRef;
 use Phan\Language\Type;
@@ -686,6 +687,9 @@ class Request
         // The files and the type aliases that they declare may have changed.
         $code_base->setFilePathListForTypeAliases($file_list);
         TypeAliasImporter::reset($file_mapping_contents);
+        // (And the classes that the files declare)
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        DeclaredClassIndex::reset($file_mapping_contents);
 
         $changed_or_added_files = $code_base->updateFileList($file_list, $file_mapping_contents, $file_names);
         // Daemon::debugf("Parsing modified files: New files = %s", StringUtil::jsonEncode($changed_or_added_files));

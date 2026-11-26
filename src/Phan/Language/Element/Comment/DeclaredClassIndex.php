@@ -7,8 +7,10 @@ namespace Phan\Language\Element\Comment;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\Type;
+use Phan\Language\Type\StaticOrSelfType;
+use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
-use Throwable;
 
 /**
  * Tells whether the classes that a type names are declared somewhere in the files that Phan parses,
@@ -19,8 +21,9 @@ use Throwable;
  * and such an annotation should not replace the plain one.
  *
  * The files are searched for declarations with a regular expression, once, when the first class is looked up
- * that is neither parsed yet nor internal. A declaration that is found in a comment or a string
- * makes a class exist that does not: the annotation is then used as before, and the class is reported as undeclared.
+ * that is neither parsed yet nor internal. The search prefers finding too much: `class Foo` in a comment or a string
+ * makes a class exist that does not, and the annotation is then used as before, and the class is reported as undeclared.
+ * (A class that is not found makes Phan ignore an annotation without saying so.)
  *
  * @internal
  */
@@ -32,35 +35,84 @@ final class DeclaredClassIndex
     /** @var list<string> the file list that $declared_classes was built for */
     private static $indexed_file_path_list = [];
 
+    /** @var array<string,string> maps relative file paths to the contents to search instead of the contents on disk */
+    private static $file_contents_overrides = [];
+
     /**
-     * @return bool whether a class that $union_type names is not declared: not parsed so far, not internal, and not found in the files
+     * Forgets the declarations that were found, and sets the contents to search instead of the contents on disk
+     * (the daemon and the language server analyze files that are not saved yet, and files change between requests).
+     * @param array<string,string> $file_contents_overrides maps relative file paths to contents
+     */
+    public static function reset(array $file_contents_overrides = []): void
+    {
+        self::$file_contents_overrides = $file_contents_overrides;
+        self::$declared_classes = null;
+    }
+
+    /**
+     * @return bool whether a class that $union_type names is not declared: not parsed so far, not internal, and not found in the files.
+     * This looks at the classes anywhere in the type: in generic arguments, array shapes and closure types.
      */
     public static function hasUndeclaredClass(CodeBase $code_base, UnionType $union_type): bool
     {
-        // Every class of a type is printed with a leading backslash, wherever it is:
-        // in a generic argument, an array shape or a closure type.
-        // (A template type, `static` and `self` are not)
-        if (\preg_match_all('/\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\\]*/', (string)$union_type, $matches) === 0) {
-            return false;
-        }
-        foreach (\array_unique($matches[0]) as $name) {
-            if (!self::isDeclared($code_base, $name)) {
+        foreach ($union_type->getTypeSet() as $type) {
+            if (self::typeHasUndeclaredClass($code_base, $type)) {
                 return true;
             }
         }
         return false;
     }
 
-    private static function isDeclared(CodeBase $code_base, string $name): bool
+    /**
+     * @return bool whether a condition or a branch of $conditional names a class that is not declared
+     */
+    public static function conditionalHasUndeclaredClass(CodeBase $code_base, ConditionalReturnType $conditional): bool
     {
-        try {
-            if ($code_base->hasClassWithFQSEN(FullyQualifiedClassName::fromFullyQualifiedString($name))) {
+        if (self::hasUndeclaredClass($code_base, $conditional->getCondition())) {
+            return true;
+        }
+        foreach ([$conditional->getIfTrue(), $conditional->getIfFalse()] as $branch) {
+            if ($branch instanceof ConditionalReturnType ? self::conditionalHasUndeclaredClass($code_base, $branch) : self::hasUndeclaredClass($code_base, $branch)) {
                 return true;
             }
-        } catch (Throwable) {
-            // (Not a valid class name)
-            return false;
         }
+        return false;
+    }
+
+    private static function typeHasUndeclaredClass(CodeBase $code_base, Type $type): bool
+    {
+        // The classes of this type, and of the elements, fields, parameters and return type of an array or closure type
+        foreach ($type->getReferencedClasses() as $class_type) {
+            if ($class_type instanceof TemplateType || $class_type instanceof StaticOrSelfType) {
+                continue;
+            }
+            if ($class_type->isObjectWithKnownFQSEN() && !self::isDeclared($code_base, FullyQualifiedClassName::fromType($class_type))) {
+                return true;
+            }
+            if ($class_type !== $type && self::templateParametersHaveUndeclaredClass($code_base, $class_type)) {
+                return true;
+            }
+        }
+        // `Box<GlobalAlias>`, `class-string<GlobalAlias>`
+        return self::templateParametersHaveUndeclaredClass($code_base, $type);
+    }
+
+    private static function templateParametersHaveUndeclaredClass(CodeBase $code_base, Type $type): bool
+    {
+        foreach ($type->getTemplateParameterTypeList() as $template_parameter_type) {
+            if (self::hasUndeclaredClass($code_base, $template_parameter_type)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static function isDeclared(CodeBase $code_base, FullyQualifiedClassName $class_fqsen): bool
+    {
+        if ($code_base->hasClassWithFQSEN($class_fqsen)) {
+            return true;
+        }
+        $name = (string)$class_fqsen;
         $file_path_list = $code_base->getFilePathListForTypeAliases();
         if (self::$declared_classes === null || self::$indexed_file_path_list !== $file_path_list) {
             self::$declared_classes = self::buildIndex($file_path_list);
@@ -77,14 +129,16 @@ final class DeclaredClassIndex
     {
         $declared_classes = [];
         foreach ($file_path_list as $file_path) {
-            $contents = @\file_get_contents(Config::projectPath($file_path));
+            $contents = self::$file_contents_overrides[$file_path] ?? @\file_get_contents(Config::projectPath($file_path));
             if (!\is_string($contents) || $contents === '') {
                 continue;
             }
-            // A namespace declaration, or the declaration of a class, interface, trait or enum.
-            // (`enum` is followed by a name, and not by `(`, `=` or `;`, which is what a function or constant with that name has)
+            // A namespace declaration, or the declaration of a class, interface, trait or enum, wherever it is on a line
+            // (`#[Attribute] class Foo`, `<?php namespace NS; class Foo {}`).
+            // Not `Foo::class`, `$class`, `->class`, and not `new class extends Foo`.
+            // This also finds `class Foo` in a comment or a string, and then Foo is taken to be declared.
             if (!\preg_match_all(
-                '/^[ \t]*(?:<\?php[ \t]+)?(?:namespace[ \t]+([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\\]*)[ \t]*[;{]|namespace[ \t]*(\{)|(?:(?:abstract|final|readonly)[ \t]+)*(?:class|interface|trait|enum)[ \t]+([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*))/mi',
+                '/(?<![a-zA-Z0-9_\x7f-\xff$>:\\\\])(?:namespace\s+([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\\]*)\s*[;{]|namespace\s*(\{)|(?:class|interface|trait|enum)\s+(?!(?:extends|implements)\b)([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*))/i',
                 $contents,
                 $matches,
                 \PREG_SET_ORDER

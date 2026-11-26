@@ -140,3 +140,29 @@ function testMore(Promoted $p) {
     $g = generic([]); $c = cond(1);
     '@phan-debug-var $rows, $nd, $sd, $n, $a, $b, $f, $g, $c';
 }
+
+// Not a class: a literal string with a backslash.
+// Classes that are found before they are parsed, whatever comes before the declaration on its line.
+// A condition with a class that is not declared, and a class in class-string<>.
+
+/**
+ * @param string $name
+ * @param object $attr
+ * @param object $doc
+ * @param string $class
+ * @return mixed
+ * @phpstan-param 'Vendor\\Thing' $name
+ * @phpstan-param AfterAttribute $attr
+ * @phpstan-param AfterDocComment $doc
+ * @phpstan-param class-string<GlobalAlias> $class
+ * @phpstan-return ($name is GlobalAlias ? int : string)
+ */
+function notClasses($name, $attr, $doc, $class) {
+    '@phan-debug-var $name, $attr, $doc, $class';
+    return $name;
+}
+$not_classes = notClasses('Vendor\\Thing', new AfterAttribute(), new AfterDocComment(), 'x');
+'@phan-debug-var $not_classes';
+
+#[\Attribute] class AfterAttribute {}
+/** A doc comment */ final class AfterDocComment {}

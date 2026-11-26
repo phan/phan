@@ -44,3 +44,8 @@
 %s:140 PhanDebugAnnotation @phan-debug-var requested for variable $sd - it has union type string
 %s:140 PhanUnusedVariable Unused definition of variable $c
 %s:140 PhanUnusedVariable Unused definition of variable $g
+%s:160 PhanDebugAnnotation @phan-debug-var requested for variable $attr - it has union type \NS5995\AfterAttribute
+%s:160 PhanDebugAnnotation @phan-debug-var requested for variable $class - it has union type string
+%s:160 PhanDebugAnnotation @phan-debug-var requested for variable $doc - it has union type \NS5995\AfterDocComment
+%s:160 PhanDebugAnnotation @phan-debug-var requested for variable $name - it has union type 'Vendor\\Thing'
+%s:164 PhanDebugAnnotation @phan-debug-var requested for variable $not_classes - it has union type mixed
