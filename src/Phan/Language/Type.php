@@ -51,6 +51,7 @@ use Phan\Language\Type\IntRangeType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\ListType;
 use Phan\Language\Type\LiteralFloatType;
+use Phan\Language\Type\GenericMultiType;
 use Phan\Language\Type\LiteralIntType;
 use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
@@ -121,17 +122,17 @@ class Type implements Stringable
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     public const simple_type_regex =
-        '(\??)(?:callable-(?:string|object|array)|array-key|associative-array|class-string|int-range|key-of|lowercase-string|negative-int|phan-intersection-type|positive-int|value-of|no-return|never-returns?|non-(?:zero-int|null-mixed|falsy-string|empty-(?:associative-array|array|list|string|lowercase-string|numeric-string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
+        '(\??)(?:callable-(?:string|object|array)|array-key|associative-array|class-string|int-range|key-of|lowercase-string|literal-string|truthy-string|negative-int|numeric-string|phan-intersection-type|positive-int|value-of|no-return|never-returns?|non-(?:zero-int|negative-int|positive-int|null-mixed|falsy-string|empty-(?:associative-array|array|list|string|lowercase-string|literal-string|numeric-string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*(?:::[a-zA-Z_*\x7f-\xff][a-zA-Z0-9_*\x7f-\xff]*)?)';
 
     public const simple_noncapturing_type_regex =
-        '\\\\?(?:callable-(?:string|object|array)|array-key|associative-array|class-string|int-range|key-of|lowercase-string|negative-int|phan-intersection-type|positive-int|value-of|no-return|never-returns?|non-(?:zero-int|null-mixed|falsy-string|empty-(?:associative-array|array|list|string|lowercase-string|numeric-string|mixed))|[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*)';
+        '\\\\?(?:callable-(?:string|object|array)|array-key|associative-array|class-string|int-range|key-of|lowercase-string|literal-string|truthy-string|negative-int|numeric-string|phan-intersection-type|positive-int|value-of|no-return|never-returns?|non-(?:zero-int|negative-int|positive-int|null-mixed|falsy-string|empty-(?:associative-array|array|list|string|lowercase-string|literal-string|numeric-string|mixed))|[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*(?:::[a-zA-Z_*\x7f-\xff][a-zA-Z0-9_*\x7f-\xff]*)?)';
 
     /**
      * @var string
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     public const simple_type_regex_or_this =
-        '(\??)(callable-(?:string|object|array)|array-key|associative-array|class-string|int-range|key-of|lowercase-string|negative-int|numeric-string|phan-intersection-type|positive-int|value-of|no-return|never-returns?|non-(?:zero-int|null-mixed|falsy-string|empty-(?:associative-array|array|list|string|lowercase-string|numeric-string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*|\$this)';
+        '(\??)(callable-(?:string|object|array)|array-key|associative-array|class-string|int-range|key-of|lowercase-string|literal-string|truthy-string|negative-int|numeric-string|phan-intersection-type|positive-int|value-of|no-return|never-returns?|non-(?:zero-int|negative-int|positive-int|null-mixed|falsy-string|empty-(?:associative-array|array|list|string|lowercase-string|literal-string|numeric-string|mixed))|\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(?:\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*(?:::[a-zA-Z_*\x7f-\xff][a-zA-Z0-9_*\x7f-\xff]*)?|\$this)';
 
     public const shape_key_regex =
         '(?:[-.\/^;$%*+_a-zA-Z0-9\x7f-\xff]|\\\\(?:[nrt\\\\]|x[0-9a-fA-F]{2}))+\??';
@@ -143,7 +144,7 @@ class Type implements Stringable
      * NOTE: The / is escaped
      */
     public const noncapturing_literal_regex =
-        '\??(?:-?(?:(?:0|[1-9][0-9]*)(?:\.[0-9]+)?)|\'(?:[- ,.\/?:;"!#$%^&*_+=a-zA-Z0-9_\x80-\xff]|\\\\(?:[\'\\\\]|x[0-9a-fA-F]{2}))*\')';
+        '\??(?:-?(?:(?:0|[1-9][0-9]*)(?:\.[0-9]+)?)|\'(?:[- ,.\/?:;"!#$%^&*_+=a-zA-Z0-9_\x80-\xff]|\\\\(?:[\'\\\\]|x[0-9a-fA-F]{2}))*\'|"(?:[- ,.\/?:;!#%^&*_+=a-zA-Z0-9_\x80-\xff])*")';
         // '\??(?:-?(?:0|[1-9][0-9]*)|\'(?:[a-zA-Z0-9_])*\')';
 
     /**
@@ -187,10 +188,10 @@ class Type implements Stringable
             . ')'
           . '>'
           . '|'
-          . '\{('  // Expect either '{' or '<', after a word token.
+          . '\{\s*('  // Expect either '{' or '<', after a word token.
             . '(?:' . self::shape_key_regex . '\s*:)?\s*(?-6)(?:\s*[|&]\s*(?-6))*=?'  // {shape_key_regex:<type_regex>}
             . '(?:,(?:\s*' . self::shape_key_regex . '\s*:)?\s*(?-6)(?:\s*[|&]\s*(?-6))*=?)*'  // {shape_key_regex:<type_regex>}
-          . ')?\})?'
+          . ')?\s*\})?'
         . ')'
         . '(?:\[\])*'
       . ')';
@@ -228,10 +229,10 @@ class Type implements Stringable
               . ')'
               . '>'
               . '|'
-              . '(\{)('  // Expect either '{' or '<', after a word token. Match '{' to disambiguate 'array{}'
+              . '(\{)\s*('  // Expect either '{' or '<', after a word token. Match '{' to disambiguate 'array{}'
                 . '(?:' . self::shape_key_regex . '\s*:)?\s*(?-8)(?:\s*[|&]\s*(?-8))*=?'  // {shape_key_regex:<type_regex>}
                 . '(?:,(?:\s*' . self::shape_key_regex . '\s*:)?\s*(?-8)(?:\s*[|&]\s*(?-8))*=?)*'  // {shape_key_regex:<type_regex>}
-              . ')?\})?'
+              . ')?\s*\})?'
             . ')'
           . '(?:\[\])*'
         . ')'
@@ -1182,6 +1183,47 @@ class Type implements Stringable
         );
     }
 
+    /**
+     * Handles the types of PHPStan and Psalm doc comments that Phan has no type of its own for.
+     *
+     * @param string $type_string a type without `?`, as written in a doc comment
+     * @return Type|string|null the type, another spelling of the type that Phan parses, or null if this is not one of these types
+     */
+    private static function typeFromForeignDocSyntax(string $type_string, bool $is_nullable): Type|string|null
+    {
+        $first_char = $type_string[0] ?? '';
+        if ($first_char === '"') {
+            // `"UTF-8"` is the literal `'UTF-8'`. (The characters that can be in it need no escaping)
+            return \strlen($type_string) >= 2 && \substr($type_string, -1) === '"' && !str_contains($type_string, "'")
+                ? "'" . \substr($type_string, 1, -1) . "'"
+                : null;
+        }
+        if (str_contains($type_string, '::')) {
+            // `Foo::BAR`, `self::BAR`, `Foo::TYPE_*`: the value of a class constant, or of one of several.
+            // The constants are not known while doc comments are parsed, so this is any value.
+            // (The rest of a type that contains it, such as the key type of `array<string, self::A|self::B>`, is still used)
+            return \preg_match('/^\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\\]*::[a-zA-Z_*\x7f-\xff][a-zA-Z0-9_*\x7f-\xff]*$/D', $type_string)
+                ? MixedType::instance($is_nullable)
+                : null;
+        }
+        if (!str_contains($type_string, '-')) {
+            return null;
+        }
+        switch (\strtolower($type_string)) {
+            case 'non-negative-int':
+                return GenericMultiType::fromTypeSet([LiteralIntType::instanceForValue(0, $is_nullable), PositiveIntType::instance($is_nullable)]);
+            case 'non-positive-int':
+                return GenericMultiType::fromTypeSet([LiteralIntType::instanceForValue(0, $is_nullable), NegativeIntType::instance($is_nullable)]);
+            case 'truthy-string':
+                return 'non-falsy-string';
+            case 'literal-string':
+                return 'string';
+            case 'non-empty-literal-string':
+                return 'non-empty-string';
+        }
+        return null;
+    }
+
     private static function fromEscapedLiteralScalar(string $escaped_literal): ScalarType
     {
         $is_nullable = $escaped_literal[0] === '?';
@@ -1500,6 +1542,17 @@ class Type implements Stringable
         // If our scope has a generic type identifier defined on it
         // that matches the type string, return that type.
         $trim_string = ltrim($string, '?');
+        if ($source === Type::FROM_PHPDOC) {
+            $foreign_type = self::typeFromForeignDocSyntax($trim_string, str_starts_with($string, '?'));
+            if ($foreign_type instanceof Type) {
+                return $foreign_type;
+            }
+            if (\is_string($foreign_type)) {
+                // Another spelling of a type that Phan has: parse that one.
+                $string = (str_starts_with($string, '?') ? '?' : '') . $foreign_type;
+                $trim_string = $foreign_type;
+            }
+        }
         if ($source === Type::FROM_PHPDOC) {
             if ($context->getScope()->hasTemplateType($trim_string)) {
                 return $context->getScope()->getTemplateType(ltrim($string, '?'))->withIsNullable(

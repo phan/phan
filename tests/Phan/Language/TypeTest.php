@@ -883,7 +883,10 @@ final class TypeTest extends CodeBaseAwareTestBase
             ['{}'],
             ['array{,field:int}'],
             ['array{field:}'],
-            ['array{ field:int}'],
+            ['Foo::'],  // a class constant type needs the name of the constant
+            ['::BAR'],
+            ['"unterminated'],
+            ["\"it's\""],  // a double-quoted literal cannot contain a single quote
             ['array{::int}'],
             ["-'a'"],
             ["'@var'"],  // Ambiguous to support @, force hex escape
