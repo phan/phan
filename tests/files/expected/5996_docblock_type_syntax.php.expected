@@ -13,4 +13,15 @@
 %s:87 PhanDebugAnnotation @phan-debug-var requested for variable $nullable - it has union type float|int|null
 %s:87 PhanDebugAnnotation @phan-debug-var requested for variable $number - it has union type float|int
 %s:87 PhanDebugAnnotation @phan-debug-var requested for variable $numeric - it has union type float|int|string
-%s:94 PhanDebugAnnotation @phan-debug-var requested for variable $results - it has union type array{0:array<string,array{requiredValue:mixed,policyTitle:string}>,1:iterable<array{idsite:int|string,name:string,ts_archived:string}>,2:array{a:int},3:int[]|string[],4:float|int}(real=array{0:array<string,array{requiredValue:mixed,policyTitle:string}>,1:iterable<array{idsite:int|string,name:string,ts_archived:string}>,2:array{a:int},3:int[]|string[],4:float|int})
+%s:119 PhanDebugAnnotation @phan-debug-var requested for variable $closure - it has union type Closure(int,string):bool
+%s:119 PhanDebugAnnotation @phan-debug-var requested for variable $opts - it has union type array{a:int,b:string}
+%s:119 PhanDebugAnnotation @phan-debug-var requested for variable $opts2 - it has union type array{x:int}
+%s:119 PhanDebugAnnotation @phan-debug-var requested for variable $opts3 - it has union type array{y:int}
+%s:130 PhanDebugAnnotation @phan-debug-var requested for variable $keys - it has union type array{why\x3f:int,maybe?:int}
+%s:152 PhanTypeMismatchReturnNullable Returning $s of type ?string but testNumeric() is declared to return string (expected returned value to be non-nullable)
+%s:155 PhanDebugAnnotation @phan-debug-var requested for variable $after - it has union type array{0:array{a:int}|array{b:string},1:int}(real=array{0:array{a:int}|array{b:string},1:int})
+%s:155 PhanTypeMismatchArgument Argument 1 ($keys) is [] of type array{} but \NS5996\questionMarks() takes array{why\x3f:int,maybe?:int} defined at %s:130
+%s:155 PhanTypeMismatchArgument Argument 1 ($opts) is [] of type array{} but \NS5996\afterTheType() takes array{a:int,b:string} defined at %s:119
+%s:155 PhanTypeMismatchArgument Argument 2 ($opts2) is [] of type array{} but \NS5996\afterTheType() takes array{x:int} defined at %s:119
+%s:155 PhanTypeMismatchArgument Argument 3 ($opts3) is [] of type array{} but \NS5996\afterTheType() takes array{y:int} defined at %s:119
+%s:158 PhanDebugAnnotation @phan-debug-var requested for variable $results - it has union type array{0:array<string,array{requiredValue:mixed,policyTitle:string}>,1:iterable<array{idsite:int|string,name:string,ts_archived:string}>,2:array{a:int},3:int[]|string[],4:float|int}(real=array{0:array<string,array{requiredValue:mixed,policyTitle:string}>,1:iterable<array{idsite:int|string,name:string,ts_archived:string}>,2:array{a:int},3:int[]|string[],4:float|int})

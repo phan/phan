@@ -1966,14 +1966,18 @@ class Type implements Stringable
     {
         $result = [];
         foreach ($shape_components as $key => $component_string) {
+            // The `?` of an optional field is looked for before the key is unescaped: `foo\x3f` is the required key `foo?`.
+            $is_optional_key = \is_string($key) && str_ends_with($key, '?');
+            if ($is_optional_key) {
+                $key = substr($key, 0, -1);
+            }
             if (\is_string($key) && str_contains($key, '\\')) {
                 $key = ArrayShapeType::unescapeKey($key);
             }
-            if (\is_string($key) && str_ends_with($key, '?')) {
+            if ($is_optional_key) {
                 if (str_ends_with($component_string, '=')) {
                     $component_string = substr($component_string, 0, -1);
                 }
-                $key = substr($key, 0, -1);
                 $result[$key] = UnionType::fromStringInContext($component_string, $context, $source, $code_base)->withIsPossiblyUndefined(true);
             } elseif (str_ends_with($component_string, '=')) {
                 $component_string = substr($component_string, 0, -1);

@@ -91,5 +91,69 @@ function numbers($number, $nullable, $numeric, $map, $class) {
 
 class Number {}
 
+/**
+ * A description after a type on several lines is not a type, whatever it has.
+ *
+ * @param array{
+ *     a: int,
+ *     b: string,
+ * } $opts Pass a) foo or b) bar
+ * @param array{
+ *     x: int,
+ * } $opts2 Must be > 0
+ * @param array{
+ *     y: int,
+ * } $opts3 Note (don't break
+ *     across lines)
+ * @param \Closure(
+ *     int,
+ *     string
+ * ): bool $closure
+ * @return array{
+ *     a: int,
+ * }
+ * |array{
+ *     b: string,
+ * } A record (it's useful).
+ */
+function afterTheType($opts, $opts2, $opts3, $closure) {
+    '@phan-debug-var $opts, $opts2, $opts3, $closure';
+    return ['a' => 1];
+}
+
+/**
+ * A `?` in a key in quotes is a part of the key, and `'...'` is a literal string.
+ *
+ * @param array{'why?': int, 'maybe'?: int} $keys
+ * @return ($x is '...' ? int : string)
+ */
+function questionMarks($keys, $x) {
+    '@phan-debug-var $keys';
+    echo $keys['why?'];
+    return $x === '...' ? 1 : 'a';
+}
+
+/**
+ * `numeric` is any string for Phan: a condition with it does not decide that a call does not return.
+ *
+ * @return void
+ * @phpstan-return ($x is numeric ? never : void)
+ */
+function dieIfNumeric($x): void {
+    if (is_numeric($x)) {
+        exit;
+    }
+}
+
+function testNumeric(?string $s): string {
+    if ($s === null) {
+        dieIfNumeric('not-a-number');
+    }
+    return $s;
+}
+
+$after = [afterTheType([], [], [], function (int $i, string $s): bool { return $i > 0 && $s !== ''; }), questionMarks([], '...')];
+'@phan-debug-var $after';
+
 $results = [twoOpenBrackets(), wrappedAfterComma(), descriptions([]), conditional([]), numbers(1, null, '1', [], new Number())];
 '@phan-debug-var $results';

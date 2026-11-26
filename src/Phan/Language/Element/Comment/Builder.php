@@ -411,9 +411,10 @@ final class Builder
      * Matches the types in a type string that Phan reads as a wider type, or does not check completely as a condition:
      * `numeric-string`, `literal-string` and `lowercase-string` (string), `int<1, 10>` (int), `Foo::BAR` (mixed),
      * and `class-string<Foo>` (the class that a string names is not compared with `Foo`).
+     * `numeric` is read as `int|float|string`, which every string is.
      * @internal
      */
-    public const APPROXIMATED_TYPE_REGEX = '/::|\bint(?:-range)?\s*<|\b(?:non-empty-)?(?:numeric|literal|lowercase)-string\b|\b(?:class|interface|trait|enum)-string\b/i';
+    public const APPROXIMATED_TYPE_REGEX = '/::|\bint(?:-range)?\s*<|\b(?:non-empty-)?(?:numeric|literal|lowercase)-string\b|\b(?:class|interface|trait|enum)-string\b|(?<![-\\\\$\'"a-zA-Z0-9_])(?-i:numeric)(?![-a-zA-Z0-9_\\\\])/i';
 
     /**
      * Parses `($name is [not] Type ? Branch : Branch)` starting at $offset.
@@ -427,7 +428,7 @@ final class Builder
         }
         $param_name = $match[1];
         $negated = ($match[2] ?? '') !== '';
-        if (str_contains($match[3], '...')) {
+        if (str_contains($match[3], '...') && \preg_match('/,\s*\.\.\.(?:\s*<[^<>{}]*>)?\s*\}/', $match[3])) {
             // `$args is array{fields: 'ids', ...}`: an array shape that can have other keys is read as the array shape or any array,
             // which every array is. The condition is not one that Phan can check.
             return null;
@@ -2724,6 +2725,24 @@ final class Builder
     }
 
     /**
+     * @param int $i the offset of whitespace after a part of a type of which no bracket is open
+     * @param string $buffer the type so far
+     * @return bool whether the type goes on after the whitespace: `array{...} | null`, `Closure(...): int`
+     */
+    private static function isTypeContinuedAt(string $annotation, int $i, string $buffer): bool
+    {
+        $last = \substr(\rtrim($buffer), -1);
+        if ($last === '|' || $last === '&' || $last === ':') {
+            return true;
+        }
+        // The next character that is not whitespace or the `*` at the start of a line of the comment
+        if (!\preg_match('/\G(?:[ \t]+|\n[ \t]*\*?(?!\/))*+(.)/', $annotation, $match, 0, $i)) {
+            return false;
+        }
+        return $match[1] === '|' || $match[1] === '&';
+    }
+
+    /**
      * @param int $offset the offset of the type in $annotation
      * @return ?string $annotation with the line breaks inside of brackets replaced,
      * or null if the first line of the type has no bracket that is still open at its end, or if the brackets do not match.
@@ -2782,9 +2801,16 @@ final class Builder
                     }
                     break;
                 case '$':
-                    if ($depth === 0 && !$has_joined) {
-                        // The type ended on its first line.
-                        return null;
+                    if ($depth === 0) {
+                        // The type ended: on its first line, or before the variable of `@param array{...} $x`.
+                        return $has_joined ? $buffer . \substr($annotation, $i) : null;
+                    }
+                    break;
+                case ' ':
+                case "\t":
+                    if ($depth === 0 && $has_joined && !self::isTypeContinuedAt($annotation, $i, $buffer)) {
+                        // The type ended, and the rest is a description: `} Must be > 0`, `} A record (it's useful)`.
+                        return $buffer . \substr($annotation, $i);
                     }
                     break;
                 case "\n":
@@ -2793,7 +2819,10 @@ final class Builder
                             // No bracket is open at the end of the first line.
                             return null;
                         }
-                        break;
+                        if (!self::isTypeContinuedAt($annotation, $i, $buffer)) {
+                            return $buffer . \substr($annotation, $i);
+                        }
+                        // `}` and then `|array{` on the next line
                     }
                     // Skip the ` * ` of the next line.
                     while ($i + 1 < $length && ($annotation[$i + 1] === ' ' || $annotation[$i + 1] === "\t")) {
