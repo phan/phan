@@ -121,6 +121,15 @@ final class Builder
     /** @var list<array{0:int,1:string}> the line numbers and lines of the conditional (at)phpstan-return annotations */
     private $phpstan_conditional_return_lines = [];
 
+    /** @var array<int,true> the object ids of the entries of the lists above that are from an (at)phpstan- annotation (not (at)psalm-) */
+    private $phpstan_origin_ids = [];
+
+    /**
+     * @var array{param?:array<string,UnionType>,var?:array<string,UnionType>,return?:UnionType}
+     * the plain types that (at)phpstan- annotations replaced (see VendorTypeFallback)
+     */
+    private $phpstan_plain_types = [];
+
     /** @var bool whether an (at)phpstan-param, (at)phpstan-var or (at)phpstan-return annotation was ignored because Phan could not parse all of it */
     private $has_ignored_phpstan_annotation = false;
 
@@ -618,6 +627,9 @@ final class Builder
             $this->code_base,
             $this->context
         );
+        if ($this->phpstan_plain_types) {
+            VendorTypeFallback::record($comment, $this->phpstan_plain_types);
+        }
         if ($comment instanceof CommentWithCustomAnnotations && $this->custom_annotations) {
             $comment->setCustomAnnotations($this->custom_annotations);
         }
@@ -1402,6 +1414,7 @@ final class Builder
             }, $line);
             if ($type instanceof UnionType && !$type->isEmpty() && self::isTypeFollowedByWhitespace(self::RETURN_OR_THROWS_COMMENT_REGEX, $line)) {
                 $this->phpstan_return_comment = new ReturnComment($type, $this->guessActualLineLocation($i));
+                $this->markPHPStanOrigin($this->phpstan_return_comment, $line);
             } else {
                 $this->has_ignored_phpstan_annotation = true;
             }
@@ -1531,6 +1544,7 @@ final class Builder
         // (Without a name, the type was not followed by the variable: `callable(T): bool $predicate`)
         if ($param instanceof Parameter && $param->getName() !== '' && !$param->getUnionType()->isEmpty()) {
             $this->phpstan_param_list[] = $param;
+            $this->markPHPStanOrigin($param, $line);
         } else {
             $this->has_ignored_phpstan_annotation = true;
         }
@@ -1560,6 +1574,7 @@ final class Builder
             }
         }
         $this->phpstan_var_list[] = $comment_var;
+        $this->markPHPStanOrigin($comment_var, $line);
     }
 
     /**
@@ -1584,6 +1599,18 @@ final class Builder
             }
         }
         return true;
+    }
+
+    private function markPHPStanOrigin(object $annotation, string $line): void
+    {
+        if (\stripos($line, '@phpstan-') !== false) {
+            $this->phpstan_origin_ids[\spl_object_id($annotation)] = true;
+        }
+    }
+
+    private function isPHPStanOrigin(object $annotation): bool
+    {
+        return isset($this->phpstan_origin_ids[\spl_object_id($annotation)]);
     }
 
     /**
@@ -1656,9 +1683,16 @@ final class Builder
             foreach ($this->parameter_list as $plain_param) {
                 $plain_params[$plain_param->getName()] = $plain_param;
             }
+            $phan_param_names = [];
+            foreach (self::parametersOf($this->phan_overrides['param'] ?? []) as $phan_param) {
+                $phan_param_names[$phan_param->getName()] = true;
+            }
             $params = [];
             foreach ($this->phpstan_param_list as $param) {
                 $plain_param = $plain_params[$param->getName()] ?? null;
+                if ($this->isPHPStanOrigin($param) && !isset($phan_param_names[$param->getName()])) {
+                    $this->phpstan_plain_types['param'][$param->getName()] = $plain_param ? $plain_param->getUnionType() : UnionType::empty();
+                }
                 if ($plain_param && ($plain_param->isOutputReference() || $plain_param->isIgnoredReference() || $plain_param->isMandatoryInPHPDoc())) {
                     $param = new Parameter(
                         $param->getName(),
@@ -1680,6 +1714,10 @@ final class Builder
             // The annotations of a property or constant are for the same element, whether or not they name it:
             // `@var array` and `@phpstan-var list<int> $rows`.
             if (!self::parametersOf($this->phan_overrides['var'] ?? [])) {
+                $phpstan_var = $this->phpstan_var_list[0];
+                if ($this->isPHPStanOrigin($phpstan_var)) {
+                    $this->phpstan_plain_types['var'][$phpstan_var->getName()] = $this->variable_list ? \reset($this->variable_list)->getUnionType() : UnionType::empty();
+                }
                 $this->variable_list = $this->phpstan_var_list;
             }
         } elseif ($this->phpstan_var_list) {
@@ -1691,9 +1729,17 @@ final class Builder
             // Before the `@phan-var` annotations: an annotation that replaces no `@var` is added in this order,
             // and `@phpstan-var int $a` is like a `@var` (the annotations of `public $a, $b;` are matched by position).
             $vars = [];
+            $plain_var_types = [];
+            foreach ($this->variable_list as $plain_var) {
+                $plain_var_types[$plain_var->getName()] ??= $plain_var->getUnionType();
+            }
             foreach ($this->phpstan_var_list as $phpstan_var) {
-                if (!isset($phan_names[$phpstan_var->getName()])) {
+                $name = $phpstan_var->getName();
+                if (!isset($phan_names[$name])) {
                     $vars[] = $phpstan_var;
+                    if ($this->isPHPStanOrigin($phpstan_var)) {
+                        $this->phpstan_plain_types['var'][$name] = $plain_var_types[$name] ?? UnionType::empty();
+                    }
                 }
             }
             $this->phan_overrides['var'] = \array_merge($vars, $phan_vars);
@@ -1701,6 +1747,9 @@ final class Builder
         if ($this->phpstan_return_comment && !isset($this->phan_overrides['return'])) {
             // (A conditional return type of `@return` or `@psalm-return` is kept: it says more than a plain type)
             if (!$this->return_comment || !$this->return_comment->getConditional()) {
+                if ($this->isPHPStanOrigin($this->phpstan_return_comment)) {
+                    $this->phpstan_plain_types['return'] = $this->return_comment ? $this->return_comment->getType() : UnionType::empty();
+                }
                 $this->phan_overrides['return'] = $this->phpstan_return_comment;
             }
         }

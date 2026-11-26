@@ -20,6 +20,7 @@ use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
+use Phan\Language\Element\Comment\VendorTypeFallback;
 use Phan\Language\Element\Comment\Assertion;
 use Phan\Language\Element\Comment\ConditionalReturnType;
 use Phan\Language\Element\Comment\CustomAnnotation;
@@ -1603,6 +1604,11 @@ trait FunctionTrait
     {
         $this->bumpStateVersion();
         $this->comment = $comment;
+        // For a `@phpstan-param` or `@phpstan-return` that names a class that does not exist
+        if ($this instanceof FunctionInterface) {
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            VendorTypeFallback::registerFunction($this, $comment);
+        }
     }
 
     /**

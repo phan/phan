@@ -1,0 +1,23 @@
+%s:16 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type list<\NS5995\Later>
+%s:46 PhanTypeMismatchPropertyDefault Default value for \NS5995\PsalmAlias $psalm can't be [] of type array{} based on phpdoc types
+%s:46 PhanUndeclaredTypeProperty Property \NS5995\Model->psalm has undeclared type \NS5995\PsalmAlias
+%s:55 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type array
+%s:55 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type list<\NS5995\Known>
+%s:60 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type array(real=array)
+%s:65 PhanUndeclaredTypeParameter Parameter $a has undeclared type \NS5995\NoSuchClass
+%s:75 PhanUnusedVariable Unused definition of variable $k
+%s:75 PhanUnusedVariable Unused definition of variable $np
+%s:75 PhanUnusedVariable Unused definition of variable $p
+%s:75 PhanUnusedVariable Unused definition of variable $u
+%s:75 PhanUnusedVariable Unused definition of variable $ul
+%s:76 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type array
+%s:76 PhanDebugAnnotation @phan-debug-var requested for variable $g - it has union type array
+%s:76 PhanDebugAnnotation @phan-debug-var requested for variable $k - it has union type list<\NS5995\Known>
+%s:76 PhanDebugAnnotation @phan-debug-var requested for variable $np - it has union type (empty union type)
+%s:76 PhanDebugAnnotation @phan-debug-var requested for variable $p - it has union type \NS5995\PsalmAlias|array
+%s:76 PhanDebugAnnotation @phan-debug-var requested for variable $ty - it has union type array(real=array)
+%s:76 PhanDebugAnnotation @phan-debug-var requested for variable $u - it has union type array
+%s:76 PhanDebugAnnotation @phan-debug-var requested for variable $ul - it has union type array
+%s:76 PhanUnusedVariable Unused definition of variable $f
+%s:76 PhanUnusedVariable Unused definition of variable $g
+%s:76 PhanUnusedVariable Unused definition of variable $ty

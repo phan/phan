@@ -647,6 +647,17 @@ class Property extends ClassElement
     }
 
     /**
+     * Repeat the check recorded by setPendingDefaultTypeCheck() with another phpdoc type, or forget it if that type is empty.
+     */
+    public function replacePendingDefaultTypeCheckType(UnionType $phpdoc_type): void
+    {
+        $check = $this->pending_default_type_check;
+        if ($check !== null) {
+            $this->pending_default_type_check = $phpdoc_type->isEmpty() ? null : [$phpdoc_type, $check[1], $check[2], $check[3]];
+        }
+    }
+
+    /**
      * Returns the check recorded by setPendingDefaultTypeCheck(), if any.
      * This is not cleared, because daemon mode and the language server analyze classes repeatedly without re-parsing them.
      * @return ?array{0:UnionType,1:UnionType,2:string,3:int}
