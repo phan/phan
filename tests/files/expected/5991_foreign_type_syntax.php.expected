@@ -1,0 +1,26 @@
+%s:19 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type array{openByDefault:bool}
+%s:19 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type array<string,array{0:string,1:bool}>
+%s:19 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type array{a:int}|null
+%s:36 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type 0|positive-int
+%s:36 PhanDebugAnnotation @phan-debug-var requested for variable $e - it has union type string
+%s:36 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type 0|negative-int|null
+%s:36 PhanDebugAnnotation @phan-debug-var requested for variable $g - it has union type string
+%s:36 PhanDebugAnnotation @phan-debug-var requested for variable $h - it has union type non-falsy-string
+%s:36 PhanDebugAnnotation @phan-debug-var requested for variable $i - it has union type non-empty-string
+%s:36 PhanDebugAnnotation @phan-debug-var requested for variable $j - it has union type list<0>|list<positive-int>
+%s:36 PhanDebugAnnotation @phan-debug-var requested for variable $k - it has union type 0|null|positive-int
+%s:48 PhanDebugAnnotation @phan-debug-var requested for variable $l - it has union type mixed
+%s:48 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type array<int,mixed>
+%s:48 PhanDebugAnnotation @phan-debug-var requested for variable $n - it has union type mixed
+%s:48 PhanDebugAnnotation @phan-debug-var requested for variable $o - it has union type mixed|null
+%s:58 PhanDebugAnnotation @phan-debug-var requested for variable $p - it has union type 'UTF-8'|null
+%s:58 PhanDebugAnnotation @phan-debug-var requested for variable $q - it has union type 'a'|'b'
+%s:64 PhanTypeMismatchArgument Argument 1 ($d) is -1 of type int (value: -1) but \NS5991\names() takes int (value: 0)|positive-int defined at %s:36
+%s:64 PhanTypeMismatchArgument Argument 3 ($f) is 1 of type int (value: 1) but \NS5991\names() takes int (value: 0)|negative-int|null defined at %s:36
+%s:66 PhanTypeMismatchArgumentProbablyReal Argument 2 ($q) is 'c' of type string but \NS5991\literals() takes string|string (no real type) defined at %s:58 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:66 PhanTypeMismatchArgument Argument 1 ($p) is 'latin1' of type string but \NS5991\literals() takes null|string defined at %s:58
+%s:78 PhanDebugAnnotation @phan-debug-var requested for variable $r - it has union type array{0:mixed,1:mixed}
+%s:78 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type array{k:mixed,0:mixed}
+%s:78 PhanDebugAnnotation @phan-debug-var requested for variable $t - it has union type array{0:'a\x2c b',1:'c'}
+%s:78 PhanDebugAnnotation @phan-debug-var requested for variable $u - it has union type array<string,'x\x2cy'>
+%s:78 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type 'plain'|'say "hi"\x2c ok'

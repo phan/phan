@@ -605,6 +605,10 @@ class UnionType implements Serializable, Stringable
             // NOTE: '0' is a valid LiteralIntType
             return self::$empty_instance;
         }
+        if (str_contains($type_string, '"')) {
+            // `"UTF-8"` is `'UTF-8'`: done before the string is split at `|`, `&` and `,`
+            $type_string = Type::normalizeDoubleQuotedLiterals($type_string);
+        }
 
         $types = [];
         foreach (self::extractTypePartsForStringInContext($type_string) as $type_name) {

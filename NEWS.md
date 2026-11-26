@@ -4,6 +4,11 @@ Phan 6.0.12-dev
 --------------
 
 New features:
+- Parse more of the type syntax that PHPStan and Psalm use in doc comments. Each of these made Phan give up on the annotation (`PhanUnextractableAnnotation`, `PhanUnextractableAnnotationSuffix`) or read the first word as the name of a class:
+  - whitespace after `{` and before `}` of an array shape: `array{ a: int, b?: string }`;
+  - `non-negative-int` (`0|positive-int`), `non-positive-int` (`0|negative-int`), `numeric-string` in `@param`/`@var`/`@property` (it is a `string`), `literal-string` (`string`), `non-empty-literal-string` (`non-empty-string`) and `truthy-string` (`non-falsy-string`);
+  - the value of a class constant: `Foo::BAR`, `self::BAR|self::BAZ`, `Foo::TYPE_*`. Class constants are not known while doc comments are parsed, so this is `mixed`; the rest of the type is used (`array<string, self::A|self::B>` is an `array<string,mixed>`);
+  - a literal string in double quotes: `"UTF-8"` is `'UTF-8'`.
 - Support the type aliases of PHPStan and Psalm in doc comments:
   - `@phpstan-type Name Type` and `@psalm-type Name = Type` declare an alias, like `@phan-type Name = Type`. The type can span several lines (`array{` ... `}`).
   - `@phpstan-import-type Name from ClassName` and `@psalm-import-type Name from ClassName as OtherName` (also `@phan-import-type`) import an alias that the doc comment of another class declares. If the file of that class was not parsed yet, Phan looks for it by the name of the class among the files to analyze (`Name.php`, or a name that contains the class name, such as `class-wp-filesystem-base.php`) and reads the aliases from the doc comments of its classes.
