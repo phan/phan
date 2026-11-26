@@ -110,3 +110,60 @@ class ChainB {
 /** @phpstan-type BaseT string */
 class ChainA {
 }
+
+namespace NS5989\More\Sub;
+
+/** @phpstan-type Shape array{a: int} */
+class Provider {
+}
+
+namespace NS5989\More;
+
+/**
+ * The name of the class is relative to the namespace, like a name in the code.
+ *
+ * @phpstan-import-type Shape from Sub\Provider
+ */
+class RelativeName {
+    /** @param Shape $s */
+    public function f($s): void {
+        '@phan-debug-var $s';
+    }
+}
+
+/**
+ * The comment of a class with templates is parsed twice: the failed import is still reported, and not passed on.
+ *
+ * @template T
+ * @phpstan-import-type Lost from NoSuchClass
+ */
+class GenericWithBadImport {
+}
+
+/** @phpstan-import-type Lost from GenericWithBadImport */
+class ImportsFromGenericWithBadImport {
+}
+
+/**
+ * Two classes can import from each other.
+ *
+ * @phpstan-type AType int
+ * @phpstan-import-type BType from MutualB
+ */
+class MutualA {
+}
+
+/**
+ * @phpstan-type BType string
+ * @phpstan-import-type AType from MutualA
+ */
+class MutualB {
+}
+
+/** @phpstan-import-type AType from MutualB */
+class ImportsFromMutual {
+    /** @param AType $a */
+    public function f($a): void {
+        '@phan-debug-var $a';
+    }
+}

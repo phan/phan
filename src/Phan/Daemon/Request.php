@@ -685,7 +685,7 @@ class Request
 
         // The files and the type aliases that they declare may have changed.
         $code_base->setFilePathListForTypeAliases($file_list);
-        TypeAliasImporter::reset();
+        TypeAliasImporter::reset($file_mapping_contents);
 
         $changed_or_added_files = $code_base->updateFileList($file_list, $file_mapping_contents, $file_names);
         // Daemon::debugf("Parsing modified files: New files = %s", StringUtil::jsonEncode($changed_or_added_files));

@@ -14,3 +14,7 @@
 %s:101 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type ?string
 %s:101 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type ?int
 %s:101 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int
+%s:129 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type array{a:int}
+%s:138 PhanCommentUnextractableTypeAlias Saw a line * @phpstan-import-type Lost from NoSuchClass with a type alias that could not be extracted
+%s:143 PhanCommentUnextractableTypeAlias Saw a line /** @phpstan-import-type Lost from GenericWithBadImport */ with a type alias that could not be extracted
+%s:166 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type int

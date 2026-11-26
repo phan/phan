@@ -45,11 +45,17 @@ final class TypeAliasImporter
      */
     private static $pending_classes = [];
 
+    /** @var array<string,string> maps the files of the request of the daemon or language server to their contents, if not those on disk */
+    private static $file_contents_overrides = [];
+
     /**
      * Forget what was scanned (for a new analysis in the same process)
+     *
+     * @param array<string,string> $file_contents_overrides maps files to their contents, where not those on disk
      */
-    public static function reset(): void
+    public static function reset(array $file_contents_overrides = []): void
     {
+        self::$file_contents_overrides = $file_contents_overrides;
         self::$scanned_files = [];
         self::$missing_classes = [];
         self::$pending_classes = [];
@@ -76,6 +82,14 @@ final class TypeAliasImporter
         $candidate_files = self::candidateFiles($code_base, $class_fqsen);
         if ($current_file !== '' && $current_file !== 'internal' && !isset(self::$scanned_files[$current_file])) {
             \array_unshift($candidate_files, $current_file);
+        }
+        if ($code_base->hasClassWithFQSEN($class_fqsen)) {
+            // The class was parsed, but its aliases are not recorded (the daemon forgets them for each request): its file is known.
+            $class = $code_base->getClassByFQSENWithoutHydrating($class_fqsen);
+            $class_file = $class->getFileRef()->getFile();
+            if (!$class->isPHPInternal() && !isset(self::$scanned_files[$class_file])) {
+                \array_unshift($candidate_files, $class_file);
+            }
         }
         foreach ($candidate_files as $file_path) {
             self::loadAliasesFromFile($code_base, $file_path);
@@ -139,7 +153,8 @@ final class TypeAliasImporter
         Issue::$is_discarding_issues = true;
         self::$depth++;
         try {
-            $contents = FileCache::getOrReadEntry(Config::projectPath($file_path))->getContents();
+            // (In the daemon and the language server, a file can have contents that are not saved yet)
+            $contents = self::$file_contents_overrides[$file_path] ?? FileCache::getOrReadEntry(Config::projectPath($file_path))->getContents();
             if (\stripos($contents, '-type') === false) {
                 return;
             }
@@ -173,7 +188,7 @@ final class TypeAliasImporter
         // As when the class is parsed: `self` in an alias is this class.
         $context = $context->withScope(new ClassScope($context->getScope(), $class_fqsen, $ast_flags));
         $code_base->setTypeAliasesOfClass($class_fqsen, []);
-        $code_base->setTypeAliasesOfClass($class_fqsen, Builder::extractTypeAliases($code_base, $context, $doc_comment));
+        $code_base->setTypeAliasesOfClass($class_fqsen, Builder::extractTypeAliases($code_base, $context, $doc_comment, $class_fqsen));
     }
 
     /**

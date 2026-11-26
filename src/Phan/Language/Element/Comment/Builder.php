@@ -873,17 +873,19 @@ final class Builder
             );
             return '';
         }
-        if ($context->getTypeAlias($local_name) !== null) {
-            // Already declared or imported in this file.
-            return $local_name;
-        }
+        // (Looked up also when the file already has an alias of this name: a comment of a class with templates is parsed twice,
+        // and the first time adds the fallback for an import that is not found)
         $type = null;
         try {
-            $class_fqsen = FullyQualifiedClassName::fromStringInContext($parts[2], $context);
+            // The name of the class is resolved like a name in the code: `DTO\Provider` is relative to the namespace.
+            $class_fqsen = $parts[2][0] === '\\'
+                ? FullyQualifiedClassName::fromFullyQualifiedString($parts[2])
+                : FullyQualifiedClassName::fromNameInContext($parts[2], $context);
             $type = TypeAliasImporter::getTypeAliasOfClass($code_base, $class_fqsen, $alias_name, $context->getFile());
         } catch (FQSENException) {
             // Not the name of a class
         }
+        // (Does nothing if the file already has an alias of this name)
         $context->addTypeAlias($local_name, $type ?? MixedType::instance(false));
         return $type !== null ? $local_name : null;
     }
@@ -892,10 +894,11 @@ final class Builder
      * Returns the type aliases that a doc comment of a class declares, without parsing the rest of the comment.
      * (For TypeAliasImporter. The aliases are also added to $context)
      *
+     * @param ?FullyQualifiedClassName $class_fqsen if set, the aliases are also recorded for this class in $code_base as they are found
      * @return array<string,Type>
      * @internal
      */
-    public static function extractTypeAliases(CodeBase $code_base, Context $context, string $doc_comment): array
+    public static function extractTypeAliases(CodeBase $code_base, Context $context, string $doc_comment, ?FullyQualifiedClassName $class_fqsen = null): array
     {
         if (\stripos($doc_comment, '-type') === false) {
             return [];
@@ -910,6 +913,10 @@ final class Builder
                 $type = $context->getTypeAlias($matches[1]);
                 if ($type !== null) {
                     $result[$matches[1]] = $type;
+                    if ($class_fqsen !== null) {
+                        // Recorded as soon as it is known: an import further down can lead to a class that imports this alias.
+                        $code_base->setTypeAliasesOfClass($class_fqsen, $result);
+                    }
                 }
             } elseif (\stripos($line, '-import-type') !== false) {
                 $local_name = self::importTypeAlias($code_base, $context, $line);
