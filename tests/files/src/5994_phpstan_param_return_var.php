@@ -168,6 +168,57 @@ function unreadable($x, $y) {
 }
 
 /**
+ * A conditional (at)phpstan-return that is not read also makes the annotations of a comment with (at)phpstan-template unused.
+ *
+ * @param mixed $x
+ * @return mixed
+ * @phpstan-template T
+ * @phpstan-param T $x
+ * @phpstan-return ($x is int ? int-mask<1,2> : T)
+ */
+function conditionalNotRead($x) {
+    return $x;
+}
+
+/**
+ * The template type stays when a plain annotation uses it.
+ *
+ * @psalm-template T
+ * @param T $x
+ * @return T
+ * @phpstan-param int-mask<1, 2> $x
+ */
+function psalmTemplateKept($x) {
+    return $x;
+}
+
+/**
+ * Declared for both: not a duplicate.
+ *
+ * @template T
+ * @phpstan-template T
+ * @param T $x
+ * @return T
+ * @phpstan-param int-mask<1, 2> $x
+ */
+function declaredTwice($x) {
+    return $x;
+}
+
+/**
+ * @phpstan-template T
+ * @param T $x
+ * @return T
+ * @phpstan-param int-mask<1, 2> $x
+ */
+function phpstanTemplateKept($x) {
+    return $x;
+}
+
+$templates = [conditionalNotRead('s'), psalmTemplateKept(new \stdClass()), declaredTwice(1.5), phpstanTemplateKept(new \ArrayObject())];
+'@phan-debug-var $templates';
+
+/**
  * Not on a function: ignored without an issue.
  * @phpstan-param int $x
  * @phpstan-return int

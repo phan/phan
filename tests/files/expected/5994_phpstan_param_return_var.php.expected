@@ -27,9 +27,11 @@
 %s:127 PhanTypeMismatchArgument Argument 1 ($row) is ['id'=>1] of type array{id:1} but \NS5994\Model::all() takes array{id:int,name:string} defined at %s:40
 %s:138 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type list<int>(real=array)
 %s:146 PhanUnextractableAnnotation Saw unextractable annotation for comment '* @psalm-return (T is string ? string : T)'
-%s:150 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type mixed
+%s:150 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type T
+%s:150 PhanTemplateTypeNotUsedInFunctionReturn Template type T not used in return value of function/method psalmTemplate()
 %s:160 PhanUnextractableAnnotationElementName Saw possibly unextractable annotation for a fragment of comment '* @psalm-param int-mask<1, 2> $x': after int, did not see an element name (will guess based on comment order)
 %s:160 PhanUnextractableAnnotationSuffix Saw a token Phan may have failed to parse after '* @psalm-param int-mask<1, 2> $x': after int, saw '-'
 %s:163 PhanUnextractableAnnotationSuffix Saw a token Phan may have failed to parse after '* @psalm-return list<int>|int-mask<1, 2>': after list<int>|int, saw '-'
 %s:165 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type array
 %s:165 PhanDebugAnnotation @phan-debug-var requested for variable $y - it has union type array
+%s:218 PhanDebugAnnotation @phan-debug-var requested for variable $templates - it has union type array{0:mixed,1:\stdClass,2:1.5,3:\ArrayObject}(real=array{0:mixed,1:\stdClass,2:1.5,3:\ArrayObject})

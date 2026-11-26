@@ -121,7 +121,7 @@ final class Builder
     /** @var bool whether an (at)phpstan-param, (at)phpstan-var or (at)phpstan-return annotation was ignored because Phan could not parse all of it */
     private $has_ignored_phpstan_annotation = false;
 
-    /** @var array<string,true> the names of the template types that were declared with (at)phpstan-template or (at)psalm-template */
+    /** @var array<string,true> the names of the template types that were only declared with (at)phpstan-template */
     private $phpstan_template_names = [];
     /** @var UnionType the union type of the set of (at)throws annotations */
     public $throw_union_type;
@@ -1069,16 +1069,27 @@ final class Builder
                         );
                     }
                     $template_type = TemplateType::instanceForId($template_identifier, false, $constraint_union_type, $variance);
-                    if (isset($this->template_type_list[$template_type->getName()])) {
-                        $this->emitIssue(
-                            Issue::TemplateTypeDuplicate,
-                            $this->guessActualLineLocation($i),
-                            (string)$template_type
-                        );
+                    $name = $template_type->getName();
+                    $is_phpstan = \stripos($line, '@phpstan-template') !== false;
+                    if (isset($this->template_type_list[$name])) {
+                        if ($is_phpstan) {
+                            // The same template type for another tool: the first declaration is used.
+                            return;
+                        }
+                        if (!isset($this->phpstan_template_names[$name])) {
+                            $this->emitIssue(
+                                Issue::TemplateTypeDuplicate,
+                                $this->guessActualLineLocation($i),
+                                (string)$template_type
+                            );
+                        }
                     }
-                    $this->template_type_list[$template_type->getName()] = $template_type;
-                    if (\stripos($line, '@phpstan-template') !== false || \stripos($line, '@psalm-template') !== false) {
-                        $this->phpstan_template_names[$template_type->getName()] = true;
+                    $this->template_type_list[$name] = $template_type;
+                    if ($is_phpstan) {
+                        $this->phpstan_template_names[$name] = true;
+                    } else {
+                        // Also declared for Phan or Psalm, which was read before `@phpstan-template` was.
+                        unset($this->phpstan_template_names[$name]);
                     }
                 }
             }
@@ -1411,6 +1422,7 @@ final class Builder
         // - a type after the closing bracket (`(...) | null`; without the whitespace, the parser reports it);
         // - a type that Phan reads as a wider one (APPROXIMATED_TYPE_REGEX).
         if (\preg_match('/\)\s*[|&]/', $line) || \preg_match(self::APPROXIMATED_TYPE_REGEX, $line)) {
+            $this->has_ignored_phpstan_annotation = true;
             return;
         }
         $issues = $this->issues;
@@ -1420,6 +1432,8 @@ final class Builder
         $this->issues = $issues;
         if ($is_understood) {
             $this->maybeParseReturn($i, $line);
+        } else {
+            $this->has_ignored_phpstan_annotation = true;
         }
     }
 
@@ -1525,6 +1539,24 @@ final class Builder
     }
 
     /**
+     * @return bool whether an `(at)param`, `(at)var` or `(at)return` annotation of this comment has a template type
+     */
+    private function hasTemplateTypeInPlainAnnotations(): bool
+    {
+        foreach ($this->parameter_list as $parameter) {
+            if ($parameter->getUnionType()->hasTemplateTypeRecursive()) {
+                return true;
+            }
+        }
+        foreach ($this->variable_list as $variable) {
+            if ($variable->getUnionType()->hasTemplateTypeRecursive()) {
+                return true;
+            }
+        }
+        return $this->return_comment !== null && $this->return_comment->getType()->hasTemplateTypeRecursive();
+    }
+
+    /**
      * @param mixed $list an entry of $this->phan_overrides
      * @return list<Parameter>
      */
@@ -1551,8 +1583,11 @@ final class Builder
             // e.g. `@phpstan-template T`, `@phpstan-param T $value` and `@phpstan-return (T is string ? string : T)`,
             // of which Phan does not read the last one: the parameter would be a T that the return type does not have.
             // The annotations of the comment depend on each other, so none of them is used.
-            foreach ($this->phpstan_template_names as $name => $_) {
-                unset($this->template_type_list[$name]);
+            // (The template types stay if a plain annotation uses one)
+            if (!$this->hasTemplateTypeInPlainAnnotations()) {
+                foreach ($this->phpstan_template_names as $name => $_) {
+                    unset($this->template_type_list[$name]);
+                }
             }
             return;
         }
