@@ -73,6 +73,16 @@ class MultiFileTest extends AbstractPhanFileTestBase
                 MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '551.php' . AbstractPhanFileTestBase::EXPECTED_SUFFIX
             ],
 
+            // `@phpstan-import-type` from classes in files that are parsed later
+            [
+                [
+                    MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '5990_consumer.php',
+                    MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '5990_provider5990.php',
+                    MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '5990_guarded5990.php',
+                    MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '5990_tag.php',
+                ],
+                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '5990.php' . AbstractPhanFileTestBase::EXPECTED_SUFFIX
+            ],
             // #699
             [
                 [

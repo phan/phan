@@ -74,3 +74,39 @@ namespace NS5989\Other;
 
 class Mime {
 }
+
+namespace NS5989\More;
+
+/**
+ * @phpstan-type Opts array{a: int}
+ * @phpstan-type MaybeInt ?int
+ */
+class Source {
+}
+
+/**
+ * An alias cannot take the name of an internal type; a nullable alias stays nullable;
+ * an imported alias can be imported from the class that imported it.
+ *
+ * @phpstan-import-type Opts from Source as int
+ * @phpstan-import-type MaybeInt from Source
+ * @phpstan-import-type BaseT from ChainB
+ */
+class Uses {
+    /**
+     * @param int $x
+     * @param MaybeInt $m
+     * @param ?BaseT $b
+     */
+    public function f($x, $m, $b): void {
+        '@phan-debug-var $x, $m, $b';
+    }
+}
+
+/** @phpstan-import-type BaseT from ChainA */
+class ChainB {
+}
+
+/** @phpstan-type BaseT string */
+class ChainA {
+}

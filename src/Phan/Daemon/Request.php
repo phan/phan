@@ -11,6 +11,7 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Daemon;
 use Phan\Daemon\Transport\Responder;
+use Phan\Language\Element\Comment\TypeAliasImporter;
 use Phan\Language\FileRef;
 use Phan\Language\Type;
 use Phan\LanguageServer\CompletionRequest;
@@ -681,6 +682,10 @@ class Request
             // this ensures they are added to the maps in the same order.
             \sort($file_list, SORT_STRING);
         }
+
+        // The files and the type aliases that they declare may have changed.
+        $code_base->setFilePathListForTypeAliases($file_list);
+        TypeAliasImporter::reset();
 
         $changed_or_added_files = $code_base->updateFileList($file_list, $file_mapping_contents, $file_names);
         // Daemon::debugf("Parsing modified files: New files = %s", StringUtil::jsonEncode($changed_or_added_files));

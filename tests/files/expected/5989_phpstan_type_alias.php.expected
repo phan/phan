@@ -8,5 +8,9 @@
 %s:40 PhanCommentUnextractableTypeAlias Saw a line * @phpstan-import-type Gone from \NS5989\NoSuchClass with a type alias that could not be extracted
 %s:51 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type array{name:string,mime?:\NS5989\Other\Mime,third:false|int}(real=array)
 %s:51 PhanDebugAnnotation @phan-debug-var requested for variable $l - it has union type array<string,array{name:string,mime?:\NS5989\Other\Mime,third:false|int}>(real=array)
-%s:51 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type non-null-mixed
+%s:51 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type mixed
 %s:51 PhanDebugAnnotation @phan-debug-var requested for variable $t - it has union type false|int
+%s:91 PhanTypeAliasInternalTypeConflict Saw attempt to use int as a type alias for Opts from Source but internal types cannot be redefined.
+%s:101 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type ?string
+%s:101 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type ?int
+%s:101 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type int

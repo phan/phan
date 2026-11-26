@@ -1510,7 +1510,8 @@ class Type implements Stringable
         $alias_type = $context->getTypeAlias($trim_string);
         if ($alias_type instanceof Type) {
             if ($source === Type::FROM_PHPDOC) {
-                return $alias_type->withIsNullable(str_starts_with($string, '?'));
+                // (`?Alias` is nullable; `Alias` is as nullable as the type that it stands for)
+                return str_starts_with($string, '?') ? $alias_type->withIsNullable(true) : $alias_type;
             }
             if ($code_base) {
                 Issue::maybeEmit(

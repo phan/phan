@@ -558,11 +558,16 @@ class CodeBase
     }
 
     /**
+     * Sets the files that are parsed, and forgets the type aliases of the classes: they are recorded again
+     * when the files are parsed, or when an alias is imported.
+     * (Called before the files are parsed, and for each request of the daemon or language server, where files can change)
+     *
      * @param list<string> $file_path_list the files that are parsed
      */
     public function setFilePathListForTypeAliases(array $file_path_list): void
     {
         $this->file_path_list_for_type_aliases = $file_path_list;
+        $this->type_aliases_of_class = [];
     }
 
     /**

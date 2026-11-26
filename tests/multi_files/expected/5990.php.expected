@@ -1,0 +1,3 @@
+%s:20 PhanDebugAnnotation @phan-debug-var requested for variable $guarded - it has union type array{ok:bool}(real=array)
+%s:20 PhanDebugAnnotation @phan-debug-var requested for variable $item - it has union type array{name:string,tag?:\NS5990\Other\Tag5990,owner:\NS5990\DTO\Provider5990}(real=array)
+%s:20 PhanDebugAnnotation @phan-debug-var requested for variable $owner - it has union type \NS5990\DTO\Provider5990

@@ -13,6 +13,7 @@ use Phan\Exception\FQSENException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\Scope\ClassScope;
 use Phan\Language\Type;
 use Phan\Library\FileCache;
 use Phan\Parse\ParseVisitor;
@@ -38,8 +39,8 @@ final class TypeAliasImporter
     private static $depth = 0;
 
     /**
-     * @var array<string,array{0:FullyQualifiedClassName,1:Context,2:string}> the classes (by lowercase FQSEN) of the files that are being scanned
-     * whose doc comment was not looked at yet: [FQSEN, context, doc comment].
+     * @var array<string,array{0:FullyQualifiedClassName,1:Context,2:string,3:int}> the classes (by lowercase FQSEN) of the files that are being scanned
+     * whose doc comment was not looked at yet: [FQSEN, context, doc comment, flags of the declaration].
      * (A class can import from a class that is declared further down in the same file)
      */
     private static $pending_classes = [];
@@ -88,27 +89,43 @@ final class TypeAliasImporter
 
     /**
      * @return list<string> the files that are likely to declare $class_fqsen, going by their names, most likely first:
-     * `Name.php`, then names that contain the name of the class (`class-wp-filesystem-base.php` for `WP_Filesystem_Base`)
+     * `Name.php`, then names that contain the name of the class (`class-wp-filesystem-base.php` for `WP_Filesystem_Base`).
+     * Among those, the files in directories named like the namespace of the class come first (`src/DTO/File.php` for `\App\DTO\File`).
      */
     private static function candidateFiles(CodeBase $code_base, FullyQualifiedClassName $class_fqsen): array
     {
         $name = \strtolower($class_fqsen->getName());
         $dashed_name = \str_replace('_', '-', $name);
-        $exact = [];
-        $partial = [];
+        $namespace_parts = \array_reverse(\array_filter(\explode('\\', \strtolower($class_fqsen->getNamespace()))));
+        // Maps the file to its rank: lower is more likely
+        $ranks = [];
         foreach ($code_base->getFilePathListForTypeAliases() as $file_path) {
             if (isset(self::$scanned_files[$file_path])) {
                 continue;
             }
             $base_name = \strtolower(\basename($file_path, '.php'));
             if ($base_name === $name) {
-                $exact[] = $file_path;
+                $rank = 0;
             } elseif (\str_contains($base_name, $name) || \str_contains($base_name, $dashed_name)) {
-                $partial[] = $file_path;
+                $rank = 100;
+            } else {
+                continue;
             }
+            // Subtract the number of directories that match the namespace, from the innermost one.
+            if ($namespace_parts) {
+                $directories = \array_reverse(\explode('/', \strtolower(\str_replace('\\', '/', \dirname($file_path)))));
+                foreach ($namespace_parts as $i => $part) {
+                    if (($directories[$i] ?? null) !== $part) {
+                        break;
+                    }
+                    $rank--;
+                }
+            }
+            $ranks[$file_path] = $rank;
         }
+        \asort($ranks);
         // A project may have many files with the name of a class: don't read more than a few of them for one import.
-        return \array_slice(\array_merge($exact, $partial), 0, 8);
+        return \array_slice(\array_keys($ranks), 0, 8);
     }
 
     /**
@@ -123,7 +140,7 @@ final class TypeAliasImporter
         self::$depth++;
         try {
             $contents = FileCache::getOrReadEntry(Config::projectPath($file_path))->getContents();
-            if (!\str_contains($contents, '-type')) {
+            if (\stripos($contents, '-type') === false) {
                 return;
             }
             $context = (new Context())->withFile($file_path);
@@ -152,7 +169,9 @@ final class TypeAliasImporter
         }
         // (Removed first: for an import from this class in a cycle of imports, the class has no aliases yet)
         unset(self::$pending_classes[$key]);
-        [$class_fqsen, $context, $doc_comment] = $pending;
+        [$class_fqsen, $context, $doc_comment, $ast_flags] = $pending;
+        // As when the class is parsed: `self` in an alias is this class.
+        $context = $context->withScope(new ClassScope($context->getScope(), $class_fqsen, $ast_flags));
         $code_base->setTypeAliasesOfClass($class_fqsen, []);
         $code_base->setTypeAliasesOfClass($class_fqsen, Builder::extractTypeAliases($code_base, $context, $doc_comment));
     }
@@ -171,13 +190,24 @@ final class TypeAliasImporter
             }
             switch ($stmt->kind) {
                 case ast\AST_NAMESPACE:
-                    $namespace_context = (new ParseVisitor($code_base, $context))->visitNamespace($stmt);
+                    // (Not ParseVisitor::visitNamespace(), which records the namespace in the CodeBase)
+                    $context = $context->withNamespace('\\' . (string)$stmt->children['name']);
                     $inner_stmts = $stmt->children['stmts'];
                     if ($inner_stmts instanceof Node) {
-                        // `namespace NS { ... }`
-                        self::collectClasses($code_base, $namespace_context, $inner_stmts, $keys);
-                    } else {
-                        $context = $namespace_context;
+                        // `namespace NS { ... }`. The context is kept for what follows, as when the file is parsed:
+                        // the next block then gets type aliases of its own.
+                        self::collectClasses($code_base, $context, $inner_stmts, $keys);
+                    }
+                    break;
+                case ast\AST_IF:
+                case ast\AST_IF_ELEM:
+                case ast\AST_STMT_LIST:
+                case ast\AST_DECLARE:
+                    // e.g. `if (!class_exists('C')) { class C {} }`, `declare(strict_types=1) { ... }`
+                    foreach ($stmt->children as $child) {
+                        if ($child instanceof Node && \in_array($child->kind, [ast\AST_IF_ELEM, ast\AST_STMT_LIST], true)) {
+                            self::collectClasses($code_base, $context, $child->kind === ast\AST_STMT_LIST ? $child : new Node(ast\AST_STMT_LIST, 0, [$child], $child->lineno), $keys);
+                        }
                     }
                     break;
                 case ast\AST_USE:
@@ -201,7 +231,7 @@ final class TypeAliasImporter
                         break;
                     }
                     $doc_comment = $stmt->children['docComment'] ?? null;
-                    self::$pending_classes[$key] = [$class_fqsen, $context->withLineNumberStart($stmt->lineno), \is_string($doc_comment) ? $doc_comment : ''];
+                    self::$pending_classes[$key] = [$class_fqsen, $context->withLineNumberStart($stmt->lineno), \is_string($doc_comment) ? $doc_comment : '', $stmt->flags];
                     $keys[] = $key;
                     break;
             }

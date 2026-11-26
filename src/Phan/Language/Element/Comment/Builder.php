@@ -481,7 +481,8 @@ final class Builder
     public function build(): Comment
     {
         $comment = $this->buildInner();
-        if ($this->declared_type_alias_names && $this->comment_type === Comment::ON_CLASS && $this->context->isInClassScope()) {
+        // (Also when there are none: in the daemon, a file that changed must not keep the aliases it had)
+        if ($this->comment_type === Comment::ON_CLASS && $this->context->isInClassScope() && ($this->declared_type_alias_names || $this->code_base->hasTypeAliasesOfClass($this->context->getClassFQSEN()))) {
             // For `@phpstan-import-type Name from ThisClass` in other files
             $type_alias_map = [];
             foreach ($this->declared_type_alias_names as $alias_name) {
@@ -832,12 +833,16 @@ final class Builder
     private function parseImportType(int $i, string $line): void
     {
         $lineno = $this->guessActualLineLocation($i);
-        if (!self::importTypeAlias($this->code_base, (clone $this->context)->withLineNumberStart($lineno), $line)) {
+        $local_name = self::importTypeAlias($this->code_base, (clone $this->context)->withLineNumberStart($lineno), $line);
+        if ($local_name === null) {
             $this->emitIssue(
                 Issue::CommentUnextractableTypeAlias,
                 $lineno,
                 $line
             );
+        } elseif ($local_name !== '') {
+            // The class also passes the alias on to the classes that import it from this class.
+            $this->declared_type_alias_names[] = $local_name;
         }
     }
 
@@ -847,18 +852,30 @@ final class Builder
      * If the alias cannot be found (e.g. the file of the class is not found), the name becomes an alias of `mixed`,
      * so that it is not taken for the name of a class.
      *
-     * @return bool whether the alias was found
+     * @return ?string the name of the alias in this file, '' if the name cannot be used (an issue was emitted),
+     * or null if the alias was not found
      */
-    private static function importTypeAlias(CodeBase $code_base, Context $context, string $line): bool
+    private static function importTypeAlias(CodeBase $code_base, Context $context, string $line): ?string
     {
         if (!\preg_match(self::IMPORT_TYPE_ALIAS_REGEX, $line, $parts)) {
-            return false;
+            return null;
         }
         $alias_name = $parts[1];
         $local_name = $parts[3] ?? $alias_name;
+        if (Type::isInternalTypeString($local_name, Type::FROM_PHPDOC)) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::TypeAliasInternalTypeConflict,
+                $context->getLineNumberStart(),
+                $local_name,
+                $alias_name . ' from ' . $parts[2]
+            );
+            return '';
+        }
         if ($context->getTypeAlias($local_name) !== null) {
             // Already declared or imported in this file.
-            return true;
+            return $local_name;
         }
         $type = null;
         try {
@@ -867,8 +884,8 @@ final class Builder
         } catch (FQSENException) {
             // Not the name of a class
         }
-        $context->addTypeAlias($local_name, $type ?? MixedType::instance(true));
-        return $type !== null;
+        $context->addTypeAlias($local_name, $type ?? MixedType::instance(false));
+        return $type !== null ? $local_name : null;
     }
 
     /**
@@ -880,12 +897,12 @@ final class Builder
      */
     public static function extractTypeAliases(CodeBase $code_base, Context $context, string $doc_comment): array
     {
-        if (!str_contains($doc_comment, '-type')) {
+        if (\stripos($doc_comment, '-type') === false) {
             return [];
         }
         $result = [];
         foreach (\explode("\n", self::reduceMultiline($doc_comment)) as $line) {
-            if (!str_contains($line, '-type')) {
+            if (\stripos($line, '-type') === false) {
                 continue;
             }
             if (\preg_match(self::PHAN_TYPE_ALIAS_REGEX, $line, $matches) || \preg_match(self::FOREIGN_TYPE_ALIAS_REGEX, $line, $matches)) {
@@ -895,7 +912,13 @@ final class Builder
                     $result[$matches[1]] = $type;
                 }
             } elseif (\stripos($line, '-import-type') !== false) {
-                self::importTypeAlias($code_base, $context, $line);
+                $local_name = self::importTypeAlias($code_base, $context, $line);
+                if (\is_string($local_name) && $local_name !== '') {
+                    $type = $context->getTypeAlias($local_name);
+                    if ($type !== null) {
+                        $result[$local_name] = $type;
+                    }
+                }
             }
         }
         return $result;
