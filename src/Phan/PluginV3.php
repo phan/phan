@@ -184,6 +184,6 @@ abstract class PluginV3
      *     int $severity = Issue::SEVERITY_NORMAL,
      *     int $remediation_difficulty = Issue::REMEDIATION_B,
      *     int $issue_type_id = Issue::TYPE_ID_UNKNOWN
-     * )
+     * ): IssueInstance
      */
 }
