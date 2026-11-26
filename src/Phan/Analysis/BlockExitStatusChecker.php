@@ -789,8 +789,9 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
      * - The arguments that the conditions look at are constant expressions (or are left out):
      *   the status of a call is cached and does not depend on the types that variables have where the call is made.
      * - An argument is not converted to the declared type of the parameter (`f('1')` for `int $x`).
-     * - For `$this->method()` and `static::method()`, the arguments that the conditions look at are passed:
-     *   a method that overrides this one can have other defaults. (Unless the method cannot be overridden)
+     * - For a call of a method on an object and for `static::method()`, the arguments that the conditions look at are passed,
+     *   and by position: a method that overrides this one can have other defaults and other parameter names.
+     *   (Unless the method cannot be overridden)
      * - The conditional return type does not use template types.
      *
      * @param Node $node the node of the call
@@ -803,14 +804,15 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             return false;
         }
         $args = [];
+        if (!$is_exact_dispatch && $function instanceof Method && ($function->isFinal() || $function->isPrivate() || $function->getClass($this->code_base)->isFinal())) {
+            $is_exact_dispatch = true;
+        }
         foreach ($node->children['args']->children as $arg) {
-            if ($arg instanceof Node && $arg->kind === ast\AST_UNPACK) {
+            if ($arg instanceof Node && ($arg->kind === ast\AST_UNPACK || (!$is_exact_dispatch && $arg->kind === ast\AST_NAMED_ARG))) {
+                // (A method that overrides this one can give its parameters other names)
                 return false;
             }
             $args[] = $arg;
-        }
-        if (!$is_exact_dispatch && $function instanceof Method && ($function->isFinal() || $function->isPrivate() || $function->getClass($this->code_base)->isFinal())) {
-            $is_exact_dispatch = true;
         }
         // @phan-suppress-next-line PhanPartialTypeMismatchArgument the arguments of a call are a list
         $args = ArgumentType::normalizeNamedArgs($args, $function);
@@ -823,19 +825,20 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
                     continue;
                 }
                 if (!\array_key_exists($i, $args)) {
-                    if (!$is_exact_dispatch) {
+                    if (!$is_exact_dispatch || !$parameter->hasDefaultValue()) {
                         return false;
                     }
-                    continue;
+                    $arg_type = $parameter->getDefaultValueLiteralType();
+                } else {
+                    $arg = $args[$i];
+                    if ($arg instanceof Node && !ParseVisitor::isConstExpr($arg, ParseVisitor::CONSTANT_EXPRESSION_FORBID_NEW_EXPRESSION)) {
+                        return false;
+                    }
+                    $arg_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $arg);
                 }
-                $arg = $args[$i];
-                if ($arg instanceof Node && !ParseVisitor::isConstExpr($arg, ParseVisitor::CONSTANT_EXPRESSION_FORBID_NEW_EXPRESSION)) {
-                    return false;
-                }
+                // (Also for a default: `float $x = 1` is 1.0 in the function)
                 $real_parameter_type = $parameter->getNonVariadicUnionType()->getRealUnionType();
-                if (!$real_parameter_type->isEmpty()
-                    && !UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $arg)->isStrictSubtypeOf($this->code_base, $real_parameter_type)
-                ) {
+                if (!$real_parameter_type->isEmpty() && !$arg_type->isStrictSubtypeOf($this->code_base, $real_parameter_type)) {
                     return false;
                 }
             }
@@ -1005,7 +1008,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
             $returnUnion = $method->getUnionType();
             $unionTypes = $returnUnion->getTypeSet();
             $isNeverReturn = count($unionTypes) === 1 && $unionTypes[0] instanceof NeverType;
-            if ($isNeverReturn || $this->callNeverReturnsByConditionalReturnType($method, $node, $var_name !== 'this')) {
+            if ($isNeverReturn || $this->callNeverReturnsByConditionalReturnType($method, $node, false)) {
                 return self::STATUS_NOT_RETURN_BITMASK;
             }
         }

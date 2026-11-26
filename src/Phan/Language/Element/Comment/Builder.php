@@ -1304,6 +1304,17 @@ final class Builder
         if (!\in_array($this->comment_type, Comment::FUNCTION_LIKE, true) || !\preg_match(self::CONDITIONAL_RETURN_START_REGEX, $line)) {
             return;
         }
+        if ($this->return_comment && $this->return_comment->getConditional()) {
+            // e.g. the same conditional as `@psalm-return` and as `@phpstan-return`: the first one is used.
+            // (A second conditional would add its types to every branch of the first one)
+            return;
+        }
+        // Not used if it has something that Phan does not parse or only approximates, since a branch may decide that a call does not return:
+        // - a type after the closing bracket (`(...) | null`; without the whitespace, the parser reports it);
+        // - a type that Phan reads as a wider one: `numeric-string` and `literal-string` (string), `int<1, max>` (int), `Foo::BAR` (mixed).
+        if (\preg_match('/\)\s*[|&]|::|\bint\s*<|\b(?:numeric|literal)-string\b/i', $line)) {
+            return;
+        }
         $issues = $this->issues;
         $conditional = $this->parseConditionalReturnFromCommentLine($line, $i);
         // (An issue means that a part of the annotation was not understood, such as the `|null` of `($x is int ? A : B)|null`)

@@ -168,3 +168,28 @@ class Base {
  */
 function tpl($sample, $value) {}
 function t8(?string $s): string { if ($s === null) { tpl(1, null); } return $s; }  // reported: template
+
+namespace NS5992\Conservative;
+
+/** @phpstan-return ($fatal is true ? never : int) | null */
+function spaced(bool $fatal) { return $fatal ? null : 1; }
+function t1(?string $s): string { if ($s === null) { spaced(true); } return $s; }   // reported
+/** @return ($x is int ? never : void) */
+function fl(float $x = 1): void {}
+function t2(?string $s): string { if ($s === null) { fl(); } return $s; }   // reported
+/**
+ * @psalm-return ($x is int ? never : string)
+ * @phpstan-return ($x is int ? never : string)
+ */
+function both($x) { return 'a'; }
+function t3(?string $s): string { if ($s === null) { both(1); } return $s; }   // ok
+/** @phpstan-return ($x is numeric-string ? never : void) */
+function num($x) {}
+function t4(?string $s): string { if ($s === null) { num('abc'); } return $s; }   // reported
+class B {
+    /** @return ($fatal is true ? never : void) */
+    public function stop(bool $fatal = true, bool $other = false): void {}
+    public function t5(?string $s): string { if ($s === null) { $this->stop(fatal: true); } return $s; }  // reported
+    public function t6(?string $s): string { if ($s === null) { $this->stop(true); } return $s; }  // ok
+    public static function make(): static { return new static(); }
+}

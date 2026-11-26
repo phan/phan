@@ -8,3 +8,7 @@
 %s:157 PhanTypeMismatchReturnNullable Returning $s of type ?string but t5() is declared to return string (expected returned value to be non-nullable)
 %s:161 PhanTypeMismatchReturnNullable Returning $s of type ?string but t6() is declared to return string (expected returned value to be non-nullable)
 %s:170 PhanTypeMismatchReturnNullable Returning $s of type ?string but t8() is declared to return string (expected returned value to be non-nullable)
+%s:176 PhanTypeMismatchReturnNullable Returning $s of type ?string but t1() is declared to return string (expected returned value to be non-nullable)
+%s:179 PhanTypeMismatchReturnNullable Returning $s of type ?string but t2() is declared to return string (expected returned value to be non-nullable)
+%s:188 PhanTypeMismatchReturnNullable Returning $s of type ?string but t4() is declared to return string (expected returned value to be non-nullable)
+%s:192 PhanTypeMismatchReturnNullable Returning $s of type ?string but t5() is declared to return string (expected returned value to be non-nullable)
