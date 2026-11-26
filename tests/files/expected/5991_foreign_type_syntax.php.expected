@@ -21,6 +21,6 @@
 %s:66 PhanTypeMismatchArgument Argument 1 ($p) is 'latin1' of type string but \NS5991\literals() takes null|string defined at %s:58
 %s:78 PhanDebugAnnotation @phan-debug-var requested for variable $r - it has union type array{0:mixed,1:mixed}
 %s:78 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type array{k:mixed,0:mixed}
-%s:78 PhanDebugAnnotation @phan-debug-var requested for variable $t - it has union type array{0:'a\x2cb',1:'c'}
+%s:78 PhanDebugAnnotation @phan-debug-var requested for variable $t - it has union type array{0:'a\x2c b',1:'c'}
 %s:78 PhanDebugAnnotation @phan-debug-var requested for variable $u - it has union type array<string,'x\x2cy'>
 %s:78 PhanDebugAnnotation @phan-debug-var requested for variable $v - it has union type 'plain'|'say "hi"\x2c ok'

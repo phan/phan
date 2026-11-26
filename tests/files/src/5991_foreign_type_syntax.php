@@ -71,7 +71,7 @@ function calls(int $n): void {
  *
  * @param array{Kind::A, Kind::TYPE_FEED} $r
  * @param array{k: Kind::A, self::A} $s
- * @param array{0: "a,b", 1: "c"} $t
+ * @param array{0: "a, b", 1: "c"} $t
  * @param array<string, "x,y"> $u
  * @param 'say "hi", ok'|"plain" $v
  */

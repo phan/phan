@@ -1219,7 +1219,8 @@ class Type implements Stringable
                 if ($end === false) {
                     return $result . \substr($type_string, $i);
                 }
-                $result .= "'" . \substr($type_string, $i + 1, $end - $i - 1) . "'";
+                // (A comma is written as an escape: the type string is split at commas, and the parts are trimmed)
+                $result .= "'" . \str_replace(',', '\\x2c', \substr($type_string, $i + 1, $end - $i - 1)) . "'";
                 $i = $end;
             } else {
                 $result .= $c;
