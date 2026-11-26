@@ -1452,8 +1452,12 @@ final class Builder
     private function parseOnlyIfUnderstood(Closure $parse, string $line): Parameter|UnionType|null
     {
         $issues = $this->issues;
+        // @phan-suppress-next-line PhanAccessPropertyInternal
+        $unparsed_closure_param_count = Type::$unparsed_closure_param_count;
         $result = $parse();
-        $is_understood = \count($this->issues) === \count($issues);
+        // (A parameter of a closure type that is not parsed is left out without an issue: `callable(int-mask<1, 2>): void`)
+        // @phan-suppress-next-line PhanAccessPropertyInternal
+        $is_understood = \count($this->issues) === \count($issues) && Type::$unparsed_closure_param_count === $unparsed_closure_param_count;
         // (Reported for `@psalm-`, as it was before these annotations replaced the plain type)
         if (\stripos($line, '@psalm-') === false) {
             $this->issues = $issues;
@@ -1596,7 +1600,13 @@ final class Builder
             // (The last one of a name is used)
             $this->phan_overrides['param'] = \array_merge($this->phpstan_param_list, self::parametersOf($this->phan_overrides['param'] ?? []));
         }
-        if ($this->phpstan_var_list) {
+        if ($this->phpstan_var_list && !\in_array($this->comment_type, Comment::FUNCTION_LIKE, true) && \count($this->phpstan_var_list) === 1 && \count($this->variable_list) <= 1) {
+            // The annotations of a property or constant are for the same element, whether or not they name it:
+            // `@var array` and `@phpstan-var list<int> $rows`.
+            if (!self::parametersOf($this->phan_overrides['var'] ?? [])) {
+                $this->variable_list = $this->phpstan_var_list;
+            }
+        } elseif ($this->phpstan_var_list) {
             $phan_names = [];
             foreach (self::parametersOf($this->phan_overrides['var'] ?? []) as $phan_var) {
                 $phan_names[$phan_var->getName()] = true;

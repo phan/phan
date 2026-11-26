@@ -35,3 +35,11 @@
 %s:165 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type array
 %s:165 PhanDebugAnnotation @phan-debug-var requested for variable $y - it has union type array
 %s:218 PhanDebugAnnotation @phan-debug-var requested for variable $templates - it has union type array{0:mixed,1:\stdClass,2:1.5,3:\ArrayObject}(real=array{0:mixed,1:\stdClass,2:1.5,3:\ArrayObject})
+%s:252 PhanUnusedVariable Unused definition of variable $rows
+%s:253 PhanUnusedVariable Unused definition of variable $name (Did you mean $named)
+%s:254 PhanDebugAnnotation @phan-debug-var requested for variable $both - it has union type list<string>
+%s:254 PhanDebugAnnotation @phan-debug-var requested for variable $cb - it has union type callable
+%s:254 PhanDebugAnnotation @phan-debug-var requested for variable $closure - it has union type \Closure
+%s:254 PhanDebugAnnotation @phan-debug-var requested for variable $name - it has union type list<int>
+%s:254 PhanDebugAnnotation @phan-debug-var requested for variable $rows - it has union type list<int>
+%s:254 PhanUnusedVariable Unused definition of variable $both

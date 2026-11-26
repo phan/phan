@@ -218,6 +218,43 @@ function phpstanTemplateKept($x) {
 $templates = [conditionalNotRead('s'), psalmTemplateKept(new \stdClass()), declaredTwice(1.5), phpstanTemplateKept(new \ArrayObject())];
 '@phan-debug-var $templates';
 
+class Named {
+    /**
+     * The annotations of a property are for that property, with or without its name.
+     * @var array
+     * @phpstan-var list<int> $rows
+     */
+    public $rows = [];
+
+    /**
+     * @var array $named
+     * @phpstan-var list<int>
+     */
+    public $named = [];
+
+    /**
+     * @var array
+     * @phpstan-var list<int> $both
+     * @phan-var list<string>
+     */
+    public $both = [];
+}
+
+/**
+ * A parameter of a closure type that Phan cannot parse: the plain type is used.
+ *
+ * @param callable $cb
+ * @param \Closure $closure
+ * @phpstan-param callable(int-mask<1, 2>): void $cb
+ * @phpstan-param \Closure(int, int-mask-of<Named::*>): int $closure
+ */
+function closureParams($cb, $closure, Named $named): void {
+    $rows = $named->rows;
+    $name = $named->named;
+    $both = $named->both;
+    '@phan-debug-var $cb, $closure, $rows, $name, $both';
+}
+
 /**
  * Not on a function: ignored without an issue.
  * @phpstan-param int $x
