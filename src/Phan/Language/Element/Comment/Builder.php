@@ -370,10 +370,28 @@ final class Builder
     }
 
     /**
-     * Matches the types in a type string that Phan reads as a wider type.
+     * @return bool whether a name in $type_string is a type alias of this file.
+     * (What the alias stands for may be a type that Phan reads as a wider one: `@phpstan-type Num numeric-string`)
+     */
+    private function usesTypeAlias(string $type_string): bool
+    {
+        if (\preg_match_all('/[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*/', $type_string, $matches) > 0) {
+            foreach ($matches[0] as $name) {
+                if ($this->context->getTypeAlias($name) !== null) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Matches the types in a type string that Phan reads as a wider type, or does not check completely as a condition:
+     * `numeric-string`, `literal-string` and `lowercase-string` (string), `int<1, 10>` (int), `Foo::BAR` (mixed),
+     * and `class-string<Foo>` (the class that a string names is not compared with `Foo`).
      * @internal
      */
-    public const APPROXIMATED_TYPE_REGEX = '/::|\bint(?:-range)?\s*<|\b(?:non-empty-)?(?:numeric|literal|lowercase)-string\b/i';
+    public const APPROXIMATED_TYPE_REGEX = '/::|\bint(?:-range)?\s*<|\b(?:non-empty-)?(?:numeric|literal|lowercase)-string\b|\b(?:class|interface|trait|enum)-string\b/i';
 
     /**
      * Parses `($name is [not] Type ? Branch : Branch)` starting at $offset.
@@ -389,7 +407,7 @@ final class Builder
         $negated = ($match[2] ?? '') !== '';
         $condition = $this->unionTypeFromConditionalPart($match[3]);
         // (`numeric-string` and `lowercase-string` are read as `string`, `int<1, max>` as `int`, `Foo::BAR` as `mixed`)
-        $is_condition_approximated = \preg_match(self::APPROXIMATED_TYPE_REGEX, $match[3]) > 0;
+        $is_condition_approximated = \preg_match(self::APPROXIMATED_TYPE_REGEX, $match[3]) > 0 || $this->usesTypeAlias($match[3]);
         $offset += \strlen($match[0]);
 
         $if_true = $this->parseConditionalBranchAt($line, $offset, $lineno);

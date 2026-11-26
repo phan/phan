@@ -231,3 +231,38 @@ trait T {
     public function t3(?string $s): string { if ($s === null) { byName(self::class); } return $s; }   // reported
 }
 function t4(?string $s): string { if ($s === null) { byName('y'); } return $s; }   // ok
+
+// A condition that uses a type alias or class-string is not used to decide that a call does not return
+namespace NS5992\Aliases;
+
+class Foo {} class Bar extends Foo {} class Other {}
+/**
+ * @phpstan-type Num numeric-string
+ * @phpstan-type Kind Foo::A
+ * @phpstan-type Small int<1, 10>
+ * @phpstan-type Exact 'a'|'b'
+ */
+class Holder {
+    /** @return ($x is Num ? never : void) */
+    public static function num($x) {}
+    /** @return ($x is Kind ? never : void) */
+    public static function kind($x) {}
+    /** @return ($x is Small ? never : void) */
+    public static function small($x) {}
+    /** @return ($x is Exact ? never : void) */
+    public static function exact($x) {}
+}
+/** @return ($x is class-string<Foo> ? never : void) */
+function cs($x) {}
+/** @return ($x is class-string ? never : void) */
+function anycs($x) {}
+/** @return ($x is class-string<Foo> ? void : never) */
+function notcs($x) {}
+function t1(?string $s): string { if ($s === null) { Holder::num('abc'); } return $s; }
+function t2(?string $s): string { if ($s === null) { Holder::kind(5); } return $s; }
+function t3(?string $s): string { if ($s === null) { Holder::small(50); } return $s; }
+function t4(?string $s): string { if ($s === null) { Holder::exact('a'); } return $s; }
+function t6(?string $s): string { if ($s === null) { cs(Bar::class); } return $s; }
+function t7(?string $s): string { if ($s === null) { cs(Other::class); } return $s; }
+function t8(?string $s): string { if ($s === null) { cs('NoSuchClass'); } return $s; }
+function t12(?string $s): string { if ($s === null) { notcs(Other::class); } return $s; }
