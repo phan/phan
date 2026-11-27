@@ -1,0 +1,176 @@
+<?php
+
+// More about a property of $this after a call of a method of $this: a closure of the method, a private property of a parent class,
+// destructuring, a method that calls an abstract method, a property with a dynamic name, parent:: in a trait, and self::.
+
+namespace NS6006;
+class Conn { public function q(): void {} }
+trait Connects {
+    public function viaTrait(): void { parent::connect(); }
+}
+class Root {
+    /** @var ?Conn */
+    protected $conn = null;
+    private ?string $value = 'x';
+    protected function connect(): void { $this->conn = new Conn(); }
+    protected function resetValue(): void { $this->value = null; }
+}
+abstract class Mid extends Root {
+    use Connects;
+    private ?string $value = null;
+    /** @var ?Conn */
+    protected $b = null;
+    /** @var ?Conn */
+    protected $c = null;
+    abstract protected function load(): void;
+    private function wrapper(): void { $this->load(); }
+    private function destructure(): void { [$this->b] = [null]; }
+    private function dyn(string $n): void { $this->b = new Conn(); $this->$n = null; }
+    private function reset(): void { $this->b = null; }
+    final protected function selfCall(): void { self::connect(); }
+    protected function connect(): void {}
+
+    public function callable(): Conn {
+        if ($this->b === null) { throw new \Exception(); }
+        $f = $this->reset(...);
+        return $this->b; // kept: reset() is not called
+    }
+    public function privateOfParent(): string {
+        if ($this->value === null) { return ''; }
+        parent::resetValue();
+        return $this->value; // kept: the parent assigns its own private $value
+    }
+    public function afterDestructure(): Conn {
+        if ($this->b === null) { throw new \Exception(); }
+        $this->destructure();
+        return $this->b; // may be null
+    }
+    public function afterWrapper(): Conn {
+        if ($this->c === null) { $this->wrapper(); return $this->c; } // not known to be null
+        return $this->c;
+    }
+    public function afterDyn(): Conn {
+        if ($this->b === null) { throw new \Exception(); }
+        $this->dyn('b');
+        return $this->b; // may be null
+    }
+    public function afterTraitParent(): void {
+        if ($this->conn) { return; }
+        $this->viaTrait();
+        $this->conn->q(); // not null: Root::connect() assigns it
+    }
+    public function afterSelf(): void {
+        if ($this->conn) { return; }
+        $this->selfCall();
+        $this->conn->q(); // still null: self::connect() is Mid::connect(), which assigns nothing
+    }
+}
+
+// A generator method runs nothing when it is called. A private property of a parent class is another property than
+// the protected property of the class with that name. `$this->helper()` in a parent class calls the private helper() of that class.
+class GenBase {
+    private ?string $slot = null;
+    protected ?Conn $kept = null;
+    public function __construct(?Conn $kept, ?string $slot) { $this->kept = $kept; $this->slot = $slot; }
+    protected function resetSlot(): void { $this->slot = null; }
+    final protected function callHelper(): void { $this->helper(); }
+    private function helper(): void {}
+}
+final class Gen extends GenBase {
+    protected ?string $slot = 'x';
+    private function resetLater(): \Generator { $this->kept = null; yield 1; }
+    private function helper(): void { $this->kept = null; }
+    public function afterGenerator(): void {
+        if ($this->kept === null) { throw new \Exception(); }
+        $generator = $this->resetLater();
+        $kept = $this->kept;
+        '@phan-debug-var $generator, $kept';
+    }
+    public function shadowed(?string $slot): void {
+        $this->slot = $slot;
+        if ($this->slot === null) { return; }
+        parent::resetSlot();
+        $kept = $this->slot;
+        '@phan-debug-var $kept';
+    }
+    public function privateHelperOfParent(): void {
+        if ($this->kept === null) { throw new \Exception(); }
+        $this->callHelper();
+        $kept = $this->kept;
+        '@phan-debug-var $kept';
+    }
+    public function ownHelper(): void {
+        if ($this->kept === null) { throw new \Exception(); }
+        $this->helper();
+        $widened = $this->kept;
+        '@phan-debug-var $widened';
+    }
+}
+
+// The body of a method of a trait is looked at. A method that is not declared (`__call()`), a method with a dynamic name
+// and a generator method that can be overridden may run anything: what was inferred to be null is forgotten.
+// A static method that is called on $this assigns nothing.
+trait Resets {
+    private function resetInTrait(): void { $this->kept = null; }
+}
+class Magic extends GenBase {
+    use Resets;
+    public function __call(string $name, array $args): void { $this->kept = new Conn(); }
+    private function dispatch(string $name): void { $this->$name(); }
+    private function undeclared(): void { $this->notDeclared(); }
+    protected function generate(): \Generator { yield 1; }
+    public static function helper(): void {}
+    public function afterTraitMethod(): void {
+        if ($this->kept === null) { throw new \Exception(); }
+        $this->resetInTrait();
+        $widened = $this->kept;
+        '@phan-debug-var $widened';
+    }
+    public function afterDynamicName(): void {
+        if ($this->kept !== null) { return; }
+        $this->dispatch('connect');
+        $declared = $this->kept;
+        '@phan-debug-var $declared';
+    }
+    public function afterUndeclared(): void {
+        if ($this->kept !== null) { return; }
+        $this->undeclared();
+        $declared = $this->kept;
+        '@phan-debug-var $declared';
+    }
+    public function afterGeneratorThatCanBeOverridden(): void {
+        if ($this->kept !== null) { return; }
+        $this->generate();
+        $declared = $this->kept;
+        '@phan-debug-var $declared';
+    }
+    public function afterStaticMethodOnThis(): void {
+        if ($this->kept !== null) { return; }
+        $this->helper();
+        $null = $this->kept;
+        '@phan-debug-var $null';
+    }
+}
+
+// A public method of a trait assigns the private property of the class that uses the trait.
+trait InitConn {
+    public function init(): void { $this->conn = new Conn(); }
+    private function privInit(): void { $this->conn = new Conn(); }
+}
+class UsesInit {
+    use InitConn;
+    private ?Conn $conn = null;
+    public function __construct(?Conn $c) { $this->conn = $c; }
+    public function a(): void {
+        if ($this->conn !== null) { return; }
+        $this->init();
+        $x = $this->conn;
+        '@phan-debug-var $x';
+    }
+    public function b(): void {
+        if ($this->conn !== null) { return; }
+        $this->privInit();
+        $y = $this->conn;
+        '@phan-debug-var $y';
+    }
+}

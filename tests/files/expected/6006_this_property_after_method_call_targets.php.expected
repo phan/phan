@@ -1,0 +1,33 @@
+%s:9 PhanTraitParentReference Reference to parent from trait \NS6006\Connects
+%s:35 PhanUnusedVariable Unused definition of variable $f
+%s:46 PhanTypeMismatchReturn Returning $this->b of type null but afterDestructure() is declared to return \NS6006\Conn
+%s:49 PhanTypeMismatchReturnNullable Returning $this->c of type ?\NS6006\Conn but afterWrapper() is declared to return \NS6006\Conn (expected returned value to be non-nullable)
+%s:55 PhanTypeMismatchReturn Returning $this->b of type null but afterDyn() is declared to return \NS6006\Conn
+%s:65 PhanNonClassMethodCall Call to method q on non-class type null
+%s:85 PhanUnusedVariable Unused definition of variable $generator
+%s:86 PhanDebugAnnotation @phan-debug-var requested for variable $generator - it has union type \Generator(real=\Generator)
+%s:86 PhanDebugAnnotation @phan-debug-var requested for variable $kept - it has union type \NS6006\Conn(real=\NS6006\Conn)
+%s:86 PhanUnusedVariable Unused definition of variable $kept
+%s:93 PhanDebugAnnotation @phan-debug-var requested for variable $kept - it has union type string(real=string)
+%s:93 PhanUnusedVariable Unused definition of variable $kept
+%s:99 PhanDebugAnnotation @phan-debug-var requested for variable $kept - it has union type \NS6006\Conn(real=\NS6006\Conn)
+%s:99 PhanUnusedVariable Unused definition of variable $kept
+%s:105 PhanDebugAnnotation @phan-debug-var requested for variable $widened - it has union type \NS6006\Conn|null(real=\NS6006\Conn|null)
+%s:105 PhanUnusedVariable Unused definition of variable $widened
+%s:114 PhanUndeclaredProperty Reference to undeclared property \NS6006\Resets->kept
+%s:126 PhanDebugAnnotation @phan-debug-var requested for variable $widened - it has union type \NS6006\Conn|null(real=\NS6006\Conn|null)
+%s:126 PhanUnusedVariable Unused definition of variable $widened
+%s:132 PhanDebugAnnotation @phan-debug-var requested for variable $declared - it has union type ?\NS6006\Conn|\NS6006\Conn(real=?\NS6006\Conn)
+%s:132 PhanUnusedVariable Unused definition of variable $declared
+%s:138 PhanDebugAnnotation @phan-debug-var requested for variable $declared - it has union type ?\NS6006\Conn|\NS6006\Conn(real=?\NS6006\Conn)
+%s:138 PhanUnusedVariable Unused definition of variable $declared
+%s:144 PhanDebugAnnotation @phan-debug-var requested for variable $declared - it has union type ?\NS6006\Conn|\NS6006\Conn(real=?\NS6006\Conn)
+%s:144 PhanUnusedVariable Unused definition of variable $declared
+%s:150 PhanDebugAnnotation @phan-debug-var requested for variable $null - it has union type null(real=null)
+%s:150 PhanUnusedVariable Unused definition of variable $null
+%s:157 PhanUndeclaredProperty Reference to undeclared property \NS6006\InitConn->conn
+%s:158 PhanUndeclaredProperty Reference to undeclared property \NS6006\InitConn->conn
+%s:167 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \NS6006\Conn|null(real=\NS6006\Conn|null)
+%s:167 PhanUnusedVariable Unused definition of variable $x
+%s:173 PhanDebugAnnotation @phan-debug-var requested for variable $y - it has union type \NS6006\Conn|null(real=\NS6006\Conn|null)
+%s:173 PhanUnusedVariable Unused definition of variable $y
