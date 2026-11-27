@@ -33,7 +33,7 @@ final class ComposerPackages
     /** @var array<string,string> maps the directory of an installed package (absolute, with a trailing slash) to its name, longest first */
     private static $package_dirs = [];
 
-    /** @var list<string> the other directories of `exclude_analysis_directory_list` (absolute, with a trailing slash), longest first */
+    /** @var array<string,string> maps the other directories of `exclude_analysis_directory_list` (absolute, with a trailing slash) to the name of their package, longest first */
     private static $excluded_dirs = [];
 
     /** @var array<string,string> the package of a file ('' for none), for the path that a FileRef has */
@@ -73,11 +73,14 @@ final class ComposerPackages
             if ($file !== '' && $file !== 'internal') {
                 // The directory of the file with symbolic links resolved, which is what the directories below are compared with
                 // (a package of a Composer path repository is a link to a directory that can be anywhere).
+                // The path as it is given says the most if it is in the vendor directory (`vendor/acme/lib` can be a link,
+                // and need not be in installed.json). Otherwise the path with symbolic links resolved is used.
                 $path = Config::projectPath($file);
-                $real_path = \realpath($path);
-                $path = self::normalize(\is_string($real_path) ? $real_path : $path);
-                $slash = \strrpos($path, '/');
-                $package = self::packageOfDirectory($slash === false ? '/' : \substr($path, 0, $slash + 1));
+                $package = self::packageOfDirectory(self::directoryOf(self::normalize($path)), true);
+                if ($package === '') {
+                    $real_path = \realpath($path);
+                    $package = self::packageOfDirectory(self::directoryOf(self::normalize(\is_string($real_path) ? $real_path : $path)), false);
+                }
             }
             self::$cache[$file] = $package;
         }
@@ -85,10 +88,20 @@ final class ComposerPackages
     }
 
     /**
-     * @param string $dir an absolute directory with a trailing slash
-     * @return string the package of its files, or '' if it is not in the project
+     * @return string the directory of the absolute path $path, with a trailing slash
      */
-    private static function packageOfDirectory(string $dir): string
+    private static function directoryOf(string $path): string
+    {
+        $slash = \strrpos($path, '/');
+        return $slash === false ? '/' : \substr($path, 0, $slash + 1);
+    }
+
+    /**
+     * @param string $dir an absolute directory with a trailing slash
+     * @param bool $only_installed whether only the installed packages and the vendor directory are looked at
+     * @return string the package of its files, or '' if it is not in the project (or, with $only_installed, not installed)
+     */
+    private static function packageOfDirectory(string $dir, bool $only_installed): string
     {
         // (An installed package can be outside of the vendor directory: `install-path` of composer/installers or of a path repository)
         foreach (self::$package_dirs as $package_dir => $name) {
@@ -103,9 +116,12 @@ final class ComposerPackages
                 return 'vendor:' . \strtolower($parts[0] . '/' . ($parts[1] ?? ''));
             }
         }
-        foreach (self::$excluded_dirs as $excluded_dir) {
+        if ($only_installed) {
+            return '';
+        }
+        foreach (self::$excluded_dirs as $excluded_dir => $id) {
             if (\str_starts_with($dir, $excluded_dir)) {
-                return 'excluded:' . $excluded_dir;
+                return $id;
             }
         }
         foreach (self::$root_dirs as $root_dir) {
@@ -159,14 +175,15 @@ final class ComposerPackages
             if (!\is_string($excluded_dir) || $excluded_dir === '') {
                 continue;
             }
-            foreach (self::directoryForms(Paths::isAbsolutePath($excluded_dir) ? $excluded_dir : $root . '/' . $excluded_dir) as $dir) {
+            $forms = self::directoryForms(Paths::isAbsolutePath($excluded_dir) ? $excluded_dir : $root . '/' . $excluded_dir);
+            foreach ($forms as $dir) {
                 if (!\in_array($dir, self::$vendor_dirs, true) && !\in_array($dir, self::$root_dirs, true)) {
-                    $excluded_dirs[$dir] = true;
+                    // (One name for the directory as it is given and as its symbolic links resolve)
+                    $excluded_dirs[$dir] ??= 'excluded:' . $forms[0];
                 }
             }
         }
-        $excluded_dirs = \array_keys($excluded_dirs);
-        \usort($excluded_dirs, static function (string $a, string $b): int {
+        \uksort($excluded_dirs, static function (string $a, string $b): int {
             return \strlen($b) <=> \strlen($a) ?: \strcmp($a, $b);
         });
         self::$excluded_dirs = $excluded_dirs;

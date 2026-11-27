@@ -1,5 +1,7 @@
 modules/custom/src/Module.php:9: [W15004] PhanAccessMethodInternal: Cannot access internal method \App\Core::inner() of namespace \App defined at src/Core.php:6 from namespace \App\Module
 src/Child.php:17: [W15004] PhanAccessMethodInternal: Cannot access internal method \App\Child::innerOfBase() of namespace \App defined at third_party/acme/lib/src/Base.php:6 from namespace \App
+src/Child.php:29: [W15004] PhanAccessMethodInternal: Cannot access internal method \App\WithParts::exposedPart() of namespace \App defined at third_party/acme/lib/src/Parts.php:9 from namespace \App
+src/Child.php:29: [W15003] PhanAccessPropertyInternal: Cannot access internal property \App\WithParts->part of namespace \App defined at third_party/acme/lib/src/Parts.php:6 from namespace \App
 src/Sub/User.php:18: [W15002] PhanAccessClassConstantInternal: Cannot access internal class constant \Acme\Lib\Tool::SECRET defined at third_party/acme/lib/src/Tool.php:11
 src/Sub/User.php:18: [W15004] PhanAccessMethodInternal: Cannot access internal method \Acme\Lib\Extra\Addon::inner() of namespace \Acme\Lib\Extra defined at third_party/acme/tools/src/Addon.php:8 from namespace \App\Sub
 src/Sub/User.php:18: [W15004] PhanAccessMethodInternal: Cannot access internal method \Acme\Lib\Internals\Helper::help() of namespace \Acme\Lib\Internals defined at third_party/acme/lib/src/Internals/Helper.php:6 from namespace \App\Sub

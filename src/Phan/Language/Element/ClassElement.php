@@ -235,7 +235,9 @@ abstract class ClassElement extends AddressableElement
             $class = $this->getClass($code_base);
             return [$class->getFQSEN()->getNamespace() ?: '\\', $class->getFileRef()->getFile()];
         }
-        $class_fqsen = $this->hasDefiningFQSEN() ? $this->getDefiningClassFQSEN() : $this->class_fqsen;
+        // (The class that declares it, also for a member of a trait: the defining FQSEN of a member that a class imports
+        // from a trait can be the one of that class.)
+        $class_fqsen = $this->getRealDefiningFQSEN()->getFullyQualifiedClassName();
         return [$class_fqsen->getNamespace() ?: '\\', $this->getFileRef()->getFile()];
     }
 

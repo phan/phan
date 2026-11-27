@@ -16,3 +16,15 @@ class InternalChild extends \Acme\Lib\Base {
 function sameNamespace(Child $child): int {
     return $child->innerOfBase();
 }
+
+// A class of the project that uses a trait of another package.
+class WithParts {
+    use \Acme\Lib\Parts {
+        innerPart as public exposedPart;
+    }
+}
+
+// The internal members of the trait are not a part of the project either: reported.
+function traitMembers(WithParts $object): int {
+    return $object->part + $object->exposedPart();
+}
