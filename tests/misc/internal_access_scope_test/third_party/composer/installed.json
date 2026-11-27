@@ -1,0 +1,5 @@
+{"packages": [
+    {"name": "acme/lib", "install-path": "../acme/lib"},
+    {"name": "Acme/Tools"},
+    {"name": "acme/custom-module", "install-path": "../../modules/custom"}
+]}

@@ -3,6 +3,14 @@
 Phan 6.0.12-dev
 --------------
 
+Backwards incompatible changes:
+- **`@internal` now means internal to the package, not to the namespace.** The new config setting `internal_access_scope` selects the meaning, and its default is `'package'`.
+  - Before, an `@internal` element could only be used in the namespace that declares it (not in a namespace within it). This is not what phpDocumentor defines or what most projects mean by the tag ("not a part of the public API"), and a project that uses it that way got `PhanAccessMethodInternal` for most uses of its own internal elements: 880 for Matomo, 128 for PHP-Parser and 4,911 for PHPUnit. None of those are left.
+  - Now, an `@internal` element can be used anywhere in the package that declares it (and still in its namespace). The package is decided by the directory of the file that declares the element: a file in the vendor directory (`vendor`, or `config.vendor-dir` of `composer.json`) belongs to the Composer package that is installed in its directory (from `vendor/composer/installed.json`); a file in another directory of `exclude_analysis_directory_list` belongs to that directory; any other file of the project belongs to the project. This does not depend on namespaces or on how the classes are loaded.
+  - **What changes for a project**: the internal access issues (`PhanAccessMethodInternal`, `PhanAccessPropertyInternal`, `PhanAccessClassInternal`, `PhanAccessClassConstantInternal`, `PhanAccessConstantInternal`) are no longer reported for a use of an `@internal` element of the project in another namespace of the project. Suppressions of these issues may no longer be needed (`UnusedSuppressionPlugin` reports them). A use of an `@internal` element of a dependency is reported as before.
+  - **A library that is copied into the source tree and analyzed is a part of the project**, and its `@internal` elements can be used. Add its directory to `exclude_analysis_directory_list` to treat it as code of somebody else.
+  - **To keep the old meaning**, set `'internal_access_scope' => 'namespace'` in `.phan/config.php`. Phan's own config does.
+
 New features:
 - A call does not return when the conditional return type of the function resolves to `never` for its arguments: with `@return ($args is array{exit: false} ? void : never)` on `wp_die()`, the code after `if ($x === null) { wp_die('...'); }` knows that `$x` is not null, and a function that ends in `wp_die('...')` is not missing a return. This is only decided when the arguments that the conditions look at are constant expressions or are left out.
 - Read `@phpstan-return` when it is a conditional return type that Phan can parse (`@phpstan-return ($x is int ? A : B)`), like `@psalm-return`. Other uses of `@phpstan-return` are ignored without an issue, as before.

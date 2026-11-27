@@ -1,0 +1,9 @@
+{
+    "name": "Phan-Test/App",
+    "autoload": {
+        "classmap": ["src/"]
+    },
+    "config": {
+        "vendor-dir": "third_party"
+    }
+}

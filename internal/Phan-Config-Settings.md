@@ -558,6 +558,30 @@ NOTE: This step will only be performed if [`analyze_signature_compatibility`](#a
 
 (Default: `true`)
 
+## internal_access_scope
+
+What `@internal` in a doc comment means for the code that may use the element.
+
+- `'package'` (default since 6.0.12): the element may be used anywhere in the package that declares it,
+  and in the namespace that declares it. This is how phpDocumentor defines the tag and how most libraries use it
+  ("not a part of the public API").
+  The package of an element is decided by the directory of the file that declares it:
+  - a file in the vendor directory (`vendor`, or `config.vendor-dir` of `composer.json`) belongs to
+    the Composer package that is installed in its directory;
+  - a file in another directory of [`exclude_analysis_directory_list`](#exclude_analysis_directory_list)
+    belongs to that directory (code that is parsed but not analyzed is code of somebody else);
+  - any other file of the project belongs to the project.
+
+  So a project may use its own `@internal` elements in all of its namespaces,
+  and using an `@internal` element of a dependency is reported.
+- `'namespace'` (the default before 6.0.12): the element may only be used in the namespace that it is declared in
+  (not in a namespace within that namespace).
+
+This affects `PhanAccessMethodInternal`, `PhanAccessPropertyInternal`,
+`PhanAccessClassInternal`, `PhanAccessClassConstantInternal` and `PhanAccessConstantInternal`.
+
+(Default: `"package"`)
+
 ## lazy_inherited_methods
 
 Create the copies of inherited methods only when they are needed.

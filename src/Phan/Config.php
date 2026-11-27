@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan;
 
 use Phan\Config\Initializer;
+use Phan\Library\ComposerPackages;
 use Phan\Library\Paths;
 use Phan\Library\StringUtil;
 
@@ -490,6 +491,27 @@ class Config
         // If true, Phan will convert the type of a possibly undefined array offset to the nullable, defined equivalent.
         // If false, Phan will convert the type of a possibly undefined array offset to the defined equivalent (without converting to nullable).
         'convert_possibly_undefined_offset_to_nullable' => false,
+
+        // What `@internal` in a doc comment means for the code that may use the element.
+        //
+        // - `'package'` (default since 6.0.12): the element may be used anywhere in the package that declares it,
+        //   and in the namespace that declares it. This is how phpDocumentor defines the tag and how most libraries use it
+        //   ("not a part of the public API").
+        //   The package of an element is decided by the directory of the file that declares it:
+        //   - a file in the vendor directory (`vendor`, or `config.vendor-dir` of `composer.json`) belongs to
+        //     the Composer package that is installed in its directory;
+        //   - a file in another directory of [`exclude_analysis_directory_list`](#exclude_analysis_directory_list)
+        //     belongs to that directory (code that is parsed but not analyzed is code of somebody else);
+        //   - any other file of the project belongs to the project.
+        //
+        //   So a project may use its own `@internal` elements in all of its namespaces,
+        //   and using an `@internal` element of a dependency is reported.
+        // - `'namespace'` (the default before 6.0.12): the element may only be used in the namespace that it is declared in
+        //   (not in a namespace within that namespace).
+        //
+        // This affects `PhanAccessMethodInternal`, `PhanAccessPropertyInternal`,
+        // `PhanAccessClassInternal`, `PhanAccessClassConstantInternal` and `PhanAccessConstantInternal`.
+        'internal_access_scope' => 'package',
 
         // If true, seemingly undeclared variables in the global
         // scope will be ignored.
@@ -1461,6 +1483,9 @@ class Config
         self::$configuration = self::DEFAULT_CONFIGURATION;
         // Trigger magic behavior
         self::initOnce();
+        // (The packages of `internal_access_scope` depend on the project and on `exclude_analysis_directory_list`)
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        ComposerPackages::reset();
     }
 
     /**
@@ -1468,6 +1493,10 @@ class Config
      */
     public static function setValue(string $name, mixed $value): void
     {
+        if ($name === 'exclude_analysis_directory_list') {
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            ComposerPackages::reset();
+        }
         // Merge user stub configs with bundled defaults (so stubs are always loaded)
         if ($value !== null) {
             if ($name === 'autoload_internal_extension_signatures') {
@@ -1898,6 +1927,12 @@ class Config
             'guess_unknown_parameter_type_using_default' => $is_bool,
             'hide_issue_column' => $is_bool,
             'infer_default_properties_in_construct' => $is_bool,
+            'internal_access_scope' => static function (mixed $value): ?string {
+                if ($value === 'namespace' || $value === 'package') {
+                    return null;
+                }
+                return "Expected 'namespace' or 'package'" . (is_string($value) ? ", but got '$value'" : self::errSuffixGotType($value));
+            },
             'ignore_undeclared_functions_with_known_signatures' => $is_bool,
             'ignore_undeclared_variables_in_global_scope' => $is_bool,
             'include_analysis_file_list' => $is_string_list,

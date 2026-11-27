@@ -14,6 +14,7 @@ use Phan\Language\FileRef;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\UnionType;
+use Phan\Library\ComposerPackages;
 use Phan\Memoize;
 
 /**
@@ -196,15 +197,41 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
         CodeBase $code_base,
         Context $context
     ): bool {
-        // Figure out which namespace this element is within
-        $element_namespace = $this->getElementNamespace() ?: '\\';
+        $is_package_scope = Config::getValue('internal_access_scope') === 'package';
+        // Figure out which namespace this element is within, and (for `'package'`) which file declares it
+        if ($is_package_scope) {
+            [$element_namespace, $element_file] = $this->getInternalOwnerNamespaceAndFile($code_base);
+        } else {
+            $element_namespace = $this->getElementNamespace() ?: '\\';
+            $element_file = '';
+        }
 
         // Get our current namespace from the context
         $context_namespace = $context->getNamespace() ?: '\\';
 
         // Test to see if the context is within the same
         // namespace as where the element is defined
-        return (0 === \strcasecmp($context_namespace, $element_namespace));
+        if (0 === \strcasecmp($context_namespace, $element_namespace)) {
+            return true;
+        }
+        if (!$is_package_scope) {
+            return false;
+        }
+        // With `internal_access_scope` set to `'package'`: or declared in a file of the same package as the file that uses it.
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        $element_package = ComposerPackages::packageOfFile($element_file);
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        return $element_package !== null && $element_package === ComposerPackages::packageOfFile($context->getFile());
+    }
+
+    /**
+     * @return array{0:string,1:string} the namespace and the file of the declaration that makes this element `(at)internal`,
+     * for `internal_access_scope` set to `'package'`
+     * @suppress PhanUnusedProtectedMethodParameter used by subclasses
+     */
+    protected function getInternalOwnerNamespaceAndFile(CodeBase $code_base): array
+    {
+        return [$this->getElementNamespace() ?: '\\', $this->getFileRef()->getFile()];
     }
 
     /**

@@ -90,6 +90,11 @@ case "$TEST_SUITE" in
 		./test.sh
 		exit $?
 		;;
+	__FakeInternalAccessScopeTest)
+		cd tests/misc/internal_access_scope_test
+		./test.sh
+		exit $?
+		;;
 	__FakeEmptyMethodsPluginTest)
 		cd tests/misc/empty_methods_plugin_test
 		./test.sh

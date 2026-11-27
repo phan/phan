@@ -59,6 +59,12 @@ final class ConfigTest extends TestBase
 
     public function testWarnsInvalidProcessFileAssignment(): void
     {
+        $this->assertSame([], Config::getConfigErrors(['internal_access_scope' => 'namespace']));
+        $this->assertSame([], Config::getConfigErrors(['internal_access_scope' => 'package']));
+        $this->assertSame(
+            ["Invalid config value for 'internal_access_scope': Expected 'namespace' or 'package', but got 'project'"],
+            Config::getConfigErrors(['internal_access_scope' => 'project'])
+        );
         $this->assertSame([], Config::getConfigErrors(['process_file_assignment' => 'hierarchy']));
         $this->assertSame([], Config::getConfigErrors(['process_file_assignment' => 'balanced']));
         $this->assertSame(

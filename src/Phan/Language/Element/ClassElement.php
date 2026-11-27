@@ -219,6 +219,28 @@ abstract class ClassElement extends AddressableElement
         );
     }
 
+    /**
+     * A method, property or constant is internal because it is annotated, or because the class that it is accessed through is.
+     * - If it is annotated, the declaration is where it is defined: an internal method that a class of this project
+     *   inherits from a class of another package belongs to that package.
+     * - If only the class is, the declaration is that class: a method that an internal class of this project
+     *   inherits from a class of another package can be used in this project.
+     *
+     * @return array{0:string,1:string}
+     * @override
+     */
+    protected function getInternalOwnerNamespaceAndFile(CodeBase $code_base): array
+    {
+        if (!parent::isNSInternal($code_base)) {
+            $class = $this->getClass($code_base);
+            return [$class->getFQSEN()->getNamespace() ?: '\\', $class->getFileRef()->getFile()];
+        }
+        // (The class that declares it, also for a member of a trait: the defining FQSEN of a member that a class imports
+        // from a trait can be the one of that class.)
+        $class_fqsen = $this->getRealDefiningFQSEN()->getFullyQualifiedClassName();
+        return [$class_fqsen->getNamespace() ?: '\\', $this->getFileRef()->getFile()];
+    }
+
     public function getElementNamespace(): string
     {
         // Get the namespace that the class is within
