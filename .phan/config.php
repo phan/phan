@@ -48,6 +48,10 @@ return [
     // For analyzing Phan 6.x, this is determined to be `'8.1'` from the composer requirement of `^8.1.0`.
     'minimum_target_php_version' => '8.1',
 
+    // Phan uses `@internal` for elements that are internal to a namespace,
+    // which is stricter than the default (`'package'`: internal to this project).
+    'internal_access_scope' => 'namespace',
+
     // Default: true. If this is set to true,
     // and target_php_version is newer than the version used to run Phan,
     // Phan will act as though functions added in newer PHP versions exist.

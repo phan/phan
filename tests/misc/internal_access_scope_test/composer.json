@@ -1,18 +1,7 @@
 {
     "name": "Phan-Test/App",
     "autoload": {
-        "psr-4": {
-            "App\\": "src/"
-        },
-        "psr-0": {
-            "Legacy\\App": "src/Legacy/",
-            "Old_": "old/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "App\\Tests\\": "src/Tests/"
-        }
+        "classmap": ["src/"]
     },
     "config": {
         "vendor-dir": "third_party"

@@ -211,17 +211,13 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
         if (Config::getValue('internal_access_scope') !== 'package') {
             return false;
         }
-        // With `internal_access_scope` set to `'package'`: or within the same Composer package.
-        // The package of a method, property or constant is the package of the class that defines it,
-        // not of a class that inherits it or uses the trait: a class of this project that extends a class
-        // of another package does not make the internal methods of that class a part of this project.
-        if ($this instanceof ClassElement && $this->hasDefiningFQSEN()) {
-            $element_namespace = $this->getDefiningClassFQSEN()->getNamespace() ?: '\\';
-        }
+        // With `internal_access_scope` set to `'package'`: or declared in a file of the same package as the file that uses it.
+        // (The file of a method, property or constant that a class inherits is the file that declares it:
+        // a class of this project that extends a class of another package does not make the internal methods of that class a part of this project.)
         // @phan-suppress-next-line PhanAccessMethodInternal
-        $element_package = ComposerPackages::packageOfNamespace($element_namespace);
+        $element_package = ComposerPackages::packageOfFile($this->getFileRef()->getFile());
         // @phan-suppress-next-line PhanAccessMethodInternal
-        return $element_package !== null && $element_package === ComposerPackages::packageOfNamespace($context_namespace);
+        return $element_package !== null && $element_package === ComposerPackages::packageOfFile($context->getFile());
     }
 
     /**

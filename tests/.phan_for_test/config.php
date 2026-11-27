@@ -30,6 +30,11 @@ return [
 
     'minimum_target_php_version' => '8.1',
 
+    // The tests of tests/files check the meaning of `@internal` that was the default before 6.0.12
+    // (0278_internal_elements.php, 0618_internal_in_root_ns.php).
+    // The default, `'package'`, is tested by tests/misc/internal_access_scope_test.
+    'internal_access_scope' => 'namespace',
+
     // If true, check to make sure the return type declared
     // in the doc-block (if any) matches the return type
     // declared in the method signature. This process is

@@ -1,5 +1,4 @@
 {"packages": [
-    {"name": "acme/lib", "autoload": {"psr-4": {"Acme\\Lib\\": "src/"}}},
-    {"name": "acme/lib-extra", "autoload": {"psr-4": {"Acme\\Lib\\Extra\\": "extra/"}, "psr-0": {"Legacy_": "legacy/"}}},
-    {"name": "phan-test/app-plugin", "autoload": {"psr-4": {"App\\Plugin\\": "src/"}}}
+    {"name": "acme/lib", "install-path": "../acme/lib"},
+    {"name": "Acme/Tools"}
 ]}

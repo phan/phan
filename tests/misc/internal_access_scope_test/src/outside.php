@@ -1,7 +1,7 @@
 <?php
 namespace Elsewhere;
 
-// A namespace that is in no package: reported, as with 'namespace'.
+// Another namespace in a file of the project: not reported.
 function outside(): int {
     return \App\Core::inner();
 }

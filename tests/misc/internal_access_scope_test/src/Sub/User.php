@@ -7,25 +7,20 @@ use Acme\Lib\Tool;
 use App\Core;
 use App\Hidden;
 
-// The same package (the prefix `App\` of the composer.json of the project): not reported.
+// A file of the project: not reported, in any namespace.
 function ownPackage(Core $core): int {
     $hidden = new Hidden();
     return Core::inner() + $core->state + Core::LIMIT + (int)($hidden instanceof Hidden);
 }
 
-// Another package: reported.
+// Files of installed packages: reported.
 function otherPackages(): int {
     return Tool::secret() + Tool::SECRET + Helper::help() + Addon::inner();
 }
 
-// A PSR-0 prefix of the project is the same package: not reported.
-function legacy(): int {
-    return \Legacy\App\A\A::innerOfLegacy();
-}
-
-// An installed package with a longer prefix than the project: reported.
-function plugin(): int {
-    return \App\Plugin\Plugin::innerOfPlugin();
+// A file of a directory that is not analyzed: reported.
+function bundled(): int {
+    return \App\Bundled\Bundled::inner();
 }
 
 // An internal method of another package that a class of the project inherits: reported.
