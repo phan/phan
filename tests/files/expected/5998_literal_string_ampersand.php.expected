@@ -1,0 +1,8 @@
+%s:17 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type '&'
+%s:17 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type 'a&b'|'c'
+%s:17 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type array{sep:'&'|'&amp;',n:int}
+%s:17 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type array<string,int>
+%s:17 PhanDebugAnnotation @phan-debug-var requested for variable $e - it has union type \ArrayAccess&\Countable
+%s:17 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type 'x&y'|(\ArrayAccess&\Countable)|null
+%s:17 PhanDebugAnnotation @phan-debug-var requested for variable $g - it has union type list<'a&b'>
+%s:21 PhanDebugAnnotation @phan-debug-var requested for variable $r - it has union type 'R&D'
