@@ -261,6 +261,19 @@ class Checks {
     }
 }
 
+/**
+ * A literal string at the start of a type on several lines.
+ *
+ * @return '(a'|array{
+ *     a: int,
+ * }
+ */
+function literalFirst() {
+    return '(a';
+}
+$literal_first = literalFirst();
+'@phan-debug-var $literal_first';
+
 $at = atInKey(['user@example.com' => 'x', 'id' => 1]);
 '@phan-debug-var $at';
 

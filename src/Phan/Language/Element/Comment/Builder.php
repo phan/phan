@@ -2864,7 +2864,8 @@ final class Builder
                 case '"':
                     // (At the top level only where a type is expected: `array{...}|'a b'`, not the apostrophe of a description)
                     // (Also for `|?'a b'`)
-                    if ($depth > 0 || \in_array(\substr(\rtrim($buffer, " \t?"), -1), ['|', '&'], true)) {
+                    // (And at the start of the type: `'&'|array{`)
+                    if ($depth > 0 || \strlen(\rtrim($buffer, " \t?")) <= $offset || \in_array(\substr(\rtrim($buffer, " \t?"), -1), ['|', '&'], true)) {
                         $quote = $char;
                     }
                     break;
