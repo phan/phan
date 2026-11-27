@@ -45,3 +45,26 @@ function named(string $u, bool $a): int {
 function replay(bool $a): int {
     return $a && preg_match('~x~', $s = 'x', $m) !== count($s = []) && count($s) === 0 ? count($m) : 0;
 }
+
+// Left as they were: a static call after ?-> in the chain, an assignment in the receiver of the call or in the other operand,
+// and a comparison that was stored in a variable.
+class K3 {
+    public function next(): self { return $this; }
+    public function find(string $u, ?array &$out): int { $out = [$u]; return 1; }
+    public static function fill(?array &$out): int { $out = [1]; return 1; }
+}
+function staticAfterNullsafe(bool $a, ?K3 $k): int {
+    return $a && $k?->next()::fill($out) !== 0 && count($out) > 0 ? 1 : 0;
+}
+function assignedInReceiver(bool $a): int {
+    return $a && ($k = new K3())->find('', $out) !== count($k = []) && count($k) === 0 ? count($out) : 0;
+}
+function assignedInOtherOperand(string $u, bool $a): int {
+    return $a && preg_match('~x~', $u, $m) !== strlen($m = $u) && strlen($m) > 0 ? 1 : 0;
+}
+function stored(string $u): int {
+    $ok = preg_match('~x~', $u, $m) !== 0;
+    unset($m);
+    if ($ok) { return count($m); }
+    return 0;
+}

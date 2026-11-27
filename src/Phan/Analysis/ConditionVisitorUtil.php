@@ -1470,10 +1470,10 @@ trait ConditionVisitorUtil
     {
         // Whatever the result of the comparison is, both operands were evaluated.
         if ($left instanceof Node) {
-            $this->defineVariablesSetByCallOperand($left);
+            $this->defineVariablesSetByCallOperand($left, $right);
         }
         if ($right instanceof Node) {
-            $this->defineVariablesSetByCallOperand($right);
+            $this->defineVariablesSetByCallOperand($right, $left);
         }
         if ($left instanceof Node) {
             $result = $this->analyzeBinaryConditionSide($left, $right, $condition);
@@ -1499,8 +1499,12 @@ trait ConditionVisitorUtil
      * and the call did happen when the comparison has a result.
      * (Other calls are not analyzed again: they were, and what is inferred from them is not lost)
      */
-    private function defineVariablesSetByCallOperand(Node $node): void
+    private function defineVariablesSetByCallOperand(Node $node, Node|float|int|string $other_operand): void
     {
+        if (ConditionVisitor::isInRecursiveConditionalAnalysis()) {
+            // `$ok = call($v) !== 0; unset($v); if ($ok) {}`: the call does not happen again where the stored condition is used.
+            return;
+        }
         switch ($node->kind) {
             case ast\AST_CALL:
             case ast\AST_METHOD_CALL:
@@ -1515,8 +1519,13 @@ trait ConditionVisitorUtil
             // `call(...)`
             return;
         }
-        if ($node->kind === ast\AST_METHOD_CALL && self::isNullsafeAccessChain($node)) {
-            // `$a?->b->method($v)` may not be called either.
+        if (self::isAfterNullsafeAccess($node)) {
+            // `$a?->b->method($v)` and `$a?->b()::method($v)` may not be called either.
+            return;
+        }
+        if (self::containsAssignment($node) || ($other_operand instanceof Node && self::containsAssignment($other_operand))) {
+            // Analyzing the call again would assign again, after the other operand was evaluated (`f($s = 'x', $m) !== g($s = [])`),
+            // or would undo what the other operand assigned (`f($m) !== g($m = [])`).
             return;
         }
         $scope = $this->context->getScope();
@@ -1532,10 +1541,6 @@ trait ConditionVisitorUtil
                 continue;
             }
             if ($arg->kind !== ast\AST_VAR) {
-                if (self::containsAssignment($arg)) {
-                    // Analyzing the call again would assign again, after the other operand was evaluated: `f($s = 'x', $m) !== g($s = [])`
-                    return;
-                }
                 continue;
             }
             $name = $arg->children['name'];
@@ -1617,6 +1622,35 @@ trait ConditionVisitorUtil
             $names[] = $name;
         }
         return $names;
+    }
+
+    /**
+     * @return bool whether a `?->` comes before this call in its chain, also through `::`: PHP skips the rest of the chain when it is null.
+     */
+    private static function isAfterNullsafeAccess(Node $node): bool
+    {
+        while (true) {
+            switch ($node->kind) {
+                case ast\AST_NULLSAFE_METHOD_CALL:
+                case ast\AST_NULLSAFE_PROP:
+                    return true;
+                case ast\AST_METHOD_CALL:
+                case ast\AST_PROP:
+                case ast\AST_DIM:
+                    $node = $node->children['expr'];
+                    break;
+                case ast\AST_STATIC_CALL:
+                case ast\AST_STATIC_PROP:
+                case ast\AST_CLASS_CONST:
+                    $node = $node->children['class'];
+                    break;
+                default:
+                    return false;
+            }
+            if (!($node instanceof Node)) {
+                return false;
+            }
+        }
     }
 
     /**
