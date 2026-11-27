@@ -668,10 +668,24 @@ class UnionType implements Serializable, Stringable
      */
     private static function extractTypeParts(string $type_string): array
     {
+        // The `&` of a literal string is not the `&` of an intersection type: `'R&D'`, `array{sep: '&'|'&amp;'}`.
+        // It is hidden while the type is split. (A `|` cannot be written in a literal string, only `\x7c`)
+        $has_literal_ampersand = str_contains($type_string, '&') && str_contains($type_string, "'");
+        if ($has_literal_ampersand) {
+            $type_string = \preg_replace_callback(
+                '/\'(?:[^\'\\\\]|\\\\.)*\'/',
+                /** @param array{0:string} $match */
+                static function (array $match): string {
+                    return \str_replace('&', "\0", $match[0]);
+                },
+                $type_string
+            ) ?? $type_string;
+            $has_literal_ampersand = str_contains($type_string, "\0");
+        }
         $parts = [];
         // @phan-suppress-next-line PhanTypeInvalidExpressionArrayDestructuring FIXME: Fix preg_split type inference
         foreach (\preg_split('@[|&]@', $type_string, -1, \PREG_SPLIT_OFFSET_CAPTURE) as [$part, $offset]) {
-            $parts[] = new TypePart(\trim($part), $offset > 0 ? $type_string[$offset - 1] : '|');
+            $parts[] = new TypePart(\trim($has_literal_ampersand ? \str_replace("\0", '&', $part) : $part), $offset > 0 ? $type_string[$offset - 1] : '|');
         }
 
         if (\count($parts) <= 1) {

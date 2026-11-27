@@ -263,7 +263,6 @@ class Checks {
 
 /**
  * A literal string at the start of a type on several lines: the array shape is kept.
- * (The `&` of the literal becomes a comma. That is another problem, which this test does not cover: a type is split at `&` in a literal string.)
  *
  * @return '&'|array{
  *     a: int,
