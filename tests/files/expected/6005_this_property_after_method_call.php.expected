@@ -1,0 +1,3 @@
+%s:65 PhanTypeMismatchReturnReal Returning $this->other of type null but afterUnrelatedMethod() is declared to return \NS6005\Conn
+%s:74 PhanTypeMismatchReturnNullable Returning $this->other of type ?\NS6005\Conn but afterMethodThatCanBeOverridden() is declared to return \NS6005\Conn (expected returned value to be non-nullable)
+%s:95 PhanTypeMismatchReturnReal Returning $this->other of type null but afterStaticMethod() is declared to return \NS6005\Conn

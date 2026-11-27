@@ -1213,6 +1213,45 @@ class Context extends FileRef
         return $override_type;
     }
 
+    /**
+     * @return list<string> the names of the properties of $this that may have an inferred type in this context
+     * (getThisPropertyIfOverridden returns the type, or null if a type is only inferred in some of the branches)
+     */
+    public function getThisPropertyOverrideNames(): array
+    {
+        if (!$this->scope->hasVariableWithName(self::VAR_NAME_THIS_PROPERTIES)) {
+            return [];
+        }
+        $names = [];
+        foreach ($this->scope->getVariableByName(self::VAR_NAME_THIS_PROPERTIES)->getUnionType()->getTypeSet() as $type) {
+            if ($type instanceof ArrayShapeType) {
+                foreach ($type->getFieldTypes() as $name => $_) {
+                    $names[(string)$name] = (string)$name;
+                }
+            }
+        }
+        return \array_values($names);
+    }
+
+    /**
+     * @param list<string> $property_names
+     * @return Context this context without what was inferred about these properties of $this
+     */
+    public function withoutThisPropertyOverrides(array $property_names): Context
+    {
+        if (!$property_names || !$this->scope->hasVariableWithName(self::VAR_NAME_THIS_PROPERTIES)) {
+            return $this;
+        }
+        // (The variable is replaced in this scope, and not removed: it can be a variable of a parent scope of a branch)
+        $variable = clone($this->scope->getVariableByName(self::VAR_NAME_THIS_PROPERTIES));
+        $type = $variable->getUnionType();
+        foreach ($property_names as $property_name) {
+            $type = $type->withoutArrayShapeField($property_name);
+        }
+        $variable->setUnionType($type);
+        return $this->withScopeVariable($variable);
+    }
+
     public function getThisPropertyIfOverridden(string $name): ?UnionType
     {
         if (!$this->scope->hasVariableWithName(self::VAR_NAME_THIS_PROPERTIES)) {
