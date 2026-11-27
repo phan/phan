@@ -262,14 +262,15 @@ class Checks {
 }
 
 /**
- * A literal string at the start of a type on several lines.
+ * A literal string at the start of a type on several lines: the array shape is kept.
+ * (The `&` of the literal becomes a comma. That is another problem, which this test does not cover: a type is split at `&` in a literal string.)
  *
- * @return '(a'|array{
+ * @return '&'|array{
  *     a: int,
  * }
  */
 function literalFirst() {
-    return '(a';
+    return ['a' => 1];
 }
 $literal_first = literalFirst();
 '@phan-debug-var $literal_first';
