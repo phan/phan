@@ -12,3 +12,5 @@
 %s:56 PhanDebugAnnotation @phan-debug-var requested for variable $g - it has union type T
 %s:56 PhanTypeMismatchArgument Argument 1 ($v) is 'x' of type string but \NS6002\Flag::set() takes bool defined at %s:28
 %s:56 PhanTypeMismatchArgument Argument 1 ($v) is 'y' of type string but \NS6002\Flag::check() takes bool defined at %s:35
+%s:66 PhanTemplateTypeStaticMethod static method \NS6002\Forward::make does not declare template type in its own comment and may not use the template type of class instances
+%s:70 PhanDebugAnnotation @phan-debug-var requested for variable $leaf - it has union type int

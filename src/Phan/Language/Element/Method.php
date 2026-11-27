@@ -272,7 +272,13 @@ class Method extends ClassElement implements FunctionInterface
         if (!$this->isStatic()) {
             return false;
         }
-        $class = $this->getClass($code_base);
+        // (The class that declares the method, also for the copy of the method that a class inherits or gets from a trait:
+        // the template types of such a copy can be the ones of a class in between, or the ones of `@throws`, which are not replaced.)
+        $class_fqsen = $this->getRealDefiningFQSEN()->getFullyQualifiedClassName();
+        if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+            return false;
+        }
+        $class = $code_base->getClassByFQSEN($class_fqsen);
         return $class->isInterface() || $class->isTrait() || $class->isAbstract();
     }
 

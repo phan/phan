@@ -55,3 +55,17 @@ class Box {
 $a = Flag::value(); $b = Flag::get(); $c = Str::make(); $d = Str::concrete(); $e = Box::unbound(); $f = Unbound::value(); $g = NotBound::value();
 Flag::set('x'); Flag::check('y');
 '@phan-debug-var $a, $b, $c, $d, $e, $f, $g';
+
+// A class that is not abstract and passes its own template type on: concrete(), which it inherits, is still the method of the abstract class
+// and is not reported. make(), which it declares itself, is.
+/**
+ * @template U
+ * @extends Base<U>
+ */
+class Forward extends Base {
+    public static function make() { throw new \Exception(); }
+}
+/** @extends Forward<int> */
+final class Leaf extends Forward {}
+$leaf = Leaf::concrete();
+'@phan-debug-var $leaf';
