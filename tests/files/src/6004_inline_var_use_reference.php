@@ -139,3 +139,26 @@ function h($x) {
     return [$s, $v];
 }
 }
+
+// `number` and `numeric` are not the import `Number`. A comment between `static` and the variable, a doc comment before the doc comment
+// of a declaration, and a comment on the line of the `use` statement.
+namespace NS6004u { class Number {} class Sa {} class Sb {} class Sc {} class Num2 {} }
+namespace NS6004v {
+use NS6004u\Number;
+use NS6004u\Num2;
+use NS6004u\Sa;
+use NS6004u\Sb;
+use NS6004u\Sc; function one($x) { /** @var Sc $x */ return $x; }
+function k($x) {
+    /** @var number $n */
+    $n = $x;
+    /** @var Num2|numeric $m */
+    $m = $x;
+    /** @var Sa|null $s */
+    static /* explanation */ $s = null;
+    return [$n, $m, $s];
+}
+/** @var Sb $y */
+/** Documentation without a tag. */
+function documented(): void {}
+}

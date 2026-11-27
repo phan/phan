@@ -93,7 +93,7 @@ final class CommentClassReferences
             if ($id === \T_WHITESPACE) {
                 continue;
             }
-            if ($is_after_static_keyword) {
+            if ($is_after_static_keyword && $id !== \T_COMMENT && $id !== \T_DOC_COMMENT) {
                 // `static $x = 1;` and `static::f();` are statements, `static function` and `static int $x` are declarations.
                 $is_after_static_keyword = false;
                 if ($doc_comment !== null && ($id === \T_VARIABLE || $id === \T_DOUBLE_COLON)) {
@@ -104,11 +104,13 @@ final class CommentClassReferences
             if ($id === \T_DOC_COMMENT || $id === \T_COMMENT) {
                 $text = $token->text;
                 // (`/* (at)var Foo $x */` is read by editors, and by Phan in a string. Not `// ...` and `# ...`)
-                if (!\str_starts_with($text, '/*') || !\str_contains($text, '@')) {
+                if ($id === \T_COMMENT) {
+                    if (\str_starts_with($text, '/*') && \str_contains($text, '@')) {
+                        self::addNamesOfComment($text, $token->line, $result[$namespace_id]);
+                    }
                     continue;
                 }
-                if ($id === \T_COMMENT) {
-                    self::addNamesOfComment($text, $token->line, $result[$namespace_id]);
+                if ($is_after_static_keyword) {
                     continue;
                 }
                 if ($doc_comment !== null) {
@@ -175,6 +177,9 @@ final class CommentClassReferences
      */
     private static function addNamesOfComment(string $comment, int $line, ?array &$names): void
     {
+        if (!\str_contains($comment, '@')) {
+            return;
+        }
         // (A type can be written on several lines: `(at)var array{` and then a line for each field)
         $comment = Builder::withMultilineTypesJoined($comment);
         foreach ([Builder::PARAM_COMMENT_REGEX, Builder::RETURN_OR_THROWS_COMMENT_REGEX] as $regex) {
@@ -190,6 +195,10 @@ final class CommentClassReferences
                     continue;
                 }
                 foreach ($name_matches[0] as $name) {
+                    // (`number` and `numeric` in lower case are types of PHPStan and Psalm, also when a class is imported as `Number`)
+                    if ($name === 'number' || $name === 'numeric') {
+                        continue;
+                    }
                     // (Comments are read in the order of the file: this is the last line so far)
                     $names[\strtolower($name)] = $line;
                 }
