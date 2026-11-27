@@ -32,3 +32,9 @@ function checkInClosure(string $body): \Closure {
     json_decode($body);
     return static fn (): int => json_last_error();
 }
+
+// Still reported: `json_last_error(...)` creates a closure and checks nothing.
+function checkAsClosure(string $body): \Closure {
+    json_decode($body);
+    return json_last_error(...);
+}

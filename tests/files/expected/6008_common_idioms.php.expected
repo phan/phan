@@ -5,3 +5,4 @@
 %s:49 PhanCommentParamOnEmptyParamList Saw an @param annotation for $missing, but the param list of function noParams(); is empty
 %s:56 PhanCommentParamWithoutRealParam Saw an @param annotation for $missing, but it was not found in the param list of function oneParam(int $a);
 %s:62 PhanCommentParamWithoutRealParam Saw an @param annotation for $missing, but it was not found in the param list of function variadic(string ...$rest);
+%s:71 PhanCommentParamWithoutRealParam Saw an @param annotation for $nmae, but it was not found in the param list of function __call($name, array $args)

@@ -65,3 +65,13 @@ function oneParam($a) {
 function variadic(...$rest) {
     return func_get_args() + $rest;
 }
+class Magic {
+    /**
+     * Still reported: __call() takes any number of arguments without reading them with func_get_args().
+     * @param string $nmae
+     * @param array $args
+     */
+    public function __call($name, $args) {
+        return [$name, $args];
+    }
+}

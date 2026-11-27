@@ -824,6 +824,10 @@ trait FunctionTrait
         if ($function->getNumberOfOptionalParameters() < FunctionInterface::INFINITE_PARAMETERS) {
             return false;
         }
+        // (`__call()` and `__callStatic()` take any number of arguments as well, without reading them that way)
+        if ($function instanceof Method && \in_array(\strtolower($function->getName()), ['__call', '__callstatic'], true)) {
+            return false;
+        }
         foreach ($function->getParameterList() as $parameter) {
             if ($parameter->isVariadic()) {
                 return false;

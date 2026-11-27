@@ -245,7 +245,8 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
      */
     private static function containsNameIn(Node $node, int $kind, array $names): bool
     {
-        if ($node->kind === $kind) {
+        // (`json_last_error(...)` creates a closure and checks nothing)
+        if ($node->kind === $kind && ($kind !== ast\AST_CALL || $node->children['args']->kind !== ast\AST_CALLABLE_CONVERT)) {
             $name = $node->children[$kind === ast\AST_CALL ? 'expr' : 'name']->children['name'] ?? null;
             if (\is_string($name) && isset($names[\strtolower(\ltrim($name, '\\'))])) {
                 return true;
