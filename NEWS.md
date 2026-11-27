@@ -1,7 +1,7 @@
 ## Phan NEWS
 
-Phan 6.0.12-dev
---------------
+Phan 6.1.0-dev
+-------------
 
 Backwards incompatible changes:
 - **`@internal` now means internal to the package, not to the namespace.** The new config setting `internal_access_scope` selects the meaning, and its default is `'package'`.
