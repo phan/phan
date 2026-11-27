@@ -146,6 +146,7 @@ namespace NS6004u { class Number {} class Sa {} class Sb {} class Sc {} class Nu
 namespace NS6004v {
 use NS6004u\Number;
 use NS6004u\Num2;
+use NS6004u as numeric;
 use NS6004u\Sa;
 use NS6004u\Sb;
 use NS6004u\Sc; function one($x) { /** @var Sc $x */ return $x; }
@@ -154,6 +155,8 @@ function k($x) {
     $n = $x;
     /** @var Num2|numeric $m */
     $m = $x;
+    /** @var numeric\Sa $q the import that is named numeric */
+    $q = $x;
     /** @var Sa|null $s */
     static /* explanation */ $s = null;
     return [$n, $m, $s];

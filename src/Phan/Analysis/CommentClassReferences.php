@@ -23,10 +23,10 @@ use PhpToken;
 final class CommentClassReferences
 {
     /**
-     * A name that is not part of a longer name, of a fully qualified name or of a variable: for `Foo\Bar`, `Foo`.
+     * A name that is not part of a longer name, of a fully qualified name or of a variable: for `Foo\Bar`, `Foo\`.
      * Not the name of a class constant (`BAR` of `Foo::BAR`), and not a part of a type that is written with hyphens (`positive-int`).
      */
-    private const FIRST_NAME_PART_REGEX = '/(?<![\\\\\w$\x80-\xff-]|::)[a-zA-Z_\x80-\xff][\w\x80-\xff]*+(?!-)/';
+    private const FIRST_NAME_PART_REGEX = '/(?<![\\\\\w$\x80-\xff-]|::)[a-zA-Z_\x80-\xff][\w\x80-\xff]*+(?!-)\\\\?/';
 
     /**
      * What is not a class name in a type: a string literal, and the key of a field of an array shape
@@ -195,8 +195,11 @@ final class CommentClassReferences
                     continue;
                 }
                 foreach ($name_matches[0] as $name) {
-                    // (`number` and `numeric` in lower case are types of PHPStan and Psalm, also when a class is imported as `Number`)
-                    if ($name === 'number' || $name === 'numeric') {
+                    if (\str_ends_with($name, '\\')) {
+                        $name = \substr($name, 0, -1);
+                    } elseif ($name === 'number' || $name === 'numeric') {
+                        // (`number` and `numeric` in lower case are types of PHPStan and Psalm, also when a class is imported as `Number`.
+                        // Not as the first part of a name: `number\Foo`)
                         continue;
                     }
                     // (Comments are read in the order of the file: this is the last line so far)
