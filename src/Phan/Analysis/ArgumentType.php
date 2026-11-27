@@ -21,7 +21,6 @@ use Phan\Exception\RecursionDepthException;
 use Phan\Issue;
 use Phan\IssueFixSuggester;
 use Phan\Language\Context;
-use Phan\Language\Element\Flags;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
@@ -35,6 +34,7 @@ use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\LiteralStringType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NonEmptyArrayInterface;
 use Phan\Language\Type\NullType;
@@ -291,12 +291,12 @@ final class ArgumentType
                             if ($caller instanceof Method) {
                                 $class = $caller->getClass($code_base);
                                 if ($class->isTrait()) {
-                                    if ($method->getPhanFlags() & Flags::IS_FROM_REQUIRE_ANNOTATION) {
-                                        // A method of the class or interface of the trait's (at)require-extends or (at)require-implements,
-                                        // which the classes using the trait implement.
-                                        return;
-                                    }
-                                    $issue_type = Issue::AbstractStaticMethodCallInTrait;
+                                    // In a trait, `self` and `static` are the class that uses the trait, which implements the method
+                                    // (also a method of the class or interface of the trait's (at)require-extends or (at)require-implements).
+                                    // The abstract method is only reached when the method of the trait is called on the trait itself,
+                                    // which is deprecated since PHP 8.1 and reported where it is done (PhanCompatibleAccessMethodOnTraitDefinition).
+                                    // (PhanAbstractStaticMethodCallInTrait was reported here.)
+                                    return;
                                 }
                             }
                             break;
@@ -314,6 +314,19 @@ final class ArgumentType
                 return;
             }
             if ($class_type->isEmpty() || $class_type->hasPossiblyObjectTypes()) {
+                return;
+            }
+            // `$class::method()` calls the abstract method when $class is the name of the class that declares it
+            // (`$class = GiftBackend::class;`). A `class-string<GiftBackend>` is the name of some class that is a GiftBackend,
+            // which is a class that implements the method, unless the code names the abstract class or interface itself.
+            $has_literal_class_name = false;
+            foreach ($class_type->getTypeSet() as $type) {
+                if ($type instanceof LiteralStringType) {
+                    $has_literal_class_name = true;
+                    break;
+                }
+            }
+            if (!$has_literal_class_name) {
                 return;
             }
         }

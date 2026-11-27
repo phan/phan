@@ -27,8 +27,6 @@ trait TolerantASTConverterTrait
      * @return ast\Node|ast\Node[]|string|int|float|bool|null - whatever ast\parse_code would return as the equivalent.
      *                                                          This does not convert names to ast\AST_CONST.
      * @throws InvalidArgumentException if Phan doesn't know what $n is
-     *
-     * @suppress PhanAbstractStaticMethodCallInTrait
      */
     protected static function phpParserNonValueNodeToAstNode(\Microsoft\PhpParser\Node|Token $n): \ast\Node|array|bool|float|int|null|string
     {
@@ -53,7 +51,6 @@ trait TolerantASTConverterTrait
     /**
      * @param PhpParser\Node|Token $n - The node from PHP-Parser
      * @return ast\Node|ast\Node[]|string|int|float|null - whatever ast\parse_code would return as the equivalent.
-     * @suppress PhanAbstractStaticMethodCallInTrait
      */
     protected static function phpParserNodeToAstNode(\Microsoft\PhpParser\Node|Token $n): \ast\Node|array|float|int|null|string
     {

@@ -1,8 +1,6 @@
 %s:16 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \Hydrator5943(real=object)
 %s:43 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type (empty union type)
-%s:50 PhanAbstractStaticMethodCall Potentially calling an abstract static method \ColumnInterface5943::label() in $c::label()
 %s:50 PhanDebugAnnotation @phan-debug-var requested for variable $label - it has union type string(real=string)
-%s:52 PhanAbstractStaticMethodCall Potentially calling an abstract static method \ColumnInterface5943::label() in $c::label('extra')
 %s:52 PhanParamTooMany Call with 1 arg(s) to \ColumnInterface5943::label() which only takes 0 arg(s) defined at %s:23
 %s:53 PhanDebugAnnotation @phan-debug-var requested for variable $prefix - it has union type 'col_'
 %s:62 PhanTemplateTypeNotUsedInFunctionReturn Template type T not used in return value of function/method testTemplateBoundedByInterface5943()
