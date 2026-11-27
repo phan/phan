@@ -109,3 +109,33 @@ function f($x) {
 /** @return ($x is null ? Cond : int) */
 function g($x) { return $x; }
 }
+
+// Not a reference: a comment before the `use` statement, and the doc comment of a declaration,
+// of which the types are already read (a template type or a type alias with the name of an import is not the import).
+// A doc comment above `static $s` and one that is followed by another doc comment are comments of statements.
+namespace NS6004t {
+function early($x) { /** @var Foo $x */ return $x; }
+use NS6004s\Foo;
+use NS6004s\T;
+use NS6004s\Alias;
+use NS6004s\St;
+use NS6004s\Twice;
+/**
+ * @template T
+ * @phan-type Alias = int
+ */
+class Box {
+    /** @return T */
+    public function get() { throw new \Exception(); }
+    /** @param Alias $a */
+    public static function set($a): void { echo $a; }
+}
+function h($x) {
+    /** @var St|null $s */
+    static $s = null;
+    /** @var Twice $u */
+    /** @var int $v */
+    $v = $x;
+    return [$s, $v];
+}
+}
