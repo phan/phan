@@ -9,7 +9,6 @@ use Phan\Tests\TestBase;
 
 /**
  * Unit tests of Colorizing and the color schemes
- * @phan-file-suppress PhanAccessClassConstantInternal
  */
 final class ColorizingTest extends TestBase
 {

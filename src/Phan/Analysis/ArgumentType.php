@@ -1747,7 +1747,6 @@ final class ArgumentType
                 // Record that the most severe issue type suppression was used and don't emit any issue.
                 return null;
             }
-            // @phan-suppress-next-next-line PhanAccessMethodInternal
             if ($argument_type_expanded_resolved->isNull() ||
                     !($argument_type_expanded_resolved->containsNullable() && $argument_type_expanded_resolved->canCastToUnionTypeIfNonNull($alternate_parameter_type, $code_base))) {
                 if ($argument_type->hasRealTypeSet() && $alternate_parameter_type->hasRealTypeSet()) {

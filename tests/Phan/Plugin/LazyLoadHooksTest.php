@@ -76,8 +76,8 @@ PHP;
     public function setUp(): void
     {
         parent::setUp();
-        Config::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
-        ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
+        Config::reset();
+        ConfigPluginSet::reset();
         Type::clearAllMemoizations();
         FullyQualifiedGlobalStructuralElement::clearPreferredNameMap();
         $GLOBALS[self::NOTIFIED_FUNCTIONS_KEY] = [];
@@ -93,8 +93,8 @@ PHP;
         $this->temp_files = [];
         unset($GLOBALS[self::NOTIFIED_FUNCTIONS_KEY]);
         GlobalScope::reset();
-        Config::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
-        ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
+        Config::reset();
+        ConfigPluginSet::reset();
         Type::clearAllMemoizations();
         FullyQualifiedGlobalStructuralElement::clearPreferredNameMap();
         parent::tearDown();
@@ -162,7 +162,7 @@ PHP;
     private function usePlugin(string $plugin_source): void
     {
         Config::setValue('plugins', [$this->createTempPhpFile($plugin_source)]);
-        ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
+        ConfigPluginSet::reset();
     }
 
     /**
@@ -195,7 +195,7 @@ PHP;
     {
         Config::setValue('target_php_version', '8.6');
         Config::setValue('minimum_target_php_version', '8.6');
-        ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
+        ConfigPluginSet::reset();
 
         $base_code_base = self::createCodeBaseWithoutFunctions(['mhash']);
 
@@ -250,7 +250,7 @@ return new class extends PluginV3 implements AnalyzeFunctionCallCapability {
 PHP
         );
         Config::setValue('plugins', [$plugin_file]);
-        ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
+        ConfigPluginSet::reset();
 
         $code_base = self::createCodeBaseWithoutFunctions([]);
         $test_file = $this->createTempPhpFile("<?php\nregister_shutdown_function('a_nonexistent_callback_5649');\n");
@@ -290,9 +290,9 @@ PHP
         $this->assertNotContains('metaphone', $this->getNotifiedFunctions());
 
         // The same plugin is notified of a function loaded in the analysis phase.
-        ConfigPluginSet::instance()->beginAnalyzePhase();  // @phan-suppress-current-line PhanAccessMethodInternal
+        ConfigPluginSet::instance()->beginAnalyzePhase();
         $this->loadFunction($code_base, 'similar_text');
-        ConfigPluginSet::instance()->endAnalyzePhase();  // @phan-suppress-current-line PhanAccessMethodInternal
+        ConfigPluginSet::instance()->endAnalyzePhase();
         $this->assertContains('similar_text', $this->getNotifiedFunctions());
     }
 

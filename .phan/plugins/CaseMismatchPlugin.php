@@ -189,7 +189,6 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
 
         // For unqualified names resolved via use, compare against the alias casing
         if ($flags === ast\flags\NAME_NOT_FQ) {
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $namespace_map = $this->context->getNamespaceMap();
             $entry = $namespace_map[ast\flags\USE_FUNCTION][strtolower($reference_name)] ?? null;
             if ($entry !== null) {
@@ -448,7 +447,6 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
 
         // For unqualified names resolved via use, compare against the alias casing
         if ($flags === ast\flags\NAME_NOT_FQ) {
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $namespace_map = $this->context->getNamespaceMap();
             $entry = $namespace_map[ast\flags\USE_NORMAL][strtolower($reference_name)] ?? null;
             if ($entry !== null) {
@@ -620,7 +618,6 @@ class CaseMismatchVisitor extends PluginAwarePostAnalysisVisitor
         // For qualified NAME_NOT_FQ, the first segment may be a use alias
         if ($flags === ast\flags\NAME_NOT_FQ) {
             $first_segment = $reference_ns_parts[0];
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $namespace_map = $this->context->getNamespaceMap();
             $entry = $namespace_map[ast\flags\USE_NORMAL][strtolower($first_segment)] ?? null;
             if ($entry !== null) {

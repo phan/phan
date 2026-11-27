@@ -20,7 +20,6 @@ final class MethodSearcherPluginTest extends CodeBaseAwareTestBase
     {
         $actual_signature_type = UnionType::fromFullyQualifiedPHPDocString($actual);
         $desired_signature_type = UnionType::fromFullyQualifiedPHPDocString($desired);
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $this->assertSame($expected_score, MethodSearcherPlugin::getTypeMatchingBonus($this->code_base, $actual_signature_type, $desired_signature_type));
     }
 
@@ -49,7 +48,6 @@ final class MethodSearcherPluginTest extends CodeBaseAwareTestBase
     {
         $actual_signature_types = \array_map('\Phan\Language\UnionType::fromFullyQualifiedPHPDocString', $actual);
         $desired_signature_types = \array_map('\Phan\Language\UnionType::fromFullyQualifiedPHPDocString', $desired);
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $this->assertSame($expected_score, MethodSearcherPlugin::matchesParamTypes($this->code_base, $actual_signature_types, $desired_signature_types));
     }
 

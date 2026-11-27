@@ -98,7 +98,6 @@ final class FunctionSignatureMapTest extends CodeBaseAwareTestBase
     public function testRealFunctionSignatureMap(int $php_version_id): void
     {
         $map = UnionType::internalFunctionSignatureMap($php_version_id);
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $real_map = UnionType::getLatestRealFunctionSignatureMap($php_version_id);
         $context = new Context();
         $errors = '';

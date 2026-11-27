@@ -367,7 +367,6 @@ class ClassConstantTypesAnalyzer
                 // Interfaces are never included in the trait/parent composition conflict check.
                 // Their constant types must still be checked for covariance in PHP 8.3+.
                 if ($is_from_trait && !$inherited_class->isInterface()
-                    // @phan-suppress-next-line PhanAccessMethodInternal
                     && $clazz->isTraitConstantConflictingWith($code_base, $constant, $inherited_constant, $inherited_class->isTrait())
                 ) {
                     // PhanIncompatibleCompositionConstant is reported for these constants
@@ -400,9 +399,7 @@ class ClassConstantTypesAnalyzer
      */
     private static function isCovariantWithCanonicalTypes(CodeBase $code_base, UnionType $type, UnionType $inherited_type): bool
     {
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $canonical_type = Clazz::canonicalizeDeclaredConstantType($code_base, $type);
-        // @phan-suppress-next-line PhanAccessMethodInternal
         return $canonical_type->isStrictSubtypeOf($code_base, Clazz::canonicalizeDeclaredConstantType($code_base, $inherited_type));
     }
 

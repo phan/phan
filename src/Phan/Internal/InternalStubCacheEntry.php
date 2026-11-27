@@ -1,6 +1,5 @@
 <?php
 
-/** @phan-file-suppress PhanAccessMethodInternal */
 
 declare(strict_types=1);
 

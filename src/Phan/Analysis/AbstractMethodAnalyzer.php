@@ -32,7 +32,6 @@ class AbstractMethodAnalyzer
         if ($class->isAbstract() || $class->isTrait() || $class->isInterface()) {
             return;
         }
-        // @phan-suppress-next-line PhanAccessMethodInternal
         foreach ($class->getMethodEntryMap($code_base) as $lowercase_name => $method) {
             if ($method instanceof InheritedMethodLink) {
                 // A lazily inherited method (see LazyInheritedMethods): its template has the flags, signature and file of the copy

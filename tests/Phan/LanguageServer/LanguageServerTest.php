@@ -23,7 +23,6 @@ final class LanguageServerTest extends TestBase
 {
     public function testInitializeMinimal(): void
     {
-        // @phan-suppress-next-line PhanAccessMethodInternal
         Config::reset();
         Config::setValue('language_server_enable_completion', false);
         Config::setValue('language_server_enable_hover', false);
@@ -50,7 +49,6 @@ final class LanguageServerTest extends TestBase
 
     public function testInitializeDefault(): void
     {
-        // @phan-suppress-next-line PhanAccessMethodInternal
         Config::reset();
         $mock_file_path_lister = /** @return array{} */ static function (): array {
             return [];

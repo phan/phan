@@ -177,7 +177,6 @@ restore_error_handler();
  *
  * TODO: Add unit tests
  * @phan-file-suppress PhanPluginRemoveDebugAny this is a debugging utility
- * @phan-file-suppress PhanAccessMethodInternal this is bundled with phan
  */
 class PhanPhpShellUtils
 {

@@ -43,7 +43,7 @@ final class PHP84Test extends AbstractPhanFileTestBase
         foreach (self::OVERRIDES as $key => $value) {
             Config::setValue($key, $value);
         }
-        ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
+        ConfigPluginSet::reset();
     }
 
     /**

@@ -218,9 +218,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
             return false;
         }
         // With `internal_access_scope` set to `'package'`: or declared in a file of the same package as the file that uses it.
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $element_package = ComposerPackages::packageOfFile($element_file);
-        // @phan-suppress-next-line PhanAccessMethodInternal
         return $element_package !== null && $element_package === ComposerPackages::packageOfFile($context->getFile());
     }
 

@@ -55,7 +55,6 @@ class PHPUnitAssertionPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
 
     /**
      * @return ?Closure(CodeBase, Context, FunctionInterface, array, ?Node):void
-     * @suppress PhanAccessClassConstantInternal, PhanAccessMethodInternal
      */
     private function createClosureForMethod(CodeBase $code_base, Method $method, string $name): ?Closure
     {

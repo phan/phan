@@ -10,7 +10,6 @@ use Phan\ForkPool;
  * Unit test of the ForkPool
  *
  * @requires extension pcntl
- * @phan-file-suppress PhanAccessMethodInternal
  */
 final class ForkPoolTest extends TestBase
 {

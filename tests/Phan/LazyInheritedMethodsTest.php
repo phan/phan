@@ -41,7 +41,6 @@ use ReflectionProperty;
  *
  * The vendor/ fixture is parsed and excluded from analysis (exclude_analysis_directory_list), as in a project.
  *
- * @phan-file-suppress PhanAccessMethodInternal, PhanAccessPropertyInternal
  */
 final class LazyInheritedMethodsTest extends TestBase
 {

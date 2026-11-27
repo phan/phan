@@ -30,7 +30,6 @@ class PureMethodInferrer
         $graph = new PureMethodGraph($code_base);
         // $start = microtime(true);
         // Mark methods as pure.
-        // @phan-suppress-next-line PhanAccessMethodInternal
         foreach ($code_base->getMethodSetWithoutLazyEntries() as $method) {
             self::checkIsReadOnlyMethod($code_base, $method, $graph);
         }
@@ -64,7 +63,6 @@ class PureMethodInferrer
         // Hydrate the class if it wasn't already hydrated, so that Phan can accurately tell if this method is an override.
         if ($code_base->hasClassWithFQSEN($class_fqsen)) {
             $class = $code_base->getClassByFQSEN($class_fqsen);
-            // @phan-suppress-next-line PhanAccessMethodInternal
             if ($class->hydrateIndicatingFirstTime($code_base)) {
                 if ($method->isOverriddenByAnother() || $method->isOverride()) {
                     return;

@@ -1933,7 +1933,7 @@ trait FunctionTrait
                         $code_base,
                         $context,
                         Issue::TypeMismatchDeclaredReturn,
-                        // @phan-suppress-next-line PhanAccessMethodInternal, PhanTypeMismatchArgument TODO: Support inferring this is FunctionInterface
+                        // @phan-suppress-next-line PhanTypeMismatchArgument TODO: Support inferring this is FunctionInterface
                         ParameterTypesAnalyzer::guessCommentReturnLineNumber($this) ?? $context->getLineNumberStart(),
                         $this->getName(),
                         $phpdoc_type->__toString(),
@@ -1957,7 +1957,7 @@ trait FunctionTrait
                             $code_base,
                             $context,
                             Issue::TypeMismatchDeclaredReturnNullable,
-                            // @phan-suppress-next-line PhanAccessMethodInternal, PhanTypeMismatchArgument TODO: Support inferring this is FunctionInterface
+                            // @phan-suppress-next-line PhanTypeMismatchArgument TODO: Support inferring this is FunctionInterface
                             ParameterTypesAnalyzer::guessCommentReturnLineNumber($this) ?? $context->getLineNumberStart(),
                             $this->getName(),
                             $phpdoc_type->__toString(),
@@ -2105,7 +2105,6 @@ trait FunctionTrait
 
         if ($this->comment) {
             foreach ($this->comment->getParamAssertionMap() as $assertion) {
-                // @phan-suppress-next-line PhanAccessPropertyInternal
                 if ($assertion->union_type->usesTemplateType($type)) {
                     // used in `@phan-assert`
                     return true;
@@ -2516,7 +2515,6 @@ trait FunctionTrait
     /**
      * @param int $i the index of the parameter which $assertion acts upon.
      * @return ?Closure(CodeBase, Context, FunctionInterface, array, ?Node):void a closure to update the scope with the side effect of the condition
-     * @suppress PhanAccessPropertyInternal
      * @internal
      */
     public function createClosureForAssertion(CodeBase $code_base, Assertion $assertion, int $i): ?Closure
@@ -2540,7 +2538,6 @@ trait FunctionTrait
 
     /**
      * @internal
-     * @suppress PhanAccessClassConstantInternal
      * @param Closure(CodeBase, Context, array):UnionType $union_type_extractor
      * @return ?Closure(CodeBase, Context, FunctionInterface, array, ?Node):void a closure to update the scope with the side effect of the condition given the new type from $union_type_extractor
      */

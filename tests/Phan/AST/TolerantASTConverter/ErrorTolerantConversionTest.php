@@ -365,6 +365,7 @@ echo "example";
 EOT;
 
         if (\PHP_VERSION_ID >= 80400) {
+            // @phan-suppress-next-line PhanAccessMethodInternal PHPUnit has no method for this that is a part of its API
             $this->addToAssertionCount(1);
             return;
         }
@@ -422,6 +423,7 @@ if (true);
 echo "example";
 EOT;
         if (\PHP_VERSION_ID >= 80400) {
+            // @phan-suppress-next-line PhanAccessMethodInternal PHPUnit has no method for this that is a part of its API
             $this->addToAssertionCount(1);
             return;
         }

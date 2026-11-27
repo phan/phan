@@ -1484,7 +1484,6 @@ class Config
         // Trigger magic behavior
         self::initOnce();
         // (The packages of `internal_access_scope` depend on the project and on `exclude_analysis_directory_list`)
-        // @phan-suppress-next-line PhanAccessMethodInternal
         ComposerPackages::reset();
     }
 
@@ -1494,7 +1493,6 @@ class Config
     public static function setValue(string $name, mixed $value): void
     {
         if ($name === 'exclude_analysis_directory_list') {
-            // @phan-suppress-next-line PhanAccessMethodInternal
             ComposerPackages::reset();
         }
         // Merge user stub configs with bundled defaults (so stubs are always loaded)

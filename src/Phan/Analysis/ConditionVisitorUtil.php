@@ -1299,11 +1299,9 @@ trait ConditionVisitorUtil
 
                 // TODO: Filter out nullable types
                 $union_type = $variable->getUnionType()->makeFromFilter(static function (Type $type) use ($expr_value, $flags): bool {
-                    // @phan-suppress-next-line PhanAccessMethodInternal
                     return $type->canSatisfyComparison($expr_value, $flags);
                 });
                 if ($union_type->containsNullable()) {
-                    // @phan-suppress-next-line PhanAccessMethodInternal
                     if (!Type::performComparison(null, $expr_value, $flags)) {
                         // E.g. $x > 0 will remove the type null.
                         $union_type = $union_type->nonNullableClone();
@@ -1312,7 +1310,6 @@ trait ConditionVisitorUtil
                 if ($union_type->hasPhpdocOrRealTypeMatchingCallback(static function (Type $type): bool {
                     return \get_class($type) === IntType::class;
                 })) {
-                    // @phan-suppress-next-line PhanAccessMethodInternal
                     if (!Type::performComparison(0, $expr_value, $flags)) {
                         // E.g. $x > 0 will convert int to positive-int
                         if ($flags === ast\flags\BINARY_IS_GREATER || $flags === ast\flags\BINARY_IS_GREATER_OR_EQUAL) {

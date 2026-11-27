@@ -20,7 +20,6 @@ final class MarkupDescriptionTest extends TestBase
      */
     public function testExtractDocComment(string $expected, string $doc_comment, ?int $category = null): void
     {
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $this->assertSame($expected, MarkupDescription::extractDocComment($doc_comment, $category));
     }
 

@@ -65,7 +65,6 @@ class AttributeAnalyzer
                 self::analyzeAttributesOfElement($code_base, $const);
             }
         }
-        // @phan-suppress-next-line PhanAccessMethodInternal
         foreach ($class->getMethodEntryMap($code_base) as $method) {
             // (A lazily inherited method, an InheritedMethodLink, is never declared in this class)
             if ($method instanceof Method && $method->getFQSEN() === $method->getRealDefiningFQSEN()) {

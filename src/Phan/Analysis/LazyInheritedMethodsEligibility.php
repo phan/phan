@@ -150,11 +150,9 @@ final class LazyInheritedMethodsEligibility
             return 'construct';
         }
         if (\str_contains($lowercase_name, ',') ||
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $code_base->getMethodEntryByClassAndLowercaseName($parent->getFQSEN(), "$lowercase_name,1") !== null) {
             return 'alternate';
         }
-        // @phan-suppress-next-line PhanAccessMethodInternal
         if ($code_base->getMethodEntryByClassAndLowercaseName($class->getFQSEN(), $lowercase_name) !== null) {
             // A declared method, (at)method, or a copy from an interface, a trait or a trait alias.
             return 'multi_provider';
@@ -188,7 +186,6 @@ final class LazyInheritedMethodsEligibility
      */
     public static function getReasonForReturnTypeLink(CodeBase $code_base, Method $root): ?string
     {
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $link_target = $root->getReturnTypeLinkOfClone();
         if ($link_target === null) {
             return null;
@@ -230,7 +227,6 @@ final class LazyInheritedMethodsEligibility
         }
         self::increment('eligible');
         // Every entry is a Method for now, so the entry is the root of the copy.
-        // @phan-suppress-next-line PhanAccessMethodInternal
         if ($entry->getReturnTypeLinkOfClone() !== null) {
             self::increment('eligible_relaxed_link');
         }

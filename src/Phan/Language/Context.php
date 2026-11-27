@@ -1082,7 +1082,6 @@ class Context extends FileRef
 
     /**
      * @internal
-     * @suppress PhanAccessMethodInternal
      */
     public function importNamespaceMapFromParsePhase(CodeBase $code_base): void
     {

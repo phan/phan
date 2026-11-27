@@ -85,9 +85,6 @@ class PHPDocRedundantPlugin extends PluginV3 implements
         self::checkPropertyComment($code_base, $property, $comment, $comment_str);
     }
 
-    /**
-     * @suppress PhanAccessClassConstantInternal
-     */
     private static function checkFunctionComment(
         CodeBase $code_base,
         FunctionInterface $method,
@@ -302,9 +299,6 @@ class PHPDocRedundantPlugin extends PluginV3 implements
         );
     }
 
-    /**
-     * @suppress PhanAccessClassConstantInternal
-     */
     private static function commentHasSingleVarAnnotation(string $comment_str): bool
     {
         $found = false;

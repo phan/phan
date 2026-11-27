@@ -292,7 +292,6 @@ class BasePHPDocCheckerPlugin extends PluginAwarePostAnalysisVisitor
             );
             return null;
         }
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $description = MarkupDescription::extractDocComment($doc_comment, Comment::ON_PROPERTY, null, true);
         if (!StringUtil::isNonZeroLengthString($description)) {
             $visibility_upper = ucfirst($property->getVisibilityName());

@@ -226,7 +226,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // If there are multiple namespaces in the file, have to warn about unused entries in the current namespace first.
         // If this is the first namespace, then there wouldn't be any use statements yet.
         // TODO: This may not be the case if the language server is used
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $context->warnAboutUnusedUseElements($this->code_base);
 
         // Visit the given node populating the code base
@@ -239,7 +238,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         ))->visitNamespace($node);
 
         // We already imported namespace constants earlier; use those.
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $context->importNamespaceMapFromParsePhase($this->code_base);
 
         // Let any configured plugins do a pre-order
@@ -543,16 +541,14 @@ class BlockAnalysisVisitor extends AnalysisVisitor
     }
 
     private const PHAN_FILE_SUPPRESS_REGEX =
-        '/@phan-file-suppress\s+' . Builder::SUPPRESS_ISSUE_LIST . '/';  // @phan-suppress-current-line PhanAccessClassConstantInternal
+        '/@phan-file-suppress\s+' . Builder::SUPPRESS_ISSUE_LIST . '/';
 
 
     private const PHAN_VAR_REGEX =
         '/@(phan-var(?:-force)?)\b\s*(' . UnionType::union_type_regex . ')\s*&?\\$' . Builder::WORD_REGEX . '/';
-    // @phan-suppress-previous-line PhanAccessClassConstantInternal
 
     private const PHAN_DEBUG_VAR_REGEX =
         '/@phan-debug-var\s+\$(' . Builder::WORD_REGEX . '(,\s*\$' . Builder::WORD_REGEX . ')*)/';
-    // @phan-suppress-previous-line PhanAccessClassConstantInternal
 
     /**
      * Parses annotations such as "(at)phan-var int $myVar" and "(at)phan-var-force ?MyClass $varName" annotations from inline string literals.
@@ -606,13 +602,11 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 }
             }
         }
-        // @phan-suppress-next-line PhanAccessClassConstantInternal
         if (\preg_match_all(Builder::PHAN_TYPE_ALIAS_REGEX, $text, $matches, \PREG_SET_ORDER) > 0) {
             $has_known_annotations = true;
             foreach ($matches as $group) {
                 $alias_name = $group[1];
                 $union_type_string = $group[2];
-                // @phan-suppress-next-line PhanAccessMethodInternal
                 Builder::addTypeAliasMapping($this->code_base, $this->context, $alias_name, $union_type_string);
             }
         }
@@ -1936,7 +1930,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
      *
      * @return Context
      * The updated context after visiting the node
-     * @suppress PhanAccessMethodInternal
      */
     public function visitSwitchList(Node $node): Context
     {

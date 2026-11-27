@@ -32,7 +32,7 @@ use ReflectionMethod;
  * Tests that every setter, in-place mutation and cache fill of the state owned by a Method, Parameter, Variable
  * or Scope increments its state version (TypedElement::getStateVersion()), and that the documented exceptions do not.
  *
- * @phan-file-suppress PhanAccessMethodInternal, PhanThrowTypeAbsentForCall, PhanPluginUnknownClosureReturnType
+ * @phan-file-suppress PhanThrowTypeAbsentForCall, PhanPluginUnknownClosureReturnType
  */
 final class StateVersionTest extends CodeBaseAwareTestBase
 {

@@ -376,7 +376,6 @@ class ParseVisitor extends ScopeVisitor
 
             $custom_annotations = $comment->getCustomAnnotations();
             if ($custom_annotations) {
-                // @phan-suppress-next-line PhanAccessMethodInternal
                 $class->setCustomAnnotations($custom_annotations);
                 // The members of the class are parsed after this.
                 $this->handleCustomAnnotations($class, $comment);
@@ -545,7 +544,6 @@ class ParseVisitor extends ScopeVisitor
             return [];
         }
         // (`@use A<` and then `int>` on the next line)
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $doc_comment = Builder::withMultilineTypesJoined($doc_comment);
         // (As in the doc comment of a class, an annotation starts a line: not `Example: @use A<string>`)
         if (!\preg_match_all('/(?:^|\n)[\s\/*]*@(phan-|phpstan-|psalm-|template-)?use\s+(' . Type::type_regex . ')/i', $doc_comment, $matches, \PREG_SET_ORDER)) {
@@ -1145,7 +1143,6 @@ class ParseVisitor extends ScopeVisitor
                     $property->setSuppressIssueSet($property->getSuppressIssueList() + $suppress_issue_set);
                 }
             }
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $class->setCustomAnnotationsOfProperty($property->getName(), $custom_annotations);
             ConfigPluginSet::instance()->handleCustomAnnotations($this->code_base, $property, $comment);
         }
@@ -2755,7 +2752,6 @@ class ParseVisitor extends ScopeVisitor
         $constant->setIsNSInternal($comment->isNSInternal());
         $custom_annotations = $comment->getCustomAnnotations();
         if ($custom_annotations) {
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $constant->setCustomAnnotations($custom_annotations);
         }
 
@@ -2854,7 +2850,6 @@ class ParseVisitor extends ScopeVisitor
     public function visitNamespace(Node $node): Context
     {
         $context = $this->context;
-        // @phan-suppress-next-line PhanAccessMethodInternal addParsedNamespaceMap and getNamespaceMap
         $this->code_base->addParsedNamespaceMap($context->getFile(), $context->getNamespace(), $context->getNamespaceId(), $context->getNamespaceMap());
         return parent::visitNamespace($node);
     }
@@ -2994,12 +2989,10 @@ class ParseVisitor extends ScopeVisitor
 
     private function analyzePhanTypeAliasStatement(string $text): void
     {
-        // @phan-suppress-next-line PhanAccessClassConstantInternal
         if (\preg_match_all(Builder::PHAN_TYPE_ALIAS_REGEX, $text, $matches, \PREG_SET_ORDER) > 0) {
             foreach ($matches as $group) {
                 $alias_name = $group[1];
                 $union_type_string = $group[2];
-                // @phan-suppress-next-line PhanAccessMethodInternal
                 Builder::addTypeAliasMapping($this->code_base, $this->context, $alias_name, $union_type_string);
             }
         }

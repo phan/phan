@@ -16,7 +16,7 @@ final class InitializerTest extends TestBase
     public function testInitializesValid(): void
     {
         for ($init_level = 1; $init_level <= 5; $init_level++) {
-            // @phan-suppress-next-line PhanAccessMethodInternal, PhanThrowTypeAbsentForCall
+            // @phan-suppress-next-line PhanThrowTypeAbsentForCall
             $settings = Initializer::createPhanSettingsForComposerSettings(
                 [],
                 null,

@@ -2193,7 +2193,6 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
             $element_types = $element_types->withType($string_type);
             if ($union_type->hasRealTypeSet()) {
-                // @phan-suppress-next-line PhanAccessMethodInternal
                 $element_types = $element_types->withRealTypeSet(UnionType::computeRealElementTypesForDimAccess($union_type->getRealTypeSet(), $code_base));
             }
         }
@@ -4243,7 +4242,6 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $node,
                 static function (Type $type): bool {
                     // Adding $type instanceof StringType in case it becomes necessary later
-                    // @phan-suppress-next-line PhanAccessMethodInternal
                     return ($type->isValidNumericOperand() && $type->isValidBitwiseOperand()) || $type instanceof StringType;
                 },
                 $result,
@@ -4615,7 +4613,6 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     private static function checkValidClassFQSEN(Context $context, Node $node, string $class_name): void
     {
-        // @phan-suppress-next-line PhanAccessClassConstantInternal
         if (\preg_match(FullyQualifiedGlobalStructuralElement::VALID_STRUCTURAL_ELEMENT_REGEX, $class_name)) {
             return;
         }

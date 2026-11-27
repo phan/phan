@@ -267,7 +267,6 @@ final class Builder
             $is_ignored_parameter = str_contains($line, '@phan-ignore-reference');
             $is_mandatory_in_phpdoc = str_contains($line, '@phan-mandatory-param');
             if ($is_mandatory_in_phpdoc) {
-                // @phan-suppress-next-line PhanAccessMethodInternal
                 $this->code_base->recordSawMandatoryParamAnnotation();
             }
 
@@ -1530,11 +1529,9 @@ final class Builder
     private function parseOnlyIfUnderstood(Closure $parse, string $line): Parameter|UnionType|null
     {
         $issues = $this->issues;
-        // @phan-suppress-next-line PhanAccessPropertyInternal
         $unparsed_closure_param_count = Type::$unparsed_closure_param_count;
         $result = $parse();
         // (A parameter of a closure type that is not parsed is left out without an issue: `callable(int-mask<1, 2>): void`)
-        // @phan-suppress-next-line PhanAccessPropertyInternal
         $is_understood = \count($this->issues) === \count($issues) && Type::$unparsed_closure_param_count === $unparsed_closure_param_count;
         // (Reported for `@psalm-`, as it was before these annotations replaced the plain type)
         if (\stripos($line, '@psalm-') === false) {
@@ -2261,7 +2258,6 @@ final class Builder
 
     /**
      * @param list<int> $valid_types
-     * @suppress PhanAccessClassConstantInternal
      */
     private function checkCompatible(string $param_name, array $valid_types, int $i): bool
     {

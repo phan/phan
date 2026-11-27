@@ -24,7 +24,7 @@ abstract class PhanTestCommon extends AbstractPhanFileTestBase
         foreach (require($test_config_file_name) as $key => $value) {
             Config::setValue($key, $value);
         }
-        ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
+        ConfigPluginSet::reset();
     }
 
     /**

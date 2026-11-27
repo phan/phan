@@ -87,7 +87,6 @@ class Config
         ];
         if ($config_data['internal_access_scope'] === 'package') {
             // The packages are read from composer.json and installed.json.
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $config_data['composer_packages'] = ComposerPackages::metadataHash();
         }
 

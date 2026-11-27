@@ -131,7 +131,6 @@ class Fixers
         $file_lines = $contents->getLines();
 
         $line = \trim($file_lines[$lineno]);
-        // @phan-suppress-next-line PhanAccessClassConstantInternal
         if (!\preg_match(Builder::RETURN_COMMENT_REGEX, $line)) {
             return null;
         }

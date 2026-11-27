@@ -569,7 +569,6 @@ class Property extends ClassElement
      * on this object or null if there is no future
      * union type.
      * @override
-     * @suppress PhanAccessMethodInternal
      */
     public function getFutureUnionType(): ?UnionType
     {

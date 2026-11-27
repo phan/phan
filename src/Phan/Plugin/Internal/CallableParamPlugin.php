@@ -227,7 +227,6 @@ final class CallableParamPlugin extends PluginV3 implements
 
         $add_misc_closures = static function (FunctionInterface $function) use ($add_callable_checker_closure, $add_another_closure, $code_base): void {
             $add_callable_checker_closure($function);
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $closure = $function->getCommentParamAssertionClosure($code_base);
             if ($closure) {
                 $add_another_closure($function->getFQSEN()->__toString(), $closure);
@@ -237,7 +236,6 @@ final class CallableParamPlugin extends PluginV3 implements
         foreach ($code_base->getFunctionMap() as $function) {
             $add_misc_closures($function);
         }
-        // @phan-suppress-next-line PhanAccessMethodInternal
         foreach ($code_base->getMethodSetWithoutLazyEntries() as $function) {
             // An inherited copy of a method that still has its parameters and comment gets the closure generated for the
             // method it was inherited from, attached by Analysis::loadMethodPlugins() (CodeBase::getMethodsInheritedFrom()).

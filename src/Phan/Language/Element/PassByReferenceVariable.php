@@ -107,9 +107,6 @@ class PassByReferenceVariable extends Variable
         return $this->type;
     }
 
-    /**
-     * @suppress PhanAccessMethodInternal
-     */
     public function setUnionType(UnionType $type): void
     {
         $this->bumpStateVersion();

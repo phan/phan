@@ -589,7 +589,6 @@ final class ConfigPluginSet extends PluginV3 implements
                 $suggestion
             )) {
                 if ($this->unused_suppression_plugin) {
-                    // @phan-suppress-next-line PhanAccessMethodInternal
                     $this->unused_suppression_plugin->recordPluginSuppression($plugin, $context->getFile(), $issue_type, $lineno);
                 }
                 return true;

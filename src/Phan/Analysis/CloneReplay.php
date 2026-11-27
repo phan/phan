@@ -130,7 +130,6 @@ final class CloneReplay
         if (!$is_enabled) {
             return false;
         }
-        // @phan-suppress-next-line PhanAccessMethodInternal
         foreach ($code_base->getMethodSetWithoutLazyEntries() as $method) {
             $source = $method->getCloneSource();
             if ($source !== null) {
