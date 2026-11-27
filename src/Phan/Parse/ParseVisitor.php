@@ -500,8 +500,9 @@ class ParseVisitor extends ScopeVisitor
         // like `@use` in the doc comment of the class (see attachDocCommentsOfTraitUses()).
         $doc_comment = $node->children['docComment'] ?? '';
         if (\is_string($doc_comment) && $doc_comment !== '') {
-            $comment = Comment::fromStringInContext($doc_comment, $this->code_base, $this->context, $node->lineno, Comment::ON_CLASS);
-            foreach ($comment->getUsedTraitTypes() as $used_trait_type) {
+            // (Only the `@use` annotations are read. Building the comment of a class from this text would do more:
+            // it replaces the type aliases that the class declares, for example.)
+            foreach ($this->usedTraitTypesOfDocComment($doc_comment) as $used_trait_type) {
                 if (!$used_trait_type->isObjectWithKnownFQSEN()) {
                     continue;
                 }
@@ -532,6 +533,28 @@ class ParseVisitor extends ScopeVisitor
     private const USE_ANNOTATION_REGEX = '/@(?:phan-|phpstan-|psalm-|template-)?use\s/i';
 
     /**
+     * @return list<Type> the types of the `(at)use` annotations of a doc comment above a `use Trait;` statement
+     */
+    private function usedTraitTypesOfDocComment(string $doc_comment): array
+    {
+        if (!Config::getValue('generic_types_enabled') || !Config::getValue('read_type_annotations')) {
+            return [];
+        }
+        if (!\preg_match_all('/@(?:phan-|phpstan-|psalm-|template-)?use\s+(' . Type::type_regex . ')/i', $doc_comment, $matches)) {
+            return [];
+        }
+        $types = [];
+        foreach ($matches[1] as $type_string) {
+            try {
+                $types[] = Type::fromStringInContext($type_string, $this->context, Type::FROM_PHPDOC, $this->code_base);
+            } catch (\Throwable) {
+                // (Not a type that Phan can parse)
+            }
+        }
+        return $types;
+    }
+
+    /**
      * Finds the doc comment above each `use Trait;` statement of a class, and records it in the node of that statement.
      *
      * PHPStan and Psalm read the template parameters of a trait from a comment above the statement:
@@ -541,8 +564,8 @@ class ParseVisitor extends ScopeVisitor
      *
      * php-ast has no doc comment for the node of that statement. What it does with the comment is to give it
      * to the next method, property or constant that has no doc comment of its own, where it is not valid.
-     * So the comment is read from the source of the file, and removed from the member that got it.
-     * (Only for a file that has `(at)use`.)
+     * So the comment is taken from the tokens of the file, and removed from the member that got it.
+     * (Only a file that has `(at)use` is tokenized.)
      */
     private function attachDocCommentsOfTraitUses(Node $class_node): void
     {
@@ -550,19 +573,24 @@ class ParseVisitor extends ScopeVisitor
         if (!($stmts instanceof Node)) {
             return;
         }
-        $lines = null;
+        $comments_of_line = null;
         $comment_of_last_use = null;
+        // The number of `use` statements of this class that were seen in a line so far
+        $count_in_line = [];
         foreach ($stmts->children as $stmt) {
             if (!($stmt instanceof Node)) {
                 continue;
             }
             if ($stmt->kind === ast\AST_USE_TRAIT) {
-                $lines ??= $this->linesOfFileWithUseAnnotation();
-                if (!$lines) {
+                $comments_of_line ??= $this->docCommentsOfUseTokens();
+                if (!$comments_of_line) {
                     return;
                 }
-                $doc_comment = self::docCommentAboveLine($lines, $stmt->lineno);
-                if ($doc_comment !== null && \preg_match(self::USE_ANNOTATION_REGEX, $doc_comment)) {
+                $lineno = $stmt->lineno;
+                $index = $count_in_line[$lineno] ?? 0;
+                $count_in_line[$lineno] = $index + 1;
+                $doc_comment = $comments_of_line[$lineno][$index] ?? null;
+                if ($doc_comment !== null) {
                     $stmt->children['docComment'] = $doc_comment;
                     $comment_of_last_use = $doc_comment;
                 }
@@ -576,50 +604,49 @@ class ParseVisitor extends ScopeVisitor
     }
 
     /**
-     * @return array<int,string> the lines of the current file (1-based), or [] if the file has no `(at)use` annotation
+     * @var array{0:string,1:int,2:array<int,list<?string>>} the result of docCommentsOfUseTokens() for the last file (its path and length)
      */
-    private function linesOfFileWithUseAnnotation(): array
+    private static $doc_comments_of_use_tokens_cache = ['', 0, []];
+
+    /**
+     * @return array<int,list<?string>> for each line of the current file that has `use` tokens:
+     * for each of those tokens, the doc comment with `(at)use` that comes right before it, or null.
+     * Empty if the file has no `(at)use` annotation.
+     */
+    private function docCommentsOfUseTokens(): array
     {
+        $file = $this->context->getFile();
         try {
-            $entry = FileCache::getOrReadEntry(Config::projectPath($this->context->getFile()));
+            $contents = FileCache::getOrReadEntry(Config::projectPath($file))->getContents();
         } catch (\Throwable) {
             return [];
         }
-        if (!\preg_match(self::USE_ANNOTATION_REGEX, $entry->getContents())) {
-            return [];
+        if (self::$doc_comments_of_use_tokens_cache[0] === $file && self::$doc_comments_of_use_tokens_cache[1] === \strlen($contents)) {
+            return self::$doc_comments_of_use_tokens_cache[2];
         }
-        return $entry->getLinesWithoutNewlines();
-    }
-
-    /**
-     * @param array<int,string> $lines the lines of a file (1-based)
-     * @return ?string the doc comment that ends right before the statement that starts in line $lineno
-     */
-    private static function docCommentAboveLine(array $lines, int $lineno): ?string
-    {
-        // On the line of the statement: `/** @use A<int> *\/ use A;`
-        if (\preg_match('@(/\*\*.*\*/)\s*use\b@', $lines[$lineno] ?? '', $match)) {
-            return $match[1];
-        }
-        $end = $lineno - 1;
-        while ($end > 0 && \trim($lines[$end] ?? '') === '') {
-            $end--;
-        }
-        if ($end <= 0 || !\str_ends_with(\rtrim($lines[$end]), '*/')) {
-            return null;
-        }
-        // (A doc comment above a `use` statement is short)
-        for ($start = $end; $start > 0 && $end - $start < 50; $start--) {
-            $pos = \strrpos($lines[$start], '/**');
-            if ($pos !== false) {
-                $comment_lines = \array_slice($lines, $start - 1, $end - $start + 1);
-                $comment_lines[0] = \substr($comment_lines[0], $pos);
-                $comment = \implode("\n", $comment_lines);
-                // (Not if another comment ends in between)
-                return \substr_count($comment, '*/') === 1 ? \rtrim($comment) : null;
+        $result = [];
+        if (\preg_match(self::USE_ANNOTATION_REGEX, $contents)) {
+            try {
+                $tokens = \PhpToken::tokenize($contents);
+            } catch (\Throwable) {
+                $tokens = [];
+            }
+            $doc_comment = null;
+            foreach ($tokens as $token) {
+                $id = $token->id;
+                if ($id === \T_DOC_COMMENT) {
+                    $doc_comment = $token->text;
+                } elseif ($id === \T_USE) {
+                    $result[$token->line][] = $doc_comment !== null && \preg_match(self::USE_ANNOTATION_REGEX, $doc_comment) ? $doc_comment : null;
+                    $doc_comment = null;
+                } elseif ($id !== \T_WHITESPACE && $id !== \T_COMMENT) {
+                    // (A doc comment belongs to the token after it)
+                    $doc_comment = null;
+                }
             }
         }
-        return null;
+        self::$doc_comments_of_use_tokens_cache = [$file, \strlen($contents), $result];
+        return $result;
     }
 
     /**
