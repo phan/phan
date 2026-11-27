@@ -1479,6 +1479,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0268
 
 ## PhanUnreferencedUseNormal
 
+Since 6.1.0, the type of a comment of a statement (`/** @var Foo $x */` above an assignment) counts as a reference to the `use` statement of its classes.
+
 ```
 Possibly zero references to use statement for classlike/namespace {CLASSLIKE} ({CLASSLIKE})
 ```
