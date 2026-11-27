@@ -2535,7 +2535,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0867
 Potentially calling an abstract static method {METHOD} on a trait in {CODE}, if the caller's method is called on the trait instead of a concrete class using the trait
 ```
 
-e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0867_abstract_call.php.expected#L6) is emitted when analyzing [this PHP file](https://github.com/phan/phan/tree/v6/tests/files/src/0867_abstract_call.php#L37).
+This is no longer emitted (since 6.0.12). It was reported for `self::method()` and `static::method()` in a method of a trait, where `method()` is an abstract static method of the trait.
+In a trait, `self` and `static` are the class that uses the trait, which implements the method. The abstract method is only reached when the method of the trait is called on the trait itself, which is deprecated since PHP 8.1 and reported as `PhanCompatibleAccessMethodOnTraitDefinition` where it is done.
 
 ## PhanStaticCallToNonStatic
 

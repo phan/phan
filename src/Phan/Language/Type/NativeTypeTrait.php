@@ -22,7 +22,6 @@ trait NativeTypeTrait
      * @return static
      * Returns a nullable/non-nullable instance of this native type (possibly unchanged)
      *
-     * @suppress PhanAbstractStaticMethodCallInTrait this is deliberate - this will only be called on classes using the trait
      * @suppress PhanUndeclaredConstantOfClass also deliberate
      */
     public static function instance(bool $is_nullable)

@@ -1,0 +1,5 @@
+%s:22 PhanAbstractStaticMethodCall Potentially calling an abstract static method \NS5997\Policy::getName() in $literal::getName()
+%s:26 PhanAbstractStaticMethodCall Potentially calling an abstract static method \NS5997\Policy::getName() in $either::getName()
+%s:27 PhanAbstractStaticMethodCall Potentially calling an abstract static method \NS5997\Policy::getName() in Policy::getName()
+%s:31 PhanAbstractStaticMethodCall Potentially calling an abstract static method \NS5997\Policy::getName() in $inherits::getName()
+%s:40 PhanCompatibleAccessMethodOnTraitDefinition Calling static method \NS5997\T::get on a trait is deprecated, it should only be called on a class using the trait (in T::get())
