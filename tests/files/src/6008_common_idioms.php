@@ -19,6 +19,10 @@ set_error_handler(function (string $a, array $b): bool { return $a === '' && !$b
 function matchesOs(string $pattern, string $needle): bool {
     return preg_match($pattern, PHP_OS) === 1 || strpos(PHP_OS_FAMILY, $needle) !== false || str_contains(\PHP_VERSION, $needle);
 }
+// Such a constant is not out of place as the needle either.
+function osIsListed(): bool {
+    return strpos('Linux Darwin WINNT', PHP_OS) !== false;
+}
 // Still reported: another constant.
 const SEPARATOR = ',';
 function wrongOrder(string $s): array {

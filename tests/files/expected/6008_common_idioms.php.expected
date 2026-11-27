@@ -1,7 +1,7 @@
 %s:15 PhanTypeMismatchArgumentInternal Argument 1 ($callback) is (fn) of type Closure(int,string):string but \set_error_handler() takes callable(int,string):(bool|void)|callable(int,string,string):(bool|void)|callable(int,string,string,int):(bool|void)|callable(int,string,string,int,array):(bool|void)|null
 %s:16 PhanTypeMismatchArgumentInternal Argument 1 ($callback) is (function) of type Closure(string,array):bool but \set_error_handler() takes callable(int,string):(bool|void)|callable(int,string,string):(bool|void)|callable(int,string,string,int):(bool|void)|callable(int,string,string,int,array):(bool|void)|null
-%s:25 PhanParamSuspiciousOrder Argument #1 of this call to \explode is typically a literal or constant but isn't, but argument #2 (which is typically a variable) is a literal or constant. The arguments may be in the wrong order.
-%s:25 PhanParamSuspiciousOrder Argument #2 of this call to \strpos is typically a literal or constant but isn't, but argument #1 (which is typically a variable) is a literal or constant. The arguments may be in the wrong order.
-%s:45 PhanCommentParamOnEmptyParamList Saw an @param annotation for $missing, but the param list of function noParams(); is empty
-%s:52 PhanCommentParamWithoutRealParam Saw an @param annotation for $missing, but it was not found in the param list of function oneParam(int $a);
-%s:58 PhanCommentParamWithoutRealParam Saw an @param annotation for $missing, but it was not found in the param list of function variadic(string ...$rest);
+%s:29 PhanParamSuspiciousOrder Argument #1 of this call to \explode is typically a literal or constant but isn't, but argument #2 (which is typically a variable) is a literal or constant. The arguments may be in the wrong order.
+%s:29 PhanParamSuspiciousOrder Argument #2 of this call to \strpos is typically a literal or constant but isn't, but argument #1 (which is typically a variable) is a literal or constant. The arguments may be in the wrong order.
+%s:49 PhanCommentParamOnEmptyParamList Saw an @param annotation for $missing, but the param list of function noParams(); is empty
+%s:56 PhanCommentParamWithoutRealParam Saw an @param annotation for $missing, but it was not found in the param list of function oneParam(int $a);
+%s:62 PhanCommentParamWithoutRealParam Saw an @param annotation for $missing, but it was not found in the param list of function variadic(string ...$rest);

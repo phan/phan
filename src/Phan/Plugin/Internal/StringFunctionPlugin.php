@@ -54,9 +54,10 @@ final class StringFunctionPlugin extends PluginV3 implements
 
     /**
      * @param Node|string|float|int|null $arg
+     * @param bool $is_subject whether $arg is in the place of the text that is searched or matched
      * @return bool true if the expression is simple to look up.
      */
-    private static function isSimpleExpression(Node|float|int|null|string $arg): bool
+    private static function isSimpleExpression(Node|float|int|null|string $arg, bool $is_subject = false): bool
     {
         if (\is_scalar($arg)) {
             return true;
@@ -67,7 +68,11 @@ final class StringFunctionPlugin extends PluginV3 implements
         if ($arg instanceof Node) {
             $kind = $arg->kind;
             if ($kind === ast\AST_CONST) {
-                // A constant that describes where the code runs is not a literal: `preg_match($pattern, PHP_OS)`
+                if (!$is_subject) {
+                    return true;
+                }
+                // A constant that describes where the code runs is not out of place as the text that is searched: `preg_match($pattern, PHP_OS)`
+                // (It is not out of place as the needle either: `strpos('Linux Darwin', PHP_OS)`)
                 $name = $arg->children['name']->children['name'] ?? null;
                 return !\is_string($name) || !isset(self::ENVIRONMENT_CONSTANTS[\strtoupper(\ltrim($name, '\\'))]);
             }
@@ -76,16 +81,16 @@ final class StringFunctionPlugin extends PluginV3 implements
             }
             if ($kind === ast\AST_BINARY_OP) {
                 // E.g. flags == BINARY_CONCAT
-                return self::isSimpleExpression($arg->children['left']) && self::isSimpleExpression($arg->children['right']);
+                return self::isSimpleExpression($arg->children['left'], $is_subject) && self::isSimpleExpression($arg->children['right'], $is_subject);
             } elseif ($kind === ast\AST_ARRAY) {
                 foreach ($arg->children as $child) {
                     if (!($child instanceof Node)) {
                         continue;
                     }
-                    if (!self::isSimpleExpression(($child->children['key'] ?? null))) {
+                    if (!self::isSimpleExpression(($child->children['key'] ?? null), $is_subject)) {
                         return false;
                     }
-                    if (!self::isSimpleExpression(($child->children['value'] ?? null))) {
+                    if (!self::isSimpleExpression(($child->children['value'] ?? null), $is_subject)) {
                         return false;
                     }
                 }
@@ -118,7 +123,7 @@ final class StringFunctionPlugin extends PluginV3 implements
                     return;
                 }
                 if (!self::isSimpleExpression($args[$expected_const_pos])) {
-                    if (self::isSimpleExpression($args[$expected_variable_pos])) {
+                    if (self::isSimpleExpression($args[$expected_variable_pos], true)) {
                         Issue::maybeEmit(
                             $code_base,
                             $context,

@@ -1,7 +1,12 @@
-src/334_json_decode_for_validation.php:6 PhanUnreferencedFunction Possibly zero references to function \NS334\isJson()
-src/334_json_decode_for_validation.php:8 PhanPluginNonBoolBranch Non bool value of type int evaluated in if clause
-src/334_json_decode_for_validation.php:14 PhanPluginUseReturnValueNoopVoid The function/method \NS334\isJsonOrThrows() is declared to return void and it has no side effects
-src/334_json_decode_for_validation.php:14 PhanUnreferencedFunction Possibly zero references to function \NS334\isJsonOrThrows()
-src/334_json_decode_for_validation.php:19 PhanPluginUseReturnValueNoopVoid The function/method \NS334\unused() is declared to return void and it has no side effects
-src/334_json_decode_for_validation.php:19 PhanUnreferencedFunction Possibly zero references to function \NS334\unused()
-src/334_json_decode_for_validation.php:20 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \json_decode
+src/334_json_decode_for_validation.php:8 PhanUnreferencedFunction Possibly zero references to function \NS334\isJson()
+src/334_json_decode_for_validation.php:10 PhanPluginNonBoolBranch Non bool value of type int evaluated in if clause
+src/334_json_decode_for_validation.php:16 PhanPluginUseReturnValueNoopVoid The function/method \NS334\isJsonOrThrows() is declared to return void and it has no side effects
+src/334_json_decode_for_validation.php:16 PhanUnreferencedFunction Possibly zero references to function \NS334\isJsonOrThrows()
+src/334_json_decode_for_validation.php:21 PhanPluginUseReturnValueNoopVoid The function/method \NS334\unused() is declared to return void and it has no side effects
+src/334_json_decode_for_validation.php:21 PhanUnreferencedFunction Possibly zero references to function \NS334\unused()
+src/334_json_decode_for_validation.php:22 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \json_decode
+src/334_json_decode_for_validation.php:26 PhanPluginUseReturnValueNoopVoid The function/method \NS334\aliased() is declared to return void and it has no side effects
+src/334_json_decode_for_validation.php:26 PhanUnreferencedFunction Possibly zero references to function \NS334\aliased()
+src/334_json_decode_for_validation.php:31 PhanUnreferencedFunction Possibly zero references to function \NS334\checkInClosure()
+src/334_json_decode_for_validation.php:32 PhanPluginUseReturnValueInternalKnown Expected to use the return value of the internal function/method \json_decode
+src/334_json_decode_for_validation.php:33 PhanUnreferencedClosure Possibly zero references to Closure() : int
