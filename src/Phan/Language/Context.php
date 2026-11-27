@@ -1061,7 +1061,7 @@ class Context extends FileRef
                 if ($flags === \ast\flags\USE_NORMAL) {
                     // The type of the comment of a statement (`/** (at)var Foo $x */` above an assignment) is not part of the AST.
                     // (The comments are only read for a file with a `use` statement that nothing else refers to)
-                    $names_in_comments ??= CommentClassReferences::namesInNamespace($this->file, $this->namespace);
+                    $names_in_comments ??= CommentClassReferences::namesInNamespace($this->file, $this->namespace_id);
                     if (isset($names_in_comments[$alias])) {
                         $namespace_map_entry->is_used = true;
                         continue;

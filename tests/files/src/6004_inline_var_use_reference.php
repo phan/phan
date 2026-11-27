@@ -40,3 +40,51 @@ namespace NS6004b {
 use NS6004\Model\Period;
 function g($x) { return $x; }
 }
+
+// The same for a type on several lines and after a method that is named namespace. Not a reference: a key of an array shape,
+// a string literal, the name of a class constant, and a comment in another declaration of the same namespace.
+namespace NS6004m { class A {} class B {} class C {} class D {} class E {} class F {} class G {} class H {} class K {} }
+namespace NS6004x {
+use NS6004m\A;
+use NS6004m\B;
+use NS6004m\C;
+use NS6004m\D;
+use NS6004m\E;
+use NS6004m\F;
+use NS6004m\G;
+class Holder {
+    public function namespace($x) { return $x; }
+    public function f($x) {
+        /** @var A $a after a method that is named namespace */
+        $a = $x;
+        /**
+         * @var array{
+         *   item: B,
+         *   other?: int
+         * } $b
+         */
+        $b = $x;
+        /** @var array{C: string, D?: int} $c shape keys */
+        $c = $x;
+        /** @var 'E'|"F" $e string literals */
+        $e = $x;
+        /** @var int-mask-of<Holder::G> $g a class constant named like an import */
+        $g = $x;
+        return [$a, $b, $c, $e, $g];
+    }
+}
+}
+namespace NS6004y {
+use NS6004m\H;
+function unused($x) { return $x; }
+}
+namespace NS6004y {
+use NS6004m\K;
+function g($x) {
+    /** @var H $h refers to NS6004y\H here, not to the import of the block above */
+    $h = $x;
+    /** @var K $k */
+    $k = $x;
+    return [$h, $k];
+}
+}

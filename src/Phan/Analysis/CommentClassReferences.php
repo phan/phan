@@ -21,24 +21,34 @@ use PhpToken;
  */
 final class CommentClassReferences
 {
-    /** A name that is not part of a longer name, of a fully qualified name or of a variable: for `Foo\Bar`, `Foo`. */
-    private const FIRST_NAME_PART_REGEX = '/(?<![\\\\\w$\x80-\xff])[a-zA-Z_\x80-\xff][\w\x80-\xff]*/';
+    /**
+     * A name that is not part of a longer name, of a fully qualified name or of a variable: for `Foo\Bar`, `Foo`.
+     * Not the name of a class constant (`BAR` of `Foo::BAR`).
+     */
+    private const FIRST_NAME_PART_REGEX = '/(?<![\\\\\w$\x80-\xff-]|::)[a-zA-Z_\x80-\xff][\w\x80-\xff]*/';
+
+    /**
+     * What is not a class name in a type: a string literal, and the key of a field of an array shape
+     * (`'Foo'`, and `Foo:` of `array{Foo: int, Bar?: int}`. Not `A :` of `($x is int ? A : B)`, and not `Foo::` of a class constant).
+     */
+    private const NOT_A_CLASS_NAME_REGEX = '/\'(?:[^\'\\\\]|\\\\.)*\'|"(?:[^"\\\\]|\\\\.)*"|(?<=[{,])\s*[\w\x80-\xff-]+\??\s*:(?!:)/';
 
     /** @var ?FileCacheEntry the file that $names_of_namespaces is for */
     private static $entry = null;
 
-    /** @var array<string,array<string,true>> see namesByNamespace() */
+    /** @var array<int,array<string,true>> see namesByNamespace() */
     private static $names_of_namespaces = [];
 
     /**
      * @param string $file the path of the file, as in the context
-     * @param string $namespace the namespace, as in the context (`\NS\Sub`, or `\` for the global namespace)
+     * @param int $namespace_id the number of the namespace declaration in the file, as in the context: 1 for the first one,
+     * 0 for a file without one. (A namespace can be declared more than once in a file, and each declaration has its own `use` statements)
      * @return array<string,true> the names, in lower case, that the types of `(at)var`, `(at)param`, `(at)return` and `(at)throws`
-     * annotations (also phan-, phpstan- and psalm-) of the comments in this namespace of the file begin with:
+     * annotations (also phan-, phpstan- and psalm-) of the comments after this namespace declaration (and before the next one) begin with:
      * `foo` for `Foo`, `Foo[]`, `Foo\Bar` and `array<int,Foo>`, nothing for `\Foo`.
      * (Also the other words of such a type, e.g. `array` and `int`)
      */
-    public static function namesInNamespace(string $file, string $namespace): array
+    public static function namesInNamespace(string $file, int $namespace_id): array
     {
         try {
             $entry = FileCache::getOrReadEntry(Config::projectPath($file));
@@ -50,11 +60,11 @@ final class CommentClassReferences
             self::$entry = $entry;
             self::$names_of_namespaces = self::namesByNamespace($entry);
         }
-        return self::$names_of_namespaces[\strtolower($namespace)] ?? [];
+        return self::$names_of_namespaces[$namespace_id] ?? [];
     }
 
     /**
-     * @return array<string,array<string,true>> for each namespace of the file (in lower case, `\ns\sub`),
+     * @return array<int,array<string,true>> for each namespace declaration of the file (see namesInNamespace()),
      * the names that namesInNamespace() returns.
      */
     private static function namesByNamespace(FileCacheEntry $entry): array
@@ -68,7 +78,7 @@ final class CommentClassReferences
             return [];
         }
         $result = [];
-        $namespace = '\\';
+        $namespace_id = 0;
         $is_after_namespace_keyword = false;
         foreach ($tokens as $token) {
             $id = $token->id;
@@ -79,15 +89,17 @@ final class CommentClassReferences
                 $text = $token->text;
                 // (`/* (at)var Foo $x */` is read by editors, and by Phan in a string. Not `// ...` and `# ...`)
                 if ($text[1] === '*' && \str_contains($text, '@')) {
-                    self::addNamesOfComment($text, $result[$namespace]);
+                    self::addNamesOfComment($text, $result[$namespace_id]);
                 }
                 continue;
             }
             if ($is_after_namespace_keyword) {
                 // `namespace NS\Sub;`, `namespace NS {`, or `namespace {` for the global namespace.
-                // (`namespace\foo()` is a single token)
+                // (`namespace\foo()` is a single token. Not `function namespace()`, `const NAMESPACE = 1` and `Foo::NAMESPACE`)
                 $is_after_namespace_keyword = false;
-                $namespace = $id === \T_NAME_QUALIFIED || $id === \T_STRING ? '\\' . \strtolower($token->text) : '\\';
+                if ($id === \T_NAME_QUALIFIED || $id === \T_STRING || $token->text === '{') {
+                    $namespace_id++;
+                }
                 continue;
             }
             if ($id === \T_NAMESPACE) {
@@ -102,12 +114,18 @@ final class CommentClassReferences
      */
     private static function addNamesOfComment(string $comment, ?array &$names): void
     {
+        // (A type can be written on several lines: `(at)var array{` and then a line for each field)
+        $comment = Builder::withMultilineTypesJoined($comment);
         foreach ([Builder::PARAM_COMMENT_REGEX, Builder::RETURN_OR_THROWS_COMMENT_REGEX] as $regex) {
             if (!\preg_match_all($regex, $comment, $matches)) {
                 continue;
             }
             foreach ($matches[2] as $type) {
-                if ($type === '' || !\preg_match_all(self::FIRST_NAME_PART_REGEX, $type, $name_matches)) {
+                if ($type === '') {
+                    continue;
+                }
+                $type = \preg_replace(self::NOT_A_CLASS_NAME_REGEX, ' ', $type) ?? $type;
+                if (!\preg_match_all(self::FIRST_NAME_PART_REGEX, $type, $name_matches)) {
                     continue;
                 }
                 foreach ($name_matches[0] as $name) {
