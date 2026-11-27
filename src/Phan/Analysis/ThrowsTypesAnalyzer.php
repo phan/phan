@@ -18,6 +18,7 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\TemplateType;
+use Phan\Language\Type\VoidType;
 use Phan\Suggestion;
 
 /**
@@ -77,6 +78,10 @@ class ThrowsTypesAnalyzer
                 $suggestion
             );
         };
+        if ($type instanceof VoidType) {
+            // `(at)throws void` says that the function throws nothing (PHPStan, Psalm), e.g. where it overrides one that does.
+            return false;
+        }
         if (!$type->isObject()) {
             $maybe_emit_for_method(
                 Issue::TypeInvalidThrowsNonObject,
@@ -120,6 +125,10 @@ class ThrowsTypesAnalyzer
             return false;
         }
         $exception_class = $code_base->getClassByFQSEN($type_fqsen);
+        if ($exception_class->isInterface() && $type->asExpandedTypes($code_base)->hasType($throwable)) {
+            // An interface that extends Throwable: what is thrown is an instance of a class that implements it.
+            return true;
+        }
         if ($exception_class->isTrait() || $exception_class->isInterface()) {
             $maybe_emit_for_method(
                 $exception_class->isTrait() ? Issue::TypeInvalidThrowsIsTrait : Issue::TypeInvalidThrowsIsInterface,

@@ -24,6 +24,7 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Type;
 use Phan\Language\Type\IterableType;
+use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StaticOrSelfType;
 use Phan\Language\Type\TemplateType;
@@ -1745,6 +1746,12 @@ class ParameterTypesAnalyzer
         }
         if (!$real_param_type->containsNullable() || $phpdoc_param_union_type->containsNullable()) {
             // We already validated that the other casts were supported.
+            return $phpdoc_param_union_type;
+        }
+        $real_type_set = $real_param_type->getTypeSet();
+        if (\count($real_type_set) === 1 && \get_class(\reset($real_type_set)) === MixedType::class) {
+            // `mixed` is not `?T`: it is the only real type for what has none (`(at)param resource $stream` for `mixed $stream`),
+            // and what the phpdoc type narrows it to does not have to include null.
             return $phpdoc_param_union_type;
         }
         $has_null = $phpdoc_param_union_type->hasType(NullType::instance(false));

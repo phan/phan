@@ -72,7 +72,7 @@ final class PhaseTimer
     /** @var array<string,int|float|string> */
     private static array $notes = [];
     /**
-     * @var ?array<string,int|float> gc_status() when this worker started: the cumulative counters a forked worker
+     * @var ?array<string,bool|int|float> gc_status() when this worker started: the cumulative counters a forked worker
      * inherits from the parent, subtracted from the worker's own notes
      */
     private static ?array $gc_baseline = null;

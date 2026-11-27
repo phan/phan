@@ -165,6 +165,10 @@ return [
       'old' => ['DOMDocument|bool', 'source'=>'string', 'options='=>'int'],
       'new' => ['bool', 'source'=>'string', 'options='=>'int'],
     ],
+    'gc_status' => [
+      'old' => ['array{runs:int,collected:int,threshold:int,roots:int}'],
+      'new' => ['array{running:bool,protected:bool,full:bool,runs:int,collected:int,threshold:int,buffer_size:int,roots:int,application_time:float,collector_time:float,destructor_time:float,free_time:float}'],
+    ],
     'imagerotate' => [
       'old' => ['false|GdImage', 'image'=>'GdImage', 'angle'=>'float', 'background_color'=>'int', 'ignore_transparent='=>'bool'],
       'new' => ['false|GdImage', 'image'=>'GdImage', 'angle'=>'float', 'background_color'=>'int'],

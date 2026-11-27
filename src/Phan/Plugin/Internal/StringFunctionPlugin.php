@@ -26,6 +26,43 @@ final class StringFunctionPlugin extends PluginV3 implements
     AnalyzeFunctionCallCapability
 {
     /**
+     * @param Node|string|float|int|null $arg
+     * @return bool whether this is a string literal that lists characters, which is searched for a character:
+     * `str_contains('0123456789', $character)`, `strpos('+-=', $operator)`, `strpos('abcdefABCDEF', $digit)`.
+     *
+     * That is a string of at least two characters that are all different, in which every letter is part of a run of
+     * at least three consecutive characters (`abc`). A word (`'/admin'`, `'.php'`, `'key'`) is not one.
+     */
+    private static function isCharacterSet(Node|float|int|null|string $arg): bool
+    {
+        if (!\is_string($arg)) {
+            return false;
+        }
+        $length = \strlen($arg);
+        if ($length < 2 || \count(\array_unique(\str_split($arg))) !== $length) {
+            return false;
+        }
+        for ($i = 0; $i < $length; $i++) {
+            if (!\ctype_alpha($arg[$i])) {
+                continue;
+            }
+            // The run of consecutive characters that this letter is in
+            $start = $i;
+            while ($start > 0 && \ord($arg[$start - 1]) === \ord($arg[$start]) - 1) {
+                $start--;
+            }
+            $end = $i;
+            while ($end + 1 < $length && \ord($arg[$end + 1]) === \ord($arg[$end]) + 1) {
+                $end++;
+            }
+            if ($end - $start < 2) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * The constants of PHP with a value that depends on the system, the build or the way that PHP is run:
      * they are the text that is searched or matched (`strpos(PHP_OS, 'WIN')`), like a variable.
      */
@@ -123,7 +160,7 @@ final class StringFunctionPlugin extends PluginV3 implements
                     return;
                 }
                 if (!self::isSimpleExpression($args[$expected_const_pos])) {
-                    if (self::isSimpleExpression($args[$expected_variable_pos], true)) {
+                    if (self::isSimpleExpression($args[$expected_variable_pos], true) && !self::isCharacterSet($args[$expected_variable_pos])) {
                         Issue::maybeEmit(
                             $code_base,
                             $context,

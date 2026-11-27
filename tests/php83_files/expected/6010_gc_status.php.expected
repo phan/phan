@@ -1,0 +1,4 @@
+%s:4 PhanPluginUnknownArrayFunctionReturnType Function \gcStatus() has a return type of array, but does not specify key or value types
+%s:4 PhanUnreferencedFunction Possibly zero references to function \gcStatus()
+%s:5 PhanDebugAnnotation @phan-debug-var requested for variable $status - it has union type array{running:bool,protected:bool,full:bool,runs:int,collected:int,threshold:int,buffer_size:int,roots:int,application_time:float,collector_time:float,destructor_time:float,free_time:float}(real=array)
+%s:7 PhanTypeInvalidDimOffset Invalid offset "missing" of $status of array type array{running:bool,protected:bool,full:bool,runs:int,collected:int,threshold:int,buffer_size:int,roots:int,application_time:float,collector_time:float,destructor_time:float,free_time:float}

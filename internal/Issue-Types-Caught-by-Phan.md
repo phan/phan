@@ -3677,6 +3677,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/0905
 
 ## PhanTypeInvalidThrowsIsInterface
 
+Since 6.1.0, this is not emitted for an interface that extends `Throwable`.
+
 ```
 @throws annotation of {FUNCTIONLIKE} has suspicious interface type {TYPE} for an @throws annotation, expected class (PHP allows interfaces to be caught, so this might be intentional)
 ```
