@@ -275,7 +275,7 @@ class ParameterTypesAnalyzer
 
             if ($type instanceof TemplateType) {
                 if ($method instanceof Method) {
-                    if ($method->isStatic() && !$method->declaresTemplateTypeInComment($type)) {
+                    if ($method->isStatic() && !$method->declaresTemplateTypeInComment($type) && !$method->isStaticMethodOfClassThatIsInherited($code_base)) {
                         Issue::maybeEmit(
                             $code_base,
                             $method->getContext(),
