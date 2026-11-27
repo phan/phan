@@ -262,6 +262,21 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
+     * @return bool whether a class that inherits this static method can give the template types of the class their types
+     * (`(at)implements Setting<bool>`, `(at)use Getter<bool>`, `(at)extends Base<bool>`):
+     * the method is declared in an interface, a trait or an abstract class.
+     * A static method of such a class can use the template types of the class.
+     */
+    public function isStaticMethodOfClassThatIsInherited(CodeBase $code_base): bool
+    {
+        if (!$this->isStatic()) {
+            return false;
+        }
+        $class = $this->getClass($code_base);
+        return $class->isInterface() || $class->isTrait() || $class->isAbstract();
+    }
+
+    /**
      * Returns true if this element is overridden by at least one other element
      */
     public function isOverriddenByAnother(): bool

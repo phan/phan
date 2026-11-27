@@ -2018,7 +2018,7 @@ trait FunctionTrait
 
                 if ($type instanceof TemplateType) {
                     if ($this instanceof Method) {
-                        if ($this->isStatic() && !$this->declaresTemplateTypeInComment($type)) {
+                        if ($this->isStatic() && !$this->declaresTemplateTypeInComment($type) && !$this->isStaticMethodOfClassThatIsInherited($code_base)) {
                             Issue::maybeEmit(
                                 $code_base,
                                 $context,

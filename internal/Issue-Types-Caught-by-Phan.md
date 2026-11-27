@@ -5015,6 +5015,8 @@ e.g. [this issue](https://github.com/phan/phan/tree/v6/tests/files/expected/1006
 
 This is emitted when a static method's PHPDoc contains a param/return type declared in a class's phpdoc template annotations.
 
+Since 6.1.0, this is not emitted for a static method of an interface, a trait or an abstract class: a class that inherits the method gives the template type its type with `@implements`, `@use` or `@extends`.
+
 ```
 static method {METHOD} does not declare template type in its own comment and may not use the template type of class instances
 ```

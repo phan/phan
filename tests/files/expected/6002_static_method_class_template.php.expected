@@ -1,0 +1,14 @@
+%s:40 PhanGenericMissingParameters Class \NS6002\NotBound must substitute all 1 template parameters when inheriting \NS6002\Setting (found 0) defined at %s:10 (use @extends or @inherit)
+%s:46 PhanAbstractStaticMethodCallInStatic Potentially calling an abstract static method \NS6002\Base::make() with static:: in static::make() (the calling static method's class scope may be an abstract class)
+%s:53 PhanTemplateTypeStaticMethod static method \NS6002\Box::unbound does not declare template type in its own comment and may not use the template type of class instances
+%s:55 PhanAbstractStaticMethodCall Potentially calling an abstract static method \NS6002\NotBound::value() in NotBound::value()
+%s:55 PhanAbstractStaticMethodCall Potentially calling an abstract static method \NS6002\Unbound::value() in Unbound::value()
+%s:56 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type bool
+%s:56 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type bool
+%s:56 PhanDebugAnnotation @phan-debug-var requested for variable $c - it has union type string
+%s:56 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type string
+%s:56 PhanDebugAnnotation @phan-debug-var requested for variable $e - it has union type T
+%s:56 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type int
+%s:56 PhanDebugAnnotation @phan-debug-var requested for variable $g - it has union type T
+%s:56 PhanTypeMismatchArgument Argument 1 ($v) is 'x' of type string but \NS6002\Flag::set() takes bool defined at %s:28
+%s:56 PhanTypeMismatchArgument Argument 1 ($v) is 'y' of type string but \NS6002\Flag::check() takes bool defined at %s:35
