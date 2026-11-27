@@ -10,6 +10,7 @@ namespace NS5997;
 abstract class Policy { abstract public static function getName(): string; }
 final class Concrete extends Policy { public static function getName(): string { return 'c'; } }
 interface Named { public static function label(): string; }
+abstract class StillAbstract extends Policy {}
 /**
  * @param class-string<Policy> $a
  * @param class-string<Named> $b
@@ -24,6 +25,10 @@ function f(string $a, string $b, string $c, bool $flag): void {
     $either = $flag ? Policy::class : $a;
     echo $either::getName();            // may be the abstract class: reported
     echo Policy::getName();             // reported
+    $concrete_or_any = $flag ? Concrete::class : $a;
+    echo $concrete_or_any::getName();   // ok: the name of a class that implements it, or a class-string
+    $inherits = $flag ? StillAbstract::class : $a;
+    echo $inherits::getName();          // reported: inherited and not implemented
 }
 trait T {
     public static function get() { return self::load(); }

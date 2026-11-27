@@ -319,14 +319,15 @@ final class ArgumentType
             // `$class::method()` calls the abstract method when $class is the name of the class that declares it
             // (`$class = GiftBackend::class;`). A `class-string<GiftBackend>` is the name of some class that is a GiftBackend,
             // which is a class that implements the method, unless the code names the abstract class or interface itself.
-            $has_literal_class_name = false;
+            // (And the class that is named has to be one in which the method is abstract: not `$flag ? Concrete::class : $class`)
+            $names_class_with_abstract_method = false;
             foreach ($class_type->getTypeSet() as $type) {
-                if ($type instanceof LiteralStringType) {
-                    $has_literal_class_name = true;
+                if ($type instanceof LiteralStringType && self::isAbstractStaticMethodOfClassName($code_base, $type->getValue(), $method->getName())) {
+                    $names_class_with_abstract_method = true;
                     break;
                 }
             }
-            if (!$has_literal_class_name) {
+            if (!$names_class_with_abstract_method) {
                 return;
             }
         }
@@ -338,6 +339,28 @@ final class ArgumentType
             $method->getRepresentationForIssue(),
             ASTReverter::toShortString($node)
         );
+    }
+
+    /**
+     * @return bool whether $class_name is the name of a class in which the static method $method_name is abstract
+     * (declared there, or inherited and not implemented)
+     */
+    private static function isAbstractStaticMethodOfClassName(CodeBase $code_base, string $class_name, string $method_name): bool
+    {
+        try {
+            $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class_name);
+        } catch (Exception) {
+            return false;
+        }
+        if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+            return false;
+        }
+        $class = $code_base->getClassByFQSEN($class_fqsen);
+        if (!$class->hasMethodWithName($code_base, $method_name, true)) {
+            return false;
+        }
+        $method = $class->getMethodByName($code_base, $method_name);
+        return $method->isAbstract() && $method->isStatic();
     }
 
     private static function emitParamTooMany(
