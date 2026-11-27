@@ -6,6 +6,7 @@ namespace Phan\Library\IncrementalAnalysis;
 
 use Phan\CLI;
 use Phan\Config as PhanConfig;
+use Phan\Library\ComposerPackages;
 
 use function hash;
 use function json_encode;
@@ -82,7 +83,13 @@ class Config
             'unused_variable_detection' => PhanConfig::getValue('unused_variable_detection'),
             'redundant_condition_detection' => PhanConfig::getValue('redundant_condition_detection'),
             'simplify_ast' => PhanConfig::getValue('simplify_ast'),
+            'internal_access_scope' => PhanConfig::getValue('internal_access_scope'),
         ];
+        if ($config_data['internal_access_scope'] === 'package') {
+            // The packages are read from composer.json and installed.json.
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            $config_data['composer_packages'] = ComposerPackages::metadataHash();
+        }
 
         $json = json_encode($config_data);
         return hash('sha256', $json !== false ? $json : '');

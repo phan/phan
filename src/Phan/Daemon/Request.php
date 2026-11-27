@@ -20,6 +20,7 @@ use Phan\LanguageServer\FileMapping;
 use Phan\LanguageServer\GoToDefinitionRequest;
 use Phan\LanguageServer\NodeInfoRequest;
 use Phan\LanguageServer\Protocol\Position;
+use Phan\Library\ComposerPackages;
 use Phan\Library\FileCache;
 use Phan\Library\StringUtil;
 use Phan\Output\IssuePrinterInterface;
@@ -690,6 +691,9 @@ class Request
         // (And the classes that the files declare)
         // @phan-suppress-next-line PhanAccessMethodInternal
         DeclaredClassIndex::reset($file_mapping_contents);
+        // (And composer.json or the installed packages, for `internal_access_scope`)
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        ComposerPackages::reset();
 
         $changed_or_added_files = $code_base->updateFileList($file_list, $file_mapping_contents, $file_names);
         // Daemon::debugf("Parsing modified files: New files = %s", StringUtil::jsonEncode($changed_or_added_files));

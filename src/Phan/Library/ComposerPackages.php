@@ -80,20 +80,18 @@ final class ComposerPackages
         if ($composer === null) {
             return [];
         }
-        $root_name = \is_string($composer['name'] ?? null) ? $composer['name'] : self::ROOT_PACKAGE;
+        // (The names of Composer packages are not case-sensitive. '' is what the cache has for a namespace that is in no package.)
+        $name = $composer['name'] ?? null;
+        $root_name = \is_string($name) && $name !== '' ? \strtolower($name) : self::ROOT_PACKAGE;
         self::addPrefixes($prefixes, $composer, $root_name, true);
 
-        $vendor_dir = $composer['config']['vendor-dir'] ?? 'vendor';
-        if (!\is_string($vendor_dir) || $vendor_dir === '') {
-            $vendor_dir = 'vendor';
-        }
-        $vendor_path = Paths::isAbsolutePath($vendor_dir) ? $vendor_dir : $root . '/' . $vendor_dir;
-        $installed = self::readJson($vendor_path . '/composer/installed.json');
+        $installed = self::readJson(self::vendorPath($root, $composer) . '/composer/installed.json');
         // (Composer 2 has the list in 'packages', Composer 1 is the list)
         $packages = $installed['packages'] ?? $installed ?? [];
         foreach (\is_array($packages) ? $packages : [] as $package) {
-            if (\is_array($package) && \is_string($package['name'] ?? null)) {
-                self::addPrefixes($prefixes, $package, $package['name'], false);
+            $name = \is_array($package) ? ($package['name'] ?? null) : null;
+            if (\is_array($package) && \is_string($name) && $name !== '') {
+                self::addPrefixes($prefixes, $package, \strtolower($name), false);
             }
         }
         // The longest prefix of a namespace is its package: `Foo\Bar\` before `Foo\`.
@@ -118,8 +116,10 @@ final class ComposerPackages
                 }
                 foreach ($map as $prefix => $_) {
                     $prefix = (string)$prefix;
-                    // (Not the empty prefix of a fallback directory, and not a class name prefix of PSR-0 such as `Twig_`)
-                    if (!\str_ends_with($prefix, '\\')) {
+                    // A prefix of PSR-4 ends with a backslash. A prefix of PSR-0 need not (`Psr\Log`),
+                    // and can also be the start of class names with underscores (`Twig_`), which is not a namespace.
+                    // (The empty prefix of a fallback directory is skipped below.)
+                    if ($kind === 'psr-4' ? !\str_ends_with($prefix, '\\') : \str_ends_with($prefix, '_')) {
                         continue;
                     }
                     $prefix = \strtolower(\trim($prefix, '\\'));
@@ -130,6 +130,33 @@ final class ComposerPackages
                 }
             }
         }
+    }
+
+    /**
+     * @return string a hash of the files that the packages are read from (for the manifest of incremental analysis:
+     * the issues of a file depend on these, with `internal_access_scope` set to `'package'`)
+     */
+    public static function metadataHash(): string
+    {
+        $root = Config::getProjectRootDirectory();
+        $parts = [];
+        foreach ([$root . '/composer.json', self::vendorPath($root, self::readJson($root . '/composer.json') ?? []) . '/composer/installed.json'] as $path) {
+            $parts[] = \is_file($path) && \is_readable($path) ? (string)\hash_file('sha256', $path) : '';
+        }
+        return \implode(':', $parts);
+    }
+
+    /**
+     * @param array<mixed,mixed> $composer the contents of the composer.json of the project
+     * @return string the directory of the installed packages (`config.vendor-dir`, by default `vendor`)
+     */
+    private static function vendorPath(string $root, array $composer): string
+    {
+        $vendor_dir = $composer['config']['vendor-dir'] ?? 'vendor';
+        if (!\is_string($vendor_dir) || $vendor_dir === '') {
+            $vendor_dir = 'vendor';
+        }
+        return Paths::isAbsolutePath($vendor_dir) ? $vendor_dir : $root . '/' . $vendor_dir;
     }
 
     /**
