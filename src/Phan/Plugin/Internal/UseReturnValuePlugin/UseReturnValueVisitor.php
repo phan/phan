@@ -158,6 +158,9 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
             if ($used && !UseReturnValuePlugin::$use_dynamic) {
                 return;
             }
+            if (!$used && $this->isJsonDecodeForValidation($node, $function_list)) {
+                return;
+            }
 
             foreach ($function_list as $function) {
                 $this->checkUseReturnValueGenerator($function, $node);
@@ -186,6 +189,78 @@ class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
             }
         } catch (CodeBaseException) {
         }
+    }
+
+    /**
+     * @param Node $node a call of which the result is not used
+     * @param array<mixed,FunctionInterface> $function_list the functions that it may call
+     * @return bool whether this is `json_decode()` that is called to check that a string is JSON:
+     * with `JSON_THROW_ON_ERROR` in an argument, or in a function (or a file, outside of functions) that calls
+     * `json_last_error()` or `json_last_error_msg()`.
+     */
+    private function isJsonDecodeForValidation(Node $node, array $function_list): bool
+    {
+        $is_json_decode = false;
+        foreach ($function_list as $function) {
+            // (Also for `use function json_decode as decode;`)
+            if ($function->getFQSEN()->__toString() !== '\json_decode') {
+                return false;
+            }
+            $is_json_decode = true;
+        }
+        if (!$is_json_decode) {
+            return false;
+        }
+        if (self::containsNameIn($node->children['args'], ast\AST_CONST, ['json_throw_on_error' => true])) {
+            return true;
+        }
+        // The function that the call is in, or the file
+        $scope_node = $this->parent_node_list[0] ?? null;
+        for ($i = \count($this->parent_node_list) - 1; $i >= 0; $i--) {
+            $parent = $this->parent_node_list[$i];
+            if (\in_array($parent->kind, self::FUNCTION_LIKE_KINDS, true)) {
+                $scope_node = $parent->children['stmts'] ?? null;
+                break;
+            }
+        }
+        if (!($scope_node instanceof Node)) {
+            return false;
+        }
+        // (Looked for once for each function or file)
+        self::$checks_json_error_cache ??= new WeakMap();
+        return self::$checks_json_error_cache[$scope_node]
+            ??= self::containsNameIn($scope_node, ast\AST_CALL, ['json_last_error' => true, 'json_last_error_msg' => true]);
+    }
+
+    private const FUNCTION_LIKE_KINDS = [ast\AST_FUNC_DECL, ast\AST_METHOD, ast\AST_CLOSURE, ast\AST_ARROW_FUNC, ast\AST_PROPERTY_HOOK];
+
+    /** @var ?WeakMap<Node,bool> whether the statements of a function or a file call json_last_error() or json_last_error_msg() */
+    private static $checks_json_error_cache;
+
+    /**
+     * @param int $kind ast\AST_CALL or ast\AST_CONST
+     * @param array<string,true> $names names in lower case
+     * @return bool whether $node has a call of a function, or a use of a constant, with one of these names.
+     * Not in the functions, closures and classes that are declared in $node: what they call is not called by running $node.
+     */
+    private static function containsNameIn(Node $node, int $kind, array $names): bool
+    {
+        // (`json_last_error(...)` creates a closure and checks nothing)
+        if ($node->kind === $kind && ($kind !== ast\AST_CALL || $node->children['args']->kind !== ast\AST_CALLABLE_CONVERT)) {
+            $name = $node->children[$kind === ast\AST_CALL ? 'expr' : 'name']->children['name'] ?? null;
+            if (\is_string($name) && isset($names[\strtolower(\ltrim($name, '\\'))])) {
+                return true;
+            }
+        }
+        foreach ($node->children as $child) {
+            if (!($child instanceof Node) || $child->kind === ast\AST_CLASS || \in_array($child->kind, self::FUNCTION_LIKE_KINDS, true)) {
+                continue;
+            }
+            if (self::containsNameIn($child, $kind, $names)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

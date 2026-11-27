@@ -17348,7 +17348,7 @@ return [
 'setLeftFill' => ['void', 'red'=>'int', 'green'=>'int', 'blue'=>'int', 'a='=>'int'],
 'setLine' => ['void', 'width'=>'int', 'red'=>'int', 'green'=>'int', 'blue'=>'int', 'a='=>'int'],
 'setRightFill' => ['void', 'red'=>'int', 'green'=>'int', 'blue'=>'int', 'a='=>'int'],
-'set_error_handler' => ['?callable', 'callback'=>'null|callable(int,string,string,int,array):bool|callable(int,string,string,int):bool|callable(int,string,string):bool|callable(int,string):bool', 'error_levels='=>'int'],
+'set_error_handler' => ['?callable', 'callback'=>'null|callable(int,string,string,int,array):(bool|void)|callable(int,string,string,int):(bool|void)|callable(int,string,string):(bool|void)|callable(int,string):(bool|void)', 'error_levels='=>'int'],
 'set_exception_handler' => ['null|callable(Throwable):void', 'callback'=>'null|callable(Throwable):void'],
 'set_file_buffer' => ['int', 'stream'=>'resource', 'size'=>'int'],
 'set_include_path' => ['string|false', 'include_path'=>'string'],

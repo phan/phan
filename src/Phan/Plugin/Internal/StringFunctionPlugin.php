@@ -26,10 +26,38 @@ final class StringFunctionPlugin extends PluginV3 implements
     AnalyzeFunctionCallCapability
 {
     /**
+     * The constants of PHP with a value that depends on the system, the build or the way that PHP is run:
+     * they are the text that is searched or matched (`strpos(PHP_OS, 'WIN')`), like a variable.
+     */
+    private const ENVIRONMENT_CONSTANTS = [
+        'PHP_OS' => true,
+        'PHP_OS_FAMILY' => true,
+        'PHP_VERSION' => true,
+        'PHP_EXTRA_VERSION' => true,
+        'PHP_SAPI' => true,
+        'PHP_BINARY' => true,
+        'PHP_BINDIR' => true,
+        'PHP_PREFIX' => true,
+        'PHP_EXTENSION_DIR' => true,
+        'PHP_CONFIG_FILE_PATH' => true,
+        'PHP_CONFIG_FILE_SCAN_DIR' => true,
+        'DEFAULT_INCLUDE_PATH' => true,
+        'PEAR_INSTALL_DIR' => true,
+        'PEAR_EXTENSION_DIR' => true,
+        'PHP_DATADIR' => true,
+        'PHP_LIBDIR' => true,
+        'PHP_SYSCONFDIR' => true,
+        'PHP_LOCALSTATEDIR' => true,
+        'PHP_MANDIR' => true,
+        'PHP_SHLIB_SUFFIX' => true,
+    ];
+
+    /**
      * @param Node|string|float|int|null $arg
+     * @param bool $is_subject whether $arg is in the place of the text that is searched or matched
      * @return bool true if the expression is simple to look up.
      */
-    private static function isSimpleExpression(Node|float|int|null|string $arg): bool
+    private static function isSimpleExpression(Node|float|int|null|string $arg, bool $is_subject = false): bool
     {
         if (\is_scalar($arg)) {
             return true;
@@ -39,21 +67,30 @@ final class StringFunctionPlugin extends PluginV3 implements
         }
         if ($arg instanceof Node) {
             $kind = $arg->kind;
-            if (\in_array($kind, [ast\AST_CONST, ast\AST_CLASS_CONST, ast\AST_CLASS_NAME], true)) {
+            if ($kind === ast\AST_CONST) {
+                if (!$is_subject) {
+                    return true;
+                }
+                // A constant that describes where the code runs is not out of place as the text that is searched: `preg_match($pattern, PHP_OS)`
+                // (It is not out of place as the needle either: `strpos('Linux Darwin', PHP_OS)`)
+                $name = $arg->children['name']->children['name'] ?? null;
+                return !\is_string($name) || !isset(self::ENVIRONMENT_CONSTANTS[\strtoupper(\ltrim($name, '\\'))]);
+            }
+            if ($kind === ast\AST_CLASS_CONST || $kind === ast\AST_CLASS_NAME) {
                 return true;
             }
             if ($kind === ast\AST_BINARY_OP) {
                 // E.g. flags == BINARY_CONCAT
-                return self::isSimpleExpression($arg->children['left']) && self::isSimpleExpression($arg->children['right']);
+                return self::isSimpleExpression($arg->children['left'], $is_subject) && self::isSimpleExpression($arg->children['right'], $is_subject);
             } elseif ($kind === ast\AST_ARRAY) {
                 foreach ($arg->children as $child) {
                     if (!($child instanceof Node)) {
                         continue;
                     }
-                    if (!self::isSimpleExpression(($child->children['key'] ?? null))) {
+                    if (!self::isSimpleExpression(($child->children['key'] ?? null), $is_subject)) {
                         return false;
                     }
-                    if (!self::isSimpleExpression(($child->children['value'] ?? null))) {
+                    if (!self::isSimpleExpression(($child->children['value'] ?? null), $is_subject)) {
                         return false;
                     }
                 }
@@ -86,7 +123,7 @@ final class StringFunctionPlugin extends PluginV3 implements
                     return;
                 }
                 if (!self::isSimpleExpression($args[$expected_const_pos])) {
-                    if (self::isSimpleExpression($args[$expected_variable_pos])) {
+                    if (self::isSimpleExpression($args[$expected_variable_pos], true)) {
                         Issue::maybeEmit(
                             $code_base,
                             $context,
