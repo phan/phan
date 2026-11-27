@@ -532,6 +532,9 @@ class ParseVisitor extends ScopeVisitor
     /** Matches `(at)use Trait<T>` and the forms with a prefix */
     private const USE_ANNOTATION_REGEX = '/@(?:phan-|phpstan-|psalm-|template-)?use\s/i';
 
+    /** Matches such an annotation at the start of a line of a doc comment */
+    private const USE_ANNOTATION_LINE_REGEX = '/(?:^|\n)[\s\/*]*@(?:phan-|phpstan-|psalm-|template-)?use\s/i';
+
     /**
      * @return list<Type> the types of the `(at)use` annotations of a doc comment above a `use Trait;` statement.
      * As in the doc comment of a class, `(at)phan-use` annotations are used instead of the others if there are any.
@@ -544,7 +547,8 @@ class ParseVisitor extends ScopeVisitor
         // (`@use A<` and then `int>` on the next line)
         // @phan-suppress-next-line PhanAccessMethodInternal
         $doc_comment = Builder::withMultilineTypesJoined($doc_comment);
-        if (!\preg_match_all('/@(phan-|phpstan-|psalm-|template-)?use\s+(' . Type::type_regex . ')/i', $doc_comment, $matches, \PREG_SET_ORDER)) {
+        // (As in the doc comment of a class, an annotation starts a line: not `Example: @use A<string>`)
+        if (!\preg_match_all('/(?:^|\n)[\s\/*]*@(phan-|phpstan-|psalm-|template-)?use\s+(' . Type::type_regex . ')/i', $doc_comment, $matches, \PREG_SET_ORDER)) {
             return [];
         }
         $types = [];
@@ -666,6 +670,10 @@ class ParseVisitor extends ScopeVisitor
         $class_names = [];
         // The name of a class of which the body has not started yet (null if there is none)
         $pending_class_name = null;
+        // The parentheses that are open, and how many were open at the keyword of that class
+        // (the body of `new class(function () {}) {...}` is the brace after its arguments)
+        $paren_depth = 0;
+        $pending_paren_depth = 0;
         $previous_id = 0;
         foreach ($tokens as $token) {
             $id = $token->id;
@@ -678,30 +686,40 @@ class ParseVisitor extends ScopeVisitor
             }
             if ($id === \T_USE) {
                 if ($class_body_depths && \end($class_body_depths) === $depth) {
-                    $result[(string)\end($class_names)][$token->line][] = $doc_comment !== null && \preg_match(self::USE_ANNOTATION_REGEX, $doc_comment) ? $doc_comment : null;
+                    $result[(string)\end($class_names)][$token->line][] = $doc_comment !== null && \preg_match(self::USE_ANNOTATION_LINE_REGEX, $doc_comment) ? $doc_comment : null;
                 }
             } elseif ($id === \T_CLASS || $id === \T_TRAIT || $id === \T_INTERFACE || $id === \T_ENUM) {
                 // (Not `Foo::class`)
                 if ($previous_id !== \T_DOUBLE_COLON) {
                     $pending_class_name = '';
+                    $pending_paren_depth = $paren_depth;
                 }
             } elseif ($id === \T_STRING && $pending_class_name === '' && ($previous_id === \T_CLASS || $previous_id === \T_TRAIT || $previous_id === \T_INTERFACE || $previous_id === \T_ENUM)) {
                 // (An anonymous class has no name after the keyword)
                 $pending_class_name = \strtolower($token->text);
-            } elseif ($id === \T_CURLY_OPEN || $id === \T_DOLLAR_OPEN_CURLY_BRACES || $token->text === '{') {
+            } elseif ($id === 40) {
+                // `(`
+                $paren_depth++;
+            } elseif ($id === 41) {
+                // `)`
+                $paren_depth--;
+            } elseif ($id === \T_CURLY_OPEN || $id === \T_DOLLAR_OPEN_CURLY_BRACES || $id === 123) {
+                // A `{` of the code, or the start of an interpolation, which ends with a `}` token.
+                // (The id of a token of one character is its character code. A `}` that is text of a string is not such a token.)
                 $depth++;
-                if ($pending_class_name !== null && $token->text === '{') {
+                if ($pending_class_name !== null && $id === 123 && $paren_depth === $pending_paren_depth) {
                     $class_body_depths[] = $depth;
                     $class_names[] = $pending_class_name;
                     $pending_class_name = null;
                 }
-            } elseif ($token->text === '}') {
+            } elseif ($id === 125) {
+                // `}`
                 if ($class_body_depths && \end($class_body_depths) === $depth) {
                     \array_pop($class_body_depths);
                     \array_pop($class_names);
                 }
                 $depth--;
-            } elseif ($token->text === ';' && $pending_class_name !== null) {
+            } elseif ($id === 59 && $pending_class_name !== null && $paren_depth === $pending_paren_depth) {
                 // (`enum` or `class` as something else than a declaration)
                 $pending_class_name = null;
             }

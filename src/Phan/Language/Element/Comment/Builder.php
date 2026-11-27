@@ -2734,7 +2734,7 @@ final class Builder
     /**
      * Matches the tag of an annotation that has a type, at the start of the text after an `(at)`.
      */
-    private const MULTILINE_TAG_REGEX = '/^(?:phan-|(?i:phpstan-|psalm-))?(?:param|var|return|real-return|property(?:-read|-write)?|assert|(?i:type)|implements|extends|inherits|use)\s/';
+    private const MULTILINE_TAG_REGEX = '/^(?:phan-|(?i:phpstan-|psalm-|template-(?=use)))?(?:param|var|return|real-return|property(?:-read|-write)?|assert|(?i:type)|implements|extends|inherits|use)\s/';
 
     /**
      * Joins the lines of the types that are written on several lines in a doc comment (see reduceMultiline()).

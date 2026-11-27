@@ -22,3 +22,36 @@ function test(First $f, Second $s, Multi $m, PhanFirst $p) {
     $fa = $f->a(); $sa = $s->a(); $ma = $m->a(); $pa = $p->a();
     '@phan-debug-var $fa, $sa, $ma, $pa';
 }
+
+class Later {
+    public function text(string $x): string {
+        // A `}` that is text of a string is not a brace of the code.
+        return "{$x}}";
+    }
+
+    /**
+     * @template-use A<
+     *     list<int>
+     * >
+     */
+    use A;
+
+    public function make(): object {
+        // The body of an anonymous class is the brace after its arguments.
+        return new class(function () {}) {
+            /** @use A<float> */
+            use A;
+            public function __construct(callable $c) {}
+            public function check(): void { $inner = $this->a(); '@phan-debug-var $inner'; }
+        };
+    }
+}
+class Prose {
+    /** Example: @use A<string> is not an annotation */
+    use A;
+    public function m(): void {}
+}
+function testMore(Later $l, Prose $p) {
+    $la = $l->a(); $pa = $p->a();
+    '@phan-debug-var $la, $pa';
+}

@@ -8,3 +8,10 @@
 %s:22 PhanUnusedVariable Unused definition of variable $ma (Did you mean $m)
 %s:22 PhanUnusedVariable Unused definition of variable $pa (Did you mean $p)
 %s:22 PhanUnusedVariable Unused definition of variable $sa (Did you mean $s)
+%s:45 PhanDebugAnnotation @phan-debug-var requested for variable $inner - it has union type float
+%s:45 PhanUnusedVariable Unused definition of variable $inner
+%s:51 PhanGenericMissingParameters Class \NS6000\Prose must substitute all 1 template parameters when inheriting \NS6000\A (found 0) defined at %s:4 (use @extends or @inherit)
+%s:55 PhanDebugAnnotation @phan-debug-var requested for variable $la - it has union type list<int>
+%s:55 PhanDebugAnnotation @phan-debug-var requested for variable $pa - it has union type V
+%s:55 PhanUnusedVariable Unused definition of variable $la (Did you mean $l)
+%s:55 PhanUnusedVariable Unused definition of variable $pa (Did you mean $p)
