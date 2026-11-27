@@ -1,0 +1,4 @@
+{"packages": [
+    {"name": "acme/lib", "autoload": {"psr-4": {"Acme\\Lib\\": "src/"}}},
+    {"name": "acme/lib-extra", "autoload": {"psr-4": {"Acme\\Lib\\Extra\\": "extra/"}, "psr-0": {"Legacy_": "legacy/"}}}
+]}

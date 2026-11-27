@@ -35,6 +35,7 @@ TEST_SUITES+=" __FakeRealTypesTest"
 TEST_SUITES+=" __FakeFallbackTest"
 TEST_SUITES+=" __FakeToolTest"
 TEST_SUITES+=" __FakeConfigOverrideTest"
+TEST_SUITES+=" __FakeInternalAccessScopeTest"
 TEST_SUITES+=" __FakeFixerTest"
 TEST_SUITES+=" __FakePhantasmTest"
 if type sqlite3 >/dev/null 2>/dev/null; then

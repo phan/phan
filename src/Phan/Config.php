@@ -491,6 +491,23 @@ class Config
         // If false, Phan will convert the type of a possibly undefined array offset to the defined equivalent (without converting to nullable).
         'convert_possibly_undefined_offset_to_nullable' => false,
 
+        // What `@internal` in a doc comment means for the code that may use the element.
+        //
+        // - `'namespace'` (default): the element may only be used in the namespace that it is declared in
+        //   (not in a namespace within that namespace).
+        // - `'package'`: the element may be used anywhere in the Composer package that declares it,
+        //   which is how phpDocumentor defines the tag and how most libraries use it
+        //   ("not a part of the public API").
+        //   A package is the namespaces of the `autoload` (`psr-4` and `psr-0`) prefixes of a `composer.json`:
+        //   that of the project (with `autoload-dev`), and those of the installed packages
+        //   (from `vendor/composer/installed.json`). A namespace belongs to the package with the longest prefix that it is in.
+        //   For an element in a namespace that is in no package, and in a project without a `composer.json`,
+        //   this is the same as `'namespace'`.
+        //
+        // This affects `PhanAccessMethodInternal`, `PhanAccessPropertyInternal`,
+        // `PhanAccessClassInternal`, `PhanAccessClassConstantInternal` and `PhanAccessConstantInternal`.
+        'internal_access_scope' => 'namespace',
+
         // If true, seemingly undeclared variables in the global
         // scope will be ignored.
         //
@@ -1898,6 +1915,12 @@ class Config
             'guess_unknown_parameter_type_using_default' => $is_bool,
             'hide_issue_column' => $is_bool,
             'infer_default_properties_in_construct' => $is_bool,
+            'internal_access_scope' => static function (mixed $value): ?string {
+                if ($value === 'namespace' || $value === 'package') {
+                    return null;
+                }
+                return "Expected 'namespace' or 'package'" . (is_string($value) ? ", but got '$value'" : self::errSuffixGotType($value));
+            },
             'ignore_undeclared_functions_with_known_signatures' => $is_bool,
             'ignore_undeclared_variables_in_global_scope' => $is_bool,
             'include_analysis_file_list' => $is_string_list,

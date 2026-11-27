@@ -558,6 +558,26 @@ NOTE: This step will only be performed if [`analyze_signature_compatibility`](#a
 
 (Default: `true`)
 
+## internal_access_scope
+
+What `@internal` in a doc comment means for the code that may use the element.
+
+- `'namespace'` (default): the element may only be used in the namespace that it is declared in
+  (not in a namespace within that namespace).
+- `'package'`: the element may be used anywhere in the Composer package that declares it,
+  which is how phpDocumentor defines the tag and how most libraries use it
+  ("not a part of the public API").
+  A package is the namespaces of the `autoload` (`psr-4` and `psr-0`) prefixes of a `composer.json`:
+  that of the project (with `autoload-dev`), and those of the installed packages
+  (from `vendor/composer/installed.json`). A namespace belongs to the package with the longest prefix that it is in.
+  For an element in a namespace that is in no package, and in a project without a `composer.json`,
+  this is the same as `'namespace'`.
+
+This affects `PhanAccessMethodInternal`, `PhanAccessPropertyInternal`,
+`PhanAccessClassInternal`, `PhanAccessClassConstantInternal` and `PhanAccessConstantInternal`.
+
+(Default: `"namespace"`)
+
 ## lazy_inherited_methods
 
 Create the copies of inherited methods only when they are needed.

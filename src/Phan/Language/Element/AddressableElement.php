@@ -14,6 +14,7 @@ use Phan\Language\FileRef;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\UnionType;
+use Phan\Library\ComposerPackages;
 use Phan\Memoize;
 
 /**
@@ -204,7 +205,17 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
 
         // Test to see if the context is within the same
         // namespace as where the element is defined
-        return (0 === \strcasecmp($context_namespace, $element_namespace));
+        if (0 === \strcasecmp($context_namespace, $element_namespace)) {
+            return true;
+        }
+        if (Config::getValue('internal_access_scope') !== 'package') {
+            return false;
+        }
+        // With `internal_access_scope` set to `'package'`: or within the same Composer package.
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        $element_package = ComposerPackages::packageOfNamespace($element_namespace);
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        return $element_package !== null && $element_package === ComposerPackages::packageOfNamespace($context_namespace);
     }
 
     /**

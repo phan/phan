@@ -1,0 +1,5 @@
+src/Sub/User.php:18: [W15002] PhanAccessClassConstantInternal: Cannot access internal class constant \Acme\Lib\Tool::SECRET defined at third_party/acme/lib/src/Tool.php:11
+src/Sub/User.php:18: [W15004] PhanAccessMethodInternal: Cannot access internal method \Acme\Lib\Extra\Addon::inner() of namespace \Acme\Lib\Extra defined at third_party/acme/lib/src/Extra.php:6 from namespace \App\Sub
+src/Sub/User.php:18: [W15004] PhanAccessMethodInternal: Cannot access internal method \Acme\Lib\Internals\Helper::help() of namespace \Acme\Lib\Internals defined at third_party/acme/lib/src/Internals/Helper.php:6 from namespace \App\Sub
+src/Sub/User.php:18: [W15004] PhanAccessMethodInternal: Cannot access internal method \Acme\Lib\Tool::secret() of namespace \Acme\Lib defined at third_party/acme/lib/src/Tool.php:6 from namespace \App\Sub
+src/outside.php:6: [W15004] PhanAccessMethodInternal: Cannot access internal method \App\Core::inner() of namespace \App defined at src/Core.php:6 from namespace \Elsewhere
