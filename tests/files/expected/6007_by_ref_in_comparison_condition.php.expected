@@ -1,0 +1,12 @@
+%s:8 PhanPossiblyUndeclaredVariable Variable $m is possibly undeclared
+%s:9 PhanPossiblyUndeclaredVariable Variable $m is possibly undeclared
+%s:10 PhanPossiblyUndeclaredVariable Variable $m is possibly undeclared
+%s:11 PhanPossiblyUndeclaredVariable Variable $m is possibly undeclared
+%s:11 PhanUnusedVariable Unused definition of variable $r
+%s:12 PhanPossiblyUndeclaredVariable Variable $m is possibly undeclared
+%s:21 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type array{0:string}
+%s:22 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type array{0:string}
+%s:23 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type array{0:string}
+%s:24 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type array{0:string}
+%s:25 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type array{0:string}
+%s:26 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type array{0:string}(real=non-empty-mixed)

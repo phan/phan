@@ -1468,6 +1468,13 @@ trait ConditionVisitorUtil
 
     protected function analyzeBinaryConditionPattern(Node|float|int|string $left, Node|float|int|string $right, BinaryCondition $condition): Context
     {
+        // Whatever the result of the comparison is, both operands were evaluated.
+        if ($left instanceof Node) {
+            $this->defineVariablesSetByCallOperand($left);
+        }
+        if ($right instanceof Node) {
+            $this->defineVariablesSetByCallOperand($right);
+        }
         if ($left instanceof Node) {
             $result = $this->analyzeBinaryConditionSide($left, $right, $condition);
             if ($result !== null) {
@@ -1481,6 +1488,62 @@ trait ConditionVisitorUtil
             }
         }
         return $this->context;
+    }
+
+    /**
+     * Analyzes a call that is an operand of a comparison in a condition, when an argument of the call is a variable
+     * that is not known to be defined: the call may define it by reference (`preg_match($re, $s, $matches) !== 0`).
+     *
+     * A call that is the condition itself is analyzed by visitCall(). This is for the call in `$a && call($v) !== 0 && $v`:
+     * `$a && call($v) !== 0` was analyzed as an expression in which the call may not happen, so that `$v` is possibly undefined,
+     * and the call did happen when the comparison has a result.
+     * (Other calls are not analyzed again: they were, and what is inferred from them is not lost)
+     */
+    private function defineVariablesSetByCallOperand(Node $node): void
+    {
+        switch ($node->kind) {
+            case ast\AST_CALL:
+            case ast\AST_METHOD_CALL:
+            case ast\AST_NULLSAFE_METHOD_CALL:
+            case ast\AST_STATIC_CALL:
+                break;
+            default:
+                return;
+        }
+        $args = $node->children['args'];
+        if ($args->kind !== ast\AST_ARG_LIST) {
+            // `call(...)`
+            return;
+        }
+        $scope = $this->context->getScope();
+        $context = $this->context;
+        $has_variable_to_define = false;
+        foreach ($args->children as $arg) {
+            if (!($arg instanceof Node) || $arg->kind !== ast\AST_VAR) {
+                continue;
+            }
+            $name = $arg->children['name'];
+            if (!\is_string($name)) {
+                continue;
+            }
+            if (!$scope->hasVariableWithName($name)) {
+                $has_variable_to_define = true;
+                continue;
+            }
+            $variable = $scope->getVariableByName($name);
+            $type = $variable->getUnionType();
+            if ($type->isPossiblyUndefined()) {
+                // The type that the variable has when it is defined is the one of this call, where it may not have happened,
+                // or of an earlier assignment. (Left as possibly undefined, it would be nullable after the call)
+                $has_variable_to_define = true;
+                $variable = clone($variable);
+                $variable->setUnionType($type->withIsPossiblyUndefined(false));
+                $context = $context->withScopeVariable($variable);
+            }
+        }
+        if ($has_variable_to_define) {
+            $this->context = (new BlockAnalysisVisitor($this->code_base, $context))->__invoke($node);
+        }
     }
 
     /**
