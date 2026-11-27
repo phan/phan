@@ -590,22 +590,26 @@ class ParseVisitor extends ScopeVisitor
         }
         $class_name = $class_node->children['name'] ?? null;
         if (\is_string($class_name)) {
-            $class_key = \strtolower($class_name);
+            // (With the namespace: `namespace X { class C {...} } namespace Y { class C {...} }` can be in one line)
+            $class_key = \strtolower(\ltrim($this->context->getNamespace() . '\\' . $class_name, '\\'));
             $comments_of_line = null;
         } else {
-            // An anonymous class is found by its number among the anonymous classes of the file.
-            // Classes are visited in the order of their `class` keywords, which is the order in which the tokens number them
-            // (an anonymous class in a method or in the arguments of another one comes after that one).
+            // An anonymous class is found by the line of its `class` keyword, and its number among the anonymous classes of that line.
+            // (Not by a number among all anonymous classes of the file: the classes in the arguments of `new class(...) {...}`
+            // come before the classes in its body in the file, and are visited after them.)
             // So every anonymous class of a file that has `(at)use` is counted, also one without trait uses.
             $comments_of_class = $this->docCommentsOfTraitUseTokens();
             if ($comments_of_class === []) {
                 return;
             }
-            if (self::$anonymous_class_index >= self::$anonymous_class_count) {
+            $class_lineno = $class_node->lineno;
+            $index = self::$anonymous_class_index[$class_lineno] ?? 0;
+            if ($index >= (self::$anonymous_class_count[$class_lineno] ?? 0)) {
                 // (The file is visited again)
-                self::$anonymous_class_index = 0;
+                $index = 0;
             }
-            $class_key = "\0" . self::$anonymous_class_index++;
+            self::$anonymous_class_index[$class_lineno] = $index + 1;
+            $class_key = "\0" . $class_lineno . ':' . $index;
             $comments_of_line = $comments_of_class[$class_key] ?? [];
         }
         $comment_of_last_use = null;
@@ -648,15 +652,16 @@ class ParseVisitor extends ScopeVisitor
     /** @var array<string,array<int,list<?string>>> the result of docCommentsOfTraitUseTokens() for that file */
     private static $doc_comments_of_trait_use_tokens = [];
 
-    /** @var int the number of anonymous classes of that file */
-    private static $anonymous_class_count = 0;
+    /** @var array<int,int> the number of anonymous classes of that file, for the line of the `class` keyword */
+    private static $anonymous_class_count = [];
 
-    /** @var int the number of anonymous classes of that file that were visited */
-    private static $anonymous_class_index = 0;
+    /** @var array<int,int> the number of anonymous classes of that file that were visited, for the line of the `class` keyword */
+    private static $anonymous_class_index = [];
 
     /**
      * @return array<string,array<int,list<?string>>> for each class of the current file
-     * (its name in lower case; a NUL byte and its number among the anonymous classes for an anonymous class)
+     * (its name with the namespace, in lower case; for an anonymous class, a NUL byte, the line of its `class` keyword,
+     * and its number among the anonymous classes of that line)
      * and each line with `use` tokens of trait uses of that class: for each of those tokens,
      * the doc comment with `(at)use` that comes right before it, or null.
      * Empty if the file has no `(at)use` annotation.
@@ -674,8 +679,8 @@ class ParseVisitor extends ScopeVisitor
         }
         self::$file_of_trait_use_tokens = $entry;
         self::$doc_comments_of_trait_use_tokens = [];
-        self::$anonymous_class_count = 0;
-        self::$anonymous_class_index = 0;
+        self::$anonymous_class_count = [];
+        self::$anonymous_class_index = [];
         $contents = $entry->getContents();
         if (!\preg_match(self::USE_ANNOTATION_REGEX, $contents)) {
             return [];
@@ -696,7 +701,10 @@ class ParseVisitor extends ScopeVisitor
         $pending_class_names = [];
         $pending_paren_depths = [];
         $paren_depth = 0;
-        $anonymous_class_count = 0;
+        $anonymous_class_count = [];
+        $class_keyword_line = 0;
+        $namespace = '';
+        $is_after_namespace_keyword = false;
         $previous_id = 0;
         foreach ($tokens as $token) {
             $id = $token->id;
@@ -709,8 +717,10 @@ class ParseVisitor extends ScopeVisitor
             }
             $is_after_class_keyword = $pending_class_names && \end($pending_class_names) === '';
             if ($is_after_class_keyword && $id !== \T_STRING) {
-                // An anonymous class has no name after the keyword. It gets its number here, before the keyword of a class in it.
-                $pending_class_names[\count($pending_class_names) - 1] = "\0" . $anonymous_class_count++;
+                // An anonymous class has no name after the keyword.
+                $index = $anonymous_class_count[$class_keyword_line] ?? 0;
+                $anonymous_class_count[$class_keyword_line] = $index + 1;
+                $pending_class_names[\count($pending_class_names) - 1] = "\0" . $class_keyword_line . ':' . $index;
             }
             if ($id === \T_USE) {
                 if ($class_body_depths && \end($class_body_depths) === $depth) {
@@ -721,9 +731,19 @@ class ParseVisitor extends ScopeVisitor
                 if ($previous_id !== \T_DOUBLE_COLON) {
                     $pending_class_names[] = '';
                     $pending_paren_depths[] = $paren_depth;
+                    $class_keyword_line = $token->line;
                 }
+            } elseif ($id === \T_NAMESPACE) {
+                // (`namespace\foo()` is another token)
+                $namespace = '';
+                $is_after_namespace_keyword = true;
+                $previous_id = $id;
+                $doc_comment = null;
+                continue;
+            } elseif ($is_after_namespace_keyword && ($id === \T_STRING || $id === \T_NAME_QUALIFIED)) {
+                $namespace = \strtolower($token->text) . '\\';
             } elseif ($id === \T_STRING && $is_after_class_keyword) {
-                $pending_class_names[\count($pending_class_names) - 1] = \strtolower($token->text);
+                $pending_class_names[\count($pending_class_names) - 1] = $namespace . \strtolower($token->text);
             } elseif ($id === 40) {
                 // `(`
                 $paren_depth++;
@@ -754,6 +774,7 @@ class ParseVisitor extends ScopeVisitor
             // (A doc comment belongs to the token after it)
             $doc_comment = null;
             $previous_id = $id;
+            $is_after_namespace_keyword = false;
         }
         self::$doc_comments_of_trait_use_tokens = $result;
         self::$anonymous_class_count = $anonymous_class_count;
