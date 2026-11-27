@@ -1,0 +1,37 @@
+%s:36 PhanDebugAnnotation @phan-debug-var requested for variable $after - it has union type int
+%s:36 PhanDebugAnnotation @phan-debug-var requested for variable $multi - it has union type array{first-key:int,second:array{inner:string}}|mixed[]
+%s:47 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type array
+%s:60 PhanDebugAnnotation @phan-debug-var requested for variable $nested - it has union type list<array{id:int}>|list<mixed[]>
+%s:60 PhanDebugAnnotation @phan-debug-var requested for variable $quoted - it has union type array{Content-Type:string,a\x20b?:int,x\x3ay:bool,plain:int}
+%s:60 PhanDebugAnnotation @phan-debug-var requested for variable $typed - it has union type array{a:int}|mixed[]|null
+%s:60 PhanDebugAnnotation @phan-debug-var requested for variable $unsealed - it has union type array{message:string,line:int}|mixed[]
+%s:62 PhanTypeSuspiciousEcho Suspicious argument $quoted['x:y'] of type bool for an echo/print statement
+%s:65 PhanTypeInvalidDimOffset Invalid offset "missing" of $quoted of array type array{Content-Type:string,a\x20b?:int,x\x3ay:bool,plain:int}
+%s:65 PhanTypeSuspiciousEcho Suspicious argument $quoted['missing'] of type null for an echo/print statement
+%s:87 PhanDebugAnnotation @phan-debug-var requested for variable $class - it has union type \NS5996\Number
+%s:87 PhanDebugAnnotation @phan-debug-var requested for variable $map - it has union type array<string,float>|array<string,int>|array<string,string>
+%s:87 PhanDebugAnnotation @phan-debug-var requested for variable $nullable - it has union type float|int|null
+%s:87 PhanDebugAnnotation @phan-debug-var requested for variable $number - it has union type float|int
+%s:87 PhanDebugAnnotation @phan-debug-var requested for variable $numeric - it has union type float|int|string
+%s:119 PhanDebugAnnotation @phan-debug-var requested for variable $closure - it has union type Closure(int,string):bool
+%s:119 PhanDebugAnnotation @phan-debug-var requested for variable $opts - it has union type array{a:int,b:string}
+%s:119 PhanDebugAnnotation @phan-debug-var requested for variable $opts2 - it has union type array{x:int}
+%s:119 PhanDebugAnnotation @phan-debug-var requested for variable $opts3 - it has union type array{y:int}
+%s:130 PhanDebugAnnotation @phan-debug-var requested for variable $keys - it has union type array{why\x3f:int,maybe?:int}
+%s:152 PhanTypeMismatchReturnNullable Returning $s of type ?string but testNumeric() is declared to return string (expected returned value to be non-nullable)
+%s:169 PhanDebugAnnotation @phan-debug-var requested for variable $callback - it has union type callable(int):(int|string)
+%s:186 PhanDebugAnnotation @phan-debug-var requested for variable $more - it has union type array{0:'a b'|\NS5996\Fluent|array{a:int}|array{b:int},1:int|string}(real=array{0:'a b'|\NS5996\Fluent|array{a:int}|array{b:int},1:int|string})
+%s:202 PhanDebugAnnotation @phan-debug-var requested for variable $row - it has union type array{user\x40example.com:string,id:int}
+%s:216 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type string(real=?string)
+%s:218 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type ?string(real=?string)
+%s:246 PhanDebugAnnotation @phan-debug-var requested for variable $word - it has union type 'Other'(real=string)
+%s:255 PhanDebugAnnotation @phan-debug-var requested for variable $array - it has union type array{b:int}|null
+%s:258 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type ?string(real=?string)
+%s:275 PhanDebugAnnotation @phan-debug-var requested for variable $literal_first - it has union type '\x2c'|array{a:int}
+%s:278 PhanDebugAnnotation @phan-debug-var requested for variable $at - it has union type ?'a b'|array{a:int}|array{b:int}
+%s:281 PhanDebugAnnotation @phan-debug-var requested for variable $after - it has union type array{0:array{a:int}|array{b:string},1:int}(real=array{0:array{a:int}|array{b:string},1:int})
+%s:281 PhanTypeMismatchArgument Argument 1 ($keys) is [] of type array{} but \NS5996\questionMarks() takes array{why\x3f:int,maybe?:int} defined at %s:130
+%s:281 PhanTypeMismatchArgument Argument 1 ($opts) is [] of type array{} but \NS5996\afterTheType() takes array{a:int,b:string} defined at %s:119
+%s:281 PhanTypeMismatchArgument Argument 2 ($opts2) is [] of type array{} but \NS5996\afterTheType() takes array{x:int} defined at %s:119
+%s:281 PhanTypeMismatchArgument Argument 3 ($opts3) is [] of type array{} but \NS5996\afterTheType() takes array{y:int} defined at %s:119
+%s:284 PhanDebugAnnotation @phan-debug-var requested for variable $results - it has union type array{0:array<string,array{requiredValue:mixed,policyTitle:string}>,1:iterable<array{idsite:int|string,name:string,ts_archived:string}>,2:array{a:int},3:int[]|string[],4:float|int}(real=array{0:array<string,array{requiredValue:mixed,policyTitle:string}>,1:iterable<array{idsite:int|string,name:string,ts_archived:string}>,2:array{a:int},3:int[]|string[],4:float|int})

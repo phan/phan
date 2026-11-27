@@ -107,10 +107,10 @@ function afterHalt(?string $s): string {
 }
 
 /**
- * Not a conditional type, or one that Phan cannot parse: `(at)phpstan-return` is ignored
+ * A type that Phan cannot parse: `(at)phpstan-return` is ignored
  *
  * @return array
- * @phpstan-return array{a: int, ...}
+ * @phpstan-return array{a: int-mask<1, 2>}
  */
 function ignored(): array {
     return ['a' => 1];
