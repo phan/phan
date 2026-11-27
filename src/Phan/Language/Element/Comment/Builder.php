@@ -2737,6 +2737,16 @@ final class Builder
     private const MULTILINE_TAG_REGEX = '/^(?:phan-|(?i:phpstan-|psalm-))?(?:param|var|return|real-return|property(?:-read|-write)?|assert|(?i:type)|implements|extends|inherits|use)\s/';
 
     /**
+     * Joins the lines of the types that are written on several lines in a doc comment (see reduceMultiline()).
+     * For a doc comment that is not built into a Comment, such as the one above a `use Trait;` statement.
+     * @internal
+     */
+    public static function withMultilineTypesJoined(string $comment): string
+    {
+        return self::reduceMultiline($comment);
+    }
+
+    /**
      * Joins the lines of a type that is written on several lines, so that the annotation can be parsed as one line:
      *
      *     (at)return array<string, array{

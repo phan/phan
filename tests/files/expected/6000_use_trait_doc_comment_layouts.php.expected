@@ -1,0 +1,10 @@
+%s:2 PhanUnreferencedUseNormal Possibly zero references to use statement for classlike/namespace ArrayObject (\ArrayObject)
+%s:19 PhanUnusedVariableReference Unused definition of variable $f as a reference
+%s:22 PhanDebugAnnotation @phan-debug-var requested for variable $fa - it has union type int
+%s:22 PhanDebugAnnotation @phan-debug-var requested for variable $ma - it has union type array{x:int}
+%s:22 PhanDebugAnnotation @phan-debug-var requested for variable $pa - it has union type int
+%s:22 PhanDebugAnnotation @phan-debug-var requested for variable $sa - it has union type string
+%s:22 PhanUnusedVariable Unused definition of variable $fa (Did you mean $f)
+%s:22 PhanUnusedVariable Unused definition of variable $ma (Did you mean $m)
+%s:22 PhanUnusedVariable Unused definition of variable $pa (Did you mean $p)
+%s:22 PhanUnusedVariable Unused definition of variable $sa (Did you mean $s)

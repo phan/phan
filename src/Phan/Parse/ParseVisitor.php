@@ -498,8 +498,8 @@ class ParseVisitor extends ScopeVisitor
 
         // `/** @use Repository<User> */` above the statement gives the template parameters of the trait,
         // like `@use` in the doc comment of the class (see attachDocCommentsOfTraitUses()).
-        $doc_comment = $node->children['docComment'] ?? '';
-        if (\is_string($doc_comment) && $doc_comment !== '') {
+        $doc_comment = self::$doc_comment_of_trait_use[$node] ?? '';
+        if ($doc_comment !== '') {
             // (Only the `@use` annotations are read. Building the comment of a class from this text would do more:
             // it replaces the type aliases that the class declares, for example.)
             foreach ($this->usedTraitTypesOfDocComment($doc_comment) as $used_trait_type) {
@@ -533,25 +533,36 @@ class ParseVisitor extends ScopeVisitor
     private const USE_ANNOTATION_REGEX = '/@(?:phan-|phpstan-|psalm-|template-)?use\s/i';
 
     /**
-     * @return list<Type> the types of the `(at)use` annotations of a doc comment above a `use Trait;` statement
+     * @return list<Type> the types of the `(at)use` annotations of a doc comment above a `use Trait;` statement.
+     * As in the doc comment of a class, `(at)phan-use` annotations are used instead of the others if there are any.
      */
     private function usedTraitTypesOfDocComment(string $doc_comment): array
     {
         if (!Config::getValue('generic_types_enabled') || !Config::getValue('read_type_annotations')) {
             return [];
         }
-        if (!\preg_match_all('/@(?:phan-|phpstan-|psalm-|template-)?use\s+(' . Type::type_regex . ')/i', $doc_comment, $matches)) {
+        // (`@use A<` and then `int>` on the next line)
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        $doc_comment = Builder::withMultilineTypesJoined($doc_comment);
+        if (!\preg_match_all('/@(phan-|phpstan-|psalm-|template-)?use\s+(' . Type::type_regex . ')/i', $doc_comment, $matches, \PREG_SET_ORDER)) {
             return [];
         }
         $types = [];
-        foreach ($matches[1] as $type_string) {
+        $phan_types = [];
+        foreach ($matches as $match) {
             try {
-                $types[] = Type::fromStringInContext($type_string, $this->context, Type::FROM_PHPDOC, $this->code_base);
+                $type = Type::fromStringInContext($match[2], $this->context, Type::FROM_PHPDOC, $this->code_base);
             } catch (\Throwable) {
                 // (Not a type that Phan can parse)
+                continue;
+            }
+            if (\strtolower($match[1]) === 'phan-') {
+                $phan_types[] = $type;
+            } else {
+                $types[] = $type;
             }
         }
-        return $types;
+        return $phan_types ?: $types;
     }
 
     /**
@@ -582,8 +593,13 @@ class ParseVisitor extends ScopeVisitor
                 continue;
             }
             if ($stmt->kind === ast\AST_USE_TRAIT) {
-                $comments_of_line ??= $this->docCommentsOfUseTokens();
-                if (!$comments_of_line) {
+                if ($comments_of_line === null) {
+                    // (The tokens are looked up by the name of the class: `class C { use A; } class D { use A; }` can be in one line)
+                    $class_name = $class_node->children['name'] ?? null;
+                    $comments_of_class = $this->docCommentsOfTraitUseTokens();
+                    $comments_of_line = $comments_of_class[\is_string($class_name) ? \strtolower($class_name) : ''] ?? [];
+                }
+                if ($comments_of_line === []) {
                     return;
                 }
                 $lineno = $stmt->lineno;
@@ -591,7 +607,9 @@ class ParseVisitor extends ScopeVisitor
                 $count_in_line[$lineno] = $index + 1;
                 $doc_comment = $comments_of_line[$lineno][$index] ?? null;
                 if ($doc_comment !== null) {
-                    $stmt->children['docComment'] = $doc_comment;
+                    // (Not in the children of the node, which php-ast defines)
+                    self::$doc_comment_of_trait_use ??= new \WeakMap();
+                    self::$doc_comment_of_trait_use[$stmt] = $doc_comment;
                     $comment_of_last_use = $doc_comment;
                 }
                 continue;
@@ -603,49 +621,95 @@ class ParseVisitor extends ScopeVisitor
         }
     }
 
-    /**
-     * @var array{0:string,1:int,2:array<int,list<?string>>} the result of docCommentsOfUseTokens() for the last file (its path and length)
-     */
-    private static $doc_comments_of_use_tokens_cache = ['', 0, []];
+    /** @var ?\WeakMap<Node,string> the doc comment above a `use Trait;` statement, for the node of the statement */
+    private static $doc_comment_of_trait_use = null;
+
+    /** @var ?\Phan\Library\FileCacheEntry the contents that $doc_comments_of_trait_use_tokens was computed for */
+    private static $file_of_trait_use_tokens = null;
+
+    /** @var array<string,array<int,list<?string>>> the result of docCommentsOfTraitUseTokens() for that file */
+    private static $doc_comments_of_trait_use_tokens = [];
 
     /**
-     * @return array<int,list<?string>> for each line of the current file that has `use` tokens:
-     * for each of those tokens, the doc comment with `(at)use` that comes right before it, or null.
+     * @return array<string,array<int,list<?string>>> for each class of the current file (its name in lower case, '' for an anonymous class)
+     * and each line with `use` tokens of trait uses of that class: for each of those tokens,
+     * the doc comment with `(at)use` that comes right before it, or null.
      * Empty if the file has no `(at)use` annotation.
      */
-    private function docCommentsOfUseTokens(): array
+    private function docCommentsOfTraitUseTokens(): array
     {
-        $file = $this->context->getFile();
         try {
-            $contents = FileCache::getOrReadEntry(Config::projectPath($file))->getContents();
+            $entry = FileCache::getOrReadEntry(Config::projectPath($this->context->getFile()));
         } catch (\Throwable) {
             return [];
         }
-        if (self::$doc_comments_of_use_tokens_cache[0] === $file && self::$doc_comments_of_use_tokens_cache[1] === \strlen($contents)) {
-            return self::$doc_comments_of_use_tokens_cache[2];
+        // (The daemon and the language server have a new entry for new contents of a file)
+        if (self::$file_of_trait_use_tokens === $entry) {
+            return self::$doc_comments_of_trait_use_tokens;
+        }
+        self::$file_of_trait_use_tokens = $entry;
+        self::$doc_comments_of_trait_use_tokens = [];
+        $contents = $entry->getContents();
+        if (!\preg_match(self::USE_ANNOTATION_REGEX, $contents)) {
+            return [];
+        }
+        try {
+            $tokens = \PhpToken::tokenize($contents);
+        } catch (\Throwable) {
+            return [];
         }
         $result = [];
-        if (\preg_match(self::USE_ANNOTATION_REGEX, $contents)) {
-            try {
-                $tokens = \PhpToken::tokenize($contents);
-            } catch (\Throwable) {
-                $tokens = [];
+        $doc_comment = null;
+        $depth = 0;
+        // The classes that are open: the brace depth of the body (a `use` at that depth is a trait use) and the name
+        $class_body_depths = [];
+        $class_names = [];
+        // The name of a class of which the body has not started yet (null if there is none)
+        $pending_class_name = null;
+        $previous_id = 0;
+        foreach ($tokens as $token) {
+            $id = $token->id;
+            if ($id === \T_WHITESPACE || $id === \T_COMMENT) {
+                continue;
             }
-            $doc_comment = null;
-            foreach ($tokens as $token) {
-                $id = $token->id;
-                if ($id === \T_DOC_COMMENT) {
-                    $doc_comment = $token->text;
-                } elseif ($id === \T_USE) {
-                    $result[$token->line][] = $doc_comment !== null && \preg_match(self::USE_ANNOTATION_REGEX, $doc_comment) ? $doc_comment : null;
-                    $doc_comment = null;
-                } elseif ($id !== \T_WHITESPACE && $id !== \T_COMMENT) {
-                    // (A doc comment belongs to the token after it)
-                    $doc_comment = null;
+            if ($id === \T_DOC_COMMENT) {
+                $doc_comment = $token->text;
+                continue;
+            }
+            if ($id === \T_USE) {
+                if ($class_body_depths && \end($class_body_depths) === $depth) {
+                    $result[(string)\end($class_names)][$token->line][] = $doc_comment !== null && \preg_match(self::USE_ANNOTATION_REGEX, $doc_comment) ? $doc_comment : null;
                 }
+            } elseif ($id === \T_CLASS || $id === \T_TRAIT || $id === \T_INTERFACE || $id === \T_ENUM) {
+                // (Not `Foo::class`)
+                if ($previous_id !== \T_DOUBLE_COLON) {
+                    $pending_class_name = '';
+                }
+            } elseif ($id === \T_STRING && $pending_class_name === '' && ($previous_id === \T_CLASS || $previous_id === \T_TRAIT || $previous_id === \T_INTERFACE || $previous_id === \T_ENUM)) {
+                // (An anonymous class has no name after the keyword)
+                $pending_class_name = \strtolower($token->text);
+            } elseif ($id === \T_CURLY_OPEN || $id === \T_DOLLAR_OPEN_CURLY_BRACES || $token->text === '{') {
+                $depth++;
+                if ($pending_class_name !== null && $token->text === '{') {
+                    $class_body_depths[] = $depth;
+                    $class_names[] = $pending_class_name;
+                    $pending_class_name = null;
+                }
+            } elseif ($token->text === '}') {
+                if ($class_body_depths && \end($class_body_depths) === $depth) {
+                    \array_pop($class_body_depths);
+                    \array_pop($class_names);
+                }
+                $depth--;
+            } elseif ($token->text === ';' && $pending_class_name !== null) {
+                // (`enum` or `class` as something else than a declaration)
+                $pending_class_name = null;
             }
+            // (A doc comment belongs to the token after it)
+            $doc_comment = null;
+            $previous_id = $id;
         }
-        self::$doc_comments_of_use_tokens_cache = [$file, \strlen($contents), $result];
+        self::$doc_comments_of_trait_use_tokens = $result;
         return $result;
     }
 
@@ -656,7 +720,8 @@ class ParseVisitor extends ScopeVisitor
     {
         $doc_comment = $node->children['docComment'] ?? null;
         if (\is_string($doc_comment) && \preg_replace('/\s+/', '', $doc_comment) === $comment_without_whitespace) {
-            $node->children['docComment'] = null;
+            // (Not an assignment of null: the readers use `?? ''`)
+            unset($node->children['docComment']);
         }
         if ($depth > 0 && \in_array($node->kind, [ast\AST_PROP_GROUP, ast\AST_PROP_DECL, ast\AST_CLASS_CONST_GROUP, ast\AST_CLASS_CONST_DECL], true)) {
             foreach ($node->children as $child) {
