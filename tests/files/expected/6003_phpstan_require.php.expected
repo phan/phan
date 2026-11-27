@@ -1,0 +1,3 @@
+%s:17 PhanUndeclaredMethod Call to undeclared method \NS6003\Compare::missing
+%s:25 PhanUnextractableAnnotation Saw unextractable annotation for comment '/** @phpstan-require-implements int */'
+%s:27 PhanTraitRequireExtendsMissing Trait \NS6003\Ident requires using class \NS6003\NotBase to extend \NS6003\Contracts\Base
