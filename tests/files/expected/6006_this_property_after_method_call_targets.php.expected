@@ -4,3 +4,13 @@
 %s:49 PhanTypeMismatchReturnNullable Returning $this->c of type ?\NS6006\Conn but afterWrapper() is declared to return \NS6006\Conn (expected returned value to be non-nullable)
 %s:55 PhanTypeMismatchReturn Returning $this->b of type null but afterDyn() is declared to return \NS6006\Conn
 %s:65 PhanNonClassMethodCall Call to method q on non-class type null
+%s:85 PhanUnusedVariable Unused definition of variable $generator
+%s:86 PhanDebugAnnotation @phan-debug-var requested for variable $generator - it has union type \Generator(real=\Generator)
+%s:86 PhanDebugAnnotation @phan-debug-var requested for variable $kept - it has union type \NS6006\Conn(real=\NS6006\Conn)
+%s:86 PhanUnusedVariable Unused definition of variable $kept
+%s:93 PhanDebugAnnotation @phan-debug-var requested for variable $kept - it has union type string(real=string)
+%s:93 PhanUnusedVariable Unused definition of variable $kept
+%s:99 PhanDebugAnnotation @phan-debug-var requested for variable $kept - it has union type \NS6006\Conn(real=\NS6006\Conn)
+%s:99 PhanUnusedVariable Unused definition of variable $kept
+%s:105 PhanDebugAnnotation @phan-debug-var requested for variable $widened - it has union type \NS6006\Conn|null(real=\NS6006\Conn|null)
+%s:105 PhanUnusedVariable Unused definition of variable $widened

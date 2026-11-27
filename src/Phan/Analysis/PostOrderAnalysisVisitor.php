@@ -4249,7 +4249,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $methods = [[$method, $is_late_bound]];
         for ($i = 0; $i < \count($methods) && \count($seen) < self::MAX_METHODS_FOR_THIS_PROPERTY_WRITES; $i++) {
             [$method, $is_late_bound] = $methods[$i];
-            if ($method->isPHPInternal()) {
+            // (Calling a generator method runs none of its body)
+            if ($method->isPHPInternal() || $method->hasYield()) {
                 continue;
             }
             $method_node = $method->getNode();
@@ -4300,11 +4301,21 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 return false;
             }
             $property = $class->getPropertyByName($this->code_base, $name);
-            if (!$property->isPrivate()) {
+            // (The method of a trait is declared by the class that uses the trait, like the properties of the trait)
+            $method_class_fqsen = $method->getDefiningFQSEN()->getFullyQualifiedClassName();
+            if ($property->isPrivate()) {
+                return $property->getDefiningFQSEN()->getFullyQualifiedClassName() !== $method_class_fqsen;
+            }
+            // A private property of the class that declares the method, when $class declares a property with that name that is not private.
+            if ($method_class_fqsen === $class->getFQSEN() || !$this->code_base->hasClassWithFQSEN($method_class_fqsen)) {
                 return false;
             }
-            // (The method of a trait is declared by the class that uses the trait, like the properties of the trait)
-            return $property->getDefiningFQSEN()->getFullyQualifiedClassName() !== $method->getDefiningFQSEN()->getFullyQualifiedClassName();
+            $method_class = $this->code_base->getClassByFQSEN($method_class_fqsen);
+            if (!$method_class->hasPropertyWithName($this->code_base, $name)) {
+                return false;
+            }
+            $property_of_method_class = $method_class->getPropertyByName($this->code_base, $name);
+            return $property_of_method_class->isPrivate() && $property_of_method_class->getDefiningFQSEN() !== $property->getDefiningFQSEN();
         } catch (Exception) {
             return false;
         }
@@ -4332,6 +4343,19 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         return null;
                     }
                     $class = $class->getParentClass($this->code_base);
+                }
+            } else {
+                // `$this->name()` calls the private method of the class that declares the caller,
+                // also when the class in scope declares a method with that name.
+                $class_fqsen = $caller->getDefiningFQSEN()->getFullyQualifiedClassName();
+                if ($class_fqsen !== $class->getFQSEN() && $this->code_base->hasClassWithFQSEN($class_fqsen)) {
+                    $caller_class = $this->code_base->getClassByFQSEN($class_fqsen);
+                    if ($caller_class->hasMethodWithName($this->code_base, $method_name, true)) {
+                        $method = $caller_class->getMethodByName($this->code_base, $method_name);
+                        if ($method->isPrivate() && $method->getDefiningFQSEN()->getFullyQualifiedClassName() === $class_fqsen) {
+                            return $method;
+                        }
+                    }
                 }
             }
             return $class->hasMethodWithName($this->code_base, $method_name, true) ? $class->getMethodByName($this->code_base, $method_name) : null;

@@ -65,3 +65,44 @@ abstract class Mid extends Root {
         $this->conn->q(); // still null: self::connect() is Mid::connect(), which assigns nothing
     }
 }
+
+// A generator method runs nothing when it is called. A private property of a parent class is another property than
+// the protected property of the class with that name. `$this->helper()` in a parent class calls the private helper() of that class.
+class GenBase {
+    private ?string $slot = null;
+    protected ?Conn $kept = null;
+    public function __construct(?Conn $kept, ?string $slot) { $this->kept = $kept; $this->slot = $slot; }
+    protected function resetSlot(): void { $this->slot = null; }
+    final protected function callHelper(): void { $this->helper(); }
+    private function helper(): void {}
+}
+final class Gen extends GenBase {
+    protected ?string $slot = 'x';
+    private function resetLater(): \Generator { $this->kept = null; yield 1; }
+    private function helper(): void { $this->kept = null; }
+    public function afterGenerator(): void {
+        if ($this->kept === null) { throw new \Exception(); }
+        $generator = $this->resetLater();
+        $kept = $this->kept;
+        '@phan-debug-var $generator, $kept';
+    }
+    public function shadowed(?string $slot): void {
+        $this->slot = $slot;
+        if ($this->slot === null) { return; }
+        parent::resetSlot();
+        $kept = $this->slot;
+        '@phan-debug-var $kept';
+    }
+    public function privateHelperOfParent(): void {
+        if ($this->kept === null) { throw new \Exception(); }
+        $this->callHelper();
+        $kept = $this->kept;
+        '@phan-debug-var $kept';
+    }
+    public function ownHelper(): void {
+        if ($this->kept === null) { throw new \Exception(); }
+        $this->helper();
+        $widened = $this->kept;
+        '@phan-debug-var $widened';
+    }
+}
