@@ -1,0 +1,8 @@
+%s:25 PhanDebugAnnotation @phan-debug-var requested for variable $in_method - it has union type string
+%s:25 PhanDebugAnnotation @phan-debug-var requested for variable $own - it has union type bool
+%s:25 PhanUnusedVariable Unused definition of variable $in_method
+%s:25 PhanUnusedVariable Unused definition of variable $own
+%s:29 PhanDebugAnnotation @phan-debug-var requested for variable $rx - it has union type int
+%s:29 PhanDebugAnnotation @phan-debug-var requested for variable $ry - it has union type string
+%s:29 PhanUnusedVariable Unused definition of variable $rx (Did you mean $x)
+%s:29 PhanUnusedVariable Unused definition of variable $ry (Did you mean $y)

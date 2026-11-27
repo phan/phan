@@ -74,6 +74,9 @@ final class Builder
         'phpstan-template' => 'template',
         'phpstan-template-covariant' => 'template-covariant',
         'phpstan-template-contravariant' => 'template-contravariant',
+        'psalm-use' => 'use',
+        'phpstan-use' => 'use',
+        'template-use' => 'use',
         'psalm-require-extends' => 'require-extends',
         'psalm-require-implements' => 'require-implements',
         'psalm-immutable' => 'immutable',
@@ -661,7 +664,7 @@ final class Builder
         // (?i) makes this case-sensitive, (?-1) makes it case-insensitive
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
         // Support both regular tags ("@something") and inline versions of tags ("optional_prefix {@something}").
-        if (\preg_match('/(?:^|{)@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|implements|use|require-extends|require-implements|suppress|unused-param|no-named-arguments|phan-[a-z0-9_-]*|(?:phpstan|psalm)-assert-if-(?:true|false)|(?:phpstan|psalm)-(?:import-)?type|phpstan-(?:return|param|var|template(?:-(?:co|contra)variant)?)|psalm-(?:template(?:-(?:co|contra)variant)?|param|var|return|require-extends|require-implements|immutable)(?-i)|method|property|property-read|property-write|abstract|template(?:-(?:co|contra)variant)?|PhanClosureScope|readonly|immutable|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $trimmed, $matches)) {
+        if (\preg_match('/(?:^|{)@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|implements|use|require-extends|require-implements|suppress|unused-param|no-named-arguments|phan-[a-z0-9_-]*|(?:phpstan|psalm)-assert-if-(?:true|false)|(?:phpstan|psalm)-(?:import-)?type|phpstan-(?:return|param|var|use|template(?:-(?:co|contra)variant)?)|template-use|psalm-(?:use|template(?:-(?:co|contra)variant)?|param|var|return|require-extends|require-implements|immutable)(?-i)|method|property|property-read|property-write|abstract|template(?:-(?:co|contra)variant)?|PhanClosureScope|readonly|immutable|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $trimmed, $matches)) {
             $case_sensitive_type = $matches[1];
             $type = \strtolower($case_sensitive_type);
             $type = self::TAG_ALIAS_MAP[$type] ?? $type;
@@ -2731,7 +2734,17 @@ final class Builder
     /**
      * Matches the tag of an annotation that has a type, at the start of the text after an `(at)`.
      */
-    private const MULTILINE_TAG_REGEX = '/^(?:phan-|(?i:phpstan-|psalm-))?(?:param|var|return|real-return|property(?:-read|-write)?|assert|(?i:type)|implements|extends|inherits|use)\s/';
+    private const MULTILINE_TAG_REGEX = '/^(?:phan-|(?i:phpstan-|psalm-|template-(?=use)))?(?:param|var|return|real-return|property(?:-read|-write)?|assert|(?i:type)|implements|extends|inherits|use)\s/';
+
+    /**
+     * Joins the lines of the types that are written on several lines in a doc comment (see reduceMultiline()).
+     * For a doc comment that is not built into a Comment, such as the one above a `use Trait;` statement.
+     * @internal
+     */
+    public static function withMultilineTypesJoined(string $comment): string
+    {
+        return self::reduceMultiline($comment);
+    }
 
     /**
      * Joins the lines of a type that is written on several lines, so that the annotation can be parsed as one line:

@@ -1,0 +1,29 @@
+%s:2 PhanUnreferencedUseNormal Possibly zero references to use statement for classlike/namespace ArrayObject (\ArrayObject)
+%s:19 PhanUnusedVariableReference Unused definition of variable $f as a reference
+%s:22 PhanDebugAnnotation @phan-debug-var requested for variable $fa - it has union type int
+%s:22 PhanDebugAnnotation @phan-debug-var requested for variable $ma - it has union type array{x:int}
+%s:22 PhanDebugAnnotation @phan-debug-var requested for variable $pa - it has union type int
+%s:22 PhanDebugAnnotation @phan-debug-var requested for variable $sa - it has union type string
+%s:22 PhanUnusedVariable Unused definition of variable $fa (Did you mean $f)
+%s:22 PhanUnusedVariable Unused definition of variable $ma (Did you mean $m)
+%s:22 PhanUnusedVariable Unused definition of variable $pa (Did you mean $p)
+%s:22 PhanUnusedVariable Unused definition of variable $sa (Did you mean $s)
+%s:45 PhanDebugAnnotation @phan-debug-var requested for variable $inner - it has union type float
+%s:45 PhanUnusedVariable Unused definition of variable $inner
+%s:51 PhanGenericMissingParameters Class \NS6000\Prose must substitute all 1 template parameters when inheriting \NS6000\A (found 0) defined at %s:4 (use @extends or @inherit)
+%s:55 PhanDebugAnnotation @phan-debug-var requested for variable $la - it has union type list<int>
+%s:55 PhanDebugAnnotation @phan-debug-var requested for variable $pa - it has union type V
+%s:55 PhanUnusedVariable Unused definition of variable $la (Did you mean $l)
+%s:55 PhanUnusedVariable Unused definition of variable $pa (Did you mean $p)
+%s:67 PhanDebugAnnotation @phan-debug-var requested for variable $ra - it has union type int
+%s:67 PhanDebugAnnotation @phan-debug-var requested for variable $rb - it has union type string
+%s:67 PhanDebugAnnotation @phan-debug-var requested for variable $rc - it has union type bool
+%s:67 PhanUnusedVariable Unused definition of variable $ra (Did you mean $a)
+%s:67 PhanUnusedVariable Unused definition of variable $rb (Did you mean $b)
+%s:67 PhanUnusedVariable Unused definition of variable $rc (Did you mean $c)
+%s:74 PhanDebugAnnotation @phan-debug-var requested for variable $ri - it has union type int
+%s:74 PhanDebugAnnotation @phan-debug-var requested for variable $ro - it has union type string
+%s:74 PhanUnusedVariable Unused definition of variable $ri
+%s:74 PhanUnusedVariable Unused definition of variable $ro
+%s:78 PhanDebugAnnotation @phan-debug-var requested for variable $rd - it has union type string
+%s:78 PhanUnusedVariable Unused definition of variable $rd (Did you mean $d)
