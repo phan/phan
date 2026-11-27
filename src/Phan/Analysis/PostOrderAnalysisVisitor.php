@@ -4264,10 +4264,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $has_unknown_body = true;
                 continue;
             }
-            if (isset($seen[\spl_object_id($method_node)])) {
+            // (The same body of a trait is another method in each class that uses the trait: `self`, `parent` and the private members differ)
+            $key = \spl_object_id($method_node) . ':' . $method->getSelfContext()->getClassFQSEN();
+            if (isset($seen[$key])) {
                 continue;
             }
-            $seen[\spl_object_id($method_node)] = true;
+            $seen[$key] = true;
             if (!self::$this_property_writes->offsetExists($method_node)) {
                 self::$this_property_writes[$method_node] = self::computeThisPropertyWritesOfNode($method_node);
             }
@@ -4329,8 +4331,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 return false;
             }
             $property = $class->getPropertyByName($this->code_base, $name);
-            // (The method of a trait is declared by the class that uses the trait, like the properties of the trait)
-            $method_class_fqsen = $method->getDefiningFQSEN()->getFullyQualifiedClassName();
+            // (For the method of a trait, the class that uses the trait: its properties are the ones of that class)
+            $method_class_fqsen = $method->getSelfContext()->getClassFQSEN();
             if ($property->isPrivate()) {
                 return $property->getDefiningFQSEN()->getFullyQualifiedClassName() !== $method_class_fqsen;
             }
@@ -4360,8 +4362,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         try {
             if ($kind === 'self' || $kind === 'parent') {
                 // `self` and `parent` are the class that declares the method and its parent
-                // (for the method of a trait, the class that uses the trait).
-                $class_fqsen = $caller->getDefiningFQSEN()->getFullyQualifiedClassName();
+                // (for the method of a trait, the class that uses the trait: see Method::getSelfContext()).
+                $class_fqsen = $caller->getSelfContext()->getClassFQSEN();
                 if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {
                     return null;
                 }
@@ -4375,12 +4377,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             } elseif ($kind === 'this') {
                 // `$this->name()` calls the private method of the class that declares the caller,
                 // also when the class in scope declares a method with that name.
-                $class_fqsen = $caller->getDefiningFQSEN()->getFullyQualifiedClassName();
+                $class_fqsen = $caller->getSelfContext()->getClassFQSEN();
                 if ($class_fqsen !== $class->getFQSEN() && $this->code_base->hasClassWithFQSEN($class_fqsen)) {
                     $caller_class = $this->code_base->getClassByFQSEN($class_fqsen);
                     if ($caller_class->hasMethodWithName($this->code_base, $method_name, true)) {
                         $method = $caller_class->getMethodByName($this->code_base, $method_name);
-                        if ($method->isPrivate() && $method->getDefiningFQSEN()->getFullyQualifiedClassName() === $class_fqsen) {
+                        if ($method->isPrivate() && $method->getSelfContext()->getClassFQSEN() === $class_fqsen) {
                             return $method;
                         }
                     }

@@ -151,3 +151,26 @@ class Magic extends GenBase {
         '@phan-debug-var $null';
     }
 }
+
+// A public method of a trait assigns the private property of the class that uses the trait.
+trait InitConn {
+    public function init(): void { $this->conn = new Conn(); }
+    private function privInit(): void { $this->conn = new Conn(); }
+}
+class UsesInit {
+    use InitConn;
+    private ?Conn $conn = null;
+    public function __construct(?Conn $c) { $this->conn = $c; }
+    public function a(): void {
+        if ($this->conn !== null) { return; }
+        $this->init();
+        $x = $this->conn;
+        '@phan-debug-var $x';
+    }
+    public function b(): void {
+        if ($this->conn !== null) { return; }
+        $this->privInit();
+        $y = $this->conn;
+        '@phan-debug-var $y';
+    }
+}

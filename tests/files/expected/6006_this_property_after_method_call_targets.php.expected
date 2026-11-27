@@ -25,3 +25,9 @@
 %s:144 PhanUnusedVariable Unused definition of variable $declared
 %s:150 PhanDebugAnnotation @phan-debug-var requested for variable $null - it has union type null(real=null)
 %s:150 PhanUnusedVariable Unused definition of variable $null
+%s:157 PhanUndeclaredProperty Reference to undeclared property \NS6006\InitConn->conn
+%s:158 PhanUndeclaredProperty Reference to undeclared property \NS6006\InitConn->conn
+%s:167 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type \NS6006\Conn|null(real=\NS6006\Conn|null)
+%s:167 PhanUnusedVariable Unused definition of variable $x
+%s:173 PhanDebugAnnotation @phan-debug-var requested for variable $y - it has union type \NS6006\Conn|null(real=\NS6006\Conn|null)
+%s:173 PhanUnusedVariable Unused definition of variable $y
