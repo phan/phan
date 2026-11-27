@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Phan\Library;
 
 use Phan\Config;
-use Phan\Language\FileRef;
 
 /**
  * Tells which package a file of the project belongs to, for `internal_access_scope` set to `'package'`.
@@ -25,13 +24,16 @@ final class ComposerPackages
     /** @var ?string the project root directory that the directories below were loaded for */
     private static $loaded_root = null;
 
-    /** @var string the vendor directory, relative to the project root, with a trailing slash ('' if it is not in the project) */
-    private static $vendor_dir = '';
+    /** @var list<string> the project root directory, as it is given and with symbolic links resolved (absolute, with a trailing slash) */
+    private static $root_dirs = [];
 
-    /** @var array<string,string> maps the directory of an installed package (relative, with a trailing slash) to its name, longest first */
+    /** @var list<string> the vendor directory (the same two forms) */
+    private static $vendor_dirs = [];
+
+    /** @var array<string,string> maps the directory of an installed package (absolute, with a trailing slash) to its name, longest first */
     private static $package_dirs = [];
 
-    /** @var list<string> the other directories of `exclude_analysis_directory_list` (relative, with a trailing slash), longest first */
+    /** @var list<string> the other directories of `exclude_analysis_directory_list` (absolute, with a trailing slash), longest first */
     private static $excluded_dirs = [];
 
     /** @var array<string,string> the package of a file ('' for none), for the path that a FileRef has */
@@ -41,12 +43,13 @@ final class ComposerPackages
     private const ROOT_PACKAGE = '(project)';
 
     /**
-     * Forgets what was loaded (for tests, and when the project or its packages change).
+     * Forgets what was loaded (when the configuration, the project or its packages change).
      */
     public static function reset(): void
     {
         self::$loaded_root = null;
-        self::$vendor_dir = '';
+        self::$root_dirs = [];
+        self::$vendor_dirs = [];
         self::$package_dirs = [];
         self::$excluded_dirs = [];
         self::$cache = [];
@@ -55,7 +58,7 @@ final class ComposerPackages
     /**
      * @param string $file the path of a file, as a FileRef has it
      * @return ?string the package that the file belongs to, or null for a file that is not in the project
-     * (such as the stubs of Phan for internal functions)
+     * (such as the stubs of Phan for internal functions, which have the file name `internal`)
      */
     public static function packageOfFile(string $file): ?string
     {
@@ -67,10 +70,14 @@ final class ComposerPackages
         if ($package === null) {
             // ('' for a file that is not in the project)
             $package = '';
-            $path = \str_replace('\\', '/', FileRef::getProjectRelativePathForPath($file));
-            if ($path !== '' && $path[0] !== '/' && !\str_starts_with($path, '../') && !\preg_match('@^[a-zA-Z]:/@', $path)) {
+            if ($file !== '' && $file !== 'internal') {
+                // The directory of the file with symbolic links resolved, which is what the directories below are compared with
+                // (a package of a Composer path repository is a link to a directory that can be anywhere).
+                $path = Config::projectPath($file);
+                $real_path = \realpath($path);
+                $path = self::normalize(\is_string($real_path) ? $real_path : $path);
                 $slash = \strrpos($path, '/');
-                $package = self::packageOfDirectory($slash === false ? '' : \substr($path, 0, $slash + 1));
+                $package = self::packageOfDirectory($slash === false ? '/' : \substr($path, 0, $slash + 1));
             }
             self::$cache[$file] = $package;
         }
@@ -78,36 +85,45 @@ final class ComposerPackages
     }
 
     /**
-     * @param string $dir a directory relative to the project root, with a trailing slash ('' for the root)
+     * @param string $dir an absolute directory with a trailing slash
+     * @return string the package of its files, or '' if it is not in the project
      */
     private static function packageOfDirectory(string $dir): string
     {
-        $vendor_dir = self::$vendor_dir;
-        if ($vendor_dir !== '' && \str_starts_with($dir, $vendor_dir)) {
-            foreach (self::$package_dirs as $package_dir => $name) {
-                if (\str_starts_with($dir, $package_dir)) {
-                    return $name;
-                }
+        // (An installed package can be outside of the vendor directory: `install-path` of composer/installers or of a path repository)
+        foreach (self::$package_dirs as $package_dir => $name) {
+            if (\str_starts_with($dir, $package_dir)) {
+                return $name;
             }
-            // Not a package of installed.json: the directory `vendor/name/package`, or what there is of it.
-            $parts = \explode('/', \substr($dir, \strlen($vendor_dir)), 3);
-            return 'vendor:' . \strtolower($parts[0] . '/' . ($parts[1] ?? ''));
+        }
+        foreach (self::$vendor_dirs as $vendor_dir) {
+            if (\str_starts_with($dir, $vendor_dir)) {
+                // Not a package of installed.json: the directory `vendor/name/package`, or what there is of it.
+                $parts = \explode('/', \substr($dir, \strlen($vendor_dir)), 3);
+                return 'vendor:' . \strtolower($parts[0] . '/' . ($parts[1] ?? ''));
+            }
         }
         foreach (self::$excluded_dirs as $excluded_dir) {
             if (\str_starts_with($dir, $excluded_dir)) {
                 return 'excluded:' . $excluded_dir;
             }
         }
-        return self::ROOT_PACKAGE;
+        foreach (self::$root_dirs as $root_dir) {
+            if (\str_starts_with($dir, $root_dir)) {
+                return self::ROOT_PACKAGE;
+            }
+        }
+        return '';
     }
 
     private static function load(string $root): void
     {
         self::reset();
         self::$loaded_root = $root;
+        self::$root_dirs = self::directoryForms($root);
         $composer = self::readJson($root . '/composer.json') ?? [];
         $vendor_path = self::vendorPath($root, $composer);
-        self::$vendor_dir = self::relativeDirectory($root, $vendor_path) ?? '';
+        self::$vendor_dirs = self::directoryForms($vendor_path);
 
         $installed = self::readJson($vendor_path . '/composer/installed.json');
         // (Composer 2 has the list in 'packages', Composer 1 is the list)
@@ -125,9 +141,11 @@ final class ComposerPackages
             $package_path = \is_string($install_path) && $install_path !== ''
                 ? (Paths::isAbsolutePath($install_path) ? $install_path : $vendor_path . '/composer/' . $install_path)
                 : $vendor_path . '/' . $name;
-            $package_dir = self::relativeDirectory($root, $package_path);
-            if ($package_dir !== null && $package_dir !== '') {
-                $package_dirs[$package_dir] = $name;
+            foreach (self::directoryForms($package_path) as $package_dir) {
+                // (Not the project itself, which a package can be installed as)
+                if (!\in_array($package_dir, self::$root_dirs, true)) {
+                    $package_dirs[$package_dir] ??= $name;
+                }
             }
         }
         // The longest directory first: a package can be installed in a directory of another one.
@@ -138,14 +156,16 @@ final class ComposerPackages
 
         $excluded_dirs = [];
         foreach (Config::getValue('exclude_analysis_directory_list') as $excluded_dir) {
-            if (!\is_string($excluded_dir)) {
+            if (!\is_string($excluded_dir) || $excluded_dir === '') {
                 continue;
             }
-            $excluded_dir = self::relativeDirectory($root, Paths::isAbsolutePath($excluded_dir) ? $excluded_dir : $root . '/' . $excluded_dir);
-            if ($excluded_dir !== null && $excluded_dir !== '' && $excluded_dir !== self::$vendor_dir) {
-                $excluded_dirs[] = $excluded_dir;
+            foreach (self::directoryForms(Paths::isAbsolutePath($excluded_dir) ? $excluded_dir : $root . '/' . $excluded_dir) as $dir) {
+                if (!\in_array($dir, self::$vendor_dirs, true) && !\in_array($dir, self::$root_dirs, true)) {
+                    $excluded_dirs[$dir] = true;
+                }
             }
         }
+        $excluded_dirs = \array_keys($excluded_dirs);
         \usort($excluded_dirs, static function (string $a, string $b): int {
             return \strlen($b) <=> \strlen($a) ?: \strcmp($a, $b);
         });
@@ -153,30 +173,36 @@ final class ComposerPackages
     }
 
     /**
-     * @return ?string $path relative to $root, with forward slashes, without `.` and `..`, and with a trailing slash
-     * ('' for $root itself), or null if it is not in $root
+     * @return list<string> the absolute directory $path with a trailing slash: as it is given, and with symbolic links resolved if that differs
      */
-    private static function relativeDirectory(string $root, string $path): ?string
+    private static function directoryForms(string $path): array
     {
+        $forms = [self::normalize($path) . '/'];
+        $real_path = \realpath($path);
+        if (\is_string($real_path)) {
+            $real_form = self::normalize($real_path) . '/';
+            if ($real_form !== $forms[0]) {
+                $forms[] = $real_form;
+            }
+        }
+        return $forms;
+    }
+
+    /**
+     * @return string $path with forward slashes, without `.`, `..` and repeated slashes, and without a trailing slash
+     */
+    private static function normalize(string $path): string
+    {
+        $path = \str_replace('\\', '/', $path);
         $parts = [];
-        foreach (\explode('/', \str_replace('\\', '/', $path)) as $part) {
+        foreach (\explode('/', $path) as $part) {
             if ($part === '..') {
                 \array_pop($parts);
             } elseif ($part !== '.' && $part !== '') {
                 $parts[] = $part;
             }
         }
-        $root_parts = [];
-        foreach (\explode('/', \str_replace('\\', '/', $root)) as $part) {
-            if ($part !== '' && $part !== '.') {
-                $root_parts[] = $part;
-            }
-        }
-        if (\array_slice($parts, 0, \count($root_parts)) !== $root_parts) {
-            return null;
-        }
-        $relative = \implode('/', \array_slice($parts, \count($root_parts)));
-        return $relative === '' ? '' : $relative . '/';
+        return ($path !== '' && $path[0] === '/' ? '/' : '') . \implode('/', $parts);
     }
 
     /**

@@ -6,6 +6,6 @@
  */
 return [
     // (The installed packages are in the `vendor-dir` of composer.json)
-    'directory_list' => ['src', 'third_party', 'libs'],
+    'directory_list' => ['src', 'third_party', 'libs', 'modules'],
     'exclude_analysis_directory_list' => ['third_party/', 'libs/'],
 ];

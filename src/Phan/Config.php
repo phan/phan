@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phan;
 
 use Phan\Config\Initializer;
+use Phan\Library\ComposerPackages;
 use Phan\Library\Paths;
 use Phan\Library\StringUtil;
 
@@ -1482,6 +1483,9 @@ class Config
         self::$configuration = self::DEFAULT_CONFIGURATION;
         // Trigger magic behavior
         self::initOnce();
+        // (The packages of `internal_access_scope` depend on the project and on `exclude_analysis_directory_list`)
+        // @phan-suppress-next-line PhanAccessMethodInternal
+        ComposerPackages::reset();
     }
 
     /**
@@ -1489,6 +1493,10 @@ class Config
      */
     public static function setValue(string $name, mixed $value): void
     {
+        if ($name === 'exclude_analysis_directory_list') {
+            // @phan-suppress-next-line PhanAccessMethodInternal
+            ComposerPackages::reset();
+        }
         // Merge user stub configs with bundled defaults (so stubs are always loaded)
         if ($value !== null) {
             if ($name === 'autoload_internal_extension_signatures') {

@@ -27,3 +27,13 @@ function bundled(): int {
 function inherited(\App\Child $child): int {
     return $child->innerOfBase();
 }
+
+// A method that is internal because the class of the project is: not reported, although the method is declared in another package.
+function internalClass(\App\InternalChild $child): int {
+    return $child->open();
+}
+
+// A package that is installed outside of the vendor directory: reported.
+function module(): int {
+    return \App\Module\Module::inner();
+}
