@@ -1,0 +1,26 @@
+%s:8 PhanPossiblyUndeclaredVariable Variable $m is possibly undeclared
+%s:9 PhanPossiblyUndeclaredVariable Variable $m is possibly undeclared
+%s:10 PhanPossiblyUndeclaredVariable Variable $m is possibly undeclared
+%s:11 PhanPossiblyUndeclaredVariable Variable $m is possibly undeclared
+%s:11 PhanUnusedVariable Unused definition of variable $r
+%s:12 PhanPossiblyUndeclaredVariable Variable $m is possibly undeclared
+%s:21 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type array{0:string}
+%s:22 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type array{0:string}
+%s:23 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type array{0:string}
+%s:24 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type array{0:string}
+%s:25 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type array{0:string}
+%s:26 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type array{0:string}(real=non-empty-mixed)
+%s:34 PhanPossiblyUndeclaredVariable Variable $v is possibly undeclared
+%s:39 PhanTypeMismatchArgumentNullableInternal Argument 1 ($value) is $out of type ?array|?array{0?:mixed} but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (expected type to be non-nullable)
+%s:46 PhanPossiblyUndeclaredVariable Variable $m is possibly undeclared
+%s:46 PhanPossiblyUndeclaredVariable Variable $s is possibly undeclared
+%s:46 PhanRedundantValueComparison Redundant comparison of count($s) of type int (value: 0) to 0 of type int (value: 0) with operator '===' (the comparison is always true)
+%s:46 PhanUnusedVariable Unused definition of variable $s
+%s:57 PhanPossiblyUndeclaredVariable Variable $out is possibly undeclared
+%s:60 PhanPossiblyUndeclaredVariable Variable $k is possibly undeclared
+%s:60 PhanPossiblyUndeclaredVariable Variable $out is possibly undeclared
+%s:60 PhanRedundantValueComparison Redundant comparison of count($k) of type int (value: 0) to 0 of type int (value: 0) with operator '===' (the comparison is always true)
+%s:60 PhanUnusedVariable Unused definition of variable $k
+%s:63 PhanPossiblyUndeclaredVariable Variable $m is possibly undeclared
+%s:68 PhanTypeMismatchArgumentInternalReal Argument 1 ($value) is $m of type null but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (real type \Countable|array)
+%s:68 PhanUndeclaredVariable Variable $m is undeclared (Did you mean $u)
