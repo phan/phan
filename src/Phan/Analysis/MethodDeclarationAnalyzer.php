@@ -271,7 +271,6 @@ final class MethodDeclarationAnalyzer
         $emit_attempt_count = Issue::$emit_attempt_count;
         $counts_before = EmitOnlyChecks::getSideEffectCounts($code_base);
         $previous_ordinal = $lazy->current_ordinal;
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $lazy->current_ordinal = $method->getEagerOrdinal();
         $side_effect_check = $lazy->verify ? $lazy->beginSideEffectCheck() : null;
         try {

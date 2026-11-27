@@ -267,7 +267,6 @@ final class LazyInheritedMethods
         if ($has_incremental_manifest) {
             return [true, 'incremental'];
         }
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $unmarked = ConfigPluginSet::instance()->getAnalyzeMethodPluginClassesWithoutLazyMarker();
         if ($unmarked) {
             return [true, 'unmarked_plugin:' . \implode(',', $unmarked)];
@@ -364,7 +363,6 @@ final class LazyInheritedMethods
      *
      * @param Method|InheritedMethodLink $entry the entry of the parent's class map
      * @return ?string null if the copy may be lazy, otherwise the reason why not
-     * @suppress PhanAccessMethodInternal
      */
     public function eligibility(ClassMap $class_map, ClassMap $parent_map, string $lowercase_name, Method|InheritedMethodLink $entry, int $seq): ?string
     {
@@ -405,7 +403,6 @@ final class LazyInheritedMethods
     public function newLink(Clazz $class, ClassMap $class_map, ClassMap $parent_map, Clazz $parent, int $seq): InheritedMethodLink
     {
         $link = new InheritedMethodLink($this, $class, $class_map, $parent_map, $parent, $seq);
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $parent_map->addDependentLink($link);
         $this->count('link_objects');
         return $link;
@@ -418,11 +415,9 @@ final class LazyInheritedMethods
     public function addLazySlot(InheritedMethodLink $link, string $lowercase_name, Method|InheritedMethodLink $entry): void
     {
         $code_base = $this->codeBase();
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $link->ordinals[$lowercase_name] = $code_base->nextEagerOrdinal();
         $link->unresolved++;
         $class_map = $link->class_map;
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $class_map->addLazyEntry($lowercase_name, $link);
         $this->maps_with_links[\spl_object_id($class_map)] = $class_map;
         $this->lazy_entry_count++;
@@ -467,9 +462,7 @@ final class LazyInheritedMethods
         }
         $template = clone($root);
         // (What Clazz::addMethod() does to the parent's method, through Method::cloneWithTemplateParameterTypeMap([]))
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $template->cloneParameterList();
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $t = new LazyInheritedMethodTemplate($root, $template, $root->getReturnTypeLinkOfClone(), $seq, LazyInheritedMethodsEligibility::getStateVersionsOfRoot($root));
         if ($this->verify) {
             $t->snapshot = self::snapshotRoot($root);
@@ -482,7 +475,6 @@ final class LazyInheritedMethods
     private static function matchesTemplate(Method $root, LazyInheritedMethodTemplate $t): bool
     {
         // The link decision also reads the return type of the link target, which may be another method (Method::getReturnTypeLinkOfClone())
-        // @phan-suppress-next-line PhanAccessMethodInternal
         return LazyInheritedMethodsEligibility::getStateVersionsOfRoot($root) === $t->versions && $root->getReturnTypeLinkOfClone() === $t->link_target;
     }
 
@@ -511,11 +503,9 @@ final class LazyInheritedMethods
     private function resolveChain(InheritedMethodLink $link, string $lowercase_name): array
     {
         $levels = [$link];
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $value = $link->parent_map->entryAt($lowercase_name, $link->seq);
         while ($value instanceof InheritedMethodLink) {
             $levels[] = $value;
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $value = $value->parent_map->entryAt($lowercase_name, $value->seq);
         }
         if (!$value instanceof Method) {
@@ -568,7 +558,6 @@ final class LazyInheritedMethods
     {
         $method = clone($t->template);
         // (Method::cloneWithTemplateParameterTypeMap([]))
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $method->cloneParameterList();
         foreach ($levels as $i => $level) {
             $this->applyLevel($method, $level->class, $i === 0 ? $t : null);
@@ -588,9 +577,7 @@ final class LazyInheritedMethods
         if ($top !== null) {
             // Only the first level can take the return type link (Method::ensureClonesReturnType()), and the decision
             // was taken when the template was captured, from the state of the link target then.
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $method->setReturnTypeLinkForLazyCopy($top->link_target);
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $method->setCloneSource($top->root);
         }
         if ($method->hasYield()) {
@@ -609,13 +596,11 @@ final class LazyInheritedMethods
      */
     private function register(ClassMap $map, string $lowercase_name, InheritedMethodLink $link, Method $method, string $trigger): void
     {
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $map->replaceEntry($lowercase_name, $method);
         $ordinal = $link->ordinals[$lowercase_name];
         unset($link->ordinals[$lowercase_name]);
         $link->unresolved--;
         $this->lazy_entry_count--;
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $method->setEagerOrdinal($ordinal);
         self::releaseLinkIfDone($link);
         $code_base = $this->codeBase();
@@ -625,7 +610,6 @@ final class LazyInheritedMethods
             if ($phase === 'loop' && PhaseTimer::$enabled) {
                 $this->recordLoopCaller();
             }
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $code_base->addMethodToMethodSet($method);
             $this->nested_effects[2]++;
             $this->set_is_unordered = true;
@@ -671,7 +655,6 @@ final class LazyInheritedMethods
             if ($current->unresolved > 0 || $current->held_by_history > 0) {
                 continue;
             }
-            // @phan-suppress-next-line PhanAccessMethodInternal
             foreach ($current->parent_map->removeDependentLink($current) as $released) {
                 $work[] = $released;
             }
@@ -684,7 +667,6 @@ final class LazyInheritedMethods
     public function nextSlotChangeSeq(): int
     {
         $this->count('history_records');
-        // @phan-suppress-next-line PhanAccessMethodInternal
         return $this->codeBase()->nextLazySeq();
     }
 
@@ -709,9 +691,7 @@ final class LazyInheritedMethods
      */
     public function materializeAllOfClass(FullyQualifiedClassName $fqsen, string $trigger): void
     {
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $map = $this->codeBase()->getClassMapForLazyInheritance($fqsen);
-        // @phan-suppress-next-line PhanAccessMethodInternal
         if ($map->hasLazyEntries()) {
             $this->materializeAllOf($map, $trigger);
         }
@@ -741,11 +721,9 @@ final class LazyInheritedMethods
     {
         $entries = [];
         foreach ($maps as $map) {
-            // @phan-suppress-next-line PhanAccessMethodInternal
             if (!$map->hasLazyEntries()) {
                 continue;
             }
-            // @phan-suppress-next-line PhanAccessMethodInternal
             foreach ($map->getMethodEntryMap() as $lowercase_name => $entry) {
                 if ($entry instanceof InheritedMethodLink) {
                     $lowercase_name = (string)$lowercase_name;
@@ -768,7 +746,6 @@ final class LazyInheritedMethods
     private function materializeEntries(array $entries, string $trigger): void
     {
         foreach ($entries as [, $map, $lowercase_name]) {
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $entry = $map->entry($lowercase_name);
             if ($entry instanceof InheritedMethodLink) {
                 $this->materialize($map, $lowercase_name, $entry, $trigger);
@@ -814,7 +791,6 @@ final class LazyInheritedMethods
             $methods[] = $method;
         }
         \usort($methods, static function (Method $a, Method $b): int {
-            // @phan-suppress-next-line PhanAccessMethodInternal
             return $a->getEagerOrdinal() <=> $b->getEagerOrdinal();
         });
         $sorted = new Set();
@@ -853,7 +829,6 @@ final class LazyInheritedMethods
         if (isset($this->processed[$id])) {
             return true;
         }
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $ordinal = $method->getEagerOrdinal();
         $this->drainPendingBefore($ordinal);
         unset($this->pending_ids[$id]);
@@ -1006,7 +981,6 @@ final class LazyInheritedMethods
         $this->callable_arg_state = [$plugin_closures, $plugin_set];
         $this->closures_by_defining_fqsen = $closures_by_defining_fqsen;
         foreach ($this->late_materialized as $method) {
-            // @phan-suppress-next-line PhanAccessMethodInternal
             Analysis::attachCallableArgumentAnalyzer($this->codeBase(), $method, $plugin_closures, $this->closures_by_defining_fqsen, $plugin_set);
         }
     }
@@ -1041,7 +1015,6 @@ final class LazyInheritedMethods
         }
         if ($this->callable_arg_state !== null) {
             [$plugin_closures, $plugin_set] = $this->callable_arg_state;
-            // @phan-suppress-next-line PhanAccessMethodInternal
             Analysis::attachCallableArgumentAnalyzer($this->codeBase(), $method, $plugin_closures, $this->closures_by_defining_fqsen, $plugin_set);
         }
     }
@@ -1059,7 +1032,6 @@ final class LazyInheritedMethods
         $roots = [];
         $entries = self::collectLazyEntries($this->maps_with_links);
         foreach ($entries as [, $map, $lowercase_name]) {
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $entry = $map->entry($lowercase_name);
             if ($entry instanceof InheritedMethodLink) {
                 $roots[] = [$this->resolveChain($entry, $lowercase_name)[0]->root, $map, $lowercase_name];
@@ -1068,7 +1040,6 @@ final class LazyInheritedMethods
         $this->materializeAll('verify');
         $this->count('verify_materialized_all', \count($roots), true);
         foreach ($roots as [$root, $map, $lowercase_name]) {
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $copy = $map->entry($lowercase_name);
             if (!$copy instanceof Method) {
                 continue;
@@ -1271,7 +1242,6 @@ final class LazyInheritedMethods
         $method->setIsOverride(false);
         $method->setIsOverriddenByAnother(false);
         $method->ensureClonesReturnType($original);
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $method->setCloneSource($original);
         if ($method->hasYield()) {
             $new_type = UnionType::fromFullyQualifiedRealString('\\Generator');
@@ -1371,7 +1341,6 @@ final class LazyInheritedMethods
             'scope' => (array)$scope,
             'variables' => $variables,
             'parameters' => \array_map(self::snapshotParameter(...), $root->getParameterList()),
-            // @phan-suppress-next-line PhanAccessMethodInternal
             'real_parameters' => \array_map(self::snapshotParameter(...), $root->getRealParameterListWithoutCloning()),
         ];
     }
@@ -1449,7 +1418,6 @@ final class LazyInheritedMethods
             }
             $other = $new[$key] ?? null;
             if ($name === 'phan_flags' && \is_int($value) && \is_int($other)) {
-                // @phan-suppress-next-line PhanAccessClassConstantInternal
                 if ((($value ^ $other) & ~TypedElement::UNVERSIONED_PHAN_FLAGS) !== 0) {
                     return "property phan_flags: $value !== $other";
                 }
@@ -1475,9 +1443,7 @@ final class LazyInheritedMethods
         $issue_collector = Phan::getIssueCollector();
         $capturing_collector = new BufferingCollector();
         Phan::setIssueCollector($capturing_collector);
-        // @phan-suppress-next-line PhanAccessPropertyInternal
         $previous_recorder = TypedElement::$suppression_count_recorder;
-        // @phan-suppress-next-line PhanAccessPropertyInternal
         TypedElement::$suppression_count_recorder = [];
         return [$issue_collector, $capturing_collector, EmitOnlyChecks::getSideEffectCounts($this->codeBase()), $previous_recorder];
     }
@@ -1493,10 +1459,8 @@ final class LazyInheritedMethods
     {
         [$issue_collector, $capturing_collector, $before, $previous_recorder] = $state;
         Phan::setIssueCollector($issue_collector);
-        // @phan-suppress-next-line PhanAccessPropertyInternal
         $suppressing_elements = TypedElement::$suppression_count_recorder ?? [];
         // (The suppressions counted by the analysis of copies that this one created were checked by their own check)
-        // @phan-suppress-next-line PhanAccessPropertyInternal
         TypedElement::$suppression_count_recorder = $previous_recorder;
         foreach ($capturing_collector->getCollectedIssues() as $issue) {
             $this->recordViolation($method, $label, "emitted an issue that is reported: $issue");

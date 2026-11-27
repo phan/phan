@@ -2004,7 +2004,6 @@ class Type implements Stringable
      * @return list<ClosureDeclarationParameter> The representations of parameters of the closure, in the given $context
      *
      * @see Comment::magicParamFromMagicMethodParamString() - This is similar but has minor differences, such as references
-     * @suppress PhanAccessClassConstantInternal
      */
     private static function closureParamComponentStringsToParams(array $param_components, Context $context, int $source): array
     {

@@ -139,7 +139,6 @@ class ClassMap
             $old = $this->method_map[$key];
             $this->recordSlotChange($key, $old);
             if ($old instanceof InheritedMethodLink) {
-                // @phan-suppress-next-line PhanAccessMethodInternal
                 $old->registry->discardLazySlot($old, $key);
             }
         }
@@ -165,7 +164,6 @@ class ClassMap
         if ($method instanceof Method) {
             return $method;
         }
-        // @phan-suppress-next-line PhanAccessMethodInternal
         return $method->registry->materialize($this, $lowercase_name, $method, 'lookup');
     }
 
@@ -179,7 +177,6 @@ class ClassMap
         if ($method === null || $method instanceof Method) {
             return $method;
         }
-        // @phan-suppress-next-line PhanAccessMethodInternal
         return $method->registry->materialize($this, $lowercase_name, $method, 'lookup');
     }
 
@@ -192,7 +189,6 @@ class ClassMap
     public function getMethodMap(): array
     {
         if ($this->lazy_entry_count > 0 && $this->registry !== null) {
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $this->registry->materializeAllOf($this, 'class_map');
         }
         // @phan-suppress-next-line PhanPartialTypeMismatchReturn there are no lazy entries left
@@ -314,7 +310,7 @@ class ClassMap
             $this->lazy_entry_count--;
         }
         if ($this->is_link_target && $this->dependent_seqs) {
-            // @phan-suppress-next-line PhanAccessMethodInternal, PhanPossiblyNonClassMethodCall set by addDependentLink()
+            // @phan-suppress-next-line PhanPossiblyNonClassMethodCall set by addDependentLink()
             $this->slot_history[$lowercase_name][] = [$this->registry->nextSlotChangeSeq(), $old];
             if ($old instanceof InheritedMethodLink) {
                 $old->held_by_history++;
@@ -366,7 +362,6 @@ class ClassMap
                         $value->held_by_history--;
                         $released[] = $value;
                     }
-                    // @phan-suppress-next-line PhanAccessMethodInternal
                     $this->registry?->countHistoryPruned();
                     continue;
                 }

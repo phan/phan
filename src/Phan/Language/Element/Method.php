@@ -1221,14 +1221,12 @@ class Method extends ClassElement implements FunctionInterface
             // A trait may be earlier in $ancestor_class_list than the parent, but the parent may define abstract classes.
             // TODO: What about trait aliasing rules?
             $ancestor_fqsen = $ancestor_class->getFQSEN();
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $method = $code_base->getMethodEntryByClassAndLowercaseName($ancestor_fqsen, $lowercase_name);
             if (!$method) {
                 // Same as Clazz->hasMethodWithName(): hydrate the ancestor if this is the first time, then check again.
                 if (!$ancestor_class->hydrateIndicatingFirstTime($code_base)) {
                     continue;
                 }
-                // @phan-suppress-next-line PhanAccessMethodInternal
                 $method = $code_base->getMethodEntryByClassAndLowercaseName($ancestor_fqsen, $lowercase_name);
                 if (!$method) {
                     continue;
@@ -1237,11 +1235,9 @@ class Method extends ClassElement implements FunctionInterface
             if ($method instanceof InheritedMethodLink) {
                 // A copy of an inherited method that was not created yet (see LazyInheritedMethods):
                 // skip it without creating it if it is a copy of the same method, otherwise create it.
-                // @phan-suppress-next-line PhanAccessMethodInternal
                 if ($method->registry->templateOf($method, $lowercase_name)->getDefiningFQSEN() === $defining_fqsen) {
                     continue;
                 }
-                // @phan-suppress-next-line PhanAccessMethodInternal
                 $method = $method->registry->materialize($method->class_map, $lowercase_name, $method, 'override_walk');
             }
             if ($method->getDefiningFQSEN() === $defining_fqsen) {
@@ -1566,7 +1562,6 @@ class Method extends ClassElement implements FunctionInterface
                 if ($comment_param->getUnionType()->hasTemplateTypeRecursive()) {
                     $params_with_templates[$comment_param->getName()] = true;
                     $comment_param = clone($comment_param);
-                    // @phan-suppress-next-line PhanAccessMethodInternal
                     $comment_param->setUnionType(
                         $comment_param->getUnionType()->withTemplateParameterTypeMap($template_type_map)
                     );

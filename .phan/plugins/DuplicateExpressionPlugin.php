@@ -122,7 +122,6 @@ class RedundantNodePostAnalysisVisitor extends PluginAwarePostAnalysisVisitor
      * @param Node $node
      * A binary operation node to analyze
      * @override
-     * @suppress PhanAccessClassConstantInternal
      */
     public function visitBinaryOp(Node $node): void
     {

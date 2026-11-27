@@ -178,14 +178,14 @@ EOT;
         Config::setValue('prefer_narrowed_phpdoc_param_type', true);
         Config::setValue('analyze_signature_compatibility', true);
         Config::setValue('inherit_phpdoc_types', true);
-        ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
+        ConfigPluginSet::reset();
     }
 
     public function tearDown(): void
     {
         \putenv('PHAN_DISABLE_CLONE_REPLAY');
         \putenv('PHAN_DUMP_METHOD_STATE_DIGEST');
-        PhaseTimer::resetForTests();  // @phan-suppress-current-line PhanAccessMethodInternal
+        PhaseTimer::resetForTests();
         parent::tearDown();
     }
 
@@ -216,7 +216,7 @@ EOT;
     }
 
     /**
-     * @suppress PhanThrowTypeAbsentForCall, PhanAccessMethodInternal
+     * @suppress PhanThrowTypeAbsentForCall
      */
     public function testFingerprintMatching(): void
     {
@@ -267,7 +267,7 @@ EOT;
         $digest_path = (string)\tempnam(\sys_get_temp_dir(), 'phan_clone_replay');
         \putenv($disable_replay ? 'PHAN_DISABLE_CLONE_REPLAY=1' : 'PHAN_DISABLE_CLONE_REPLAY');
         \putenv("PHAN_DUMP_METHOD_STATE_DIGEST=$digest_path");
-        PhaseTimer::resetForTests();  // @phan-suppress-current-line PhanAccessMethodInternal
+        PhaseTimer::resetForTests();
         PhaseTimer::$enabled = true;
         $collector = new BufferingCollector();
         Phan::setIssueCollector($collector);
@@ -278,9 +278,9 @@ EOT;
             Analysis::analyzeClasses($code_base);
             Analysis::analyzeFunctions($code_base);
             EmitOnlyChecks::maybeDumpStateDigest($code_base);
-            $notes = PhaseTimer::buildReport()['notes'];  // @phan-suppress-current-line PhanAccessMethodInternal
+            $notes = PhaseTimer::buildReport()['notes'];
         } finally {
-            PhaseTimer::resetForTests();  // @phan-suppress-current-line PhanAccessMethodInternal
+            PhaseTimer::resetForTests();
         }
         $digest = (string)\file_get_contents($digest_path);
         \unlink($digest_path);

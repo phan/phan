@@ -20,7 +20,7 @@ final class StrictLiteralComparisonPluginTest extends AbstractPhanFileTestBase
     {
         parent::setUpBeforeClass();
         Config::setValue('plugins', ['StrictLiteralComparisonPlugin']);
-        ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
+        ConfigPluginSet::reset();
     }
 
     public static function getTestFiles(): array

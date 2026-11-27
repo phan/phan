@@ -13,7 +13,6 @@ class SignalHandler
 {
     /**
      * Set up the signal handlers
-     * @suppress PhanAccessMethodInternal
      */
     public static function init(): void
     {

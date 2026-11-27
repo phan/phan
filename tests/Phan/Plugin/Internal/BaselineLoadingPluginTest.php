@@ -16,7 +16,6 @@ final class BaselineLoadingPluginTest extends TestBase
     {
         $plugin = new BaselineLoadingPlugin(__DIR__ . '/baseline.php.example');
         $assertShouldSuppressIssueEquals = function (bool $expected, string $file, string $issue_type, string $symbol = '*') use ($plugin): void {
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $this->assertSame($expected, $plugin->shouldSuppressIssue($issue_type, $file, $symbol));
         };
         $assertShouldSuppressIssueEquals(false, 'src/test.php.php', 'PhanUndeclaredMethod');

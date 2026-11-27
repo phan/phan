@@ -731,7 +731,6 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
      * @param array<string,string> $uris_to_analyze
      * @throws Exception if analysis throws an exception
      *
-     * @suppress PhanAccessMethodInternal
      */
     private function finishAnalyzingURIsWithoutPcntl(array $uris_to_analyze): void
     {

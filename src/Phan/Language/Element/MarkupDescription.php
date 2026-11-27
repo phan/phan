@@ -309,7 +309,6 @@ class MarkupDescription
                     \array_pop($param_tag_summary);
                 }
                 $full_comment = \implode("\n", self::trimLeadingWhitespace($param_tag_summary));
-                // @phan-suppress-next-line PhanAccessClassConstantInternal
                 $matched = \preg_match(Builder::PARAM_COMMENT_REGEX, $full_comment, $match);
                 if (!$matched) {
                     continue;
@@ -321,11 +320,9 @@ class MarkupDescription
                 $name = $match[17];
                 if ($with_param_details) {
                     // Keep the param details and put them in a markdown quote
-                    // @phan-suppress-next-line PhanAccessClassConstantInternal
                     $full_comment = \preg_replace(Builder::PARAM_COMMENT_REGEX, '`\0`', $full_comment);
                 } else {
                     // Drop the param details
-                    // @phan-suppress-next-line PhanAccessClassConstantInternal
                     $full_comment = \trim(\preg_replace(Builder::PARAM_COMMENT_REGEX, '', $full_comment));
                 }
                 $results[$name] = $full_comment;
@@ -396,7 +393,6 @@ class MarkupDescription
                             $new_lines = self::extractTagSummary($lines, $i);
                             if (isset($new_lines[0])) {
                                 $did_build_from_phpdoc_tag = true;
-                                // @phan-suppress-next-line PhanAccessClassConstantInternal
                                 $new_lines[0] = \preg_replace(Builder::PARAM_COMMENT_REGEX, $remove_type ? '' : '`\0`', $new_lines[0]);
                             }
                             $results = \array_merge($results, $new_lines);
@@ -407,7 +403,6 @@ class MarkupDescription
                         if (\preg_match('/^\s*@return(\s|$)/D', $line) > 0) {
                             $new_lines = self::extractTagSummary($lines, $i);
                             if (isset($new_lines[0])) {
-                                // @phan-suppress-next-line PhanAccessClassConstantInternal
                                 $new_lines[0] = \preg_replace(Builder::RETURN_COMMENT_REGEX, $remove_type ? '' : '`\0`', $new_lines[0]);
                             }
                             $results = \array_merge($results, $new_lines);

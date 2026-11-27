@@ -108,9 +108,6 @@ class ASTReverter
             return '(unknown)';
         };
         self::$closure_map = [
-            /**
-             * @suppress PhanAccessClassConstantInternal
-             */
             ast\AST_TYPE => static function (Node $node): string {
                 return PostOrderAnalysisVisitor::AST_CAST_FLAGS_LOOKUP[$node->flags];
             },
@@ -270,7 +267,6 @@ class ASTReverter
                         return "list($string)";
                 }
             },
-            /** @suppress PhanAccessClassConstantInternal */
             ast\AST_BINARY_OP => static function (Node $node): string {
                 return sprintf(
                     "(%s %s %s)",
@@ -293,7 +289,6 @@ class ASTReverter
                     self::toShortString($node->children['expr'])
                 );
             },
-            /** @suppress PhanAccessClassConstantInternal */
             ast\AST_ASSIGN_OP => static function (Node $node): string {
                 return sprintf(
                     "(%s %s= %s)",
@@ -375,7 +370,6 @@ class ASTReverter
             ast\AST_CAST => static function (Node $node): string {
                 return sprintf(
                     '(%s)(%s)',
-                    // @phan-suppress-next-line PhanAccessClassConstantInternal
                     PostOrderAnalysisVisitor::AST_CAST_FLAGS_LOOKUP[$node->flags] ?? 'unknown',
                     self::toShortString($node->children['expr'])
                 );

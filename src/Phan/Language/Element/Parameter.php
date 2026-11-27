@@ -183,8 +183,8 @@ class Parameter extends Variable
             } catch (IssueException $exception) {
                 // Ignore exceptions
                 Issue::maybeEmitInstance(
-                    $future_type->getCodebase(),  // @phan-suppress-current-line PhanAccessMethodInternal
-                    $future_type->getContext(),  // @phan-suppress-current-line PhanAccessMethodInternal
+                    $future_type->getCodebase(),
+                    $future_type->getContext(),
                     $exception->getIssueInstance()
                 );
             } finally {
@@ -214,8 +214,8 @@ class Parameter extends Variable
             } catch (IssueException $exception) {
                 // Ignore exceptions
                 Issue::maybeEmitInstance(
-                    $future_type->getCodebase(),  // @phan-suppress-current-line PhanAccessMethodInternal
-                    $future_type->getContext(),  // @phan-suppress-current-line PhanAccessMethodInternal
+                    $future_type->getCodebase(),
+                    $future_type->getContext(),
                     $exception->getIssueInstance()
                 );
             } finally {
@@ -466,11 +466,9 @@ class Parameter extends Variable
             // Set the actual value of the default
             $parameter->setDefaultValue($default_node);
             try {
-                // @phan-suppress-next-line PhanAccessMethodInternal
                 ParseVisitor::checkIsAllowedInConstExpr($default_node, ParseVisitor::CONSTANT_EXPRESSION_IN_PARAMETER);
                 if (!($node->flags & self::PARAM_MODIFIER_FLAGS)) {
                     // The default of a promoted property is checked along with the property.
-                    // @phan-suppress-next-line PhanAccessMethodInternal
                     ParseVisitor::emitCompatibilityIssuesForConstExpr($code_base, $context, $default_node);
                 }
 
@@ -767,7 +765,6 @@ class Parameter extends Variable
      * Convert this parameter to a stub that can be used by `tool/make_stubs`
      *
      * @param bool $is_internal is this being requested for the language server instead of real PHP code?
-     * @suppress PhanAccessClassConstantInternal
      */
     public function toStubString(bool $is_internal = false): string
     {
@@ -863,7 +860,6 @@ class Parameter extends Variable
     /**
      * Convert this parameter to a stub that can be used for issue messages.
      *
-     * @suppress PhanAccessClassConstantInternal
      */
     public function getShortRepresentationForIssue(bool $is_internal = false): string
     {

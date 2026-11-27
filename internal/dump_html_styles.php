@@ -71,7 +71,6 @@ class DumpHTMLStyles
 
     /**
      * Dumps all styles
-     * @suppress PhanAccessClassConstantInternal
      */
     public static function main(): void
     {

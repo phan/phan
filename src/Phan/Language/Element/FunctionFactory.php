@@ -60,7 +60,6 @@ class FunctionFactory
             $function->setHasTentativeReturnType();
         }
         if (Config::getValue('assume_real_types_for_internal_functions')) {
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $real_type_string = UnionType::getLatestRealFunctionSignatureMap(Config::get_closest_target_php_version_id())[$namespaced_name] ?? null;
             if (\is_string($real_type_string)) {
                 // Override it with Phan's information, useful for list<string> overriding array

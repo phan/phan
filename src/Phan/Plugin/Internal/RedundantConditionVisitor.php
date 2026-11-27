@@ -240,7 +240,6 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
      * @param Node|string|int|float $left_node
      * @param Node|string|int|float $right_node
      * @param int $flags a valid flags value for ast\AST_BINARY_OP
-     * @suppress PhanAccessMethodInternal
      */
     private function checkUselessScalarComparison(
         Node $node,
@@ -264,7 +263,6 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
             $left->toErrorMessageString(),
             ASTReverter::toShortString($right_node),
             $right->toErrorMessageString(),
-            // @phan-suppress-next-line PhanAccessClassConstantInternal
             PostOrderAnalysisVisitor::NAME_FOR_BINARY_OP[$flags],
         ];
         $left_count = count($left_values);
@@ -436,7 +434,6 @@ class RedundantConditionVisitor extends PluginAwarePostAnalysisVisitor
      * @param Closure(UnionType,UnionType):bool $is_still_issue
      * @param Node|string|int|float|null $left_node null to use the node of the binary op
      * @param Node|string|int|float|null $right_node null to use the node of the binary op
-     * @suppress PhanAccessMethodInternal
      */
     public function emitIssueForBinaryOp(
         Node $node,

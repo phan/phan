@@ -173,7 +173,6 @@ class RedundantCondition
                 return [$var_name => $var_name];
             }
         }
-        // @phan-suppress-next-line PhanAccessClassConstantInternal
         if (\in_array($node->kind, PhanAnnotationAdder::SCOPE_START_LIST, true)) {
             return [];
         }

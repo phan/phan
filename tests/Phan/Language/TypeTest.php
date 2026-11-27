@@ -707,7 +707,6 @@ final class TypeTest extends CodeBaseAwareTestBase
 
     /**
      * @dataProvider isSubtypeOfProvider
-     * @suppress PhanAccessMethodInternal
      */
     public function testIsSubtypeOf(bool $expected, string $from_type_string, string $to_type_string, bool $only_check_subtype = false): void
     {
@@ -754,7 +753,6 @@ final class TypeTest extends CodeBaseAwareTestBase
 
     /**
      * @dataProvider nonWeakOverlappingTypeProvider
-     * @suppress PhanAccessMethodInternal
      */
     public function testNonWeakOverlappingType(string $from_type_string, string $to_type_string): void
     {

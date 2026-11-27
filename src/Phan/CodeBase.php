@@ -880,9 +880,7 @@ class CodeBase
             // them into the method set of the code base owning the registry, in eager order (as getMethodSet() does).
             // Then the original and the clone both have the complete method set.
             // (Only daemon mode and the language server clone code bases, and lazy_inherited_methods is disabled there.)
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $owner = $lazy->getCodeBase();
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $this->method_set = $lazy->getMethodSetInEagerOrder($owner->method_set, 'clone', static function (Set $sorted_set) use ($owner): void {
                 $owner->method_set = $sorted_set;
             });
@@ -962,7 +960,6 @@ class CodeBase
      * Returns a serialized representation of everything in this CodeBase.
      * @internal
      * @return array{clone:CodeBase,callbacks:(?Closure():void)[]}
-     * @suppress PhanAccessMethodInternal
      */
     public function createRestorePoint(): array
     {
@@ -1480,7 +1477,6 @@ class CodeBase
      */
     public function addMethod(Method $method): void
     {
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $method->setEagerOrdinal($this->nextEagerOrdinal());
         // Add the method to the map
         $this->getClassMapByFQSEN(
@@ -1598,7 +1594,6 @@ class CodeBase
         FullyQualifiedClassName $fqsen,
         string $lowercase_name
     ): Method|InheritedMethodLink|null {
-        // @phan-suppress-next-line PhanAccessMethodInternal
         return $this->getClassMapByFullyQualifiedClassName(
             $fqsen
         )->entry($lowercase_name);
@@ -1616,7 +1611,6 @@ class CodeBase
     public function getMethodEntryMapByFullyQualifiedClassName(
         FullyQualifiedClassName $fqsen
     ): array {
-        // @phan-suppress-next-line PhanAccessMethodInternal
         return $this->getClassMapByFullyQualifiedClassName(
             $fqsen
         )->getMethodEntryMap();
@@ -1679,7 +1673,6 @@ class CodeBase
         if ($lazy === null) {
             return $this->method_set;
         }
-        // @phan-suppress-next-line PhanAccessMethodInternal
         return $lazy->getMethodSetInEagerOrder($this->method_set, $caller, function (Set $sorted_set): void {
             $this->method_set = $sorted_set;
         });
@@ -1747,7 +1740,6 @@ class CodeBase
      */
     public function getLazyEntryCount(): int
     {
-        // @phan-suppress-next-line PhanAccessMethodInternal
         return $this->lazy_inherited?->getLazyEntryCount() ?? 0;
     }
 
@@ -1855,7 +1847,6 @@ class CodeBase
                     foreach ($this->getMethodEntryMapByFullyQualifiedClassName($class_fqsen) as $lowercase_name => $method) {
                         if ($method instanceof InheritedMethodLink) {
                             if (isset($lowercase_names[$lowercase_name])) {
-                                // @phan-suppress-next-line PhanAccessMethodInternal
                                 if (self::isMethodDefinedBy($method->registry->templateOf($method, (string)$lowercase_name), $fqsen_string)) {
                                     $passed_lazy_entry = true;
                                 }
@@ -1874,7 +1865,6 @@ class CodeBase
                         $lowercase_name = \strtolower((string)$name);
                         $method = $this->getMethodEntryByClassAndLowercaseName($class_fqsen, $lowercase_name);
                         if ($method instanceof InheritedMethodLink) {
-                            // @phan-suppress-next-line PhanAccessMethodInternal
                             if (self::isMethodDefinedBy($method->registry->templateOf($method, $lowercase_name), $fqsen_string)) {
                                 $passed_lazy_entry = true;
                             }
@@ -2344,7 +2334,6 @@ class CodeBase
                     }
                     $real_return_type = FunctionFactory::getRealReturnTypeFromReflection($reflection_function);
                     if (Config::getValue('assume_real_types_for_internal_functions')) {
-                        // @phan-suppress-next-line PhanAccessMethodInternal
                         $real_type_string = UnionType::getLatestRealFunctionSignatureMap(Config::get_closest_target_php_version_id())[$name] ?? null;
                         if (\is_string($real_type_string)) {
                             $real_return_type = UnionType::fromStringInContext($real_type_string, new Context(), Type::FROM_TYPE);
@@ -2358,7 +2347,6 @@ class CodeBase
 
                     $real_parameter_list = Parameter::listFromReflectionParameterList($reflection_function->getParameters());
                     $function->setRealParameterList($real_parameter_list);
-                    // @phan-suppress-next-line PhanAccessMethodInternal
                     $function->inheritRealParameterDefaults();
                 }
                 $this->addFunction($function);
@@ -2472,7 +2460,6 @@ class CodeBase
             $sum += (
                 \count($class_map->getClassConstantMap())
                 + \count($class_map->getPropertyMap())
-                // @phan-suppress-next-line PhanAccessMethodInternal
                 + \count($class_map->getMethodEntryMap())
             );
         }
@@ -3086,7 +3073,6 @@ class CodeBase
             // ignore missing constant info
         }
         $key = \strtolower(\ltrim((string)$fqsen, '\\'));
-        /** @phan-suppress-next-line PhanAccessMethodInternal */
         $description_map = MarkupDescription::loadConstantDescriptionMap();
         if (isset($description_map[$key]) && \stripos($description_map[$key], 'deprecated') !== false) {
             return true;

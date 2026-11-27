@@ -292,7 +292,6 @@ final class RedundantConditionCallPlugin extends PluginV3 implements
             }
             return self::_IS_REASONABLE_CONDITION;
         }, 'iterable');
-        /** @suppress PhanAccessMethodInternal */
         $countable_callback = $make_context_aware_first_arg_checker(static function (UnionType $union_type, CodeBase $code_base, Context $context): int {
             $new_real_type = UnionType::of(
                 UnionType::castTypeListToCountable($code_base, $union_type->getTypeSet(), $context),

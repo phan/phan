@@ -588,7 +588,6 @@ class Parser
                 $converter = new TolerantASTConverterWithNodeMapping(
                     $request->getTargetByteOffset($file_contents),
                     static function (Node $node): void {
-                        // @phan-suppress-next-line PhanAccessMethodInternal
                         ConfigPluginSet::instance()->prepareNodeSelectionPluginForNode($node);
                     }
                 );
@@ -608,7 +607,6 @@ class Parser
 
     /**
      * Get a string representation of the AST kind value.
-     * @suppress PhanAccessMethodInternal
      */
     public static function getKindName(int $kind): string
     {

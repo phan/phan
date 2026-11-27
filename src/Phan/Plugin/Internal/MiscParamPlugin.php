@@ -252,7 +252,6 @@ final class MiscParamPlugin extends PluginV3 implements
      *
      * Emits warning about in_array checks that always return false.
      * @param non-empty-list<Node|string|float> $args
-     * @suppress PhanAccessMethodInternal
      */
     private static function emitIssueForInArray(CodeBase $code_base, Context $context, array $args, ?Node $node): void
     {
@@ -307,7 +306,6 @@ final class MiscParamPlugin extends PluginV3 implements
      *
      * Emits warning about array_key_exists checks that always return false.
      * @param non-empty-list<Node|string|float> $args
-     * @suppress PhanAccessMethodInternal
      */
     private static function emitIssueForArrayKeyExists(CodeBase $code_base, Context $context, array $args, ?Node $node): void
     {

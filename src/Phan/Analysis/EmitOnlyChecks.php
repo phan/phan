@@ -289,7 +289,6 @@ final class EmitOnlyChecks
      */
     public static function getSideEffectCounts(CodeBase $code_base): array
     {
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $method_count = \count($code_base->getMethodSetWithoutLazyEntries());
         $lazy = $code_base->getLazyInherited();
         if ($lazy === null) {
@@ -501,7 +500,6 @@ final class EmitOnlyChecks
         // Internal methods are added to the method set when an internal class is first used,
         // so their positions show the order in which internal classes were loaded.
         $internal_method_lines = [];
-        // @phan-suppress-next-line PhanAccessMethodInternal
         foreach ($code_base->getMethodSetWithoutLazyEntries() as $method) {
             if ($method->isPHPInternal()) {
                 $internal_method_lines[] = 'internal ' . $method->getFQSEN();
@@ -552,7 +550,6 @@ final class EmitOnlyChecks
         $internal_method_lines = [];
         /** @var list<array{0:string,1:int,2:string}> [FQSEN, eager ordinal, line] */
         $method_entries = [];
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $methods = \iterator_to_array($code_base->getMethodSetWithoutLazyEntries(), false);
         foreach ($code_base->getLazyInherited()?->getLateMaterializedMethods() ?? [] as $method) {
             $methods[] = $method;
@@ -564,7 +561,6 @@ final class EmitOnlyChecks
             }
             $method_entries[] = [
                 (string)$method->getFQSEN(),
-                // @phan-suppress-next-line PhanAccessMethodInternal
                 $method->getEagerOrdinal(),
                 self::getElementState($method) . "\t" . self::getExtendedMethodState($method, $owner_names) . self::getSuppressionState($method),
             ];
@@ -593,7 +589,6 @@ final class EmitOnlyChecks
             if ($suppression_state !== '') {
                 $lines[] = 'class ' . $class->getFQSEN() . $suppression_state;
             }
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $class_map_lines[] = 'classmap ' . $class->getFQSEN() . ': ' . \implode(',', $code_base->getClassMapForLazyInheritance($class->getFQSEN())->getMethodNames());
         }
         \array_push($lines, ...$class_map_lines);
@@ -609,7 +604,6 @@ final class EmitOnlyChecks
     {
         $plugin_set = ConfigPluginSet::instance();
         $names = [];
-        // @phan-suppress-next-line PhanAccessMethodInternal
         foreach ([...$plugin_set->getAnalyzeFunctionCallPluginSet(), ...$plugin_set->getAnalyzeCallableArgumentPluginSet(), ...$plugin_set->getConditionalCallPluginSet()] as $plugin) {
             $names[\spl_object_id($plugin)] = \substr((string)\strrchr('\\' . \get_class($plugin), '\\'), 1);
         }
@@ -623,7 +617,6 @@ final class EmitOnlyChecks
      */
     private static function getExtendedMethodState(Method $method, array $owner_names): string
     {
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $link = $method->getReturnTypeLink();
         $clone_source_root = $method->getCloneSource();
         for ($i = 0; $clone_source_root !== null && $clone_source_root->getFQSEN() !== $clone_source_root->getDefiningFQSEN() && $i < 1000; $i++) {
@@ -634,25 +627,20 @@ final class EmitOnlyChecks
             $clone_source_root = $next;
         }
         $call_plugins = [];
-        // @phan-suppress-next-line PhanAccessMethodInternal
         foreach ($method->getFunctionCallAnalyzerOwnerIds() as $id) {
             $call_plugins[] = $owner_names[$id] ?? 'closure';
         }
         \sort($call_plugins);
         $conditional_call_plugins = [];
-        // @phan-suppress-next-line PhanAccessMethodInternal
         foreach ($method->getConditionalCallClosureOwnerIds() as $id) {
             $conditional_call_plugins[] = $owner_names[$id] ?? 'closure';
         }
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $inherited_throws = $method->getInheritedThrowsUnionType();
         return \implode("\t", [
             'link=' . ($link !== null ? (string)$link->getFQSEN() : '-'),
             'clone_source_root=' . ($clone_source_root !== null ? (string)$clone_source_root->getFQSEN() : '-'),
             'scope_init=' . ($method->isScopeInitialized() ? '1' : '0'),
-            // @phan-suppress-next-line PhanAccessMethodInternal
             'did_return_types=' . ($method->didAnalyzeReturnTypes() ? '1' : '0'),
-            // @phan-suppress-next-line PhanAccessMethodInternal
             'return_cb=' . ($method->hasReturnTypeCallback() ? '1' : '0'),
             'call_plugins=' . ($call_plugins ? \implode(',', $call_plugins) : '-'),
             'conditional_call_plugins=' . ($conditional_call_plugins ? \implode(',', $conditional_call_plugins) : '-'),

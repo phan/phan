@@ -11,7 +11,6 @@ use Phan\Tests\TestBase;
 /**
  * Unit tests of PhaseTimer (--dump-phase-timings and --phase-timings-json)
  *
- * @phan-file-suppress PhanAccessMethodInternal
  */
 final class PhaseTimerTest extends TestBase
 {

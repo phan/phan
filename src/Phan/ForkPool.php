@@ -130,7 +130,6 @@ class ForkPool
      * A closure to execute upon shutting down a child
      * @throws InvalidArgumentException if count($process_task_data_iterator) < 2
      * @throws AssertionError if pcntl is disabled before using this
-     * @suppress PhanAccessMethodInternal
      */
     public function __construct(
         array $process_task_data_iterator,
@@ -323,7 +322,6 @@ class ForkPool
      * (regardless of the order in which the workers finished).
      *
      * @return list<IssueInstance>
-     * @suppress PhanAccessMethodInternal
      */
     private function readResultsFromChildren(): array
     {
@@ -413,7 +411,6 @@ class ForkPool
 
     /**
      * Exit with a non-zero exit code if any of the workers exited without sending a valid response.
-     * @suppress PhanAccessMethodInternal
      */
     private function assertAnalysisWorkersExitedNormally(): void
     {

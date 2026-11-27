@@ -1,6 +1,5 @@
 <?php
 
-/** @phan-file-suppress PhanAccessMethodInternal */
 
 declare(strict_types=1);
 
@@ -186,7 +185,6 @@ class Analysis
             $context,
             $node
         );
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $code_base->addParsedNamespaceMap($context->getFile(), $context->getNamespace(), $context->getNamespaceId(), $context->getNamespaceMap());
         if ($should_cache_stub && $cache_key !== null && $cache_hash !== null && $pre_parse_snapshot !== null) {
             self::storeInternalStubCacheEntry($cache_key, $cache_hash, $code_base, $context, $pre_parse_snapshot);
@@ -586,7 +584,6 @@ class Analysis
         // are processed in the order in which they would have been added (see LazyInheritedMethods).
         $lazy = $code_base->getLazyInherited();
         if ($lazy !== null) {
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $lazy->beginMethodLoop($analyzer, $clone_replay);
         }
         foreach ($method_set as $method) {
@@ -596,7 +593,6 @@ class Analysis
                 // is needed so that the progress bar is accurate.
                 CLI::progress('method', (++$i) / (count($method_set)), $method);
             }
-            // @phan-suppress-next-line PhanAccessMethodInternal
             if ($lazy !== null && $lazy->beginLoopMethod($method)) {
                 // Already processed (a lazily created copy that comes before a method processed earlier)
                 continue;
@@ -614,7 +610,6 @@ class Analysis
                     $elapsed_ns = \hrtime(true) - $start_ns;
                     $file = $method->getContext()->getFile();
                     $method_ns[$method->getDefiningFQSEN() !== $method->getFQSEN() ? 'inherited' : 'declared'] += $elapsed_ns;
-                    // @phan-suppress-next-line PhanAccessPropertyInternal
                     $method_ns[($analyzer->is_excluded_file[$file] ??= Phan::isExcludedAnalysisFile($file)) ? 'excluded' : 'analyzed'] += $elapsed_ns;
                 } else {
                     $analyzer->analyze($method, $clone_replay ? CloneReplay::beginAnalyzingMethod($code_base, $method) : null);
@@ -627,23 +622,17 @@ class Analysis
             }
         }
         if ($lazy !== null) {
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $lazy->endMethodLoop();
         }
         if ($collect_timings) {
-            // @phan-suppress-next-line PhanAccessPropertyInternal
             self::recordMethodSetStats($code_base, $method_ns, $analyzer->is_excluded_file);
-            // @phan-suppress-next-line PhanAccessPropertyInternal
             PhaseTimer::note('functionlikes_checks_run', $analyzer->checks_count[EmitOnlyChecks::RUN]);
-            // @phan-suppress-next-line PhanAccessPropertyInternal
             PhaseTimer::note('functionlikes_checks_skipped', $analyzer->checks_count[EmitOnlyChecks::SKIP]);
-            // @phan-suppress-next-line PhanAccessPropertyInternal
             PhaseTimer::note('functionlikes_checks_verified', $analyzer->checks_count[EmitOnlyChecks::VERIFY]);
             EmitOnlyChecks::recordAncestorWalkStats();
         }
         CloneReplay::endAnalyzingMethods($code_base);
         EmitOnlyChecks::resetLookedUpTypes();
-        // @phan-suppress-next-line PhanAccessPropertyInternal
         EmitOnlyChecks::reportVerificationResults($code_base, $analyzer->checks_count[EmitOnlyChecks::VERIFY]);
     }
 
@@ -709,7 +698,6 @@ class Analysis
         // With lazy_inherited_methods, the closures attached to methods whose copies are still lazy are recorded,
         // and those copies get them when they are created (see LazyInheritedMethods::replayOps()).
         $lazy = $code_base->getLazyInherited();
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $lazy?->beginLoadMethodPlugins($return_type_override_fqsen_strings);
         $passed_lazy_entry = false;
 
@@ -755,7 +743,6 @@ class Analysis
                                 $child_method->setDependentReturnTypeClosure($closure);
                             }
                             if ($passed_lazy_entry && $lazy !== null) {
-                                // @phan-suppress-next-line PhanAccessMethodInternal
                                 $lazy->recordOp($fqsen, 'return_type', $closure, null);
                             }
                         }
@@ -778,7 +765,6 @@ class Analysis
         // and (2) automatically loads definitions for methods by calling hasClassWithFQSEN (etc.), so that internal method definitions used by previous plugins can be iterated over by the next plugin being called (e.g. if getMethodSet is called).
         // Internal functions are not loaded here: a plugin that iterates over the loaded functions (e.g. CallableParamPlugin)
         // gets the functions loaded later through handleLazyLoadInternalFunction().
-        // @phan-suppress-next-line PhanAccessMethodInternal
         foreach ($plugin_set->getAnalyzeFunctionCallPluginSet() as $plugin) {
             foreach ($plugin->getAnalyzeFunctionCallClosures($code_base) as $fqsen_string => $closure) {
                 try {
@@ -808,7 +794,6 @@ class Analysis
                                 $child_method->addFunctionCallAnalyzer($closure, $plugin);
                             }
                             if ($passed_lazy_entry && $lazy !== null) {
-                                // @phan-suppress-next-line PhanAccessMethodInternal
                                 $lazy->recordOp($fqsen, 'call', $closure, $plugin);
                             }
                         }
@@ -861,7 +846,6 @@ class Analysis
                                 ConditionalCallAnalyzer::registerMethodName($child_method->getName());
                             }
                             if ($passed_lazy_entry && $lazy !== null) {
-                                // @phan-suppress-next-line PhanAccessMethodInternal
                                 $lazy->recordOp($fqsen, 'conditional_call', $closure, $plugin);
                             }
                         }
@@ -900,10 +884,8 @@ class Analysis
             foreach ($code_base->getMethodSetWithoutLazyEntries() as $method) {
                 self::attachCallableArgumentAnalyzer($code_base, $method, $plugin_closures, $closures_by_defining_fqsen, $plugin_set);
             }
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $lazy?->setCallableArgumentState($plugin_closures, $closures_by_defining_fqsen, $plugin_set);
         }
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $lazy?->endLoadMethodPlugins();
     }
 
@@ -1020,7 +1002,6 @@ class Analysis
 
         // Set the file on the context
         $context = (new Context())->withFile($file_path);
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $context->importNamespaceMapFromParsePhase($code_base);
 
         $code_base->setCurrentAnalyzedFile($file_path);
@@ -1071,7 +1052,6 @@ class Analysis
         ConfigPluginSet::instance()->beforeAnalyzeFile($code_base, $context, $file_contents, $node);
 
         $context = (new BlockAnalysisVisitor($code_base, $context))($node);
-        // @phan-suppress-next-line PhanAccessMethodInternal
         $context->warnAboutUnusedUseElements($code_base);
 
         ConfigPluginSet::instance()->afterAnalyzeFile($code_base, $context, $file_contents, $node);

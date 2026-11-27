@@ -38,7 +38,7 @@ final class AsymmetricVisibilityTest extends CodeBaseAwareTestBase
         foreach (self::OVERRIDES as $key => $value) {
             Config::setValue($key, $value);
         }
-        ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
+        ConfigPluginSet::reset();
     }
 
     /**

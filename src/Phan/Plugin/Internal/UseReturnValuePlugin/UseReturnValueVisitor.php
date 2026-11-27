@@ -29,7 +29,6 @@ use function iterator_to_array;
  * 2. Checks for invocations of functions/methods that return 'never' but the return value gets used.
  *    e.g. $x = alwaysExits();
  *
- * @phan-file-suppress PhanAccessPropertyInternal
  */
 class UseReturnValueVisitor extends PluginAwarePostAnalysisVisitor
 {

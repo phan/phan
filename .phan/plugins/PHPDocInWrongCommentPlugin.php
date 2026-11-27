@@ -69,7 +69,6 @@ class PHPDocInWrongCommentPlugin extends PluginV3 implements
             }
             $lineno = $token->line;
 
-            // @phan-suppress-next-line PhanAccessClassConstantInternal
             $comment = Comment::fromStringInContext("/**" . $comment_string, $code_base, $context, $lineno, Comment::ON_ANY);
 
             if ($comment instanceof NullComment) {

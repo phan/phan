@@ -44,7 +44,7 @@ final class PHP82Test extends AbstractPhanFileTestBase
                 '_fake' => \Phan\Config::getProjectRootDirectory() . '/tests/.phan_for_test/attributes.phan_php',
             ]
         );
-        ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
+        ConfigPluginSet::reset();
     }
 
     /**

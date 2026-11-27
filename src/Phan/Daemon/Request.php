@@ -689,10 +689,8 @@ class Request
         $code_base->setFilePathListForTypeAliases($file_list);
         TypeAliasImporter::reset($file_mapping_contents);
         // (And the classes that the files declare)
-        // @phan-suppress-next-line PhanAccessMethodInternal
         DeclaredClassIndex::reset($file_mapping_contents);
         // (And composer.json or the installed packages, for `internal_access_scope`)
-        // @phan-suppress-next-line PhanAccessMethodInternal
         ComposerPackages::reset();
 
         $changed_or_added_files = $code_base->updateFileList($file_list, $file_mapping_contents, $file_names);

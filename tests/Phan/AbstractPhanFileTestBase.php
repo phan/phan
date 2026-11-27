@@ -43,18 +43,18 @@ abstract class AbstractPhanFileTestBase extends CodeBaseAwareTestBase
         parent::setUpBeforeClass();
 
         // Reset the config file
-        Config::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
+        Config::reset();
         // Clear the plugins
-        ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
+        ConfigPluginSet::reset();
     }
 
     public static function tearDownAfterClass(): void
     {
         parent::tearDownAfterClass();
         // Reset the config file
-        Config::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
+        Config::reset();
         // Clear the plugins
-        ConfigPluginSet::reset();  // @phan-suppress-current-line PhanAccessMethodInternal
+        ConfigPluginSet::reset();
     }
 
     /**
@@ -185,7 +185,6 @@ abstract class AbstractPhanFileTestBase extends CodeBaseAwareTestBase
             foreach (require($config_file_path) as $key => $value) {
                 Config::setValue($key, $value);
             }
-            // @phan-suppress-next-line PhanAccessMethodInternal
             ConfigPluginSet::reset();
         }
 
@@ -283,7 +282,6 @@ abstract class AbstractPhanFileTestBase extends CodeBaseAwareTestBase
             foreach (require($config_file_path) as $key => $_) {
                 Config::setValue($key, Config::DEFAULT_CONFIGURATION[$key]);
             }
-            // @phan-suppress-next-line PhanAccessMethodInternal
             ConfigPluginSet::reset();
         }
     }

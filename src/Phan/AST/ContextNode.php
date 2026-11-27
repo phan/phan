@@ -2309,7 +2309,6 @@ class ContextNode
                         if (str_contains($constant_name, '\\')) {
                             $this->throwUndeclaredGlobalConstantIssueException($code_base, $context, $fqsen);
                         }
-                        // @phan-suppress-next-line PhanAccessClassConstantInternal
                         $constant_exists_variable = $context->getScope()->getVariableByNameOrNull(ConditionVisitor::CONSTANT_EXISTS_PREFIX . \ltrim($fqsen->__toString(), '\\'));
                         if ($constant_exists_variable &&
                             !$constant_exists_variable->getUnionType()->isPossiblyUndefined() &&
@@ -2346,7 +2345,6 @@ class ContextNode
         // or a relative constant for which nothing was found in the namespace
 
         if (!$code_base->hasGlobalConstantWithFQSEN($fqsen)) {
-            // @phan-suppress-next-line PhanAccessClassConstantInternal
             $constant_exists_variable = $context->getScope()->getVariableByNameOrNull(ConditionVisitor::CONSTANT_EXISTS_PREFIX . \ltrim($fqsen->__toString(), '\\'));
             if ($constant_exists_variable && !$constant_exists_variable->getUnionType()->isPossiblyUndefined() && $constant_exists_variable->getFileRef()->getFile() === $context->getFile()) {
                 return $this->createPlaceholderGlobalConstant($fqsen);

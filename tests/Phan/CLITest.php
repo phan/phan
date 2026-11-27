@@ -17,22 +17,15 @@ use Phan\Phan;
  * Unit tests of helper methods in the class CLI.
  *
  * TODO: Add more tests
- * @phan-file-suppress PhanAccessMethodInternal
  */
 final class CLITest extends TestBase
 {
-    /**
-     * @suppress PhanAccessMethodInternal
-     */
     public function setUp(): void
     {
         parent::setUp();
         Config::reset();
     }
 
-    /**
-     * @suppress PhanAccessMethodInternal
-     */
     public function tearDown(): void
     {
         parent::tearDown();
@@ -274,7 +267,6 @@ final class CLITest extends TestBase
     }
 
     /**
-     * @suppress PhanAccessMethodInternal
      * @throws ExitException
      * @throws UsageException
      */
@@ -294,7 +286,6 @@ final class CLITest extends TestBase
     }
 
     /**
-     * @suppress PhanAccessMethodInternal
      * @throws ExitException
      * @throws UsageException
      */

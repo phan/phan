@@ -307,7 +307,7 @@ class Comment
                         $parameter->getLineno(),
                         $name
                     );
-                    // @phan-suppress-next-line PhanAccessMethodInternal, PhanPluginUnknownObjectMethodCall
+                    // @phan-suppress-next-line PhanPluginUnknownObjectMethodCall
                     $parameter->addUnionType($this->parameter_map[$name]->getUnionType());
                 }
                 // Add it to the named map
@@ -507,7 +507,6 @@ class Comment
             return NullComment::instance();
         }
 
-        // @phan-suppress-next-line PhanAccessMethodInternal
         return (new Builder(
             $comment,
             $code_base,

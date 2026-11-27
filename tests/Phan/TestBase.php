@@ -13,9 +13,6 @@ use PHPUnit\Framework\TestCase;
  */
 abstract class TestBase extends TestCase
 {
-    /**
-     * @suppress PhanAccessMethodInternal
-     */
     public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();

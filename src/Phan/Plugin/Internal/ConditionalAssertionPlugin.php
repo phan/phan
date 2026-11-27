@@ -38,7 +38,6 @@ final class ConditionalAssertionPlugin extends PluginV3 implements ConditionalCa
                 $result[$function->getFQSEN()->__toString()] = $closure;
             }
         }
-        // @phan-suppress-next-line PhanAccessMethodInternal
         foreach ($code_base->getMethodSetWithoutLazyEntries() as $method) {
             // The copy of a method that a class inherits gets the closure of the method it was inherited from.
             if ($method instanceof Method && $code_base->isInheritedCopyWithSameSignature($method)) {

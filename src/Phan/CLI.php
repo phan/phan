@@ -672,7 +672,6 @@ class CLI
                         if (!is_string($value)) {
                             throw new InvalidArgumentException("Expected a string, got " . \json_encode($value));
                         }
-                        // @phan-suppress-next-line PhanAccessMethodInternal
                         MethodSearcherPlugin::setSearchString($value);
                     } catch (InvalidArgumentException $e) {
                         throw new UsageException("Invalid argument '$value' to --find-signature. Error: " . $e->getMessage() . "\n", EXIT_FAILURE);
@@ -1410,7 +1409,6 @@ class CLI
         $result = "See https://github.com/phan/phan/wiki/Annotating-Your-Source-Code for more details." . PHP_EOL . PHP_EOL;
 
         $result .= "Annotations specific to Phan:" . PHP_EOL;
-        // @phan-suppress-next-line PhanAccessClassConstantInternal
         foreach (Builder::SUPPORTED_ANNOTATIONS as $key => $_) {
             $result .= "- " . $key . PHP_EOL;
         }
@@ -1445,7 +1443,6 @@ class CLI
     {
         $all_plugins_exist = true;
         foreach (Config::getValue('plugins') as $plugin_path_or_name) {
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $plugin_file_name = ConfigPluginSet::normalizePluginPath($plugin_path_or_name);
             if (!\is_file($plugin_file_name)) {
                 if ($plugin_file_name === $plugin_path_or_name) {
@@ -3258,7 +3255,6 @@ EOB
 
     /**
      * If any problematic extensions are installed, then restart without them
-     * @suppress PhanAccessMethodInternal
      */
     public function restartWithoutProblematicExtensions(): void
     {

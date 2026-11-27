@@ -148,7 +148,6 @@ class CompletionResolver
 
         // And find all of the instance/static properties that can be used as completions
         foreach ($class_list_generator as $class) {
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $visible_properties = IssueFixSuggester::filterSimilarProperties($code_base, $context, $class->getPropertyMap($code_base), $is_static);
 
             foreach ($visible_properties as $prop) {
@@ -198,7 +197,6 @@ class CompletionResolver
 
         // And find all of the instance/static properties that can be used as completions
         foreach ($class_list_generator as $class) {
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $visible_constant_map = IssueFixSuggester::filterSimilarConstants(
                 $code_base,
                 $context,
@@ -248,7 +246,6 @@ class CompletionResolver
         // And find all of the instance/static properties that can be used as completions
         foreach ($class_list_generator as $class) {
             $methods = $class->getMethodMap($code_base);
-            // @phan-suppress-next-line PhanAccessMethodInternal
             $filtered_methods = IssueFixSuggester::filterSimilarMethods($code_base, $context, $methods, $is_static);
             foreach ($filtered_methods as $method) {
                 if ($incomplete_method_name !== '' && \stripos($method->getName(), $incomplete_method_name) === false) {

@@ -20,7 +20,6 @@ final class TolerantASTConverterWithNodeMappingTest extends TestBase
     public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
-        // @phan-suppress-next-line PhanAccessMethodInternal
         Config::reset();
     }
 

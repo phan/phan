@@ -208,7 +208,6 @@ if (!extension_loaded('filter') && !function_exists('filter_var')) {
 
 /**
  * Print more of the backtrace than is done by default
- * @suppress PhanAccessMethodInternal
  * @return never
  */
 set_exception_handler(static function (Throwable $throwable): void {
@@ -322,7 +321,6 @@ function phan_print_backtrace(bool $is_crash = false, int $frames_to_skip = 2): 
  * The error handler for PHP notices, etc.
  * This is a named function instead of a closure to make stack traces easier to read.
  *
- * @suppress PhanAccessMethodInternal
  */
 function phan_error_handler(int $errno, string $errstr, string $errfile, int $errline): bool
 {

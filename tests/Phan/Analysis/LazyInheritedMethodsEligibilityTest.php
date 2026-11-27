@@ -24,7 +24,6 @@ use Phan\Tests\TestBase;
 /**
  * Unit tests of the checks deciding whether an inherited method copy could be created lazily
  * (LazyInheritedMethodsEligibility), including the order in which the reasons are reported.
- * @phan-file-suppress PhanAccessMethodInternal
  */
 final class LazyInheritedMethodsEligibilityTest extends TestBase
 {

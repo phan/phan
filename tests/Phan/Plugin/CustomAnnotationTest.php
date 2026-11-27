@@ -35,7 +35,7 @@ use Phan\Tests\TestBase;
  * the text of the forms of an annotation, the checks of the declared names, and the annotations after a file is parsed
  * again in daemon mode.
  *
- * @phan-file-suppress PhanThrowTypeAbsentForCall, PhanAccessMethodInternal, PhanAccessClassConstantInternal
+ * @phan-file-suppress PhanThrowTypeAbsentForCall
  */
 final class CustomAnnotationTest extends TestBase
 {
