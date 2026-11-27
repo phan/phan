@@ -562,7 +562,7 @@ NOTE: This step will only be performed if [`analyze_signature_compatibility`](#a
 
 What `@internal` in a doc comment means for the code that may use the element.
 
-- `'package'` (default since 6.0.12): the element may be used anywhere in the package that declares it,
+- `'package'` (default since 6.1.0): the element may be used anywhere in the package that declares it,
   and in the namespace that declares it. This is how phpDocumentor defines the tag and how most libraries use it
   ("not a part of the public API").
   The package of an element is decided by the directory of the file that declares it:
@@ -574,7 +574,7 @@ What `@internal` in a doc comment means for the code that may use the element.
 
   So a project may use its own `@internal` elements in all of its namespaces,
   and using an `@internal` element of a dependency is reported.
-- `'namespace'` (the default before 6.0.12): the element may only be used in the namespace that it is declared in
+- `'namespace'` (the default before 6.1.0): the element may only be used in the namespace that it is declared in
   (not in a namespace within that namespace).
 
 This affects `PhanAccessMethodInternal`, `PhanAccessPropertyInternal`,
