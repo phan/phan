@@ -26,6 +26,33 @@ final class StringFunctionPlugin extends PluginV3 implements
     AnalyzeFunctionCallCapability
 {
     /**
+     * The constants of PHP with a value that depends on the system, the build or the way that PHP is run:
+     * they are the text that is searched or matched (`strpos(PHP_OS, 'WIN')`), like a variable.
+     */
+    private const ENVIRONMENT_CONSTANTS = [
+        'PHP_OS' => true,
+        'PHP_OS_FAMILY' => true,
+        'PHP_VERSION' => true,
+        'PHP_EXTRA_VERSION' => true,
+        'PHP_SAPI' => true,
+        'PHP_BINARY' => true,
+        'PHP_BINDIR' => true,
+        'PHP_PREFIX' => true,
+        'PHP_EXTENSION_DIR' => true,
+        'PHP_CONFIG_FILE_PATH' => true,
+        'PHP_CONFIG_FILE_SCAN_DIR' => true,
+        'DEFAULT_INCLUDE_PATH' => true,
+        'PEAR_INSTALL_DIR' => true,
+        'PEAR_EXTENSION_DIR' => true,
+        'PHP_DATADIR' => true,
+        'PHP_LIBDIR' => true,
+        'PHP_SYSCONFDIR' => true,
+        'PHP_LOCALSTATEDIR' => true,
+        'PHP_MANDIR' => true,
+        'PHP_SHLIB_SUFFIX' => true,
+    ];
+
+    /**
      * @param Node|string|float|int|null $arg
      * @return bool true if the expression is simple to look up.
      */
@@ -39,7 +66,12 @@ final class StringFunctionPlugin extends PluginV3 implements
         }
         if ($arg instanceof Node) {
             $kind = $arg->kind;
-            if (\in_array($kind, [ast\AST_CONST, ast\AST_CLASS_CONST, ast\AST_CLASS_NAME], true)) {
+            if ($kind === ast\AST_CONST) {
+                // A constant that describes where the code runs is not a literal: `preg_match($pattern, PHP_OS)`
+                $name = $arg->children['name']->children['name'] ?? null;
+                return !\is_string($name) || !isset(self::ENVIRONMENT_CONSTANTS[\strtoupper(\ltrim($name, '\\'))]);
+            }
+            if ($kind === ast\AST_CLASS_CONST || $kind === ast\AST_CLASS_NAME) {
                 return true;
             }
             if ($kind === ast\AST_BINARY_OP) {

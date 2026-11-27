@@ -567,6 +567,7 @@ class UseReturnValuePlugin extends PluginV3 implements PostAnalyzeNodeCapability
     'iterator_to_array' => true,
     'iterator::valid' => true,
     'join' => true,
+    // (See UseReturnValueVisitor::isJsonDecodeForValidation())
     'json_decode' => true,
     'json_encode' => true,
     'json_last_error_msg' => true,

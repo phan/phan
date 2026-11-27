@@ -816,6 +816,23 @@ trait FunctionTrait
     }
 
     /**
+     * @return bool whether the body of the function calls func_get_args(), func_get_arg() or func_num_args()
+     * (the parse phase then lets the function take any number of arguments), and the function is not variadic.
+     */
+    private static function readsArgumentsDynamically(FunctionInterface $function): bool
+    {
+        if ($function->getNumberOfOptionalParameters() < FunctionInterface::INFINITE_PARAMETERS) {
+            return false;
+        }
+        foreach ($function->getParameterList() as $parameter) {
+            if ($parameter->isVariadic()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Adds types from comments to the params of a user-defined function or method.
      * Also adds the types from defaults, and emits warnings for certain violations.
      *
@@ -864,8 +881,14 @@ trait FunctionTrait
         }
 
         $valid_comment_parameter_type_map = [];
+        // The arguments of a function that reads them with func_get_args(), func_get_arg() or func_num_args() can only be documented with (at)param.
+        $reads_arguments_dynamically = null;
         foreach ($comment->getParameterMap() as $comment_parameter_name => $comment_parameter) {
             if (!\array_key_exists($comment_parameter_name, $real_parameter_name_map)) {
+                $reads_arguments_dynamically ??= self::readsArgumentsDynamically($function);
+                if ($reads_arguments_dynamically) {
+                    continue;
+                }
                 Issue::maybeEmit(
                     $code_base,
                     $context,
