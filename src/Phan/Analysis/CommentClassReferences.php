@@ -6,6 +6,7 @@ namespace Phan\Analysis;
 
 use Phan\Config;
 use Phan\Language\Element\Comment\Builder;
+use Phan\Language\Type;
 use Phan\Library\FileCache;
 use Phan\Library\FileCacheEntry;
 use PhpToken;
@@ -23,15 +24,16 @@ final class CommentClassReferences
 {
     /**
      * A name that is not part of a longer name, of a fully qualified name or of a variable: for `Foo\Bar`, `Foo`.
-     * Not the name of a class constant (`BAR` of `Foo::BAR`).
+     * Not the name of a class constant (`BAR` of `Foo::BAR`), and not a part of a type that is written with hyphens (`positive-int`).
      */
-    private const FIRST_NAME_PART_REGEX = '/(?<![\\\\\w$\x80-\xff-]|::)[a-zA-Z_\x80-\xff][\w\x80-\xff]*/';
+    private const FIRST_NAME_PART_REGEX = '/(?<![\\\\\w$\x80-\xff-]|::)[a-zA-Z_\x80-\xff][\w\x80-\xff]*+(?!-)/';
 
     /**
      * What is not a class name in a type: a string literal, and the key of a field of an array shape
-     * (`'Foo'`, and `Foo:` of `array{Foo: int, Bar?: int}`. Not `A :` of `($x is int ? A : B)`, and not `Foo::` of a class constant).
+     * (`'Foo'`, and `Foo:` of `array{Foo: int, Bar?: int}`, also `Foo.Bar:`. Not `A :` of `($x is int ? A : B)`, and not `Foo::` of a class constant).
      */
-    private const NOT_A_CLASS_NAME_REGEX = '/\'(?:[^\'\\\\]|\\\\.)*\'|"(?:[^"\\\\]|\\\\.)*"|(?<=[{,])\s*[\w\x80-\xff-]+\??\s*:(?!:)/';
+    private const NOT_A_CLASS_NAME_REGEX =
+        '/\'(?:[^\'\\\\]|\\\\.)*\'|"(?:[^"\\\\]|\\\\.)*"|(?<=[{,])\s*' . Type::shape_key_regex . '\s*:(?!:)/';
 
     /** @var ?FileCacheEntry the file that $names_of_namespaces is for */
     private static $entry = null;
@@ -88,7 +90,7 @@ final class CommentClassReferences
             if ($id === \T_DOC_COMMENT || $id === \T_COMMENT) {
                 $text = $token->text;
                 // (`/* (at)var Foo $x */` is read by editors, and by Phan in a string. Not `// ...` and `# ...`)
-                if ($text[1] === '*' && \str_contains($text, '@')) {
+                if (\str_starts_with($text, '/*') && \str_contains($text, '@')) {
                     self::addNamesOfComment($text, $result[$namespace_id]);
                 }
                 continue;

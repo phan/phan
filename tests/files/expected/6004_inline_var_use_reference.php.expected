@@ -10,3 +10,5 @@
 %s:53 PhanUnreferencedUseNormal Possibly zero references to use statement for classlike/namespace F (\NS6004m\F)
 %s:54 PhanUnreferencedUseNormal Possibly zero references to use statement for classlike/namespace G (\NS6004m\G)
 %s:78 PhanUnreferencedUseNormal Possibly zero references to use statement for classlike/namespace H (\NS6004m\H)
+%s:95 PhanUnreferencedUseNormal Possibly zero references to use statement for classlike/namespace Positive (\NS6004q\Positive)
+%s:96 PhanUnreferencedUseNormal Possibly zero references to use statement for classlike/namespace Foo (\NS6004q\Foo)

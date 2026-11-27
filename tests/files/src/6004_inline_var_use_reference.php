@@ -88,3 +88,24 @@ function g($x) {
     return [$h, $k];
 }
 }
+
+// A comment that is only `#`. Not a reference: a part of a type with hyphens, and a key of an array shape with a dot.
+namespace NS6004q { class Positive {} class Foo {} class Real {} class Cond {} }
+namespace NS6004r {
+use NS6004q\Positive;
+use NS6004q\Foo;
+use NS6004q\Real;
+use NS6004q\Cond;
+#
+function f($x) {
+    /** @var positive-int $p */
+    $p = $x;
+    /** @var array{Foo.Bar: string, 0: int} $s */
+    $s = $x;
+    /** @var non-empty-list<Real> $r */
+    $r = $x;
+    return [$p, $s, $r];
+}
+/** @return ($x is null ? Cond : int) */
+function g($x) { return $x; }
+}
