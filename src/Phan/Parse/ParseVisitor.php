@@ -590,8 +590,7 @@ class ParseVisitor extends ScopeVisitor
         }
         $comments_of_line = null;
         $comment_of_last_use = null;
-        // The number of `use` statements of this class that were seen in a line so far
-        $count_in_line = [];
+        $class_key = '';
         foreach ($stmts->children as $stmt) {
             if (!($stmt instanceof Node)) {
                 continue;
@@ -600,15 +599,23 @@ class ParseVisitor extends ScopeVisitor
                 if ($comments_of_line === null) {
                     // (The tokens are looked up by the name of the class: `class C { use A; } class D { use A; }` can be in one line)
                     $class_name = $class_node->children['name'] ?? null;
+                    $class_key = \is_string($class_name) ? \strtolower($class_name) : '';
                     $comments_of_class = $this->docCommentsOfTraitUseTokens();
-                    $comments_of_line = $comments_of_class[\is_string($class_name) ? \strtolower($class_name) : ''] ?? [];
+                    $comments_of_line = $comments_of_class[$class_key] ?? [];
                 }
                 if ($comments_of_line === []) {
                     return;
                 }
+                // The statements of a line are matched with the tokens of that line in their order.
+                // The count is kept for the name of the class and not for this class: classes are visited in the order of the file,
+                // so that two anonymous classes in one line get their own tokens. When all tokens of a line were used,
+                // the file is being visited again, and the count starts again.
                 $lineno = $stmt->lineno;
-                $index = $count_in_line[$lineno] ?? 0;
-                $count_in_line[$lineno] = $index + 1;
+                $index = self::$trait_use_token_index[$class_key][$lineno] ?? 0;
+                if ($index >= \count($comments_of_line[$lineno] ?? [])) {
+                    $index = 0;
+                }
+                self::$trait_use_token_index[$class_key][$lineno] = $index + 1;
                 $doc_comment = $comments_of_line[$lineno][$index] ?? null;
                 if ($doc_comment !== null) {
                     // (Not in the children of the node, which php-ast defines)
@@ -634,6 +641,9 @@ class ParseVisitor extends ScopeVisitor
     /** @var array<string,array<int,list<?string>>> the result of docCommentsOfTraitUseTokens() for that file */
     private static $doc_comments_of_trait_use_tokens = [];
 
+    /** @var array<string,array<int,int>> for a class name and a line of that file: the number of `use` tokens that were matched with a statement */
+    private static $trait_use_token_index = [];
+
     /**
      * @return array<string,array<int,list<?string>>> for each class of the current file (its name in lower case, '' for an anonymous class)
      * and each line with `use` tokens of trait uses of that class: for each of those tokens,
@@ -653,6 +663,7 @@ class ParseVisitor extends ScopeVisitor
         }
         self::$file_of_trait_use_tokens = $entry;
         self::$doc_comments_of_trait_use_tokens = [];
+        self::$trait_use_token_index = [];
         $contents = $entry->getContents();
         if (!\preg_match(self::USE_ANNOTATION_REGEX, $contents)) {
             return [];
@@ -668,12 +679,11 @@ class ParseVisitor extends ScopeVisitor
         // The classes that are open: the brace depth of the body (a `use` at that depth is a trait use) and the name
         $class_body_depths = [];
         $class_names = [];
-        // The name of a class of which the body has not started yet (null if there is none)
-        $pending_class_name = null;
-        // The parentheses that are open, and how many were open at the keyword of that class
-        // (the body of `new class(function () {}) {...}` is the brace after its arguments)
+        // The classes of which the body has not started yet: the name, and the number of parentheses that were open at the keyword
+        // (the body of `new class(function () {}) {...}` is the brace after its arguments, and an argument can be `new class {}`)
+        $pending_class_names = [];
+        $pending_paren_depths = [];
         $paren_depth = 0;
-        $pending_paren_depth = 0;
         $previous_id = 0;
         foreach ($tokens as $token) {
             $id = $token->id;
@@ -691,12 +701,12 @@ class ParseVisitor extends ScopeVisitor
             } elseif ($id === \T_CLASS || $id === \T_TRAIT || $id === \T_INTERFACE || $id === \T_ENUM) {
                 // (Not `Foo::class`)
                 if ($previous_id !== \T_DOUBLE_COLON) {
-                    $pending_class_name = '';
-                    $pending_paren_depth = $paren_depth;
+                    $pending_class_names[] = '';
+                    $pending_paren_depths[] = $paren_depth;
                 }
-            } elseif ($id === \T_STRING && $pending_class_name === '' && ($previous_id === \T_CLASS || $previous_id === \T_TRAIT || $previous_id === \T_INTERFACE || $previous_id === \T_ENUM)) {
+            } elseif ($id === \T_STRING && $pending_class_names && ($previous_id === \T_CLASS || $previous_id === \T_TRAIT || $previous_id === \T_INTERFACE || $previous_id === \T_ENUM)) {
                 // (An anonymous class has no name after the keyword)
-                $pending_class_name = \strtolower($token->text);
+                $pending_class_names[\count($pending_class_names) - 1] = \strtolower($token->text);
             } elseif ($id === 40) {
                 // `(`
                 $paren_depth++;
@@ -707,10 +717,10 @@ class ParseVisitor extends ScopeVisitor
                 // A `{` of the code, or the start of an interpolation, which ends with a `}` token.
                 // (The id of a token of one character is its character code. A `}` that is text of a string is not such a token.)
                 $depth++;
-                if ($pending_class_name !== null && $id === 123 && $paren_depth === $pending_paren_depth) {
+                if ($pending_class_names && $id === 123 && $paren_depth === \end($pending_paren_depths)) {
                     $class_body_depths[] = $depth;
-                    $class_names[] = $pending_class_name;
-                    $pending_class_name = null;
+                    $class_names[] = \array_pop($pending_class_names);
+                    \array_pop($pending_paren_depths);
                 }
             } elseif ($id === 125) {
                 // `}`
@@ -719,9 +729,10 @@ class ParseVisitor extends ScopeVisitor
                     \array_pop($class_names);
                 }
                 $depth--;
-            } elseif ($id === 59 && $pending_class_name !== null && $paren_depth === $pending_paren_depth) {
+            } elseif ($id === 59 && $pending_class_names && $paren_depth === \end($pending_paren_depths)) {
                 // (`enum` or `class` as something else than a declaration)
-                $pending_class_name = null;
+                \array_pop($pending_class_names);
+                \array_pop($pending_paren_depths);
             }
             // (A doc comment belongs to the token after it)
             $doc_comment = null;

@@ -55,3 +55,15 @@ function testMore(Later $l, Prose $p) {
     $la = $l->a(); $pa = $p->a();
     '@phan-debug-var $la, $pa';
 }
+
+function anonymous(): void {
+    // Two anonymous classes in one line, and an anonymous class as an argument of another one.
+    $a = new class { /** @use A<int> */ use A; }; $b = new class { /** @use A<string> */ use A; };
+    $c = new class(new class {}) {
+        /** @use A<bool> */
+        use A;
+        public function __construct(object $x) {}
+    };
+    $ra = $a->a(); $rb = $b->a(); $rc = $c->a();
+    '@phan-debug-var $ra, $rb, $rc';
+}

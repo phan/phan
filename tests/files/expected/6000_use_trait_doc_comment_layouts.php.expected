@@ -15,3 +15,9 @@
 %s:55 PhanDebugAnnotation @phan-debug-var requested for variable $pa - it has union type V
 %s:55 PhanUnusedVariable Unused definition of variable $la (Did you mean $l)
 %s:55 PhanUnusedVariable Unused definition of variable $pa (Did you mean $p)
+%s:67 PhanDebugAnnotation @phan-debug-var requested for variable $ra - it has union type int
+%s:67 PhanDebugAnnotation @phan-debug-var requested for variable $rb - it has union type string
+%s:67 PhanDebugAnnotation @phan-debug-var requested for variable $rc - it has union type bool
+%s:67 PhanUnusedVariable Unused definition of variable $ra (Did you mean $a)
+%s:67 PhanUnusedVariable Unused definition of variable $rb (Did you mean $b)
+%s:67 PhanUnusedVariable Unused definition of variable $rc (Did you mean $c)
