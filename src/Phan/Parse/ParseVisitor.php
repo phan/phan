@@ -55,6 +55,7 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NeverType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
+use Phan\Library\FileCache;
 use Phan\Library\IncrementalAnalysis\DependencyTracker;
 use Phan\Library\None;
 use Phan\Plugin\ConfigPluginSet;
@@ -209,6 +210,8 @@ class ParseVisitor extends ScopeVisitor
 
             $doc_comment = $node->children['docComment'] ?? '';
             $class->setDocComment($doc_comment);
+            // (Before the statements of the class are visited)
+            $this->attachDocCommentsOfTraitUses($node);
 
             // Add the class to the code base as a globally
             // accessible object
@@ -493,6 +496,23 @@ class ParseVisitor extends ScopeVisitor
             $class->addTraitFQSEN($trait_fqsen, $node->children['traits']->lineno ?? 0);
         }
 
+        // `/** @use Repository<User> */` above the statement gives the template parameters of the trait,
+        // like `@use` in the doc comment of the class (see attachDocCommentsOfTraitUses()).
+        $doc_comment = $node->children['docComment'] ?? '';
+        if (\is_string($doc_comment) && $doc_comment !== '') {
+            $comment = Comment::fromStringInContext($doc_comment, $this->code_base, $this->context, $node->lineno, Comment::ON_CLASS);
+            foreach ($comment->getUsedTraitTypes() as $used_trait_type) {
+                if (!$used_trait_type->isObjectWithKnownFQSEN()) {
+                    continue;
+                }
+                $used_trait_fqsen = FullyQualifiedClassName::fromType($used_trait_type);
+                // (Only for a trait of this statement)
+                if (\in_array($used_trait_fqsen, $trait_fqsen_list, true)) {
+                    $class->setTraitType($used_trait_fqsen, $used_trait_type);
+                }
+            }
+        }
+
         // Get the adaptations for those traits
         // Pass in the corresponding FQSENs for those traits.
         $trait_adaptations_map = (new ContextNode(
@@ -506,6 +526,118 @@ class ParseVisitor extends ScopeVisitor
         }
 
         return $this->context;
+    }
+
+    /** Matches `(at)use Trait<T>` and the forms with a prefix */
+    private const USE_ANNOTATION_REGEX = '/@(?:phan-|phpstan-|psalm-|template-)?use\s/i';
+
+    /**
+     * Finds the doc comment above each `use Trait;` statement of a class, and records it in the node of that statement.
+     *
+     * PHPStan and Psalm read the template parameters of a trait from a comment above the statement:
+     *
+     *     /** (at)use Repository<User> *\/
+     *     use Repository;
+     *
+     * php-ast has no doc comment for the node of that statement. What it does with the comment is to give it
+     * to the next method, property or constant that has no doc comment of its own, where it is not valid.
+     * So the comment is read from the source of the file, and removed from the member that got it.
+     * (Only for a file that has `(at)use`.)
+     */
+    private function attachDocCommentsOfTraitUses(Node $class_node): void
+    {
+        $stmts = $class_node->children['stmts'] ?? null;
+        if (!($stmts instanceof Node)) {
+            return;
+        }
+        $lines = null;
+        $comment_of_last_use = null;
+        foreach ($stmts->children as $stmt) {
+            if (!($stmt instanceof Node)) {
+                continue;
+            }
+            if ($stmt->kind === ast\AST_USE_TRAIT) {
+                $lines ??= $this->linesOfFileWithUseAnnotation();
+                if (!$lines) {
+                    return;
+                }
+                $doc_comment = self::docCommentAboveLine($lines, $stmt->lineno);
+                if ($doc_comment !== null && \preg_match(self::USE_ANNOTATION_REGEX, $doc_comment)) {
+                    $stmt->children['docComment'] = $doc_comment;
+                    $comment_of_last_use = $doc_comment;
+                }
+                continue;
+            }
+            if ($comment_of_last_use !== null) {
+                self::removeDocComment($stmt, \preg_replace('/\s+/', '', $comment_of_last_use) ?? '', 2);
+                $comment_of_last_use = null;
+            }
+        }
+    }
+
+    /**
+     * @return array<int,string> the lines of the current file (1-based), or [] if the file has no `(at)use` annotation
+     */
+    private function linesOfFileWithUseAnnotation(): array
+    {
+        try {
+            $entry = FileCache::getOrReadEntry(Config::projectPath($this->context->getFile()));
+        } catch (\Throwable) {
+            return [];
+        }
+        if (!\preg_match(self::USE_ANNOTATION_REGEX, $entry->getContents())) {
+            return [];
+        }
+        return $entry->getLinesWithoutNewlines();
+    }
+
+    /**
+     * @param array<int,string> $lines the lines of a file (1-based)
+     * @return ?string the doc comment that ends right before the statement that starts in line $lineno
+     */
+    private static function docCommentAboveLine(array $lines, int $lineno): ?string
+    {
+        // On the line of the statement: `/** @use A<int> *\/ use A;`
+        if (\preg_match('@(/\*\*.*\*/)\s*use\b@', $lines[$lineno] ?? '', $match)) {
+            return $match[1];
+        }
+        $end = $lineno - 1;
+        while ($end > 0 && \trim($lines[$end] ?? '') === '') {
+            $end--;
+        }
+        if ($end <= 0 || !\str_ends_with(\rtrim($lines[$end]), '*/')) {
+            return null;
+        }
+        // (A doc comment above a `use` statement is short)
+        for ($start = $end; $start > 0 && $end - $start < 50; $start--) {
+            $pos = \strrpos($lines[$start], '/**');
+            if ($pos !== false) {
+                $comment_lines = \array_slice($lines, $start - 1, $end - $start + 1);
+                $comment_lines[0] = \substr($comment_lines[0], $pos);
+                $comment = \implode("\n", $comment_lines);
+                // (Not if another comment ends in between)
+                return \substr_count($comment, '*/') === 1 ? \rtrim($comment) : null;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Removes the doc comment of $node, or of the elements of a property or constant declaration, if it is $comment_without_whitespace.
+     */
+    private static function removeDocComment(Node $node, string $comment_without_whitespace, int $depth): void
+    {
+        $doc_comment = $node->children['docComment'] ?? null;
+        if (\is_string($doc_comment) && \preg_replace('/\s+/', '', $doc_comment) === $comment_without_whitespace) {
+            $node->children['docComment'] = null;
+        }
+        if ($depth > 0 && \in_array($node->kind, [ast\AST_PROP_GROUP, ast\AST_PROP_DECL, ast\AST_CLASS_CONST_GROUP, ast\AST_CLASS_CONST_DECL], true)) {
+            foreach ($node->children as $child) {
+                if ($child instanceof Node) {
+                    self::removeDocComment($child, $comment_without_whitespace, $depth - 1);
+                }
+            }
+        }
     }
 
     /**

@@ -1,0 +1,12 @@
+%s:33 PhanDebugAnnotation @phan-debug-var requested for variable $ca - it has union type bool
+%s:33 PhanDebugAnnotation @phan-debug-var requested for variable $cb - it has union type int
+%s:33 PhanDebugAnnotation @phan-debug-var requested for variable $da - it has union type bool
+%s:33 PhanDebugAnnotation @phan-debug-var requested for variable $ea - it has union type bool
+%s:33 PhanUnusedVariable Unused definition of variable $ca (Did you mean $c)
+%s:33 PhanUnusedVariable Unused definition of variable $cb (Did you mean $c)
+%s:33 PhanUnusedVariable Unused definition of variable $da (Did you mean $d)
+%s:33 PhanUnusedVariable Unused definition of variable $ea (Did you mean $e)
+%s:45 PhanDebugAnnotation @phan-debug-var requested for variable $x - it has union type X
+%s:45 PhanDebugAnnotation @phan-debug-var requested for variable $y - it has union type list<X>
+%s:45 PhanUnusedVariable Unused definition of variable $x
+%s:45 PhanUnusedVariable Unused definition of variable $y
