@@ -106,3 +106,48 @@ final class Gen extends GenBase {
         '@phan-debug-var $widened';
     }
 }
+
+// The body of a method of a trait is looked at. A method that is not declared (`__call()`), a method with a dynamic name
+// and a generator method that can be overridden may run anything: what was inferred to be null is forgotten.
+// A static method that is called on $this assigns nothing.
+trait Resets {
+    private function resetInTrait(): void { $this->kept = null; }
+}
+class Magic extends GenBase {
+    use Resets;
+    public function __call(string $name, array $args): void { $this->kept = new Conn(); }
+    private function dispatch(string $name): void { $this->$name(); }
+    private function undeclared(): void { $this->notDeclared(); }
+    protected function generate(): \Generator { yield 1; }
+    public static function helper(): void {}
+    public function afterTraitMethod(): void {
+        if ($this->kept === null) { throw new \Exception(); }
+        $this->resetInTrait();
+        $widened = $this->kept;
+        '@phan-debug-var $widened';
+    }
+    public function afterDynamicName(): void {
+        if ($this->kept !== null) { return; }
+        $this->dispatch('connect');
+        $declared = $this->kept;
+        '@phan-debug-var $declared';
+    }
+    public function afterUndeclared(): void {
+        if ($this->kept !== null) { return; }
+        $this->undeclared();
+        $declared = $this->kept;
+        '@phan-debug-var $declared';
+    }
+    public function afterGeneratorThatCanBeOverridden(): void {
+        if ($this->kept !== null) { return; }
+        $this->generate();
+        $declared = $this->kept;
+        '@phan-debug-var $declared';
+    }
+    public function afterStaticMethodOnThis(): void {
+        if ($this->kept !== null) { return; }
+        $this->helper();
+        $null = $this->kept;
+        '@phan-debug-var $null';
+    }
+}

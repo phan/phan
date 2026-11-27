@@ -14,3 +14,14 @@
 %s:99 PhanUnusedVariable Unused definition of variable $kept
 %s:105 PhanDebugAnnotation @phan-debug-var requested for variable $widened - it has union type \NS6006\Conn|null(real=\NS6006\Conn|null)
 %s:105 PhanUnusedVariable Unused definition of variable $widened
+%s:114 PhanUndeclaredProperty Reference to undeclared property \NS6006\Resets->kept
+%s:126 PhanDebugAnnotation @phan-debug-var requested for variable $widened - it has union type \NS6006\Conn|null(real=\NS6006\Conn|null)
+%s:126 PhanUnusedVariable Unused definition of variable $widened
+%s:132 PhanDebugAnnotation @phan-debug-var requested for variable $declared - it has union type ?\NS6006\Conn|\NS6006\Conn(real=?\NS6006\Conn)
+%s:132 PhanUnusedVariable Unused definition of variable $declared
+%s:138 PhanDebugAnnotation @phan-debug-var requested for variable $declared - it has union type ?\NS6006\Conn|\NS6006\Conn(real=?\NS6006\Conn)
+%s:138 PhanUnusedVariable Unused definition of variable $declared
+%s:144 PhanDebugAnnotation @phan-debug-var requested for variable $declared - it has union type ?\NS6006\Conn|\NS6006\Conn(real=?\NS6006\Conn)
+%s:144 PhanUnusedVariable Unused definition of variable $declared
+%s:150 PhanDebugAnnotation @phan-debug-var requested for variable $null - it has union type null(real=null)
+%s:150 PhanUnusedVariable Unused definition of variable $null
