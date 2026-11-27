@@ -1504,10 +1504,10 @@ trait ConditionVisitorUtil
         switch ($node->kind) {
             case ast\AST_CALL:
             case ast\AST_METHOD_CALL:
-            case ast\AST_NULLSAFE_METHOD_CALL:
             case ast\AST_STATIC_CALL:
                 break;
             default:
+                // (Not `$a?->method($v)`, which may not be called)
                 return;
         }
         $args = $node->children['args'];
@@ -1515,35 +1515,135 @@ trait ConditionVisitorUtil
             // `call(...)`
             return;
         }
+        if ($node->kind === ast\AST_METHOD_CALL && self::isNullsafeAccessChain($node)) {
+            // `$a?->b->method($v)` may not be called either.
+            return;
+        }
         $scope = $this->context->getScope();
-        $context = $this->context;
-        $has_variable_to_define = false;
-        foreach ($args->children as $arg) {
-            if (!($arg instanceof Node) || $arg->kind !== ast\AST_VAR) {
+        // The variables that are arguments and that are not known to be defined, with the position or the name of the argument
+        $candidates = [];
+        foreach ($args->children as $i => $arg) {
+            $key = $i;
+            if ($arg instanceof Node && $arg->kind === ast\AST_NAMED_ARG) {
+                $key = (string)$arg->children['name'];
+                $arg = $arg->children['expr'];
+            }
+            if (!($arg instanceof Node)) {
+                continue;
+            }
+            if ($arg->kind !== ast\AST_VAR) {
+                if (self::containsAssignment($arg)) {
+                    // Analyzing the call again would assign again, after the other operand was evaluated: `f($s = 'x', $m) !== g($s = [])`
+                    return;
+                }
                 continue;
             }
             $name = $arg->children['name'];
             if (!\is_string($name)) {
                 continue;
             }
+            if (!$scope->hasVariableWithName($name) || $scope->getVariableByName($name)->getUnionType()->isPossiblyUndefined()) {
+                $candidates[$key] = $name;
+            }
+        }
+        if (!$candidates) {
+            return;
+        }
+        // The ones that are passed by reference
+        $names = $this->namesOfArgumentsPassedByReference($node, $candidates);
+        if (!$names) {
+            return;
+        }
+        $context = $this->context;
+        foreach ($names as $name) {
             if (!$scope->hasVariableWithName($name)) {
-                $has_variable_to_define = true;
                 continue;
             }
-            $variable = $scope->getVariableByName($name);
-            $type = $variable->getUnionType();
-            if ($type->isPossiblyUndefined()) {
-                // The type that the variable has when it is defined is the one of this call, where it may not have happened,
-                // or of an earlier assignment. (Left as possibly undefined, it would be nullable after the call)
-                $has_variable_to_define = true;
-                $variable = clone($variable);
-                $variable->setUnionType($type->withIsPossiblyUndefined(false));
-                $context = $context->withScopeVariable($variable);
+            // The type that the variable has when it is defined is the one of this call, where it may not have happened,
+            // or of an earlier assignment. (Left as possibly undefined, it would be nullable after the call)
+            $variable = clone($scope->getVariableByName($name));
+            $variable->setUnionType($variable->getUnionType()->withIsPossiblyUndefined(false));
+            $context = $context->withScopeVariable($variable);
+        }
+        $this->context = (new BlockAnalysisVisitor($this->code_base, $context))->__invoke($node);
+    }
+
+    /**
+     * @param Node $node a call of a function or a method
+     * @param array<int|string,string> $candidates names of variables that are arguments, by the position or the name of the argument
+     * @return list<string> the ones that every function or method that may be called takes by reference.
+     * Empty if what is called is not known.
+     */
+    private function namesOfArgumentsPassedByReference(Node $node, array $candidates): array
+    {
+        try {
+            $context_node = new ContextNode($this->code_base, $this->context, $node->kind === ast\AST_CALL ? $node->children['expr'] : $node);
+            if ($node->kind === ast\AST_CALL) {
+                $functions = [];
+                foreach ($context_node->getFunctionFromNode() as $function) {
+                    $functions[] = $function;
+                }
+            } else {
+                $method_name = $node->children['method'];
+                if (!\is_string($method_name)) {
+                    return [];
+                }
+                $functions = $context_node->getMethodList($method_name, $node->kind === ast\AST_STATIC_CALL, true);
+            }
+        } catch (Exception) {
+            return [];
+        }
+        if (!$functions) {
+            return [];
+        }
+        $names = [];
+        foreach ($candidates as $key => $name) {
+            foreach ($functions as $function) {
+                $parameter = null;
+                if (\is_int($key)) {
+                    $parameter = $function->getParameterForCaller($key);
+                } else {
+                    foreach ($function->getParameterList() as $candidate_parameter) {
+                        if ($candidate_parameter->getName() === $key) {
+                            $parameter = $candidate_parameter;
+                            break;
+                        }
+                    }
+                }
+                if (!$parameter || !$parameter->isPassByReference()) {
+                    continue 2;
+                }
+            }
+            $names[] = $name;
+        }
+        return $names;
+    }
+
+    /**
+     * @return bool whether evaluating $node assigns to something: `$a = 1`, `$a .= 'x'`, `$a++`
+     * (not in a closure, which is not called by evaluating $node)
+     */
+    private static function containsAssignment(Node $node): bool
+    {
+        switch ($node->kind) {
+            case ast\AST_ASSIGN:
+            case ast\AST_ASSIGN_OP:
+            case ast\AST_ASSIGN_REF:
+            case ast\AST_PRE_INC:
+            case ast\AST_PRE_DEC:
+            case ast\AST_POST_INC:
+            case ast\AST_POST_DEC:
+                return true;
+            case ast\AST_CLOSURE:
+            case ast\AST_ARROW_FUNC:
+                return false;
+        }
+        foreach ($node->children as $child) {
+            if ($child instanceof Node && self::containsAssignment($child)) {
+                return true;
             }
         }
-        if ($has_variable_to_define) {
-            $this->context = (new BlockAnalysisVisitor($this->code_base, $context))->__invoke($node);
-        }
+        return false;
     }
 
     /**

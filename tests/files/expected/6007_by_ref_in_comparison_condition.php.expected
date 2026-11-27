@@ -10,3 +10,9 @@
 %s:24 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type array{0:string}
 %s:25 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type array{0:string}
 %s:26 PhanDebugAnnotation @phan-debug-var requested for variable $m - it has union type array{0:string}(real=non-empty-mixed)
+%s:34 PhanPossiblyUndeclaredVariable Variable $v is possibly undeclared
+%s:39 PhanTypeMismatchArgumentNullableInternal Argument 1 ($value) is $out of type ?array|?array{0?:mixed} but \count() takes \Countable|\ResourceBundle|\SimpleXMLElement|array (expected type to be non-nullable)
+%s:46 PhanPossiblyUndeclaredVariable Variable $m is possibly undeclared
+%s:46 PhanPossiblyUndeclaredVariable Variable $s is possibly undeclared
+%s:46 PhanRedundantValueComparison Redundant comparison of count($s) of type int (value: 0) to 0 of type int (value: 0) with operator '===' (the comparison is always true)
+%s:46 PhanUnusedVariable Unused definition of variable $s

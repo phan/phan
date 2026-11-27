@@ -24,3 +24,24 @@ function t6(string $u, bool $a): int { if ($a && preg_match('~x~', $u, $m)) { '@
 function t7(string $u): int { if (preg_match('~x~', $u, $m)) { '@phan-debug-var $m'; return 1; } return 0; }
 function t8(string $u, bool $a): int { if (!$a || !preg_match('~x~', $u, $m)) { return 0; } '@phan-debug-var $m'; return 1; }
 function t9(string $u, bool $a): int { if ($a && preg_match('~x~', $u, $m) !== 0 && $m) { '@phan-debug-var $m'; return 1; } return 0; }
+
+// Not for an argument that is passed by value, and not for a call that may be skipped (?->).
+// A named argument is one as well. A call with an assignment in an argument is not analyzed again.
+function accept(?string $v): int { return $v === null ? 0 : 1; }
+class K2 { public function find(string $u, ?array &$out): int { $out = [$u]; return 1; } }
+function byValue(bool $set, bool $gate): string {
+    if ($set) { $v = 'x'; }
+    if ($gate && accept($v) !== 0) { return $v; }
+    return '';
+}
+function nullsafe(bool $a, ?K2 $k): int {
+    if ($a) { $out = []; }
+    if ($a && $k?->find('', $out) !== 0) { return count($out); }
+    return 0;
+}
+function named(string $u, bool $a): int {
+    return $a && preg_match('~x~', $u, matches: $m) !== 0 && count($m) > 0 ? 1 : 0;
+}
+function replay(bool $a): int {
+    return $a && preg_match('~x~', $s = 'x', $m) !== count($s = []) && count($s) === 0 ? count($m) : 0;
+}
