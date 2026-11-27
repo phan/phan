@@ -95,7 +95,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     private static $assigned_static_property_nodes = null;
 
     /**
-     * @var ?WeakMap<Node,array{0:array<string,bool>,1:array<string,bool>}> see computeThisPropertyWritesOfNode(), by the node of the method
+     * @var ?WeakMap<Node,array{0:array<string,bool>,1:array<string,true>}> see computeThisPropertyWritesOfNode(), by the node of the method
      */
     private static $this_property_writes = null;
 
@@ -3548,9 +3548,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 if (\in_array($class_name_lower, ['self', 'static', 'parent'], true)) {
                     $this->applyStaticPropertyModificationsFromMethod($method);
                     $this->widenStaticPropertyOverridesAssignedByMethod($method);
-                    if (!$method->isStatic()) {
+                    if (!$method->isStatic() && !self::isCallableConvert($node)) {
                         // `parent::connect()` is a call on $this.
-                        $this->widenThisPropertyOverridesAssignedByMethod($method);
+                        $this->widenThisPropertyOverridesAssignedByMethod($method, $class_name_lower === 'static');
                     }
                 }
             }
@@ -3956,7 +3956,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             case ast\AST_ASSIGN:
                 $var = $node->children['var'];
                 if ($var instanceof Node) {
-                    self::collectStaticPropertyNodesOfAssignmentTarget($var, self::mayBeNull($node->children['expr'], $non_null_params), $nodes, $prop_kind);
+                    // (`[self::$a] = [null]`: the array is not null, the value that is assigned can be)
+                    $may_assign_null = $var->kind === ast\AST_ARRAY || self::mayBeNull($node->children['expr'], $non_null_params);
+                    self::collectStaticPropertyNodesOfAssignmentTarget($var, $may_assign_null, $nodes, $prop_kind);
                 }
                 break;
             case ast\AST_ASSIGN_REF:
@@ -4158,7 +4160,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * or the type that it has everywhere else if it declares none.
      *
      * A method without a body (abstract, or of an interface) and a method that a class that extends this one can override
-     * (not private or final, in a class that is not final) may run a body that is not looked at.
+     * (not private or final, in a class that is not final) may run a body that is not looked at. The same for the methods that it calls.
      * It is expected to set what the caller found to be missing: what was inferred to be null, false or empty is forgotten,
      * and what was inferred to be set is kept.
      *
@@ -4167,8 +4169,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * Like widenStaticPropertyOverridesAssignedByMethod, this only looks at the nodes of the methods.
      *
      * @param Method $method the method that is called on `$this` (also `parent::method()`), not a static method
+     * @param bool $is_late_bound false for `parent::method()` and `self::method()`, which call that method and not one that overrides it
      */
-    private function widenThisPropertyOverridesAssignedByMethod(Method $method): void
+    private function widenThisPropertyOverridesAssignedByMethod(Method $method, bool $is_late_bound): void
     {
         if (!$this->context->getScope()->hasVariableWithName(Context::VAR_NAME_THIS_PROPERTIES)) {
             // Nothing was inferred about the properties of $this (the common case).
@@ -4182,9 +4185,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($method->isPHPInternal()) {
             return;
         }
-        $writes = $method->getNode() instanceof Node ? $this->getThisPropertyWritesOfMethod($method, $class) : [];
-        if (!($method->getNode() instanceof Node) || (!$method->isPrivate() && !$method->isFinal() && !$class->isFinal())) {
-            // The body that runs is not known: the method has none, or a class that extends this one can override it.
+        $has_unknown_body = false;
+        $writes = $this->getThisPropertyWritesOfMethod($method, $class, $is_late_bound, $has_unknown_body);
+        if ($has_unknown_body) {
+            // A body that runs is not known: the method, or a method that it calls on `$this`, has none,
+            // or a class that extends this one can override it.
             foreach ($names as $name) {
                 if (isset($writes[$name])) {
                     continue;
@@ -4201,10 +4206,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // `$this->$name = $v` may assign any of the properties.
         $any = $writes[''] ?? null;
         foreach ($names as $name) {
-            $may_assign_null = $writes[$name] ?? $any;
-            if ($may_assign_null === null) {
+            if ($any === null && !isset($writes[$name])) {
                 continue;
             }
+            $may_assign_null = ($writes[$name] ?? false) || $any;
             $old_override = $this->context->getThisPropertyIfOverridden($name);
             if ($old_override === null) {
                 continue;
@@ -4228,20 +4233,34 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * @param Clazz $class the class in scope, that `$this` is an instance of
+     * @param bool $is_late_bound whether a method that overrides $method may be the one that is called
+     * @param bool $has_unknown_body set to true if $method or a method that it calls on `$this` has no body,
+     * or can be overridden by a class that extends $class @phan-output-reference
      * @return array<string,bool> the names of the properties of `$this` that the body of $method assigns,
      * or that the methods that it calls on `$this` assign (also `parent::method()`, `self::method()` and `static::method()`),
      * each with whether an assignment may make the property null. The key `''` is for `$this->$name = $v`.
      */
-    private function getThisPropertyWritesOfMethod(Method $method, Clazz $class): array
+    private function getThisPropertyWritesOfMethod(Method $method, Clazz $class, bool $is_late_bound, bool &$has_unknown_body): array
     {
         self::$this_property_writes ??= new WeakMap();
         $writes = [];
         $seen = [];
-        $methods = [$method];
-        for ($i = 0; $i < \count($methods) && $i < self::MAX_METHODS_FOR_THIS_PROPERTY_WRITES; $i++) {
-            $method = $methods[$i];
+        // The methods to look at, each with whether a method that overrides it may be the one that is called
+        $methods = [[$method, $is_late_bound]];
+        for ($i = 0; $i < \count($methods) && \count($seen) < self::MAX_METHODS_FOR_THIS_PROPERTY_WRITES; $i++) {
+            [$method, $is_late_bound] = $methods[$i];
+            if ($method->isPHPInternal()) {
+                continue;
+            }
             $method_node = $method->getNode();
-            if (!($method_node instanceof Node) || isset($seen[\spl_object_id($method_node)])) {
+            if (!($method_node instanceof Node)) {
+                $has_unknown_body = true;
+                continue;
+            }
+            if ($is_late_bound && !$method->isPrivate() && !$method->isFinal() && !$class->isFinal()) {
+                $has_unknown_body = true;
+            }
+            if (isset($seen[\spl_object_id($method_node)])) {
                 continue;
             }
             $seen[\spl_object_id($method_node)] = true;
@@ -4250,12 +4269,17 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
             [$direct_writes, $calls] = self::$this_property_writes[$method_node];
             foreach ($direct_writes as $name => $may_assign_null) {
+                $name = (string)$name;
+                if ($this->isPropertyOfOtherClass($method, $class, $name)) {
+                    continue;
+                }
                 $writes[$name] = ($writes[$name] ?? false) || $may_assign_null;
             }
-            foreach ($calls as $method_name => $is_parent_call) {
-                $called_method = $this->getMethodCalledOnThis($method, $class, (string)$method_name, $is_parent_call);
-                if ($called_method !== null) {
-                    $methods[] = $called_method;
+            foreach ($calls as $call => $_) {
+                [$kind, $method_name] = \explode(':', (string)$call, 2);
+                $called_method = $this->getMethodCalledOnThis($method, $class, $method_name, $kind);
+                if ($called_method !== null && !$called_method->isStatic()) {
+                    $methods[] = [$called_method, $kind === 'this'];
                 }
             }
         }
@@ -4263,23 +4287,52 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * @return bool whether `$this->name` in the body of $method is another property than `$this->name` of $class:
+     * a private property of the class that declares the method, when $class (which extends it) declares its own.
+     */
+    private function isPropertyOfOtherClass(Method $method, Clazz $class, string $name): bool
+    {
+        if ($name === '') {
+            return false;
+        }
+        try {
+            if (!$class->hasPropertyWithName($this->code_base, $name)) {
+                return false;
+            }
+            $property = $class->getPropertyByName($this->code_base, $name);
+            if (!$property->isPrivate()) {
+                return false;
+            }
+            // (The method of a trait is declared by the class that uses the trait, like the properties of the trait)
+            return $property->getDefiningFQSEN()->getFullyQualifiedClassName() !== $method->getDefiningFQSEN()->getFullyQualifiedClassName();
+        } catch (Exception) {
+            return false;
+        }
+    }
+
+    /**
      * @param Method $caller the method with the call
      * @param Clazz $class the class in scope
-     * @return ?Method the method that `$this->name()` calls (or `parent::name()`, for $is_parent_call) in the body of $caller
+     * @param string $kind 'this' for `$this->name()` and `static::name()`, 'self' for `self::name()`, 'parent' for `parent::name()`
+     * @return ?Method the method that is called in the body of $caller
      */
-    private function getMethodCalledOnThis(Method $caller, Clazz $class, string $method_name, bool $is_parent_call): ?Method
+    private function getMethodCalledOnThis(Method $caller, Clazz $class, string $method_name, string $kind): ?Method
     {
         try {
-            if ($is_parent_call) {
-                $class_fqsen = $caller->getRealDefiningFQSEN()->getFullyQualifiedClassName();
+            if ($kind !== 'this') {
+                // `self` and `parent` are the class that declares the method and its parent
+                // (for the method of a trait, the class that uses the trait).
+                $class_fqsen = $caller->getDefiningFQSEN()->getFullyQualifiedClassName();
                 if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {
                     return null;
                 }
                 $class = $this->code_base->getClassByFQSEN($class_fqsen);
-                if (!$class->hasParentType()) {
-                    return null;
+                if ($kind === 'parent') {
+                    if (!$class->hasParentType()) {
+                        return null;
+                    }
+                    $class = $class->getParentClass($this->code_base);
                 }
-                $class = $class->getParentClass($this->code_base);
             }
             return $class->hasMethodWithName($this->code_base, $method_name, true) ? $class->getMethodByName($this->code_base, $method_name) : null;
         } catch (Exception) {
@@ -4288,10 +4341,19 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * @return bool whether this call node is `name(...)`, which creates a closure and calls nothing
+     */
+    private static function isCallableConvert(Node $node): bool
+    {
+        $args = $node->children['args'] ?? null;
+        return $args instanceof Node && $args->kind === ast\AST_CALLABLE_CONVERT;
+    }
+
+    /**
      * @param Node $method_node the node of a method
-     * @return array{0:array<string,bool>,1:array<string,bool>} the names of the properties of `$this` that the body assigns
+     * @return array{0:array<string,bool>,1:array<string,true>} the names of the properties of `$this` that the body assigns
      * (`''` for a property with a dynamic name), each with whether an assignment may make the property null,
-     * and the names of the methods that it calls on `$this`, each with whether it is (only) called as `parent::name()`.
+     * and the calls of methods on `$this`: `this:name` for `$this->name()` and `static::name()`, `self:name` and `parent:name`.
      */
     private static function computeThisPropertyWritesOfNode(Node $method_node): array
     {
@@ -4318,7 +4380,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * (Like collectAssignedStaticPropertyNodes, not in the closures, functions and classes that are declared in $node)
      *
      * @param array<string,bool> $writes the properties found so far @phan-output-reference
-     * @param array<string,bool> $calls the names of the methods found so far, each with whether it is only called as `parent::name()`
+     * @param array<string,true> $calls the calls found so far (see computeThisPropertyWritesOfNode)
      */
     private static function collectCallsOnThisAndUnsetProperties(Node $node, array &$writes, array &$calls): void
     {
@@ -4331,20 +4393,20 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             case ast\AST_METHOD_CALL:
             case ast\AST_NULLSAFE_METHOD_CALL:
                 $name = $node->children['method'];
-                if (\is_string($name) && self::isThisNode($node->children['expr'])) {
-                    $calls[$name] = false;
+                if (\is_string($name) && self::isThisNode($node->children['expr']) && !self::isCallableConvert($node)) {
+                    $calls['this:' . $name] = true;
                 }
                 break;
             case ast\AST_STATIC_CALL:
                 $name = $node->children['method'];
                 $class_node = $node->children['class'];
                 $class_name = $class_node instanceof Node && $class_node->kind === ast\AST_NAME ? $class_node->children['name'] : null;
-                if (\is_string($name) && \is_string($class_name)) {
+                if (\is_string($name) && \is_string($class_name) && !self::isCallableConvert($node)) {
                     $class_name = \strtolower($class_name);
-                    if ($class_name === 'parent') {
-                        $calls[$name] ??= true;
-                    } elseif ($class_name === 'self' || $class_name === 'static') {
-                        $calls[$name] = false;
+                    if ($class_name === 'parent' || $class_name === 'self') {
+                        $calls[$class_name . ':' . $name] = true;
+                    } elseif ($class_name === 'static') {
+                        $calls['this:' . $name] = true;
                     }
                 }
                 break;
@@ -4872,8 +4934,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // Check if method has #[NoDiscard] attribute and return value is ignored
         $this->checkNoDiscardAttribute($node, $method);
 
-        if (self::isThisNode($node->children['expr'])) {
-            $this->widenThisPropertyOverridesAssignedByMethod($method);
+        // (`$this->method(...)` creates a closure and does not call the method)
+        if (self::isThisNode($node->children['expr']) && !self::isCallableConvert($node)) {
+            $this->widenThisPropertyOverridesAssignedByMethod($method, true);
         }
 
         return $this->context;

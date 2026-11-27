@@ -1,0 +1,6 @@
+%s:9 PhanTraitParentReference Reference to parent from trait \NS6006\Connects
+%s:35 PhanUnusedVariable Unused definition of variable $f
+%s:46 PhanTypeMismatchReturn Returning $this->b of type null but afterDestructure() is declared to return \NS6006\Conn
+%s:49 PhanTypeMismatchReturnNullable Returning $this->c of type ?\NS6006\Conn but afterWrapper() is declared to return \NS6006\Conn (expected returned value to be non-nullable)
+%s:55 PhanTypeMismatchReturn Returning $this->b of type null but afterDyn() is declared to return \NS6006\Conn
+%s:65 PhanNonClassMethodCall Call to method q on non-class type null
