@@ -67,3 +67,14 @@ function anonymous(): void {
     $ra = $a->a(); $rb = $b->a(); $rc = $c->a();
     '@phan-debug-var $ra, $rb, $rc';
 }
+
+function nested(): void {
+    // An anonymous class in a method of another one, in one line: the tokens have the inner `use` first, and the outer class is visited first.
+    $outer = new class { function f() { return new class { /** @use A<int> */ use A; }; } /** @use A<string> */ use A; };
+    $ro = $outer->a(); $ri = $outer->f()->a();
+    '@phan-debug-var $ro, $ri';
+    // And in the arguments of another one.
+    $d = new class(new class { /** @use A<int> */ use A; }) { /** @use A<string> */ use A; public $x; public function __construct(object $x) { $this->x = $x; } };
+    $rd = $d->a();
+    '@phan-debug-var $rd';
+}

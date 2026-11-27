@@ -21,3 +21,9 @@
 %s:67 PhanUnusedVariable Unused definition of variable $ra (Did you mean $a)
 %s:67 PhanUnusedVariable Unused definition of variable $rb (Did you mean $b)
 %s:67 PhanUnusedVariable Unused definition of variable $rc (Did you mean $c)
+%s:74 PhanDebugAnnotation @phan-debug-var requested for variable $ri - it has union type int
+%s:74 PhanDebugAnnotation @phan-debug-var requested for variable $ro - it has union type string
+%s:74 PhanUnusedVariable Unused definition of variable $ri
+%s:74 PhanUnusedVariable Unused definition of variable $ro
+%s:78 PhanDebugAnnotation @phan-debug-var requested for variable $rd - it has union type string
+%s:78 PhanUnusedVariable Unused definition of variable $rd (Did you mean $d)
