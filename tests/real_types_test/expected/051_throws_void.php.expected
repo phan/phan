@@ -1,0 +1,6 @@
+src/051_throws_void.php:15 PhanUnreferencedFunction Possibly zero references to function \NS051\caller()
+src/051_throws_void.php:19 PhanThrowTypeAbsentForCall \NS051\caller() can throw \RuntimeException because it calls \NS051\loud(), but has no '@throws' declarations for that class
+src/051_throws_void.php:25 PhanUnreferencedPublicMethod Possibly zero references to public method \NS051\Loud::run()
+src/051_throws_void.php:27 PhanUnreferencedPublicMethod Possibly zero references to public method \NS051\Loud::other()
+src/051_throws_void.php:29 PhanUnreferencedClass Possibly zero references to class \NS051\Silenced
+src/051_throws_void.php:31 PhanThrowTypeMismatch \NS051\Silenced::run() throws new \RuntimeException('not documented') of type \RuntimeException here, but it only has declarations of '@throws void'

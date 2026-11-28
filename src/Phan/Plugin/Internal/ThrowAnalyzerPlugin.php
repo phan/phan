@@ -18,6 +18,7 @@ use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Type;
+use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use Phan\PluginV3;
 use Phan\PluginV3\PluginAwarePostAnalysisVisitor;
@@ -105,6 +106,10 @@ class ThrowVisitor extends PluginAwarePostAnalysisVisitor
 
     protected function withoutCaughtUnionTypes(UnionType $union_type, bool $is_raw_throw): UnionType
     {
+        if (!$is_raw_throw && $union_type->hasType(VoidType::instance(false))) {
+            // `(at)throws void` of the function that is called: it throws nothing.
+            $union_type = $union_type->withoutType(VoidType::instance(false));
+        }
         if ($union_type->isEmpty()) {
             if (!$is_raw_throw) {
                 return $union_type;

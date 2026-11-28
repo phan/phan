@@ -1669,7 +1669,8 @@ class Method extends ClassElement implements FunctionInterface
     public function getFullThrowsUnionType(): UnionType
     {
         $type = $this->getOwnThrowsUnionType();
-        if ($this->inherited_throws_union_type) {
+        // `(at)throws void` says that this method throws nothing, also what the method that it overrides throws.
+        if ($this->inherited_throws_union_type && !$type->hasType(\Phan\Language\Type\VoidType::instance(false))) {
             $type = $type->withUnionType($this->inherited_throws_union_type);
         }
         return $type;

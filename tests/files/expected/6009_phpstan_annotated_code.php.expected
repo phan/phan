@@ -1,0 +1,23 @@
+%s:29 PhanGenericMissingParameters Class \NS6009\H must substitute all 1 template parameters when inheriting \NS6009\Gen (found 0) defined at %s:7 (use @extends or @inherit)
+%s:30 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type int
+%s:30 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type int
+%s:30 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type string
+%s:30 PhanDebugAnnotation @phan-debug-var requested for variable $f - it has union type string
+%s:30 PhanDebugAnnotation @phan-debug-var requested for variable $g - it has union type array{a:int}
+%s:43 PhanTypeInvalidThrowsIsInterface @throws annotation of c has suspicious interface type \NS6009\Marker for an @throws annotation, expected class (PHP allows interfaces to be caught, so this might be intentional)
+%s:45 PhanTypeInvalidThrowsIsTrait @throws annotation of d has invalid trait type \NS6009\NotThrowable, expected a class
+%s:47 PhanTypeInvalidThrowsNonObject @throws annotation of e has invalid non-object type int, expected a class
+%s:52 PhanDebugAnnotation @phan-debug-var requested for variable $stream - it has union type resource(real=mixed)
+%s:53 PhanTypeMismatchDeclaredParamNullable Doc-block of $s in nullable is phpdoc param type string which is not a permitted replacement of the nullable param type ?string declared in the signature ('?T' should be documented as 'T|null' or '?T')
+%s:55 PhanTypeMismatchArgumentProbablyReal Argument 1 ($stream) is null of type null but \NS6009\close() takes resource (real type mixed) defined at %s:52 (the inferred real argument type has nothing in common with the parameter's phpdoc type)
+%s:63 PhanParamSuspiciousOrder Argument #2 of this call to \str_contains is typically a literal or constant but isn't, but argument #1 (which is typically a variable) is a literal or constant. The arguments may be in the wrong order.
+%s:64 PhanParamSuspiciousOrder Argument #2 of this call to \str_contains is typically a literal or constant but isn't, but argument #1 (which is typically a variable) is a literal or constant. The arguments may be in the wrong order.
+%s:65 PhanParamSuspiciousOrder Argument #2 of this call to \strpos is typically a literal or constant but isn't, but argument #1 (which is typically a variable) is a literal or constant. The arguments may be in the wrong order.
+%s:66 PhanParamSuspiciousOrder Argument #2 of this call to \str_contains is typically a literal or constant but isn't, but argument #1 (which is typically a variable) is a literal or constant. The arguments may be in the wrong order.
+%s:68 PhanParamSuspiciousOrder Argument #1 of this call to \explode is typically a literal or constant but isn't, but argument #2 (which is typically a variable) is a literal or constant. The arguments may be in the wrong order.
+%s:72 PhanUnusedVariable Unused definition of variable $usage
+%s:73 PhanUnusedVariable Unused definition of variable $ini
+%s:74 PhanDebugAnnotation @phan-debug-var requested for variable $ini - it has union type array<string,?array>|array<string,?string>|false(real=array|false)
+%s:74 PhanDebugAnnotation @phan-debug-var requested for variable $transitions - it has union type false|list<array{ts:int,time:string,offset:int,isdst:bool,abbr:string}>(real=array|false)
+%s:74 PhanDebugAnnotation @phan-debug-var requested for variable $usage - it has union type array<string,int>|false(real=array|false)
+%s:74 PhanUnusedVariable Unused definition of variable $transitions

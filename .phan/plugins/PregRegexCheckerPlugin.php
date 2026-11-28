@@ -88,7 +88,6 @@ class PregRegexCheckerPlugin extends PluginV3 implements AnalyzeFunctionCallCapa
         $pattern = \trim($pattern);
 
         $start_chr = $pattern[0] ?? '/';
-        // @phan-suppress-next-line PhanParamSuspiciousOrder this is deliberate
         $i = \strpos('({[', $start_chr);
         if ($i !== false) {
             $end_chr = ')}]'[$i];
