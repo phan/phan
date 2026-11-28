@@ -4269,7 +4269,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     } catch (Exception) {
                         $declared_type = null;
                     }
-                    if ($declared_type !== null) {
+                    // (Not with a template type of the class or `static`: the variable says what they are, and the declared type does not)
+                    if ($declared_type !== null && !$declared_type->hasTemplateTypeRecursive() && !$declared_type->hasStaticType()) {
                         $widened[$name] = $old_override->withUnionType(self::getTypeOfAssignedValue($declared_type, false));
                     }
                 }

@@ -254,9 +254,16 @@ final class ConditionalAssertionPlugin extends PluginV3 implements ConditionalCa
                 return null;
             }
             // The type that reading the property gives here: with what was inferred about it, `static` and the template types
-            // of the object, and the types of the property of a parent class. (The property can be read, so nothing is reported.)
+            // of the object, and the types of the property of a parent class.
             $property_node = new Node(\ast\AST_PROP, 0, ['expr' => $receiver, 'prop' => $property_name], $receiver->lineno);
-            $type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $property_node, false);
+            // The code with the call does not read the property: nothing is reported for this read (a deprecated property, an internal one).
+            $old_is_discarding_issues = Issue::$is_discarding_issues;
+            Issue::$is_discarding_issues = true;
+            try {
+                $type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $property_node, false);
+            } finally {
+                Issue::$is_discarding_issues = $old_is_discarding_issues;
+            }
             // (The object may not say what a template type is)
             return $type->hasTemplateTypeRecursive() ? null : $type;
         } catch (\Exception) {

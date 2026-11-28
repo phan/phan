@@ -260,3 +260,32 @@ function both(Test $a, Test $b): void {
     Both::second($b);
     '@phan-debug-var $a, $b';
 }
+
+// The declared type of a property with a template type is not added back after a call that assigns the property.
+/** @template T of object */
+final class Holder {
+    /** @var T|null */
+    public $item;
+    /** @var ?Test @deprecated */
+    public $old = null;
+    /** @param T|null $item */
+    public function __construct($item) { $this->item = $item; }
+    /** @phpstan-assert-if-true !null $this->item */
+    public function hasItem(): bool { return $this->item !== null; }
+    /** @param T $item */
+    public function setItem(object $item): void { $this->item = $item; }
+    /** @phpstan-assert-if-true !null $this->old */
+    public function hasOld(): bool { return $this->old !== null; }
+}
+/** @param Holder<TestMethod> $holder */
+function held(Holder $holder, TestMethod $other): void {
+    if ($holder->hasItem()) {
+        $holder->setItem($other);
+        $item = $holder->item;
+        '@phan-debug-var $item';
+    }
+    // The deprecated property is not read here: nothing is reported for the call.
+    if ($holder->hasOld()) {
+        echo 'old';
+    }
+}
