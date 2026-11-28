@@ -24,3 +24,6 @@
 %s:218 PhanDebugAnnotation @phan-debug-var requested for variable $still - it has union type null(real=?int)
 %s:218 PhanUnusedVariable Unused definition of variable $still
 %s:230 PhanDebugAnnotation @phan-debug-var requested for variable $values - it has union type array(real=array)
+%s:238 PhanDebugAnnotation @phan-debug-var requested for variable $after - it has union type int(real=int)
+%s:260 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type \NS6011\TestMethod
+%s:260 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \NS6011\TestMethod

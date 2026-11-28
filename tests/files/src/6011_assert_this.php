@@ -230,3 +230,33 @@ function elements(array $values): void {
     Elements::assertFirstIsString($values);
     '@phan-debug-var $values';
 }
+
+// A property that is assigned a value that is not null is still not null after the call.
+function recounted(Counter $counter): int {
+    if ($counter->hasCount()) {
+        $counter->setCount(1);
+        $after = $counter->count;
+        '@phan-debug-var $after';
+        return $after;
+    }
+    return 0;
+}
+
+// (at)phan-assert is used when there is also a (at)phpstan-assert for the parameter, in either order.
+final class Both {
+    /**
+     * @phan-assert TestMethod $value
+     * @phpstan-assert Test $value
+     */
+    public static function first(mixed $value): void { if (!$value instanceof TestMethod) { throw new \Exception(); } }
+    /**
+     * @phpstan-assert Test $value
+     * @phan-assert TestMethod $value
+     */
+    public static function second(mixed $value): void { if (!$value instanceof TestMethod) { throw new \Exception(); } }
+}
+function both(Test $a, Test $b): void {
+    Both::first($a);
+    Both::second($b);
+    '@phan-debug-var $a, $b';
+}

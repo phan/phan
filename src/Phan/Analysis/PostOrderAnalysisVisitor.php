@@ -4252,10 +4252,27 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
         $has_unknown_body = false;
         $writes = $this->getThisPropertyWritesOfMethod($method, $this->code_base->getClassByFQSEN($class_fqsen), true, $has_unknown_body);
+        $class = $this->code_base->getClassByFQSEN($class_fqsen);
         $forgotten = [];
+        // The properties that are assigned and that are not null after it: the type that was inferred, with the declared type without null
+        $widened = [];
         foreach ($names as $name) {
             if (isset($writes[$name]) || isset($writes[''])) {
                 $forgotten[] = $name;
+                $may_assign_null = ($writes[$name] ?? false) || ($writes[''] ?? false);
+                $old_override = $this->context->getVariablePropertyIfOverridden($variable_name, $name);
+                if (!$may_assign_null && $old_override !== null && !$old_override->containsNullable()) {
+                    try {
+                        $declared_type = $class->hasPropertyWithName($this->code_base, $name)
+                            ? self::getDeclaredTypeOfProperty($class->getPropertyByName($this->code_base, $name))
+                            : null;
+                    } catch (Exception) {
+                        $declared_type = null;
+                    }
+                    if ($declared_type !== null) {
+                        $widened[$name] = $old_override->withUnionType(self::getTypeOfAssignedValue($declared_type, false));
+                    }
+                }
                 continue;
             }
             if ($has_unknown_body) {
@@ -4267,6 +4284,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
         if ($forgotten) {
             $this->context = $this->context->withoutVariablePropertyOverrides($variable_name, $forgotten);
+        }
+        foreach ($widened as $name => $type) {
+            $this->context = $this->context->withVariablePropertySetToTypeByName($variable_name, (string)$name, $type);
         }
     }
 

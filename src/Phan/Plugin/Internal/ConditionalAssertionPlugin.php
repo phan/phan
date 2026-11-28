@@ -210,7 +210,7 @@ final class ConditionalAssertionPlugin extends PluginV3 implements ConditionalCa
         if (!\is_string($variable_name)) {
             return $context;
         }
-        $old_type = self::typeOfAccessibleProperty($code_base, $context, $receiver, $variable_name, $property_name, $method);
+        $old_type = self::typeOfAccessibleProperty($code_base, $context, $receiver, $property_name, $method);
         if ($old_type === null) {
             return $context;
         }
@@ -231,12 +231,14 @@ final class ConditionalAssertionPlugin extends PluginV3 implements ConditionalCa
      * @return ?UnionType the type that the property of the variable has here, or null if the code here cannot read the property
      * (a private property of another class: an assertion about it has no use for the caller), or if it is not known which property it is.
      */
-    private static function typeOfAccessibleProperty(CodeBase $code_base, Context $context, Node $receiver, string $variable_name, string $property_name, ?FunctionInterface $method): ?UnionType
+    private static function typeOfAccessibleProperty(CodeBase $code_base, Context $context, Node $receiver, string $property_name, ?FunctionInterface $method): ?UnionType
     {
         try {
             $accessing_class = $context->isInClassScope() ? $context->getClassFQSEN() : null;
-            $receiver_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $receiver);
-            $class_list = \iterator_to_array($receiver_type->asClassList($code_base, $context), false);
+            $class_list = \iterator_to_array(
+                UnionTypeVisitor::unionTypeFromNode($code_base, $context, $receiver)->asClassList($code_base, $context),
+                false
+            );
             if (\count($class_list) !== 1) {
                 return null;
             }
@@ -251,22 +253,12 @@ final class ConditionalAssertionPlugin extends PluginV3 implements ConditionalCa
             if ($method instanceof Method && !self::isSamePropertyForMethod($code_base, $method, $property)) {
                 return null;
             }
-            $override = $variable_name === 'this'
-                ? $context->getThisPropertyIfOverridden($property_name)
-                : $context->getVariablePropertyIfOverridden($variable_name, $property_name);
-            if ($override !== null) {
-                return $override;
-            }
-            // As for reading the property: `static` and the template types of the class are the ones of the object.
-            $type = $property->getUnionType()->withStaticResolvedInContext($property->getContext());
-            if ($type->hasTemplateTypeRecursive()) {
-                $type = $type->withTemplateParameterTypeMap($receiver_type->getTemplateParameterTypeMap($code_base));
-                if ($type->hasTemplateTypeRecursive()) {
-                    // The object does not say what the template type is.
-                    return null;
-                }
-            }
-            return $type;
+            // The type that reading the property gives here: with what was inferred about it, `static` and the template types
+            // of the object, and the types of the property of a parent class. (The property can be read, so nothing is reported.)
+            $property_node = new Node(\ast\AST_PROP, 0, ['expr' => $receiver, 'prop' => $property_name], $receiver->lineno);
+            $type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $property_node, false);
+            // (The object may not say what a template type is)
+            return $type->hasTemplateTypeRecursive() ? null : $type;
         } catch (\Exception) {
             return null;
         }

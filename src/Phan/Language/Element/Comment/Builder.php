@@ -144,6 +144,9 @@ final class Builder
     /** @var array<string,Assertion> assertions about each parameter */
     public $param_assertion_map = [];
 
+    /** @var array<string,true> the names of the parameters with an (at)phan-assert annotation (and not only (at)phpstan-assert or (at)psalm-assert) */
+    private $params_with_phan_assertion = [];
+
     /** @var list<ConditionalAssertion> the (at)phan-assert-if-true/(at)phan-assert-if-false annotations (also phpstan-, psalm-) */
     public $conditional_assertion_list = [];
 
@@ -1341,6 +1344,14 @@ final class Builder
         // Make sure support for generic types is enabled
         $assert = $this->assertFromCommentLine($line);
         if ($assert) {
+            // (`(at)phan-assert` is the one that is used when there is also a `(at)phpstan-assert` or `(at)psalm-assert` for the parameter)
+            $is_phan = \str_contains($line, '@phan-assert');
+            if (!$is_phan && isset($this->params_with_phan_assertion[$assert->param_name])) {
+                return;
+            }
+            if ($is_phan) {
+                $this->params_with_phan_assertion[$assert->param_name] = true;
+            }
             $this->param_assertion_map[$assert->param_name] = $assert;
         }
     }
