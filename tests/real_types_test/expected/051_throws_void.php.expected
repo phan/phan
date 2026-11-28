@@ -1,0 +1,2 @@
+src/051_throws_void.php:15 PhanUnreferencedFunction Possibly zero references to function \NS051\caller()
+src/051_throws_void.php:19 PhanThrowTypeAbsentForCall \NS051\caller() can throw \RuntimeException because it calls \NS051\loud(), but has no '@throws' declarations for that class
