@@ -181,3 +181,52 @@ function narrowed(TestMethod $a, TestMethod $b): void {
     Narrow::replaceWithTest($b);
     '@phan-debug-var $a, $b';
 }
+
+// A property that is not private is the same property when a class that extends the class declares it again.
+class ParentWithProtected {
+    protected ?string $file = 'x';
+    /** @phpstan-assert-if-true !null $this->file */
+    public function hasFile(): bool { return $this->file !== null; }
+}
+final class ChildWithPublic extends ParentWithProtected {
+    public ?string $file = null;
+}
+function publicFile(ChildWithPublic $child): string {
+    if ($child->hasFile()) {
+        return $child->file;
+    }
+    return '';
+}
+
+// What was inferred about a property of a variable is forgotten after a call of a method of the variable that assigns the property.
+final class Counter {
+    public ?int $count = null;
+    public ?int $other = null;
+    /** @phpstan-assert-if-true !null $this->count */
+    public function hasCount(): bool { return $this->count !== null; }
+    public function setCount(int $count): void { $this->count = $count; }
+    public function touch(): void { $this->other = 1; }
+}
+function counted(Counter $counter, Counter $second): int {
+    if (!$counter->hasCount()) {
+        $counter->setCount(1);
+        $after = $counter->count;
+        '@phan-debug-var $after';
+    }
+    if (!$second->hasCount()) {
+        $second->touch();
+        $still = $second->count;
+        '@phan-debug-var $still';
+    }
+    return 0;
+}
+
+// An assertion about an element of a parameter is not read.
+final class Elements {
+    /** @psalm-assert string $values[0] */
+    public static function assertFirstIsString(array $values): void { if (!is_string($values[0] ?? null)) { throw new \Exception(); } }
+}
+function elements(array $values): void {
+    Elements::assertFirstIsString($values);
+    '@phan-debug-var $values';
+}

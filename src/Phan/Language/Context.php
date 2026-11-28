@@ -1321,6 +1321,47 @@ class Context extends FileRef
     }
 
     /**
+     * @return list<string> the names of the properties of the variable that may have a narrowed type in this context
+     * (getVariablePropertyIfOverridden returns the type, or null if a type is only inferred in some of the branches)
+     */
+    public function getVariablePropertyOverrideNames(string $variable_name): array
+    {
+        $override_var_name = "phan\0\$" . $variable_name . "->properties";
+        if (!$this->scope->hasVariableWithName($override_var_name)) {
+            return [];
+        }
+        $names = [];
+        foreach ($this->scope->getVariableByName($override_var_name)->getUnionType()->getTypeSet() as $type) {
+            if ($type instanceof ArrayShapeType) {
+                foreach ($type->getFieldTypes() as $name => $_) {
+                    $names[(string)$name] = (string)$name;
+                }
+            }
+        }
+        return \array_values($names);
+    }
+
+    /**
+     * @param list<string> $property_names
+     * @return Context this context without what was inferred about these properties of the variable
+     */
+    public function withoutVariablePropertyOverrides(string $variable_name, array $property_names): Context
+    {
+        $override_var_name = "phan\0\$" . $variable_name . "->properties";
+        if (!$property_names || !$this->scope->hasVariableWithName($override_var_name)) {
+            return $this;
+        }
+        // (The variable is replaced in this scope, and not removed: it can be a variable of a parent scope of a branch)
+        $variable = clone($this->scope->getVariableByName($override_var_name));
+        $type = $variable->getUnionType();
+        foreach ($property_names as $property_name) {
+            $type = $type->withoutArrayShapeField($property_name);
+        }
+        $variable->setUnionType($type);
+        return $this->withScopeVariable($variable);
+    }
+
+    /**
      * Get the type of a variable's property if it was overridden in this context (e.g., narrowed in a conditional)
      *
      * @param string $variable_name the name of the variable (e.g., 'param')

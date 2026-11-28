@@ -1249,13 +1249,13 @@ final class Builder
     /**
      * @internal
      */
-    public const ASSERT_REGEX = '/@(?<assert_tool>phan|(?i:phpstan|psalm))-assert(?:(-true-condition|-false-condition)|\s+(?<assert_prefix>=?!?|!=)(?<assert_type>' . UnionType::union_type_regex . '))\s+\$(?<assert_name>' . self::WORD_REGEX . ')(?![a-zA-Z0-9_\x7f-\xff]|->)/';
+    public const ASSERT_REGEX = '/@(?<assert_tool>phan|(?i:phpstan|psalm))-assert(?:(-true-condition|-false-condition)|\s+(?<assert_prefix>=?!?|!=)(?<assert_type>' . UnionType::union_type_regex . '))\s+\$(?<assert_name>' . self::WORD_REGEX . ')(?![a-zA-Z0-9_\x7f-\xff]|->|\[)/';
 
     /**
      * Parses `(at)phan-assert T $param`, `(at)phan-assert !T $param`, `(at)phan-assert-true-condition $param` and `(at)phan-assert-false-condition $param`,
      * and `(at)phpstan-assert` and `(at)psalm-assert` with a type (also `=T`, which is the same for an assertion that does not depend on what is returned).
      *
-     * An assertion is about a parameter: one about `$this`, `$this->prop` or `$param->prop` is not read.
+     * An assertion is about a parameter: one about `$this`, `$this->prop`, `$param->prop` or `$param[0]` is not read.
      */
     private function assertFromCommentLine(string $line): ?Assertion
     {

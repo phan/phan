@@ -19,3 +19,8 @@
 %s:165 PhanDebugAnnotation @phan-debug-var requested for variable $file - it has union type ?string(real=?string)
 %s:181 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type \NS6011\TestMethod(real=\NS6011\TestMethod)
 %s:181 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \NS6011\Test
+%s:213 PhanDebugAnnotation @phan-debug-var requested for variable $after - it has union type ?int|int(real=?int)
+%s:213 PhanUnusedVariable Unused definition of variable $after
+%s:218 PhanDebugAnnotation @phan-debug-var requested for variable $still - it has union type null(real=?int)
+%s:218 PhanUnusedVariable Unused definition of variable $still
+%s:230 PhanDebugAnnotation @phan-debug-var requested for variable $values - it has union type array(real=array)

@@ -289,7 +289,9 @@ final class ConditionalAssertionPlugin extends PluginV3 implements ConditionalCa
         if (!$method_class->hasPropertyWithName($code_base, $name)) {
             return true;
         }
-        return $method_class->getPropertyByName($code_base, $name)->getDefiningFQSEN() === $property->getDefiningFQSEN();
+        $property_of_method_class = $method_class->getPropertyByName($code_base, $name);
+        // (A property that is not private is the same one when a class that extends this one declares it again)
+        return !$property_of_method_class->isPrivate() || $property_of_method_class->getDefiningFQSEN() === $property->getDefiningFQSEN();
     }
 
     /**
