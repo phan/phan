@@ -259,8 +259,12 @@ final class ConditionalAssertionPlugin extends PluginV3 implements ConditionalCa
             // The code with the call does not read the property: nothing is reported for this read (a deprecated property, an internal one).
             $old_is_discarding_issues = Issue::$is_discarding_issues;
             Issue::$is_discarding_issues = true;
+            // The types of nodes are cached in the context by the object id of the node, and this node is gone after the read
+            // (the next node that is made can get its id): it is read with a copy of the context, of which the cache is not kept.
+            $read_context = clone($context);
+            $read_context->clearCachedUnionTypes();
             try {
-                $type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $property_node, false);
+                $type = UnionTypeVisitor::unionTypeFromNode($code_base, $read_context, $property_node, false);
             } finally {
                 Issue::$is_discarding_issues = $old_is_discarding_issues;
             }

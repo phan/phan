@@ -29,3 +29,5 @@
 %s:260 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \NS6011\TestMethod
 %s:284 PhanDebugAnnotation @phan-debug-var requested for variable $item - it has union type \NS6011\TestMethod|null
 %s:284 PhanUnusedVariable Unused definition of variable $item
+%s:307 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type string(real=string)
+%s:307 PhanUnusedVariable Unused definition of variable $b

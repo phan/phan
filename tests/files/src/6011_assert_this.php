@@ -289,3 +289,22 @@ function held(Holder $holder, TestMethod $other): void {
         echo 'old';
     }
 }
+
+// Assertions about two properties, of which the first has a template type that the variable does not give.
+/** @template T */
+final class Pair {
+    /** @var T|null */
+    public $a;
+    public ?string $b = null;
+    /**
+     * @phpstan-assert-if-true !null $this->a
+     * @phpstan-assert-if-true !null $this->b
+     */
+    public function hasBoth(): bool { return $this->a !== null && $this->b !== null; }
+}
+function pair(Pair $pair): void {
+    if ($pair->hasBoth()) {
+        $b = $pair->b;
+        '@phan-debug-var $b';
+    }
+}
