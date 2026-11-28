@@ -4232,6 +4232,66 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
+     * Forgets what was inferred about the properties of a variable (`if (!$config->hasCount()) { $config->setCount(1); }`)
+     * for the properties that the method that is called on the variable assigns, or that a method that it calls on `$this` assigns.
+     * As in widenThisPropertyOverridesAssignedByMethod(), what was inferred to be null, false or empty is also forgotten
+     * when a body that runs is not known. The property then has its declared type again.
+     *
+     * @param Method $method the method that is called on the variable, not a static method
+     */
+    private function forgetVariablePropertyOverridesAssignedByMethod(Method $method, string $variable_name): void
+    {
+        $names = $this->context->getVariablePropertyOverrideNames($variable_name);
+        if (!$names || $method->isPHPInternal()) {
+            return;
+        }
+        // The class of the object, as far as it is known: the class that the method was found in
+        $class_fqsen = $method->getFQSEN()->getFullyQualifiedClassName();
+        if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {
+            return;
+        }
+        $has_unknown_body = false;
+        $writes = $this->getThisPropertyWritesOfMethod($method, $this->code_base->getClassByFQSEN($class_fqsen), true, $has_unknown_body);
+        $class = $this->code_base->getClassByFQSEN($class_fqsen);
+        $forgotten = [];
+        // The properties that are assigned and that are not null after it: the type that was inferred, with the declared type without null
+        $widened = [];
+        foreach ($names as $name) {
+            if (isset($writes[$name]) || isset($writes[''])) {
+                $forgotten[] = $name;
+                $may_assign_null = ($writes[$name] ?? false) || ($writes[''] ?? false);
+                $old_override = $this->context->getVariablePropertyIfOverridden($variable_name, $name);
+                if (!$may_assign_null && $old_override !== null && !$old_override->containsNullable()) {
+                    try {
+                        $declared_type = $class->hasPropertyWithName($this->code_base, $name)
+                            ? self::getDeclaredTypeOfProperty($class->getPropertyByName($this->code_base, $name))
+                            : null;
+                    } catch (Exception) {
+                        $declared_type = null;
+                    }
+                    // (Not with a template type of the class or `static`: the variable says what they are, and the declared type does not)
+                    if ($declared_type !== null && !$declared_type->hasTemplateTypeRecursive() && !$declared_type->hasStaticType()) {
+                        $widened[$name] = $old_override->withUnionType(self::getTypeOfAssignedValue($declared_type, false));
+                    }
+                }
+                continue;
+            }
+            if ($has_unknown_body) {
+                $override = $this->context->getVariablePropertyIfOverridden($variable_name, $name);
+                if ($override !== null && !$override->isEmpty() && !$override->containsTruthy()) {
+                    $forgotten[] = $name;
+                }
+            }
+        }
+        if ($forgotten) {
+            $this->context = $this->context->withoutVariablePropertyOverrides($variable_name, $forgotten);
+        }
+        foreach ($widened as $name => $type) {
+            $this->context = $this->context->withVariablePropertySetToTypeByName($variable_name, (string)$name, $type);
+        }
+    }
+
+    /**
      * @param Clazz $class the class in scope, that `$this` is an instance of
      * @param bool $is_late_bound whether a method that overrides $method may be the one that is called
      * @param bool $has_unknown_body set to true if $method or a method that it calls on `$this` has no body,
@@ -4988,8 +5048,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $this->checkNoDiscardAttribute($node, $method);
 
         // (`$this->method(...)` creates a closure and does not call the method)
-        if (self::isThisNode($node->children['expr']) && !self::isCallableConvert($node) && !$method->isStatic()) {
-            $this->widenThisPropertyOverridesAssignedByMethod($method, true);
+        if (!self::isCallableConvert($node) && !$method->isStatic()) {
+            $expr = $node->children['expr'];
+            if (self::isThisNode($expr)) {
+                $this->widenThisPropertyOverridesAssignedByMethod($method, true);
+            } elseif ($expr instanceof Node && $expr->kind === ast\AST_VAR && \is_string($expr->children['name'])) {
+                $this->forgetVariablePropertyOverridesAssignedByMethod($method, $expr->children['name']);
+            }
         }
 
         return $this->context;

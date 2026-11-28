@@ -18,16 +18,18 @@ class Assertion
     public const IS_NOT_OF_TYPE = 2;
     public const IS_TRUE = 3;
     public const IS_FALSE = 4;
+    /** The value has the type, and keeps the types that it has that are subtypes of it (`(at)phpstan-assert`, `(at)psalm-assert`) */
+    public const IS_NARROWED_TO_TYPE = 5;
 
     /** @var UnionType the type that is used in this assertion */
     public $union_type;
     /** @var string the parameter name that the assertion affects */
     public $param_name;
-    /** @var 1|2|3|4 an enum self::IS_* */
+    /** @var 1|2|3|4|5 an enum self::IS_* */
     public $assertion_type;
 
     /**
-     * @param 1|2|3|4 $assertion_type
+     * @param 1|2|3|4|5 $assertion_type
      */
     public function __construct(UnionType $union_type, string $param_name, int $assertion_type)
     {

@@ -1,0 +1,33 @@
+%s:14 PhanUndeclaredMethod Call to undeclared method \NS6011\Test::methodName
+%s:47 PhanTypeMismatchReturnNullable Returning $this->file of type ?string but unchecked() is declared to return string (expected returned value to be non-nullable)
+%s:57 PhanUndeclaredMethod Call to undeclared method \NS6011\Test::methodName
+%s:61 PhanDebugAnnotation @phan-debug-var requested for variable $test - it has union type \NS6011\TestMethod
+%s:74 PhanUnusedVariable Unused definition of variable $a
+%s:75 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type null(real=?int)
+%s:75 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type ?int(real=?int)
+%s:75 PhanUnusedVariable Unused definition of variable $b
+%s:94 PhanCommentParamAssertionWithoutRealParam Saw an @phan-assert annotation for $this, but it was not found in the param list of notAMethod()
+%s:97 PhanCommentParamAssertionWithoutRealParam Saw an @phan-assert annotation for $this, but it was not found in the param list of isTest()
+%s:99 PhanCommentParamAssertionWithoutRealParam Saw an @phan-assert annotation for $missing, but it was not found in the param list of missing()
+%s:123 PhanCommentParamAssertionWithoutRealParam Saw an @phan-assert annotation for $missing, but it was not found in the param list of assertMissing()
+%s:130 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type \ArrayObject
+%s:130 PhanDebugAnnotation @phan-debug-var requested for variable $d - it has union type \DateTime(real=\DateTime)
+%s:130 PhanDebugAnnotation @phan-debug-var requested for variable $n - it has union type int|string(real=int|string)
+%s:130 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type string
+%s:130 PhanDebugAnnotation @phan-debug-var requested for variable $t - it has union type true
+%s:147 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type string(real=non-null-mixed)
+%s:165 PhanDebugAnnotation @phan-debug-var requested for variable $file - it has union type ?string(real=?string)
+%s:181 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type \NS6011\TestMethod(real=\NS6011\TestMethod)
+%s:181 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \NS6011\Test
+%s:213 PhanDebugAnnotation @phan-debug-var requested for variable $after - it has union type ?int|int(real=?int)
+%s:213 PhanUnusedVariable Unused definition of variable $after
+%s:218 PhanDebugAnnotation @phan-debug-var requested for variable $still - it has union type null(real=?int)
+%s:218 PhanUnusedVariable Unused definition of variable $still
+%s:230 PhanDebugAnnotation @phan-debug-var requested for variable $values - it has union type array(real=array)
+%s:238 PhanDebugAnnotation @phan-debug-var requested for variable $after - it has union type int(real=int)
+%s:260 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type \NS6011\TestMethod
+%s:260 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \NS6011\TestMethod
+%s:284 PhanDebugAnnotation @phan-debug-var requested for variable $item - it has union type \NS6011\TestMethod|null
+%s:284 PhanUnusedVariable Unused definition of variable $item
+%s:307 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type string(real=string)
+%s:307 PhanUnusedVariable Unused definition of variable $b
