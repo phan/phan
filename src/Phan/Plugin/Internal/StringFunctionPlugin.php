@@ -26,6 +26,31 @@ final class StringFunctionPlugin extends PluginV3 implements
     AnalyzeFunctionCallCapability
 {
     /**
+     * The functions that search a string for a string: a list of characters can be what is searched (see isCharacterSet()).
+     */
+    private const SUBSTRING_SEARCH_FUNCTIONS = [
+        'str_contains' => true,
+        'strpos' => true,
+        'stripos' => true,
+        'strrpos' => true,
+        'strripos' => true,
+        'strstr' => true,
+        'stristr' => true,
+        'strchr' => true,
+        'strrchr' => true,
+        'substr_count' => true,
+        'mb_strpos' => true,
+        'mb_stripos' => true,
+        'mb_strrpos' => true,
+        'mb_strripos' => true,
+        'mb_strstr' => true,
+        'mb_stristr' => true,
+        'mb_strrchr' => true,
+        'mb_strrichr' => true,
+        'mb_substr_count' => true,
+    ];
+
+    /**
      * @param Node|string|float|int|null $arg
      * @return bool whether this is a string literal that lists characters, which is searched for a character:
      * `str_contains('0123456789', $character)`, `strpos('+-=', $operator)`, `strpos('abcdefABCDEF', $digit)`.
@@ -160,7 +185,7 @@ final class StringFunctionPlugin extends PluginV3 implements
                     return;
                 }
                 if (!self::isSimpleExpression($args[$expected_const_pos])) {
-                    if (self::isSimpleExpression($args[$expected_variable_pos], true) && !self::isCharacterSet($args[$expected_variable_pos])) {
+                    if (self::isSimpleExpression($args[$expected_variable_pos], true) && !(isset(self::SUBSTRING_SEARCH_FUNCTIONS[\strtolower($function->getName())]) && self::isCharacterSet($args[$expected_variable_pos]))) {
                         Issue::maybeEmit(
                             $code_base,
                             $context,

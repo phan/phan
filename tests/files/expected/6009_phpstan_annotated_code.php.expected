@@ -14,9 +14,10 @@
 %s:64 PhanParamSuspiciousOrder Argument #2 of this call to \str_contains is typically a literal or constant but isn't, but argument #1 (which is typically a variable) is a literal or constant. The arguments may be in the wrong order.
 %s:65 PhanParamSuspiciousOrder Argument #2 of this call to \strpos is typically a literal or constant but isn't, but argument #1 (which is typically a variable) is a literal or constant. The arguments may be in the wrong order.
 %s:66 PhanParamSuspiciousOrder Argument #2 of this call to \str_contains is typically a literal or constant but isn't, but argument #1 (which is typically a variable) is a literal or constant. The arguments may be in the wrong order.
-%s:70 PhanUnusedVariable Unused definition of variable $usage
-%s:71 PhanUnusedVariable Unused definition of variable $ini
-%s:72 PhanDebugAnnotation @phan-debug-var requested for variable $ini - it has union type array<string,?array>|array<string,?string>|false(real=array|false)
-%s:72 PhanDebugAnnotation @phan-debug-var requested for variable $transitions - it has union type false|list<array{ts:int,time:string,offset:int,isdst:bool,abbr:string}>(real=array|false)
-%s:72 PhanDebugAnnotation @phan-debug-var requested for variable $usage - it has union type array<string,int>|false(real=array|false)
-%s:72 PhanUnusedVariable Unused definition of variable $transitions
+%s:68 PhanParamSuspiciousOrder Argument #1 of this call to \explode is typically a literal or constant but isn't, but argument #2 (which is typically a variable) is a literal or constant. The arguments may be in the wrong order.
+%s:72 PhanUnusedVariable Unused definition of variable $usage
+%s:73 PhanUnusedVariable Unused definition of variable $ini
+%s:74 PhanDebugAnnotation @phan-debug-var requested for variable $ini - it has union type array<string,?array>|array<string,?string>|false(real=array|false)
+%s:74 PhanDebugAnnotation @phan-debug-var requested for variable $transitions - it has union type false|list<array{ts:int,time:string,offset:int,isdst:bool,abbr:string}>(real=array|false)
+%s:74 PhanDebugAnnotation @phan-debug-var requested for variable $usage - it has union type array<string,int>|false(real=array|false)
+%s:74 PhanUnusedVariable Unused definition of variable $transitions

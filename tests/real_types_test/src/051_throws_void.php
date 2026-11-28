@@ -18,3 +18,16 @@ function caller(Quiet $q): void {
     Quiet::srun();
     loud();
 }
+
+// A method with (at)throws void does not inherit what the method that it overrides throws.
+class Loud {
+    /** @throws \RuntimeException */
+    public function run(): void { throw new \RuntimeException('x'); }
+    /** @throws \RuntimeException */
+    public function other(): void { throw new \RuntimeException('x'); }
+}
+class Silenced extends Loud {
+    /** @throws void */
+    public function run(): void { throw new \RuntimeException('not documented'); }
+    public function other(): void { throw new \RuntimeException('inherited'); }
+}

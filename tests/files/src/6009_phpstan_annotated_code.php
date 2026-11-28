@@ -64,6 +64,8 @@ function inPath(string $s): bool { return str_contains('/admin', $s); }
 function hasExtension(string $s): bool { return str_contains('.php', $s); }
 function hasKey(string $s): bool { return strpos('key', $s) !== false; }
 function hasSlash(string $s): bool { return str_contains('/', $s); }
+// Still reported: a function that does not search a string for a string.
+function digits(string $csv): array { return explode($csv, '0123456789'); }
 
 // false from getrusage(), ini_get_all() and DateTimeZone::getTransitions().
 function signatures(\DateTimeZone $zone): void {
