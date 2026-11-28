@@ -88,6 +88,8 @@ final class Builder
         'phpstan-require-extends' => 'require-extends',
         'phpstan-require-implements' => 'require-implements',
         'psalm-immutable' => 'immutable',
+        'phpstan-assert' => 'phan-assert',
+        'psalm-assert' => 'phan-assert',
         'phpstan-assert-if-true' => 'phan-assert-if-true',
         'phpstan-assert-if-false' => 'phan-assert-if-false',
         'psalm-assert-if-true' => 'phan-assert-if-true',
@@ -671,7 +673,7 @@ final class Builder
         // (?i) makes this case-sensitive, (?-1) makes it case-insensitive
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
         // Support both regular tags ("@something") and inline versions of tags ("optional_prefix {@something}").
-        if (\preg_match('/(?:^|{)@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|implements|use|require-extends|require-implements|suppress|unused-param|no-named-arguments|phan-[a-z0-9_-]*|(?:phpstan|psalm)-assert-if-(?:true|false)|(?:phpstan|psalm)-(?:import-)?type|phpstan-(?:return|param|var|use|extends|implements|require-extends|require-implements|template(?:-(?:co|contra)variant)?)|template-(?:use|extends|implements)|psalm-(?:use|extends|implements|template(?:-(?:co|contra)variant)?|param|var|return|require-extends|require-implements|immutable)(?-i)|method|property|property-read|property-write|abstract|template(?:-(?:co|contra)variant)?|PhanClosureScope|readonly|immutable|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $trimmed, $matches)) {
+        if (\preg_match('/(?:^|{)@((?i)param|deprecated|var|return|throws|throw|returns|inherits|extends|implements|use|require-extends|require-implements|suppress|unused-param|no-named-arguments|phan-[a-z0-9_-]*|(?:phpstan|psalm)-assert(?:-if-(?:true|false))?|(?:phpstan|psalm)-(?:import-)?type|phpstan-(?:return|param|var|use|extends|implements|require-extends|require-implements|template(?:-(?:co|contra)variant)?)|template-(?:use|extends|implements)|psalm-(?:use|extends|implements|template(?:-(?:co|contra)variant)?|param|var|return|require-extends|require-implements|immutable)(?-i)|method|property|property-read|property-write|abstract|template(?:-(?:co|contra)variant)?|PhanClosureScope|readonly|immutable|mixin|seal-(?:methods|properties))(?:[^a-zA-Z0-9_\x7f-\xff-]|$)/D', $trimmed, $matches)) {
             $case_sensitive_type = $matches[1];
             $type = \strtolower($case_sensitive_type);
             $type = self::TAG_ALIAS_MAP[$type] ?? $type;
@@ -1247,29 +1249,67 @@ final class Builder
     /**
      * @internal
      */
-    public const ASSERT_REGEX = '/@phan-assert(?:(-true-condition|-false-condition)|\s+(!?)(' . UnionType::union_type_regex . '))\s+\$' . self::WORD_REGEX . '/';
+    public const ASSERT_REGEX = '/@(?<assert_tool>phan|(?i:phpstan|psalm))-assert(?:(-true-condition|-false-condition)|\s+(?<assert_prefix>=?!?|!=)(?<assert_type>' . UnionType::union_type_regex . '))\s+\$(?<assert_name>' . self::WORD_REGEX . ')(?![a-zA-Z0-9_\x7f-\xff]|->)/';
+
+    /**
+     * Parses `(at)phan-assert T $param`, `(at)phan-assert !T $param`, `(at)phan-assert-true-condition $param` and `(at)phan-assert-false-condition $param`,
+     * and `(at)phpstan-assert` and `(at)psalm-assert` with a type (also `=T`, which is the same for an assertion that does not depend on what is returned).
+     *
+     * An assertion is about a parameter: one about `$this`, `$this->prop` or `$param->prop` is not read.
+     */
     private function assertFromCommentLine(string $line): ?Assertion
     {
         if (!\preg_match(self::ASSERT_REGEX, $line, $match)) {
             return null;
         }
-        $extra_text = $match[1];
+        $param_name = $match['assert_name'];
+        $is_phan = $match['assert_tool'] === 'phan';
+        if (!$is_phan && $param_name === 'this') {
+            return null;
+        }
+        $extra_text = $match[2];
         if (\strlen($extra_text) > 0) {
+            if (!$is_phan) {
+                // `(at)phpstan-assert-true-condition` does not exist.
+                return null;
+            }
             $assertion_type = $extra_text === '-true-condition' ? Assertion::IS_TRUE : Assertion::IS_FALSE;
             $union_type = UnionType::empty();
         } else {
-            $assertion_type = $match[2] === '!' ? Assertion::IS_NOT_OF_TYPE : Assertion::IS_OF_TYPE;
-            $type_string = $match[3];
+            $is_negated = \str_contains($match['assert_prefix'], '!');
+            if ($is_phan && $match['assert_prefix'] !== '' && $match['assert_prefix'] !== '!') {
+                return null;
+            }
+            $assertion_type = $is_negated ? Assertion::IS_NOT_OF_TYPE : Assertion::IS_OF_TYPE;
+            $type_string = $match['assert_type'];
+            if (!$is_phan && $is_negated && $this->isApproximatedType($type_string)) {
+                // (See maybeParseConditionalAssert(): what is not `numeric` can still be a string)
+                return null;
+            }
             $union_type = UnionType::fromStringInContext(
                 $type_string,
                 $this->context,
                 Type::FROM_PHPDOC,
                 $this->code_base
             );
+            if (!$is_phan && $union_type->isEmpty()) {
+                return null;
+            }
         }
-        $param_name = $match[17];
 
         return new Assertion($union_type, $param_name, $assertion_type);
+    }
+
+    /**
+     * @return bool whether Phan reads this type as a wider one: `numeric` and `numeric-string` are any string,
+     * an array shape that can have other keys is the array shape or any array, and a type alias can stand for any of these.
+     * Such a type can be asserted, but its opposite cannot: a value that is not numeric can still be a string.
+     */
+    private function isApproximatedType(string $type_string): bool
+    {
+        return \preg_match(self::APPROXIMATED_TYPE_REGEX, self::withoutQuotedLiterals($type_string)) > 0
+            || (\str_contains($type_string, '...') && \preg_match(self::OPEN_SHAPE_REGEX, $type_string))
+            || $this->usesTypeAlias($type_string);
     }
 
     /**
@@ -1307,7 +1347,7 @@ final class Builder
     /**
      * @internal
      */
-    public const CONDITIONAL_ASSERT_REGEX = '/@(phan|phpstan|psalm)-assert-if-(true|false)\s+(=?!?|!=)(' . UnionType::union_type_regex . ')\s+\$(' . self::WORD_REGEX . ')(?=\s|$)/i';
+    public const CONDITIONAL_ASSERT_REGEX = '/@(phan|phpstan|psalm)-assert-if-(true|false)\s+(=?!?|!=)(' . UnionType::union_type_regex . ')\s+\$(?<assert_name>' . self::WORD_REGEX . ')(?:->(?<assert_prop>' . self::WORD_REGEX . '))?(?=\s|$)/i';
 
     /**
      * Parses `(at)phan-assert-if-true T $param`, `(at)phpstan-assert-if-false !T $param`, etc.
@@ -1315,17 +1355,23 @@ final class Builder
      * As for PHPStan, the opposite is assumed when the function returns the other value, unless the type is written as `=T`.
      * For the psalm- form, nothing is assumed for the other value.
      *
-     * Only assertions about a parameter are supported, not about `$this->prop` or `$this->method()`.
+     * An assertion is about a parameter, about `$this` (the object that the method is called on) or about `$this->prop`.
+     * Not about other expressions, such as `$param->prop` or `$this->method()`.
      */
     private function maybeParseConditionalAssert(int $i, string $line): void
     {
-        // (`$this->prop`, `$param->method()` etc. are not matched: only a parameter can be asserted)
+        // (`$param->method()`, `$this->a->b` etc. are not matched)
         if (!\preg_match(self::CONDITIONAL_ASSERT_REGEX, $line, $match)) {
             $this->checkCompatible('@phan-assert-if-true', Comment::FUNCTION_LIKE, $i);
             return;
         }
         $if_true = \strtolower($match[2]) === 'true';
         if (!$this->checkCompatible('@' . \strtolower($match[1]) . '-assert-if-' . ($if_true ? 'true' : 'false'), Comment::FUNCTION_LIKE, $i)) {
+            return;
+        }
+        $property_name = $match['assert_prop'] ?? '';
+        if ($property_name !== '' && $match['assert_name'] !== 'this') {
+            // `$param->prop`
             return;
         }
         $union_type = UnionType::fromStringInContext(
@@ -1337,23 +1383,18 @@ final class Builder
         if ($union_type->isEmpty()) {
             return;
         }
-        // A type that Phan reads as a wider one (`numeric` and `numeric-string` are any string) can be asserted,
-        // but its opposite cannot: a value that is not numeric can still be a string.
-        // (Also an array shape that can have other keys, which is read as the array shape or any array,
-        // and a type alias, which can stand for any of these)
-        $is_approximated = \preg_match(self::APPROXIMATED_TYPE_REGEX, self::withoutQuotedLiterals($match[4])) > 0
-            || (str_contains($match[4], '...') && \preg_match(self::OPEN_SHAPE_REGEX, $match[4]))
-            || $this->usesTypeAlias($match[4]);
+        $is_approximated = $this->isApproximatedType($match[4]);
         $is_negated = \str_contains($match[3], '!');
         if ($is_approximated && $is_negated) {
             return;
         }
         $this->conditional_assertion_list[] = new ConditionalAssertion(
             $union_type,
-            $match[\count($match) - 1],
+            $match['assert_name'],
             $if_true,
             $is_negated,
-            !$is_approximated && !\str_contains($match[3], '=') && \strtolower($match[1]) !== 'psalm'
+            !$is_approximated && !\str_contains($match[3], '=') && \strtolower($match[1]) !== 'psalm',
+            $property_name !== '' ? $property_name : null
         );
     }
 

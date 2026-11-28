@@ -13,6 +13,11 @@ Backwards incompatible changes:
   - **To keep the old meaning**, set `'internal_access_scope' => 'namespace'` in `.phan/config.php`.
 
 New features:
+- `@phpstan-assert-if-true`, `@phpstan-assert-if-false` and the `phan-` and `psalm-` forms can be about `$this` and about a property of `$this`, for a method that is not static:
+  - `@phpstan-assert-if-true TestMethod $this` on `isTestMethod()` narrows the object that the method is called on: `$test` in `if ($test->isTestMethod())`, also `$this`, and a property (`$this->test->isTestMethod()`).
+  - `@phpstan-assert-if-true !null $this->file` on `hasFile()` narrows that property of the object: `$this->file` after `if (!$this->hasFile()) { throw ...; }`, and `$config->file` for `$config->hasFile()`. A property that the code with the call cannot read (a private property of another class) is left alone.
+  These were `PhanCommentParamAssertionWithoutRealParam` before, which is still reported for a function, a static method, and a name that is not a parameter.
+- Read `@phpstan-assert` and `@psalm-assert` with a type (`T`, `!T`, `=T`) like `@phan-assert`: the type of the argument is assumed after the call. A template type that is only used in such an assertion is no longer `PhanTemplateTypeNotUsedInFunctionReturn`. An assertion without a condition about `$this` or a property is not read.
 - Read `@template-extends` and `@template-implements`, and `@phpstan-extends`, `@phpstan-implements`, `@psalm-extends` and `@psalm-implements`, like `@extends` and `@implements`. A class that only gave the template types of its parent that way was reported as `PhanGenericMissingParameters`, and its inherited methods returned the template type.
 - `@throws void` is accepted: it says that a function throws nothing (PHPStan, Psalm).
 - Read `@phpstan-require-extends` and `@phpstan-require-implements` on a trait like `@require-extends` and `@require-implements` (`@psalm-require-extends` and `@psalm-require-implements` were already read). The trait can then call the methods of the class or interface that it names, and the name counts as a reference to its `use` statement.
