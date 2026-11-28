@@ -15,3 +15,7 @@
 %s:130 PhanDebugAnnotation @phan-debug-var requested for variable $n - it has union type int|string(real=int|string)
 %s:130 PhanDebugAnnotation @phan-debug-var requested for variable $s - it has union type string
 %s:130 PhanDebugAnnotation @phan-debug-var requested for variable $t - it has union type true
+%s:147 PhanDebugAnnotation @phan-debug-var requested for variable $value - it has union type string(real=non-null-mixed)
+%s:165 PhanDebugAnnotation @phan-debug-var requested for variable $file - it has union type ?string(real=?string)
+%s:181 PhanDebugAnnotation @phan-debug-var requested for variable $a - it has union type \NS6011\TestMethod(real=\NS6011\TestMethod)
+%s:181 PhanDebugAnnotation @phan-debug-var requested for variable $b - it has union type \NS6011\Test

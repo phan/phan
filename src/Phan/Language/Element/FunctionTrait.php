@@ -2572,16 +2572,20 @@ trait FunctionTrait
     {
         switch ($assertion_type) {
             case Assertion::IS_OF_TYPE:
+            case Assertion::IS_NARROWED_TO_TYPE:
+                $is_narrowed = $assertion_type === Assertion::IS_NARROWED_TO_TYPE;
                 /**
                  * @param list<Node|mixed> $args
                  */
-                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args, ?Node $unused_node) use ($i, $union_type_extractor): void {
+                return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, array $args, ?Node $unused_node) use ($i, $union_type_extractor, $is_narrowed): void {
                     $arg = $args[$i] ?? null;
                     if (!($arg instanceof Node)) {
                         return;
                     }
                     $union_type = $union_type_extractor($code_base, $context, $args);
-                    $new_context = ConditionVisitor::updateToHaveType($code_base, $context, $arg, $union_type);
+                    $new_context = $is_narrowed
+                        ? ConditionVisitor::updateToHaveNarrowedType($code_base, $context, $arg, $union_type)
+                        : ConditionVisitor::updateToHaveType($code_base, $context, $arg, $union_type);
                     // NOTE: This is hackish. This modifies the passed in context's scope.
                     $context->setScope($new_context->getScope());
                 };

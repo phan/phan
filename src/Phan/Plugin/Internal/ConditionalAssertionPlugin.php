@@ -15,6 +15,7 @@ use Phan\Language\Context;
 use Phan\Language\Element\Comment\ConditionalAssertion;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
+use Phan\Language\Element\Property;
 use Phan\Language\UnionType;
 use Phan\PluginV3;
 use Phan\PluginV3\ConditionalCallCapability;
@@ -108,7 +109,7 @@ final class ConditionalAssertionPlugin extends PluginV3 implements ConditionalCa
         /**
          * @param list<Node|string|int|float> $args
          */
-        return static function (CodeBase $code_base, Context $context, FunctionInterface $unused_function, Node $node, array $args, bool $is_negated) use ($indexed_assertions, $receiver_assertions): Context {
+        return static function (CodeBase $code_base, Context $context, FunctionInterface $called_function, Node $node, array $args, bool $is_negated) use ($indexed_assertions, $receiver_assertions): Context {
             foreach ($indexed_assertions as [$i, $assertion]) {
                 $arg = $args[$i] ?? null;
                 if (!($arg instanceof Node)) {
@@ -125,12 +126,12 @@ final class ConditionalAssertionPlugin extends PluginV3 implements ConditionalCa
                             // `$this->item->isReady()`: an assertion about `$this` is about `$this->item`.
                             // (One about `$this->prop` would be about `$this->item->prop`, which is not narrowed)
                             if ($assertion->property_name === null) {
-                                $context = self::applyPropertyAssertion($code_base, $context, $receiver, $receiver_property_name, $assertion, !$is_negated);
+                                $context = self::applyPropertyAssertion($code_base, $context, $receiver, $receiver_property_name, $assertion, !$is_negated, null);
                             }
                             continue;
                         }
                         $context = $assertion->property_name !== null
-                            ? self::applyPropertyAssertion($code_base, $context, $receiver, $assertion->property_name, $assertion, !$is_negated)
+                            ? self::applyPropertyAssertion($code_base, $context, $receiver, $assertion->property_name, $assertion, !$is_negated, $called_function)
                             : self::applyAssertion($code_base, $context, $receiver, $assertion, !$is_negated);
                     }
                 }
@@ -196,8 +197,10 @@ final class ConditionalAssertionPlugin extends PluginV3 implements ConditionalCa
      *
      * @param Node $receiver the node of the variable
      * @param bool $result whether the call is assumed to have returned a truthy value
+     * @param ?FunctionInterface $method the method with the assertion, for an assertion about `$this->prop`: it is about the property
+     * with that name of the class that declares the method. Null for an assertion about `$this` that is applied to a property.
      */
-    private static function applyPropertyAssertion(CodeBase $code_base, Context $context, Node $receiver, string $property_name, ConditionalAssertion $assertion, bool $result): Context
+    private static function applyPropertyAssertion(CodeBase $code_base, Context $context, Node $receiver, string $property_name, ConditionalAssertion $assertion, bool $result, ?FunctionInterface $method): Context
     {
         $has_type = self::hasTypeForResult($assertion, $result);
         if ($has_type === null) {
@@ -207,7 +210,7 @@ final class ConditionalAssertionPlugin extends PluginV3 implements ConditionalCa
         if (!\is_string($variable_name)) {
             return $context;
         }
-        $old_type = self::typeOfAccessibleProperty($code_base, $context, $receiver, $variable_name, $property_name);
+        $old_type = self::typeOfAccessibleProperty($code_base, $context, $receiver, $variable_name, $property_name, $method);
         if ($old_type === null) {
             return $context;
         }
@@ -228,14 +231,12 @@ final class ConditionalAssertionPlugin extends PluginV3 implements ConditionalCa
      * @return ?UnionType the type that the property of the variable has here, or null if the code here cannot read the property
      * (a private property of another class: an assertion about it has no use for the caller), or if it is not known which property it is.
      */
-    private static function typeOfAccessibleProperty(CodeBase $code_base, Context $context, Node $receiver, string $variable_name, string $property_name): ?UnionType
+    private static function typeOfAccessibleProperty(CodeBase $code_base, Context $context, Node $receiver, string $variable_name, string $property_name, ?FunctionInterface $method): ?UnionType
     {
         try {
             $accessing_class = $context->isInClassScope() ? $context->getClassFQSEN() : null;
-            $class_list = \iterator_to_array(
-                UnionTypeVisitor::unionTypeFromNode($code_base, $context, $receiver)->asClassList($code_base, $context),
-                false
-            );
+            $receiver_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $receiver);
+            $class_list = \iterator_to_array($receiver_type->asClassList($code_base, $context), false);
             if (\count($class_list) !== 1) {
                 return null;
             }
@@ -247,13 +248,48 @@ final class ConditionalAssertionPlugin extends PluginV3 implements ConditionalCa
             if (!$property->isAccessibleFromClass($code_base, $accessing_class)) {
                 return null;
             }
+            if ($method instanceof Method && !self::isSamePropertyForMethod($code_base, $method, $property)) {
+                return null;
+            }
+            $override = $variable_name === 'this'
+                ? $context->getThisPropertyIfOverridden($property_name)
+                : $context->getVariablePropertyIfOverridden($variable_name, $property_name);
+            if ($override !== null) {
+                return $override;
+            }
+            // As for reading the property: `static` and the template types of the class are the ones of the object.
+            $type = $property->getUnionType()->withStaticResolvedInContext($property->getContext());
+            if ($type->hasTemplateTypeRecursive()) {
+                $type = $type->withTemplateParameterTypeMap($receiver_type->getTemplateParameterTypeMap($code_base));
+                if ($type->hasTemplateTypeRecursive()) {
+                    // The object does not say what the template type is.
+                    return null;
+                }
+            }
+            return $type;
         } catch (\Exception) {
             return null;
         }
-        $override = $variable_name === 'this'
-            ? $context->getThisPropertyIfOverridden($property_name)
-            : $context->getVariablePropertyIfOverridden($variable_name, $property_name);
-        return $override ?? $property->getUnionType();
+    }
+
+    /**
+     * @param Method $method a method with an assertion about `$this->name`
+     * @param Property $property the property with that name of the object that the method is called on
+     * @return bool whether that is the property that the method means: not when the class that declares the method
+     * has a private property with that name, and the class of the object declares its own.
+     */
+    private static function isSamePropertyForMethod(CodeBase $code_base, Method $method, Property $property): bool
+    {
+        $method_class_fqsen = $method->getSelfContext()->getClassFQSEN();
+        if (!$code_base->hasClassWithFQSEN($method_class_fqsen)) {
+            return true;
+        }
+        $method_class = $code_base->getClassByFQSEN($method_class_fqsen);
+        $name = $property->getName();
+        if (!$method_class->hasPropertyWithName($code_base, $name)) {
+            return true;
+        }
+        return $method_class->getPropertyByName($code_base, $name)->getDefiningFQSEN() === $property->getDefiningFQSEN();
     }
 
     /**

@@ -1280,7 +1280,8 @@ final class Builder
             if ($is_phan && $match['assert_prefix'] !== '' && $match['assert_prefix'] !== '!') {
                 return null;
             }
-            $assertion_type = $is_negated ? Assertion::IS_NOT_OF_TYPE : Assertion::IS_OF_TYPE;
+            // (`(at)phan-assert T $x` replaces the type of the argument, as it always did)
+            $assertion_type = $is_negated ? Assertion::IS_NOT_OF_TYPE : ($is_phan ? Assertion::IS_OF_TYPE : Assertion::IS_NARROWED_TO_TYPE);
             $type_string = $match['assert_type'];
             if (!$is_phan && $is_negated && $this->isApproximatedType($type_string)) {
                 // (See maybeParseConditionalAssert(): what is not `numeric` can still be a string)

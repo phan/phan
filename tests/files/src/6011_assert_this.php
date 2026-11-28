@@ -130,3 +130,54 @@ function asserts(mixed $a, ?\DateTime $d, mixed $s, int|string $n, mixed $t): vo
     Assert::assertTrue($t);
     '@phan-debug-var $a, $d, $s, $n, $t';
 }
+
+// The template types of the class are the ones of the object.
+/** @template T */
+final class Box {
+    /** @var T|null */
+    public $value;
+    /** @param T|null $value */
+    public function __construct($value) { $this->value = $value; }
+    /** @phpstan-assert-if-true !null $this->value */
+    public function hasValue(): bool { return $this->value !== null; }
+}
+/** @param Box<string> $box */
+function boxed(Box $box): int {
+    if ($box->hasValue()) {
+        $value = $box->value;
+        '@phan-debug-var $value';
+        return strlen($value);
+    }
+    return 0;
+}
+
+// An assertion about a private property of the class that declares the method is not about the property that another class declares with that name.
+class ParentWithPrivate {
+    private ?string $file = 'x';
+    /** @phpstan-assert-if-true !null $this->file */
+    public function hasFile(): bool { return $this->file !== null; }
+}
+final class ChildWithOwn extends ParentWithPrivate {
+    public ?string $file = null;
+}
+function ownFile(ChildWithOwn $child): ?string {
+    if ($child->hasFile()) {
+        $file = $child->file;
+        '@phan-debug-var $file';
+        return $file;
+    }
+    return null;
+}
+
+// (at)phpstan-assert keeps the types that are subtypes of the asserted type. (at)phan-assert replaces the type.
+final class Narrow {
+    /** @phpstan-assert Test $value */
+    public static function assertTest(mixed $value): void { if (!$value instanceof Test) { throw new \Exception(); } }
+    /** @phan-assert Test $value */
+    public static function replaceWithTest(mixed $value): void { if (!$value instanceof Test) { throw new \Exception(); } }
+}
+function narrowed(TestMethod $a, TestMethod $b): void {
+    Narrow::assertTest($a);
+    Narrow::replaceWithTest($b);
+    '@phan-debug-var $a, $b';
+}
